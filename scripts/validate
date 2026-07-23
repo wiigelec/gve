@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+case "${1-}" in
+    specs)
+        shift
+        exec python3 -m specs.tooling.validate "$@"
+        ;;
+    *)
+        echo "usage: ./scripts/validate specs [--specs-root PATH]" >&2
+        exit 64
+        ;;
+esac
