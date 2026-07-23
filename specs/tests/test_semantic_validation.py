@@ -131,14 +131,11 @@ class SemanticValidationTests(unittest.TestCase):
                 "id": "GVE-LEVEL-2",
                 "level": 2,
                 "title": "GVE Level 2 Test Fixture",
-                "parent": None,
+                "parent": "GVE-LEVEL-0",
             }
         )
-        self.documents = {
-            1: self.documents[1],
-            2: level_2,
-        }
         self.documents[1]["specification"]["parent"] = "GVE-LEVEL-2"
+        self.documents[2] = level_2
         self.assert_rejected("invalid parent level ordering")
 
 

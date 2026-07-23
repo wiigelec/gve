@@ -79,7 +79,7 @@ def validate_semantics(
     if path.resolve() != expected_path.resolve():
         _fail(
             specification_id,
-            f"path {path} does not match governed location {expected_path}",
+            f"path {path} does not match authoritative path {expected_path}",
         )
 
     definitions, requirements, _relationships = _identifier_inventory(document)
