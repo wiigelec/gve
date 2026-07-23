@@ -1,0 +1,310 @@
+{
+  "$schema": "../schemas/level.schema.json",
+  "schema_version": 1,
+  "level": {
+    "id": "level-0",
+    "number": 0,
+    "title": "Minimal governed execution foundation",
+    "version": "1.0.0",
+    "status": "draft",
+    "depends_on": []
+  },
+  "authority": {
+    "prose_specification": "LEVEL_0.md",
+    "structured_role": "machine-readable representation",
+    "precedence": [
+      "prose_specification",
+      "structured_level_specification",
+      "implementation",
+      "tests"
+    ]
+  },
+  "contracts": {
+    "schema_versions": [
+      "1"
+    ],
+    "executor_versions": [
+      "0.7.0"
+    ],
+    "instruction_set_versions": [
+      "level0.v1"
+    ],
+    "operation_description": {
+      "closed": true,
+      "required_fields": [
+        "schema_version",
+        "payload_id",
+        "instruction_set_version",
+        "instructions",
+        "digest"
+      ],
+      "unknown_fields": "reject"
+    },
+    "result_evidence": {
+      "closed": true,
+      "required_fields": [
+        "terminal_status",
+        "mutation",
+        "diagnostics",
+        "safest_next_interaction"
+      ],
+      "unknown_fields": "reject"
+    }
+  },
+  "requirements": [
+    {
+      "id": "L0-VERS-001",
+      "kind": "normative",
+      "statement": "Accept only explicitly supported schema, executor, and instruction-set versions.",
+      "phase": "description",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Unsupported versions are rejected during parsing."
+    },
+    {
+      "id": "L0-CLOS-001",
+      "kind": "invariant",
+      "statement": "Every governed object contract is closed and rejects unknown fields.",
+      "phase": "description",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Unknown top-level and instruction fields are rejected."
+    },
+    {
+      "id": "L0-IDEN-001",
+      "kind": "normative",
+      "statement": "Validate operation identity and canonical digest before execution.",
+      "phase": "description",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Digest is recomputed over the canonical parsed description."
+    },
+    {
+      "id": "L0-AUTH-001",
+      "kind": "normative",
+      "statement": "Require explicit minimal authorization and reject broadened authority.",
+      "phase": "authorization",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Requested effects cannot exceed executor-recognized authorization."
+    },
+    {
+      "id": "L0-GARD-001",
+      "kind": "normative",
+      "statement": "Verify repository and execution guards before mutation.",
+      "phase": "guards",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Identity, branch, revision, and declared state are observed before writes."
+    },
+    {
+      "id": "L0-DISP-001",
+      "kind": "normative",
+      "statement": "Dispatch only registered executor-owned instruction types with fixed behavior.",
+      "phase": "execution",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Unsupported instruction types have no fallback path."
+    },
+    {
+      "id": "L0-SHEL-001",
+      "kind": "invariant",
+      "statement": "Descriptions cannot supply shell payloads, interpreter snippets, or arbitrary commands.",
+      "phase": "execution",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Arguments are validated by a registered closed instruction contract."
+    },
+    {
+      "id": "L0-SCOP-001",
+      "kind": "invariant",
+      "statement": "Execution never broadens the described mutation scope.",
+      "phase": "execution",
+      "failure_behavior": "fail-closed",
+      "verification": "Scopes are normalized relative paths and executor effects remain within them."
+    },
+    {
+      "id": "L0-MUTA-001",
+      "kind": "normative",
+      "statement": "Distinguish requested, authorized, attempted, completed, and observed effects.",
+      "phase": "verification",
+      "failure_behavior": "fail-closed",
+      "verification": "Result evidence records each mutation state independently."
+    },
+    {
+      "id": "L0-POST-001",
+      "kind": "normative",
+      "statement": "Verify successful effects through observed postconditions.",
+      "phase": "verification",
+      "failure_behavior": "fail-closed",
+      "verification": "Read-after-write or equivalent observation is required."
+    },
+    {
+      "id": "L0-UNVR-001",
+      "kind": "failure-case",
+      "statement": "Unverifiable work terminates without claiming success.",
+      "phase": "verification",
+      "failure_behavior": "fail-closed",
+      "verification": "Success is impossible when observation is missing or contradictory."
+    },
+    {
+      "id": "L0-REJT-001",
+      "kind": "failure-case",
+      "statement": "Reject stale, replayed, malformed, ambiguous, unsupported, or unauthorized operations without unintended mutation.",
+      "phase": "cross-cutting",
+      "failure_behavior": "reject-before-mutation",
+      "verification": "Failure paths are tested for pre-mutation termination."
+    },
+    {
+      "id": "L0-EVID-001",
+      "kind": "normative",
+      "statement": "Produce one deterministic, unique, non-overwriting result artifact.",
+      "phase": "evidence",
+      "failure_behavior": "fail-closed",
+      "verification": "Exclusive creation prevents evidence replacement."
+    },
+    {
+      "id": "L0-NEXT-001",
+      "kind": "normative",
+      "statement": "Preserve structured evidence and diagnostics sufficient to determine the safest next interaction.",
+      "phase": "evidence",
+      "failure_behavior": "fail-closed",
+      "verification": "Result evidence includes status, diagnostics, observations, and next interaction guidance."
+    }
+  ],
+  "non_goals": [
+    "Implement Level 1 or later behavior.",
+    "Permit arbitrary shell, subprocess, plugin, or interpreter execution.",
+    "Treat the historical bootstrap executor as semantic authority.",
+    "Broaden publication, review, merge, or issue-close behavior into Level 0 execution."
+  ],
+  "traceability": {
+    "implementation_root": "src/",
+    "test_root": "src/",
+    "requirement_coverage": [
+      {
+        "requirement_id": "L0-VERS-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_unsupported_schema_version",
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_unsupported_instruction_set_version"
+        ]
+      },
+      {
+        "requirement_id": "L0-CLOS-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_unknown_top_level_field",
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_unknown_instruction_field"
+        ]
+      },
+      {
+        "requirement_id": "L0-IDEN-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_digest_uses_canonical_parsed_payload"
+        ]
+      },
+      {
+        "requirement_id": "L0-AUTH-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-GARD-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-DISP-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_unsupported_instruction_type"
+        ]
+      },
+      {
+        "requirement_id": "L0-SHEL-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_arguments_outside_governed_contract"
+        ]
+      },
+      {
+        "requirement_id": "L0-SCOP-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_parent_scope",
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_duplicate_scope"
+        ]
+      },
+      {
+        "requirement_id": "L0-MUTA-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-POST-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-UNVR-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-REJT-001",
+        "implementation": [
+          "src/gve/level0.py"
+        ],
+        "tests": [
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_malformed_json",
+          "gve.tests.test_level0.Level0PayloadTests.test_rejects_duplicate_object_keys"
+        ]
+      },
+      {
+        "requirement_id": "L0-EVID-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      },
+      {
+        "requirement_id": "L0-NEXT-001",
+        "implementation": [
+          "src/scf_governed_executor/"
+        ],
+        "tests": [
+          "scf_governed_executor.tests.test_executor"
+        ]
+      }
+    ]
+  }
+}

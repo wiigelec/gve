@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wiigelec/gve/specs/schemas/level.schema.json",
+  "title": "GVE governed execution level specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "level",
+    "authority",
+    "contracts",
+    "requirements",
+    "non_goals",
+    "traceability"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "level": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "number",
+        "title",
+        "version",
+        "status",
+        "depends_on"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^level-[0-9]+$"
+        },
+        "number": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "status": {
+          "enum": [
+            "draft",
+            "active",
+            "superseded"
+          ]
+        },
+        "depends_on": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^level-[0-9]+$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prose_specification",
+        "structured_role",
+        "precedence"
+      ],
+      "properties": {
+        "prose_specification": {
+          "type": "string",
+          "minLength": 1
+        },
+        "structured_role": {
+          "const": "machine-readable representation"
+        },
+        "precedence": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "prose_specification"
+            },
+            {
+              "const": "structured_level_specification"
+            },
+            {
+              "const": "implementation"
+            },
+            {
+              "const": "tests"
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_versions",
+        "executor_versions",
+        "instruction_set_versions",
+        "operation_description",
+        "result_evidence"
+      ],
+      "properties": {
+        "schema_versions": {
+          "$ref": "#/$defs/nonEmptyUniqueStrings"
+        },
+        "executor_versions": {
+          "$ref": "#/$defs/nonEmptyUniqueStrings"
+        },
+        "instruction_set_versions": {
+          "$ref": "#/$defs/nonEmptyUniqueStrings"
+        },
+        "operation_description": {
+          "$ref": "#/$defs/closedContract"
+        },
+        "result_evidence": {
+          "$ref": "#/$defs/closedContract"
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/requirement"
+      }
+    },
+    "non_goals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "traceability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "implementation_root",
+        "test_root",
+        "requirement_coverage"
+      ],
+      "properties": {
+        "implementation_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "test_root": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requirement_coverage": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "requirement_id",
+              "implementation",
+              "tests"
+            ],
+            "properties": {
+              "requirement_id": {
+                "$ref": "#/$defs/requirementId"
+              },
+              "implementation": {
+                "$ref": "#/$defs/nonEmptyUniqueStrings"
+              },
+              "tests": {
+                "$ref": "#/$defs/nonEmptyUniqueStrings"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "requirementId": {
+      "type": "string",
+      "pattern": "^L[0-9]+-[A-Z][A-Z0-9]*-[0-9]{3}$"
+    },
+    "nonEmptyUniqueStrings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "closedContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "closed",
+        "required_fields",
+        "unknown_fields"
+      ],
+      "properties": {
+        "closed": {
+          "const": true
+        },
+        "required_fields": {
+          "$ref": "#/$defs/nonEmptyUniqueStrings"
+        },
+        "unknown_fields": {
+          "const": "reject"
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "statement",
+        "phase",
+        "failure_behavior",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/requirementId"
+        },
+        "kind": {
+          "enum": [
+            "normative",
+            "invariant",
+            "failure-case",
+            "decision"
+          ]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "phase": {
+          "enum": [
+            "description",
+            "authorization",
+            "guards",
+            "execution",
+            "verification",
+            "evidence",
+            "cross-cutting"
+          ]
+        },
+        "failure_behavior": {
+          "enum": [
+            "reject-before-mutation",
+            "fail-closed",
+            "not-applicable"
+          ]
+        },
+        "verification": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
