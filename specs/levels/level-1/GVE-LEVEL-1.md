@@ -10,49 +10,73 @@
 
 ## Summary
 
-GVE Level 1 extends the Level 0 governed-execution model with a core and application-plugin architecture. The GVE core owns common envelope interpretation, deterministic plugin resolution, payload routing, execution lifecycle control, common failure handling, and authoritative result assembly. Exactly one application plugin interprets application-specific payload content for an accepted Level 1 execution. Neither core routing nor plugin selection broadens authority beyond the instruction payload and governed instruction set, and all Level 0 effect distinctions, evidence requirements, fail-closed rules, and limits on authoritative claims remain applicable.
+GVE Level 1 extends the Level 0 governed-execution model with a workflow, operation, and application-plugin architecture. One instruction payload represents one governed workflow containing one or more governed operations. Each operation is bound deterministically and uniquely to exactly one application plugin, while a workflow may use one or more plugins and the same plugin may serve multiple operations. Before any operation executes, the GVE core validates the complete workflow, every operation, every plugin assignment, every plugin-owned instruction, and all application-independent dependencies and data handoffs. The core controls orchestration, lifecycle, failure handling, evidence aggregation, and authoritative result assembly. All Level 0 authority, effect-state, fail-closed, evidence, and result-truthfulness rules remain applicable.
 
 ## Definitions
 
 ### GVE core (`GVE-CORE`)
 
-The application-independent component that interprets the common payload envelope, resolves exactly one application plugin, routes application-specific content, controls the common execution lifecycle, applies common failure handling, and assembles the authoritative result.
-
-### Application plugin (`APPLICATION-PLUGIN`)
-
-A governed GVE extension selected for one accepted payload that defines the application-specific payload format, supported instructions, governing rules, execution behavior, and application-specific result data.
+The application-independent component that interprets the common payload envelope, identifies the governed workflow and its operations, constructs and validates the workflow plan, resolves one application plugin for each operation, controls workflow execution, enforces dependencies and handoffs, applies common failure handling, aggregates evidence, and assembles the authoritative result.
 
 ### Common payload envelope (`COMMON-PAYLOAD-ENVELOPE`)
 
-The application-independent payload data defined for core interpretation, including only information needed for routing, lifecycle control, authority processing, common failure handling, and result assembly.
+The application-independent payload data defined for core interpretation, including workflow structure, operation boundaries, routing information, authority data, lifecycle controls, dependencies, handoff declarations, failure controls, and result-assembly data.
 
-### Application-specific content (`APPLICATION-CONTENT`)
+### Governed workflow (`GOVERNED-WORKFLOW`)
 
-Payload content whose meaning is defined by the selected application plugin and that must not be interpreted as application-specific instructions by the GVE core or any unselected plugin.
+The complete governed process represented by one accepted instruction payload and composed of one or more governed operations under common core orchestration and one authoritative result.
+
+### Governed operation (`GOVERNED-OPERATION`)
+
+A bounded unit of governed work within a workflow, with its own application-specific instruction content, requested effects, plugin assignment, validation state, execution state, evidence, and result data.
+
+### Application plugin (`APPLICATION-PLUGIN`)
+
+A governed GVE extension that defines the operation payload formats it accepts, supported operation instructions, governing rules, validation behavior, execution behavior, evidence, and operation-specific result data.
 
 ### Plugin discovery (`PLUGIN-DISCOVERY`)
 
-The governed process by which the GVE core identifies application plugins available for deterministic selection. Level 1 defines its required outcome and failure behavior, not a concrete registry, package format, or transport.
+The governed process by which the GVE core identifies application plugins available for operation assignment. Level 1 defines required outcomes and failure behavior, not a concrete registry, package format, or transport.
 
-### Plugin selection (`PLUGIN-SELECTION`)
+### Operation-plugin assignment (`OPERATION-PLUGIN-ASSIGNMENT`)
 
-The deterministic resolution of an accepted payload to exactly one application plugin without creating authority beyond that jointly established by the instruction payload and governed instruction set.
+The deterministic and unique binding of one governed operation to exactly one selected application plugin using application-independent routing information and plugin-declared acceptance criteria.
 
 ### Selected plugin (`SELECTED-PLUGIN`)
 
-The unique application plugin resolved for an accepted Level 1 payload and solely responsible for interpreting its application-specific content.
+The unique application plugin assigned to one governed operation after successful operation-plugin resolution.
 
-### GVE execution lifecycle (`GVE-LIFECYCLE`)
+### Operation-specific content (`OPERATION-CONTENT`)
 
-The common governed sequence controlled by the GVE core for validation, authorization interpretation, execution, evidence handling, failure handling, and authoritative result emission.
-
-### Plugin identity (`PLUGIN-IDENTITY`)
-
-Stable result-visible information sufficient to identify the selected application plugin under the governed instruction set.
+The application-specific instruction content of one governed operation whose meaning may be interpreted only by the plugin assigned to that operation.
 
 ### Interpreted instruction (`INTERPRETED-INSTRUCTION`)
 
-An application-specific instruction whose meaning was established by the selected plugin under its governed instruction set.
+An operation-specific instruction whose meaning was established by the plugin assigned to that operation under its governed instruction set.
+
+### Workflow plan (`WORKFLOW-PLAN`)
+
+The complete pre-execution representation of a governed workflow, including its operations, operation-plugin assignments, ordering constraints, dependencies, data handoffs, required authority, and failure behavior.
+
+### Workflow validation (`WORKFLOW-VALIDATION`)
+
+The fail-closed pre-execution process that establishes the validity, support, consistency, plugin assignment, plugin-specific instruction validity, dependency and handoff validity, and required authority of the complete workflow plan before any operation begins execution.
+
+### Operation dependency (`OPERATION-DEPENDENCY`)
+
+An application-independent prerequisite relationship between governed operations that the core validates and enforces.
+
+### Data handoff (`DATA-HANDOFF`)
+
+A governed transfer of evidence-supported result data from one operation to a dependent operation under workflow-plan rules.
+
+### GVE execution lifecycle (`GVE-LIFECYCLE`)
+
+The common governed sequence controlled by the GVE core for payload intake, workflow planning, complete pre-execution validation, authorization interpretation, operation execution, evidence handling, failure handling, and authoritative result emission.
+
+### Plugin identity (`PLUGIN-IDENTITY`)
+
+Stable result-visible information sufficient to identify the application plugin assigned to a governed operation under the governed instruction set.
 
 ## Normative requirements
 
@@ -60,118 +84,139 @@ An application-specific instruction whose meaning was established by the selecte
 
 Level 1 must extend Level 0 and must not replace, weaken, collapse, or contradict any applicable Level 0 definition, requirement, authority boundary, effect distinction, fail-closed rule, evidence requirement, or limitation on authoritative result claims.
 
-References: `GVE-CORE`, `APPLICATION-PLUGIN`
+References: `GVE-CORE`, `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`
 
 ### L1-REQ-002
 
-GVE must separate application-independent core responsibilities from application-specific plugin responsibilities.
+Every payload accepted for Level 1 execution must represent exactly one governed workflow.
 
-References: `GVE-CORE`, `APPLICATION-PLUGIN`
+References: `COMMON-PAYLOAD-ENVELOPE`, `GOVERNED-WORKFLOW`
 
 ### L1-REQ-003
 
-The GVE core must own common payload-envelope interpretation, plugin discovery and selection, payload routing, execution lifecycle control, common failure handling, and authoritative result assembly.
+Every governed workflow must contain one or more governed operations.
 
-References: `GVE-CORE`, `COMMON-PAYLOAD-ENVELOPE`, `PLUGIN-DISCOVERY`, `PLUGIN-SELECTION`, `GVE-LIFECYCLE`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`
 
 ### L1-REQ-004
 
-An application plugin must define the application-specific payload formats it accepts, the instructions it supports, the rules governing those instructions, their execution behavior, and application-specific result data.
+Every governed operation must resolve deterministically and uniquely to exactly one selected application plugin. A workflow may use one or more application plugins, and one plugin may be assigned to multiple operations.
 
-References: `APPLICATION-PLUGIN`, `APPLICATION-CONTENT`, `INTERPRETED-INSTRUCTION`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `SELECTED-PLUGIN`, `APPLICATION-PLUGIN`
 
 ### L1-REQ-005
 
-Every payload accepted for Level 1 execution must resolve deterministically and uniquely to exactly one selected application plugin.
+The GVE core must own common payload-envelope interpretation, workflow and operation identification, workflow-plan construction, plugin discovery and operation assignment, complete workflow validation, operation sequencing, dependency and handoff enforcement, lifecycle control, common failure handling, evidence aggregation, and authoritative result assembly.
 
-References: `PLUGIN-SELECTION`, `SELECTED-PLUGIN`
+References: `GVE-CORE`, `COMMON-PAYLOAD-ENVELOPE`, `WORKFLOW-PLAN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`, `GVE-LIFECYCLE`
 
 ### L1-REQ-006
 
-Unsupported, ambiguous, conflicting, or non-unique plugin discovery or selection must fail closed before application-specific execution.
+Each application plugin must define the operation payload formats it accepts, the operation instructions it supports, the rules governing those instructions, operation-specific validation and execution behavior, operation evidence, and operation-specific result data.
 
-References: `PLUGIN-DISCOVERY`, `PLUGIN-SELECTION`, `SELECTED-PLUGIN`
+References: `APPLICATION-PLUGIN`, `GOVERNED-OPERATION`, `OPERATION-CONTENT`, `INTERPRETED-INSTRUCTION`
 
 ### L1-REQ-007
 
-Only the selected plugin may interpret application-specific payload content; the GVE core may interpret only the common payload envelope and other application-independent routing, lifecycle, authority, failure, and result-assembly data defined by Level 1.
+A plugin may interpret only the operation-specific content of operations assigned to it. No plugin may interpret an operation assigned to another plugin, and the GVE core must not interpret plugin-owned operation semantics.
 
-References: `SELECTED-PLUGIN`, `APPLICATION-CONTENT`, `COMMON-PAYLOAD-ENVELOPE`, `GVE-CORE`
+References: `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `OPERATION-CONTENT`, `GVE-CORE`
 
 ### L1-REQ-008
 
-Plugin discovery, plugin selection, and plugin execution must not infer, acquire, or exercise authority broader than that jointly established by the instruction payload and governed instruction set.
+Before any governed operation begins execution, the GVE core must validate the complete workflow plan, every operation, the availability and stable identity of every required plugin, exactly one plugin assignment for every operation, every operation-specific instruction under its assigned plugin, all declared dependencies and data handoffs, and the authority required for all requested effects.
 
-References: `PLUGIN-DISCOVERY`, `PLUGIN-SELECTION`, `APPLICATION-PLUGIN`
+References: `GVE-CORE`, `WORKFLOW-PLAN`, `WORKFLOW-VALIDATION`, `GOVERNED-OPERATION`, `PLUGIN-IDENTITY`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`
 
 ### L1-REQ-009
 
-Application plugins must extend GVE behavior only through the GVE execution lifecycle and must not bypass common lifecycle control, fail-closed behavior, evidence interpretation, or authoritative result assembly.
+If any workflow, operation, required plugin, plugin assignment, plugin-owned instruction, dependency, handoff, or required authority is unsupported, invalid, incomplete, ambiguous, conflicting, unauthorized, or non-uniquely interpretable, GVE must fail closed before workflow execution begins.
 
-References: `APPLICATION-PLUGIN`, `GVE-LIFECYCLE`, `GVE-CORE`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`, `WORKFLOW-VALIDATION`
 
 ### L1-REQ-010
 
-Level 1 execution and result representation must preserve the Level 0 distinctions among requested, authorized, attempted, completed, observed, and verified effects; plugin or lifecycle status must not substitute for those effect claims.
+Successful workflow validation and workflow-plan acceptance establish no attempted, completed, observed, or verified workflow or operation effect by themselves.
 
-References: `GVE-LIFECYCLE`, `APPLICATION-PLUGIN`
+References: `WORKFLOW-VALIDATION`, `WORKFLOW-PLAN`, `GOVERNED-OPERATION`
 
 ### L1-REQ-011
 
-The authoritative result must identify the selected plugin and the interpreted instructions used for execution with evidence-supported claims appropriate to the governed instruction set.
+Plugin discovery, operation-plugin assignment, workflow validation, and plugin execution must not infer, acquire, or exercise authority broader than that jointly established by the instruction payload and governed instruction set.
 
-References: `SELECTED-PLUGIN`, `PLUGIN-IDENTITY`, `INTERPRETED-INSTRUCTION`
+References: `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDATION`, `APPLICATION-PLUGIN`
 
 ### L1-REQ-012
 
-The authoritative result remains authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions and must not be treated as an unrestricted assertion about external reality.
+Application plugins must participate only through the GVE execution lifecycle and must not bypass core orchestration, complete pre-execution validation, dependency or handoff enforcement, fail-closed behavior, evidence interpretation, or authoritative result assembly.
 
-References: `GVE-CORE`, `APPLICATION-PLUGIN`
+References: `APPLICATION-PLUGIN`, `GVE-LIFECYCLE`, `GVE-CORE`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`
 
 ### L1-REQ-013
 
-GVE must remain independent of any specific application plugin, and no plugin may silently redefine common core semantics or the Level 0 governed-execution model.
+Level 1 execution and result representation must preserve the Level 0 distinctions among requested, authorized, attempted, completed, observed, and verified effects for each operation and for the workflow as a whole; workflow, operation, plugin, validation, or lifecycle status must not substitute for those effect claims.
 
-References: `GVE-CORE`, `APPLICATION-PLUGIN`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `WORKFLOW-VALIDATION`, `GVE-LIFECYCLE`
 
 ### L1-REQ-014
 
-Level 1 must define architectural responsibility and semantic boundaries without requiring a concrete plugin API, registry implementation, package format, discovery transport, plugin catalog, or application-specific operation contract.
+For every operation whose plugin assignment succeeds, the authoritative result must identify the operation, its assigned plugin, its interpreted instructions, its lifecycle state, and its evidence-supported effect claims.
 
-References: `PLUGIN-DISCOVERY`, `APPLICATION-PLUGIN`, `GVE-CORE`
+References: `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `PLUGIN-IDENTITY`, `INTERPRETED-INSTRUCTION`, `GVE-LIFECYCLE`
+
+### L1-REQ-015
+
+If workflow validation fails before execution, the authoritative result must identify the failure stage and affected operations without claiming that workflow execution began. If execution stops after partial effects, the result must distinguish completed operations from failed, blocked, skipped, or unattempted operations and must not report the whole workflow as completed unless the evidence required for that claim exists.
+
+References: `WORKFLOW-VALIDATION`, `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `GVE-LIFECYCLE`
+
+### L1-REQ-016
+
+Level 1 must define architectural responsibilities, hierarchy, cardinalities, validation boundaries, and result semantics without requiring a concrete workflow schema, operation serialization format, dependency-graph representation, plugin API, registry implementation, package format, discovery transport, retry algorithm, resume algorithm, rollback mechanism, or application-specific operation contract.
+
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`
 
 ## Relationships
 
-- `L1-REL-001`: `GVE-CORE` **interprets** `COMMON-PAYLOAD-ENVELOPE`
-- `L1-REL-002`: `GVE-CORE` **performs** `PLUGIN-SELECTION`
-- `L1-REL-003`: `PLUGIN-DISCOVERY` **supports** `PLUGIN-SELECTION`
-- `L1-REL-004`: `PLUGIN-SELECTION` **resolves-to** `SELECTED-PLUGIN`
-- `L1-REL-005`: `SELECTED-PLUGIN` **is-an** `APPLICATION-PLUGIN`
-- `L1-REL-006`: `SELECTED-PLUGIN` **interprets** `APPLICATION-CONTENT`
-- `L1-REL-007`: `APPLICATION-PLUGIN` **participates-in** `GVE-LIFECYCLE`
-- `L1-REL-008`: `GVE-CORE` **controls** `GVE-LIFECYCLE`
-- `L1-REL-009`: `SELECTED-PLUGIN` **has** `PLUGIN-IDENTITY`
-- `L1-REL-010`: `SELECTED-PLUGIN` **establishes** `INTERPRETED-INSTRUCTION`
+- `L1-REL-001`: `COMMON-PAYLOAD-ENVELOPE` **represents** `GOVERNED-WORKFLOW`
+- `L1-REL-002`: `GOVERNED-WORKFLOW` **contains** `GOVERNED-OPERATION`
+- `L1-REL-003`: `GVE-CORE` **constructs** `WORKFLOW-PLAN`
+- `L1-REL-004`: `WORKFLOW-PLAN` **describes** `GOVERNED-WORKFLOW`
+- `L1-REL-005`: `GOVERNED-OPERATION` **is-bound-by** `OPERATION-PLUGIN-ASSIGNMENT`
+- `L1-REL-006`: `OPERATION-PLUGIN-ASSIGNMENT` **resolves-to** `SELECTED-PLUGIN`
+- `L1-REL-007`: `SELECTED-PLUGIN` **is-an** `APPLICATION-PLUGIN`
+- `L1-REL-008`: `SELECTED-PLUGIN` **interprets** `OPERATION-CONTENT`
+- `L1-REL-009`: `SELECTED-PLUGIN` **establishes** `INTERPRETED-INSTRUCTION`
+- `L1-REL-010`: `WORKFLOW-VALIDATION` **validates** `WORKFLOW-PLAN`
+- `L1-REL-011`: `GVE-CORE` **performs** `WORKFLOW-VALIDATION`
+- `L1-REL-012`: `GVE-CORE` **controls** `GVE-LIFECYCLE`
+- `L1-REL-013`: `GOVERNED-OPERATION` **may-depend-on** `OPERATION-DEPENDENCY`
+- `L1-REL-014`: `DATA-HANDOFF` **connects** `GOVERNED-OPERATION`
+- `L1-REL-015`: `PLUGIN-DISCOVERY` **supports** `OPERATION-PLUGIN-ASSIGNMENT`
+- `L1-REL-016`: `SELECTED-PLUGIN` **has** `PLUGIN-IDENTITY`
 
 ## Scope
 
 ### Includes
 
 - Level 0 semantic inheritance
-- The GVE core and application-plugin architectural separation
-- Common payload-envelope and application-content interpretation boundaries
-- Deterministic unique selection of exactly one application plugin
-- Core-owned routing, lifecycle control, common failure handling, and result assembly
-- Plugin-owned application payload formats, instructions, governing rules, execution behavior, and result data
-- Preservation of Level 0 authority, effect, evidence, fail-closed, and authoritative-result semantics
+- One governed workflow represented by each accepted payload
+- One or more governed operations in each workflow
+- Deterministic unique assignment of exactly one application plugin to each operation
+- Use of one or more application plugins across one workflow
+- Core-owned workflow planning, complete pre-execution validation, orchestration, dependency and handoff enforcement, failure handling, evidence aggregation, and result assembly
+- Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data
+- Operation-level and workflow-level preservation of Level 0 authority, effect, evidence, fail-closed, and authoritative-result semantics
 
 ### Excludes
 
-- Multi-plugin composition and cross-plugin sequencing
+- Concrete workflow payload schemas
+- Concrete operation serialization formats and contracts
+- Concrete dependency-graph and data-handoff representations
 - Concrete plugin APIs or implementations
 - Plugin registry implementations, catalogs, package formats, or discovery transports
-- Application-specific payload schemas and operation contracts
-- Command, filesystem, GitHub, repository-guard, or publication design
+- Retry, resume, compensation, transaction, or rollback algorithms
+- Command, filesystem, GitHub, repository-guard, or publication-specific design
 - Maintained GVE product implementation
 - Bootstrap executor mechanisms
 - SCF repository authority or implementation

@@ -22,6 +22,9 @@ class Level1AuthorityTests(unittest.TestCase):
     def load(self, path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def requirements(self) -> dict[str, dict]:
+        return {item["id"]: item for item in self.load(LEVEL_1)["requirements"]}
+
     def test_level_1_declares_level_0_parent(self) -> None:
         document = self.load(LEVEL_1)
         self.assertEqual(document["specification"]["id"], "GVE-LEVEL-1")
@@ -38,10 +41,65 @@ class Level1AuthorityTests(unittest.TestCase):
             render_markdown(self.load(LEVEL_1)),
         )
 
-    def test_level_1_preserves_required_effect_language(self) -> None:
-        requirements = " ".join(
-            item["text"] for item in self.load(LEVEL_1)["requirements"]
-        ).lower()
+    def test_payload_represents_one_workflow(self) -> None:
+        self.assertIn(
+            "exactly one governed workflow",
+            self.requirements()["L1-REQ-002"]["text"].lower(),
+        )
+
+    def test_workflow_contains_one_or_more_operations(self) -> None:
+        self.assertIn(
+            "one or more governed operations",
+            self.requirements()["L1-REQ-003"]["text"].lower(),
+        )
+
+    def test_each_operation_has_exactly_one_plugin(self) -> None:
+        text = self.requirements()["L1-REQ-004"]["text"].lower()
+        self.assertIn("every governed operation", text)
+        self.assertIn("exactly one selected application plugin", text)
+
+    def test_workflow_may_use_multiple_plugins(self) -> None:
+        text = self.requirements()["L1-REQ-004"]["text"].lower()
+        self.assertIn("workflow may use one or more application plugins", text)
+        self.assertIn("one plugin may be assigned to multiple operations", text)
+        exclusions = " ".join(self.load(LEVEL_1)["scope"]["excludes"]).lower()
+        self.assertNotIn("multi-plugin composition", exclusions)
+        self.assertNotIn("cross-plugin sequencing", exclusions)
+
+    def test_plugin_semantics_are_operation_scoped(self) -> None:
+        text = self.requirements()["L1-REQ-007"]["text"].lower()
+        self.assertIn("only the operation-specific content of operations assigned to it", text)
+        self.assertIn("no plugin may interpret an operation assigned to another plugin", text)
+        self.assertIn("core must not interpret plugin-owned operation semantics", text)
+
+    def test_complete_workflow_validation_precedes_execution(self) -> None:
+        text = self.requirements()["L1-REQ-008"]["text"].lower()
+        self.assertIn("before any governed operation begins execution", text)
+        self.assertIn("validate the complete workflow plan", text)
+        self.assertIn("exactly one plugin assignment for every operation", text)
+        self.assertIn("all declared dependencies and data handoffs", text)
+
+    def test_any_invalid_operation_blocks_workflow_execution(self) -> None:
+        text = self.requirements()["L1-REQ-009"]["text"].lower()
+        self.assertIn("fail closed before workflow execution begins", text)
+        for term in (
+            "operation",
+            "required plugin",
+            "plugin assignment",
+            "dependency",
+            "handoff",
+            "required authority",
+        ):
+            self.assertIn(term, text)
+
+    def test_validation_is_not_execution(self) -> None:
+        text = self.requirements()["L1-REQ-010"]["text"].lower()
+        for term in ("attempted", "completed", "observed", "verified"):
+            self.assertIn(term, text)
+        self.assertIn("by themselves", text)
+
+    def test_level_0_effect_distinctions_apply_per_operation_and_workflow(self) -> None:
+        text = self.requirements()["L1-REQ-013"]["text"].lower()
         for term in (
             "requested",
             "authorized",
@@ -50,14 +108,34 @@ class Level1AuthorityTests(unittest.TestCase):
             "observed",
             "verified",
         ):
-            self.assertIn(term, requirements)
+            self.assertIn(term, text)
+        self.assertIn("for each operation and for the workflow as a whole", text)
 
-    def test_level_1_requires_exactly_one_selected_plugin(self) -> None:
-        requirements = " ".join(
-            item["text"] for item in self.load(LEVEL_1)["requirements"]
-        ).lower()
-        self.assertIn("exactly one selected application plugin", requirements)
-        self.assertIn("fail closed", requirements)
+    def test_results_report_operation_plugin_assignments(self) -> None:
+        text = self.requirements()["L1-REQ-014"]["text"].lower()
+        self.assertIn("for every operation", text)
+        self.assertIn("its assigned plugin", text)
+        self.assertIn("its interpreted instructions", text)
+        self.assertIn("evidence-supported effect claims", text)
+
+    def test_results_preserve_validation_failure_and_partial_execution(self) -> None:
+        text = self.requirements()["L1-REQ-015"]["text"].lower()
+        self.assertIn("without claiming that workflow execution began", text)
+        for term in ("completed", "failed", "blocked", "skipped", "unattempted"):
+            self.assertIn(term, text)
+        self.assertIn("must not report the whole workflow as completed", text)
+
+    def test_level_1_keeps_concrete_mechanics_out_of_scope(self) -> None:
+        text = self.requirements()["L1-REQ-016"]["text"].lower()
+        for term in (
+            "concrete workflow schema",
+            "operation serialization format",
+            "dependency-graph representation",
+            "plugin api",
+            "registry implementation",
+            "rollback mechanism",
+        ):
+            self.assertIn(term, text)
 
     def test_root_level_1_has_been_removed(self) -> None:
         self.assertFalse((ROOT / "LEVEL_1.md").exists())
