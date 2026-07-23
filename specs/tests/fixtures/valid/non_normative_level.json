@@ -1,0 +1,44 @@
+{
+  "$schema": "../../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-9",
+    "level": 9,
+    "title": "Non-Normative Test Fixture",
+    "version": "0.0.0",
+    "status": "draft",
+    "parent": "GVE-LEVEL-8"
+  },
+  "summary": "Non-normative fixture used only to test the shared schema.",
+  "definitions": [
+    {
+      "id": "TEST-CONCEPT",
+      "term": "Test concept",
+      "text": "A non-normative test concept."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "TEST-REQ-1",
+      "text": "The fixture must remain non-normative.",
+      "references": [
+        "TEST-CONCEPT"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "TEST-REL-1",
+      "source": "TEST-REQ-1",
+      "relation": "references",
+      "target": "TEST-CONCEPT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Schema testing"
+    ],
+    "excludes": [
+      "Normative GVE behavior"
+    ]
+  }
+}

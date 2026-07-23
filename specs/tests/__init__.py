@@ -1,0 +1,1 @@
+"""Specification infrastructure tests."""
