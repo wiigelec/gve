@@ -36,12 +36,13 @@ class LevelZeroAuthorityTests(unittest.TestCase):
             ROOT / "levels" / "level-1" / "GVE-LEVEL-0.json",
             ROOT / "levels" / "level-zero" / "GVE-LEVEL-0.json",
             ROOT / "level-0" / "GVE-LEVEL-0.json",
+            ROOT.parent / "other" / "levels" / "level-0" / "GVE-LEVEL-0.json",
         )
         for path in invalid_paths:
             with self.subTest(path=path):
                 with self.assertRaisesRegex(
                     SemanticValidationError,
-                    r"path must end with levels/level-0/GVE-LEVEL-0\.json",
+                    r"does not match authoritative path",
                 ):
                     validate_semantics(document, path)
 

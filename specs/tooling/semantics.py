@@ -17,10 +17,15 @@ def validate_semantics(document: Mapping[str, Any], path: Path) -> None:
         raise SemanticValidationError(
             f"filename {path.name!r} does not match level {specification['level']}"
         )
-    expected_directory = f"level-{specification['level']}"
-    if path.parent.name != expected_directory or path.parent.parent.name != "levels":
+    levels_root = Path(__file__).resolve().parents[1] / "levels"
+    expected_path = (
+        levels_root
+        / f"level-{specification['level']}"
+        / expected_name
+    )
+    if path.resolve() != expected_path.resolve():
         raise SemanticValidationError(
-            f"path must end with levels/{expected_directory}/{expected_name}"
+            f"path {path} does not match authoritative path {expected_path}"
         )
     if specification["id"] != f"GVE-LEVEL-{specification['level']}":
         raise SemanticValidationError("specification id does not match level")
