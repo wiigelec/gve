@@ -16,11 +16,11 @@ GVE Level 1 extends the Level 0 governed-execution model with a workflow, operat
 
 ### GVE core (`GVE-CORE`)
 
-The application-independent component that interprets the common payload envelope, identifies the governed workflow and its operations, constructs and validates the workflow plan, resolves one application plugin for each operation, controls workflow execution, enforces dependencies and handoffs, applies common failure handling, aggregates evidence, and assembles the authoritative result.
+The application-independent component that interprets the common payload envelope, identifies the governed workflow and its operations, constructs and validates the workflow plan, resolves one application plugin for each operation, controls workflow execution, validates declared handoff contracts before execution and actual data handoffs before dependent operations, enforces dependencies, applies common failure handling, aggregates evidence, and assembles the authoritative result.
 
 ### Common payload envelope (`COMMON-PAYLOAD-ENVELOPE`)
 
-The application-independent payload data defined for core interpretation, including workflow structure, operation boundaries, routing information, authority data, lifecycle controls, dependencies, handoff declarations, failure controls, and result-assembly data.
+The application-independent payload data defined for core interpretation, including workflow structure, operation boundaries, routing information, authority data, lifecycle controls, dependencies, data-handoff declarations, failure controls, and result-assembly data.
 
 ### Governed workflow (`GOVERNED-WORKFLOW`)
 
@@ -56,19 +56,23 @@ An operation-specific instruction whose meaning was established by the plugin as
 
 ### Workflow plan (`WORKFLOW-PLAN`)
 
-The complete pre-execution representation of a governed workflow, including its operations, operation-plugin assignments, ordering constraints, dependencies, data handoffs, required authority, and failure behavior.
+The complete pre-execution representation of a governed workflow, including its operations, operation-plugin assignments, ordering constraints, dependencies, data-handoff declarations, required authority, and failure behavior.
 
 ### Workflow validation (`WORKFLOW-VALIDATION`)
 
-The fail-closed pre-execution process that establishes the validity, support, consistency, plugin assignment, plugin-specific instruction validity, dependency and handoff validity, and required authority of the complete workflow plan before any operation begins execution.
+The fail-closed pre-execution process that establishes the validity, support, consistency, plugin assignment, plugin-specific instruction validity, dependency validity, data-handoff declaration validity, and required authority of the complete workflow plan before any operation begins execution.
 
 ### Operation dependency (`OPERATION-DEPENDENCY`)
 
 An application-independent prerequisite relationship between governed operations that the core validates and enforces.
 
+### Data-handoff declaration (`DATA-HANDOFF-DECLARATION`)
+
+The pre-execution contract describing a planned transfer of result data between operations, including the source operation, target operation, required source data, target input, compatibility requirements, and evidence requirements.
+
 ### Data handoff (`DATA-HANDOFF`)
 
-A governed transfer of evidence-supported result data from one operation to a dependent operation under workflow-plan rules.
+The runtime transfer of actual evidence-supported result data from one operation to a dependent operation under a validated data-handoff declaration and workflow-plan rules.
 
 ### GVE execution lifecycle (`GVE-LIFECYCLE`)
 
@@ -106,9 +110,9 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNM
 
 ### L1-REQ-005
 
-The GVE core must own common payload-envelope interpretation, workflow and operation identification, workflow-plan construction, plugin discovery and operation assignment, complete workflow validation, operation sequencing, dependency and handoff enforcement, lifecycle control, common failure handling, evidence aggregation, and authoritative result assembly.
+The GVE core must own common payload-envelope interpretation, workflow and operation identification, workflow-plan construction, plugin discovery and operation assignment, complete workflow validation, operation sequencing, dependency enforcement, pre-execution validation of data-handoff declarations, runtime validation of actual data handoffs before dependent operations, lifecycle control, common failure handling, evidence aggregation, and authoritative result assembly.
 
-References: `GVE-CORE`, `COMMON-PAYLOAD-ENVELOPE`, `WORKFLOW-PLAN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`, `GVE-LIFECYCLE`
+References: `GVE-CORE`, `COMMON-PAYLOAD-ENVELOPE`, `WORKFLOW-PLAN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`, `GVE-LIFECYCLE`
 
 ### L1-REQ-006
 
@@ -124,21 +128,27 @@ References: `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `OPERATION-CONT
 
 ### L1-REQ-008
 
-Before any governed operation begins execution, the GVE core must validate the complete workflow plan, every operation, the availability and stable identity of every required plugin, exactly one plugin assignment for every operation, every operation-specific instruction under its assigned plugin, all declared dependencies and data handoffs, and the authority required for all requested effects.
+Before any governed operation begins execution, the GVE core must validate the complete workflow plan, every operation, the availability and stable identity of every required plugin, exactly one plugin assignment for every operation, every operation-specific instruction under its assigned plugin, all declared dependencies, every data-handoff declaration, and the authority required for all requested effects.
 
-References: `GVE-CORE`, `WORKFLOW-PLAN`, `WORKFLOW-VALIDATION`, `GOVERNED-OPERATION`, `PLUGIN-IDENTITY`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`
+References: `GVE-CORE`, `WORKFLOW-PLAN`, `WORKFLOW-VALIDATION`, `GOVERNED-OPERATION`, `PLUGIN-IDENTITY`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`
 
 ### L1-REQ-009
 
-If any workflow, operation, required plugin, plugin assignment, plugin-owned instruction, dependency, handoff, or required authority is unsupported, invalid, incomplete, ambiguous, conflicting, unauthorized, or non-uniquely interpretable, GVE must fail closed before workflow execution begins.
+If any workflow, operation, required plugin, plugin assignment, plugin-owned instruction, dependency, data-handoff declaration, or required authority is unsupported, invalid, incomplete, ambiguous, conflicting, unauthorized, or non-uniquely interpretable, GVE must fail closed before workflow execution begins.
 
-References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`, `WORKFLOW-VALIDATION`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `WORKFLOW-VALIDATION`
 
 ### L1-REQ-010
 
 Successful workflow validation and workflow-plan acceptance establish no attempted, completed, observed, or verified workflow or operation effect by themselves.
 
 References: `WORKFLOW-VALIDATION`, `WORKFLOW-PLAN`, `GOVERNED-OPERATION`
+
+### L1-REQ-010A
+
+Before a dependent operation begins execution, the GVE core must validate each actual data handoff required by that operation against its validated data-handoff declaration. If required source data is absent, invalid, unsupported, incompatible, unauthorized, or insufficiently evidenced, the dependent operation must remain blocked or fail closed without being attempted.
+
+References: `GVE-CORE`, `GOVERNED-OPERATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`
 
 ### L1-REQ-011
 
@@ -148,9 +158,9 @@ References: `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDAT
 
 ### L1-REQ-012
 
-Application plugins must participate only through the GVE execution lifecycle and must not bypass core orchestration, complete pre-execution validation, dependency or handoff enforcement, fail-closed behavior, evidence interpretation, or authoritative result assembly.
+Application plugins must participate only through the GVE execution lifecycle and must not bypass core orchestration, complete pre-execution validation, dependency enforcement, data-handoff declaration validation, runtime data-handoff validation, fail-closed behavior, evidence interpretation, or authoritative result assembly.
 
-References: `APPLICATION-PLUGIN`, `GVE-LIFECYCLE`, `GVE-CORE`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF`
+References: `APPLICATION-PLUGIN`, `GVE-LIFECYCLE`, `GVE-CORE`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`
 
 ### L1-REQ-013
 
@@ -160,21 +170,21 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `WO
 
 ### L1-REQ-014
 
-For every operation whose plugin assignment succeeds, the authoritative result must identify the operation, its assigned plugin, its interpreted instructions, its lifecycle state, and its evidence-supported effect claims.
+For every operation whose plugin assignment succeeds, the authoritative result must identify the operation and its assigned plugin. When instruction interpretation succeeds, the result must identify the interpreted instructions, lifecycle state, and evidence-supported effect claims for that operation. When instruction interpretation fails, the result must identify the failure without claiming that an instruction was successfully interpreted.
 
 References: `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `PLUGIN-IDENTITY`, `INTERPRETED-INSTRUCTION`, `GVE-LIFECYCLE`
 
 ### L1-REQ-015
 
-If workflow validation fails before execution, the authoritative result must identify the failure stage and affected operations without claiming that workflow execution began. If execution stops after partial effects, the result must distinguish completed operations from failed, blocked, skipped, or unattempted operations and must not report the whole workflow as completed unless the evidence required for that claim exists.
+If workflow validation fails before execution, the authoritative result must identify the failure stage and affected operations without claiming that workflow execution began. If runtime handoff validation blocks a dependent operation, the result must identify the failed or unavailable handoff and must not claim that the dependent operation was attempted. If execution stops after partial effects, the result must distinguish completed operations from failed, blocked, skipped, or unattempted operations and must not report the whole workflow as completed unless the evidence required for that claim exists.
 
-References: `WORKFLOW-VALIDATION`, `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `GVE-LIFECYCLE`
+References: `WORKFLOW-VALIDATION`, `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `DATA-HANDOFF`, `GVE-LIFECYCLE`
 
 ### L1-REQ-016
 
-Level 1 must define architectural responsibilities, hierarchy, cardinalities, validation boundaries, and result semantics without requiring a concrete workflow schema, operation serialization format, dependency-graph representation, plugin API, registry implementation, package format, discovery transport, retry algorithm, resume algorithm, rollback mechanism, or application-specific operation contract.
+Level 1 must define architectural responsibilities, hierarchy, cardinalities, validation boundaries, data-handoff declaration and runtime handoff distinctions, and result semantics without requiring a concrete workflow schema, operation serialization format, dependency-graph representation, handoff serialization format, plugin API, registry implementation, package format, discovery transport, retry algorithm, resume algorithm, rollback mechanism, or application-specific operation contract.
 
-References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`
+References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`, `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`
 
 ## Relationships
 
@@ -194,6 +204,8 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `APPLICA
 - `L1-REL-014`: `DATA-HANDOFF` **connects** `GOVERNED-OPERATION`
 - `L1-REL-015`: `PLUGIN-DISCOVERY` **supports** `OPERATION-PLUGIN-ASSIGNMENT`
 - `L1-REL-016`: `SELECTED-PLUGIN` **has** `PLUGIN-IDENTITY`
+- `L1-REL-017`: `WORKFLOW-PLAN` **declares** `DATA-HANDOFF-DECLARATION`
+- `L1-REL-018`: `DATA-HANDOFF-DECLARATION` **governs** `DATA-HANDOFF`
 
 ## Scope
 
@@ -204,7 +216,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `APPLICA
 - One or more governed operations in each workflow
 - Deterministic unique assignment of exactly one application plugin to each operation
 - Use of one or more application plugins across one workflow
-- Core-owned workflow planning, complete pre-execution validation, orchestration, dependency and handoff enforcement, failure handling, evidence aggregation, and result assembly
+- Core-owned workflow planning, complete pre-execution validation, orchestration, dependency enforcement, data-handoff declaration validation, runtime data-handoff validation, failure handling, evidence aggregation, and result assembly
 - Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data
 - Operation-level and workflow-level preservation of Level 0 authority, effect, evidence, fail-closed, and authoritative-result semantics
 
@@ -212,7 +224,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `APPLICA
 
 - Concrete workflow payload schemas
 - Concrete operation serialization formats and contracts
-- Concrete dependency-graph and data-handoff representations
+- Concrete dependency-graph, data-handoff declaration, and runtime handoff representations
 - Concrete plugin APIs or implementations
 - Plugin registry implementations, catalogs, package formats, or discovery transports
 - Retry, resume, compensation, transaction, or rollback algorithms

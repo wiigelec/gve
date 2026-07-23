@@ -22,8 +22,14 @@ class Level1AuthorityTests(unittest.TestCase):
     def load(self, path: Path) -> dict:
         return json.loads(path.read_text(encoding="utf-8"))
 
+    def definitions(self) -> dict[str, dict]:
+        return {item["id"]: item for item in self.load(LEVEL_1)["definitions"]}
+
     def requirements(self) -> dict[str, dict]:
         return {item["id"]: item for item in self.load(LEVEL_1)["requirements"]}
+
+    def relationships(self) -> dict[str, dict]:
+        return {item["id"]: item for item in self.load(LEVEL_1)["relationships"]}
 
     def test_level_1_declares_level_0_parent(self) -> None:
         document = self.load(LEVEL_1)
@@ -68,29 +74,50 @@ class Level1AuthorityTests(unittest.TestCase):
 
     def test_plugin_semantics_are_operation_scoped(self) -> None:
         text = self.requirements()["L1-REQ-007"]["text"].lower()
-        self.assertIn("only the operation-specific content of operations assigned to it", text)
-        self.assertIn("no plugin may interpret an operation assigned to another plugin", text)
-        self.assertIn("core must not interpret plugin-owned operation semantics", text)
+        self.assertIn(
+            "only the operation-specific content of operations assigned to it",
+            text,
+        )
+        self.assertIn(
+            "no plugin may interpret an operation assigned to another plugin",
+            text,
+        )
+        self.assertIn(
+            "core must not interpret plugin-owned operation semantics",
+            text,
+        )
 
-    def test_complete_workflow_validation_precedes_execution(self) -> None:
+    def test_handoff_declaration_is_distinct_from_runtime_handoff(self) -> None:
+        definitions = self.definitions()
+        declaration = definitions["DATA-HANDOFF-DECLARATION"]["text"].lower()
+        runtime = definitions["DATA-HANDOFF"]["text"].lower()
+        self.assertIn("pre-execution contract", declaration)
+        self.assertIn("source operation", declaration)
+        self.assertIn("target operation", declaration)
+        self.assertIn("runtime transfer of actual", runtime)
+        self.assertIn("validated data-handoff declaration", runtime)
+        self.assertNotEqual(declaration, runtime)
+
+    def test_complete_workflow_validation_checks_handoff_declarations(self) -> None:
         text = self.requirements()["L1-REQ-008"]["text"].lower()
         self.assertIn("before any governed operation begins execution", text)
         self.assertIn("validate the complete workflow plan", text)
         self.assertIn("exactly one plugin assignment for every operation", text)
-        self.assertIn("all declared dependencies and data handoffs", text)
+        self.assertIn("all declared dependencies", text)
+        self.assertIn("every data-handoff declaration", text)
+        self.assertNotIn("all declared dependencies and data handoffs", text)
 
-    def test_any_invalid_operation_blocks_workflow_execution(self) -> None:
+    def test_invalid_handoff_declaration_blocks_workflow_execution(self) -> None:
         text = self.requirements()["L1-REQ-009"]["text"].lower()
+        self.assertIn("data-handoff declaration", text)
         self.assertIn("fail closed before workflow execution begins", text)
-        for term in (
-            "operation",
-            "required plugin",
-            "plugin assignment",
-            "dependency",
-            "handoff",
-            "required authority",
-        ):
-            self.assertIn(term, text)
+
+    def test_runtime_handoff_is_validated_before_dependent_operation(self) -> None:
+        text = self.requirements()["L1-REQ-010A"]["text"].lower()
+        self.assertIn("before a dependent operation begins execution", text)
+        self.assertIn("validate each actual data handoff", text)
+        self.assertIn("against its validated data-handoff declaration", text)
+        self.assertIn("must remain blocked or fail closed without being attempted", text)
 
     def test_validation_is_not_execution(self) -> None:
         text = self.requirements()["L1-REQ-010"]["text"].lower()
@@ -111,12 +138,36 @@ class Level1AuthorityTests(unittest.TestCase):
             self.assertIn(term, text)
         self.assertIn("for each operation and for the workflow as a whole", text)
 
-    def test_results_report_operation_plugin_assignments(self) -> None:
+    def test_assignment_success_does_not_imply_interpretation_success(self) -> None:
         text = self.requirements()["L1-REQ-014"]["text"].lower()
-        self.assertIn("for every operation", text)
-        self.assertIn("its assigned plugin", text)
-        self.assertIn("its interpreted instructions", text)
-        self.assertIn("evidence-supported effect claims", text)
+        self.assertIn(
+            "whose plugin assignment succeeds",
+            text,
+        )
+        self.assertIn(
+            "when instruction interpretation succeeds",
+            text,
+        )
+        self.assertIn(
+            "when instruction interpretation fails",
+            text,
+        )
+        self.assertIn(
+            "without claiming that an instruction was successfully interpreted",
+            text,
+        )
+
+    def test_results_report_assignment_and_interpretation_separately(self) -> None:
+        text = self.requirements()["L1-REQ-014"]["text"].lower()
+        self.assertIn("identify the operation and its assigned plugin", text)
+        self.assertIn("identify the interpreted instructions", text)
+        self.assertIn("identify the failure", text)
+
+    def test_results_preserve_runtime_handoff_blocking(self) -> None:
+        text = self.requirements()["L1-REQ-015"]["text"].lower()
+        self.assertIn("runtime handoff validation blocks a dependent operation", text)
+        self.assertIn("failed or unavailable handoff", text)
+        self.assertIn("must not claim that the dependent operation was attempted", text)
 
     def test_results_preserve_validation_failure_and_partial_execution(self) -> None:
         text = self.requirements()["L1-REQ-015"]["text"].lower()
@@ -125,12 +176,34 @@ class Level1AuthorityTests(unittest.TestCase):
             self.assertIn(term, text)
         self.assertIn("must not report the whole workflow as completed", text)
 
+    def test_handoff_relationships_are_explicit(self) -> None:
+        relationships = self.relationships()
+        self.assertEqual(
+            relationships["L1-REL-017"],
+            {
+                "id": "L1-REL-017",
+                "source": "WORKFLOW-PLAN",
+                "relation": "declares",
+                "target": "DATA-HANDOFF-DECLARATION",
+            },
+        )
+        self.assertEqual(
+            relationships["L1-REL-018"],
+            {
+                "id": "L1-REL-018",
+                "source": "DATA-HANDOFF-DECLARATION",
+                "relation": "governs",
+                "target": "DATA-HANDOFF",
+            },
+        )
+
     def test_level_1_keeps_concrete_mechanics_out_of_scope(self) -> None:
         text = self.requirements()["L1-REQ-016"]["text"].lower()
         for term in (
             "concrete workflow schema",
             "operation serialization format",
             "dependency-graph representation",
+            "handoff serialization format",
             "plugin api",
             "registry implementation",
             "rollback mechanism",
