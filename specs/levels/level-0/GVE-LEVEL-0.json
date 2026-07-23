@@ -36,6 +36,11 @@
       "text": "GVE's authoritative record of its execution, observations, evidence, and evidence-supported conclusions. It is not an unrestricted assertion about external reality."
     },
     {
+      "id": "EXECUTION-EVIDENCE",
+      "term": "Execution evidence",
+      "text": "Authoritative inputs, execution records, observations, and verification artifacts available to GVE and used, according to the governed instruction set, to support result claims."
+    },
+    {
       "id": "REQUESTED-EFFECT",
       "term": "Requested effect",
       "text": "An effect requested by the instruction payload."
@@ -101,7 +106,8 @@
       "id": "L0-REQ-004",
       "text": "The governed instruction set must define supported instructions, execution constraints, authorization interpretation, evidence interpretation, success and failure determination, and result representation.",
       "references": [
-        "GOVERNED-INSTRUCTION-SET"
+        "GOVERNED-INSTRUCTION-SET",
+        "EXECUTION-EVIDENCE"
       ]
     },
     {
@@ -151,7 +157,8 @@
         "ATTEMPTED-EFFECT",
         "COMPLETED-EFFECT",
         "OBSERVED-EFFECT",
-        "VERIFIED-EFFECT"
+        "VERIFIED-EFFECT",
+        "EXECUTION-EVIDENCE"
       ]
     },
     {
@@ -159,14 +166,16 @@
       "text": "Every result claim must be supported by execution evidence interpreted according to the governed instruction set.",
       "references": [
         "AUTHORITATIVE-RESULT",
-        "GOVERNED-INSTRUCTION-SET"
+        "GOVERNED-INSTRUCTION-SET",
+        "EXECUTION-EVIDENCE"
       ]
     },
     {
       "id": "L0-REQ-011",
       "text": "An authoritative result is authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality.",
       "references": [
-        "AUTHORITATIVE-RESULT"
+        "AUTHORITATIVE-RESULT",
+        "EXECUTION-EVIDENCE"
       ]
     },
     {
@@ -207,6 +216,12 @@
       "source": "OBSERVED-EFFECT",
       "relation": "is-distinct-from",
       "target": "COMPLETED-EFFECT"
+    },
+    {
+      "id": "L0-REL-006",
+      "source": "GOVERNED-INSTRUCTION-SET",
+      "relation": "interprets",
+      "target": "EXECUTION-EVIDENCE"
     }
   ],
   "scope": {
@@ -215,6 +230,7 @@
       "The authority boundary formed by the payload and governed instruction set",
       "Fail-closed behavior",
       "Evidence-supported result claims",
+      "Execution evidence and its governed interpretation",
       "Distinct execution-effect states"
     ],
     "excludes": [

@@ -34,6 +34,10 @@ Execution constrained jointly by the instruction payload and the governed instru
 
 GVE's authoritative record of its execution, observations, evidence, and evidence-supported conclusions. It is not an unrestricted assertion about external reality.
 
+### Execution evidence (`EXECUTION-EVIDENCE`)
+
+Authoritative inputs, execution records, observations, and verification artifacts available to GVE and used, according to the governed instruction set, to support result claims.
+
 ### Requested effect (`REQUESTED-EFFECT`)
 
 An effect requested by the instruction payload.
@@ -86,7 +90,7 @@ References: `INSTRUCTION-PAYLOAD`, `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`
 
 The governed instruction set must define supported instructions, execution constraints, authorization interpretation, evidence interpretation, success and failure determination, and result representation.
 
-References: `GOVERNED-INSTRUCTION-SET`
+References: `GOVERNED-INSTRUCTION-SET`, `EXECUTION-EVIDENCE`
 
 ### L0-REQ-005
 
@@ -116,19 +120,19 @@ References: `AUTHORITATIVE-RESULT`, `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`, `AT
 
 GVE must not report intended, requested, authorized, or attempted effects as completed, observed, or verified effects without the evidence required for the stronger claim.
 
-References: `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`, `ATTEMPTED-EFFECT`, `COMPLETED-EFFECT`, `OBSERVED-EFFECT`, `VERIFIED-EFFECT`
+References: `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`, `ATTEMPTED-EFFECT`, `COMPLETED-EFFECT`, `OBSERVED-EFFECT`, `VERIFIED-EFFECT`, `EXECUTION-EVIDENCE`
 
 ### L0-REQ-010
 
 Every result claim must be supported by execution evidence interpreted according to the governed instruction set.
 
-References: `AUTHORITATIVE-RESULT`, `GOVERNED-INSTRUCTION-SET`
+References: `AUTHORITATIVE-RESULT`, `GOVERNED-INSTRUCTION-SET`, `EXECUTION-EVIDENCE`
 
 ### L0-REQ-011
 
 An authoritative result is authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality.
 
-References: `AUTHORITATIVE-RESULT`
+References: `AUTHORITATIVE-RESULT`, `EXECUTION-EVIDENCE`
 
 ### L0-REQ-012
 
@@ -143,6 +147,7 @@ References: `GVE`
 - `L0-REL-003`: `GOVERNED-EXECUTION` **produces** `AUTHORITATIVE-RESULT`
 - `L0-REL-004`: `VERIFIED-EFFECT` **is-stronger-than** `OBSERVED-EFFECT`
 - `L0-REL-005`: `OBSERVED-EFFECT` **is-distinct-from** `COMPLETED-EFFECT`
+- `L0-REL-006`: `GOVERNED-INSTRUCTION-SET` **interprets** `EXECUTION-EVIDENCE`
 
 ## Scope
 
@@ -152,6 +157,7 @@ References: `GVE`
 - The authority boundary formed by the payload and governed instruction set
 - Fail-closed behavior
 - Evidence-supported result claims
+- Execution evidence and its governed interpretation
 - Distinct execution-effect states
 
 ### Excludes
