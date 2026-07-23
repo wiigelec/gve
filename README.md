@@ -167,20 +167,20 @@ generating a payload.
 
 Actors
 
-* Chat
+### Chat
 - Reads the specifications.
 - Generates governed operation payloads.
 - Produces exact local execution instructions.
 - Reviews returned result evidence.
 - Generates successor operations.
 
-* User
+### User
 - Downloads the generated payload.
 - Executes the provided commands in the local environment.
 - Returns the result artifact to the chat.
 - Never edits generated payloads manually unless explicitly instructed.
 
-* Bootstrap Executor
+### Bootstrap Executor
 - Executes the operation.
 - Produces authoritative execution evidence.
 - Never communicates directly with the chat.
@@ -212,7 +212,7 @@ Chat
 
 This interaction model exists only for bootstrap development. The maintained GVE product is not required to use this chat-mediated workflow.
 
-The bootstrap executor is the only component that mutates the governed repository. Neither the chat nor the user manually performs governed mutations that are represented by an operation payload.
+The bootstrap executor is the only component that performs governed mutations of the repository. Neither the chat nor the user manually performs governed mutations that are represented by an operation payload.
 
 Every subsequent governed operation is based on the observed execution evidence from the previous operation, not on the chat’s expectations.
 
