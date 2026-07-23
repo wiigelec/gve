@@ -1,0 +1,246 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-0",
+    "level": 0,
+    "title": "GVE Level 0",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": null
+  },
+  "summary": "GVE is a governed instruction executor. It receives an instruction payload, performs governed execution according to a governed instruction set, and emits an authoritative result whose claims are limited to GVE's execution record, observations, and evidence-supported conclusions.",
+  "definitions": [
+    {
+      "id": "GVE",
+      "term": "GVE",
+      "text": "A governed instruction executor that performs only work supported and authorized by both an instruction payload and a governed instruction set."
+    },
+    {
+      "id": "INSTRUCTION-PAYLOAD",
+      "term": "Instruction payload",
+      "text": "The explicit request presented to GVE. It defines requested work but does not by itself authorize unsupported execution or broader authority."
+    },
+    {
+      "id": "GOVERNED-INSTRUCTION-SET",
+      "term": "Governed instruction set",
+      "text": "The authoritative rules that define supported instructions, execution constraints, authorization interpretation, evidence interpretation, and result representation."
+    },
+    {
+      "id": "GOVERNED-EXECUTION",
+      "term": "Governed execution",
+      "text": "Execution constrained jointly by the instruction payload and the governed instruction set."
+    },
+    {
+      "id": "AUTHORITATIVE-RESULT",
+      "term": "Authoritative result",
+      "text": "GVE's authoritative record of its execution, observations, evidence, and evidence-supported conclusions. It is not an unrestricted assertion about external reality."
+    },
+    {
+      "id": "EXECUTION-EVIDENCE",
+      "term": "Execution evidence",
+      "text": "Authoritative inputs, execution records, observations, and verification artifacts available to GVE and used, according to the governed instruction set, to support result claims."
+    },
+    {
+      "id": "REQUESTED-EFFECT",
+      "term": "Requested effect",
+      "text": "An effect requested by the instruction payload."
+    },
+    {
+      "id": "AUTHORIZED-EFFECT",
+      "term": "Authorized effect",
+      "text": "A requested effect that the governed instruction set permits GVE to attempt."
+    },
+    {
+      "id": "ATTEMPTED-EFFECT",
+      "term": "Attempted effect",
+      "text": "An authorized effect for which GVE began execution."
+    },
+    {
+      "id": "COMPLETED-EFFECT",
+      "term": "Completed effect",
+      "text": "An attempted effect for which GVE has sufficient execution evidence to claim completion."
+    },
+    {
+      "id": "OBSERVED-EFFECT",
+      "term": "Observed effect",
+      "text": "An effect directly observed through execution evidence available to GVE."
+    },
+    {
+      "id": "VERIFIED-EFFECT",
+      "term": "Verified effect",
+      "text": "An observed effect that satisfies the governed instruction set's verification requirements."
+    },
+    {
+      "id": "FAIL-CLOSED",
+      "term": "Fail closed",
+      "text": "Refuse execution or refuse a stronger claim whenever support, validity, meaning, completeness, consistency, authorization, or unique interpretation is not established."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L0-REQ-001",
+      "text": "GVE must operate as a governed instruction executor.",
+      "references": [
+        "GVE"
+      ]
+    },
+    {
+      "id": "L0-REQ-002",
+      "text": "GVE must implement the model instruction payload to governed execution to authoritative result.",
+      "references": [
+        "INSTRUCTION-PAYLOAD",
+        "GOVERNED-EXECUTION",
+        "AUTHORITATIVE-RESULT"
+      ]
+    },
+    {
+      "id": "L0-REQ-003",
+      "text": "The instruction payload must define requested work and must not by itself authorize unsupported work or broader authority.",
+      "references": [
+        "INSTRUCTION-PAYLOAD",
+        "REQUESTED-EFFECT",
+        "AUTHORIZED-EFFECT"
+      ]
+    },
+    {
+      "id": "L0-REQ-004",
+      "text": "The governed instruction set must define supported instructions, execution constraints, authorization interpretation, evidence interpretation, success and failure determination, and result representation.",
+      "references": [
+        "GOVERNED-INSTRUCTION-SET",
+        "EXECUTION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L0-REQ-005",
+      "text": "GVE must fail closed for unsupported, invalid, ambiguous, incomplete, inconsistent, unauthorized, or non-uniquely interpretable instructions.",
+      "references": [
+        "FAIL-CLOSED"
+      ]
+    },
+    {
+      "id": "L0-REQ-006",
+      "text": "GVE's authority must be bounded jointly by the instruction payload and the governed instruction set.",
+      "references": [
+        "INSTRUCTION-PAYLOAD",
+        "GOVERNED-INSTRUCTION-SET",
+        "GOVERNED-EXECUTION"
+      ]
+    },
+    {
+      "id": "L0-REQ-007",
+      "text": "GVE must not infer, acquire, or exercise authority broader than that jointly established by the instruction payload and governed instruction set.",
+      "references": [
+        "INSTRUCTION-PAYLOAD",
+        "GOVERNED-INSTRUCTION-SET",
+        "FAIL-CLOSED"
+      ]
+    },
+    {
+      "id": "L0-REQ-008",
+      "text": "An authoritative result must distinguish requested, authorized, attempted, completed, observed, and verified effects.",
+      "references": [
+        "AUTHORITATIVE-RESULT",
+        "REQUESTED-EFFECT",
+        "AUTHORIZED-EFFECT",
+        "ATTEMPTED-EFFECT",
+        "COMPLETED-EFFECT",
+        "OBSERVED-EFFECT",
+        "VERIFIED-EFFECT"
+      ]
+    },
+    {
+      "id": "L0-REQ-009",
+      "text": "GVE must not report intended, requested, authorized, or attempted effects as completed, observed, or verified effects without the evidence required for the stronger claim.",
+      "references": [
+        "REQUESTED-EFFECT",
+        "AUTHORIZED-EFFECT",
+        "ATTEMPTED-EFFECT",
+        "COMPLETED-EFFECT",
+        "OBSERVED-EFFECT",
+        "VERIFIED-EFFECT",
+        "EXECUTION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L0-REQ-010",
+      "text": "Every result claim must be supported by execution evidence interpreted according to the governed instruction set.",
+      "references": [
+        "AUTHORITATIVE-RESULT",
+        "GOVERNED-INSTRUCTION-SET",
+        "EXECUTION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L0-REQ-011",
+      "text": "An authoritative result is authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality.",
+      "references": [
+        "AUTHORITATIVE-RESULT",
+        "EXECUTION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L0-REQ-012",
+      "text": "Level 0 must remain independent of later-level architecture, concrete operation contracts, plugins, repository guards, publication workflows, and implementation mechanisms.",
+      "references": [
+        "GVE"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L0-REL-001",
+      "source": "INSTRUCTION-PAYLOAD",
+      "relation": "requests",
+      "target": "REQUESTED-EFFECT"
+    },
+    {
+      "id": "L0-REL-002",
+      "source": "GOVERNED-INSTRUCTION-SET",
+      "relation": "bounds",
+      "target": "AUTHORIZED-EFFECT"
+    },
+    {
+      "id": "L0-REL-003",
+      "source": "GOVERNED-EXECUTION",
+      "relation": "produces",
+      "target": "AUTHORITATIVE-RESULT"
+    },
+    {
+      "id": "L0-REL-004",
+      "source": "VERIFIED-EFFECT",
+      "relation": "is-stronger-than",
+      "target": "OBSERVED-EFFECT"
+    },
+    {
+      "id": "L0-REL-005",
+      "source": "OBSERVED-EFFECT",
+      "relation": "is-distinct-from",
+      "target": "COMPLETED-EFFECT"
+    },
+    {
+      "id": "L0-REL-006",
+      "source": "GOVERNED-INSTRUCTION-SET",
+      "relation": "interprets",
+      "target": "EXECUTION-EVIDENCE"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "The foundational GVE execution model",
+      "The authority boundary formed by the payload and governed instruction set",
+      "Fail-closed behavior",
+      "Evidence-supported result claims",
+      "Execution evidence and its governed interpretation",
+      "Distinct execution-effect states"
+    ],
+    "excludes": [
+      "Later-level architecture",
+      "Plugin architecture",
+      "Application-specific payload schemas",
+      "Concrete operation contracts",
+      "Repository guard design",
+      "Publication workflow design",
+      "Executor implementation mechanisms"
+    ]
+  }
+}
