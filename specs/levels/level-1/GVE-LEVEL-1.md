@@ -10,7 +10,7 @@
 
 ## Summary
 
-GVE Level 1 extends the Level 0 governed-execution model with a workflow, operation, and application-plugin architecture. One instruction payload represents one governed workflow containing one or more governed operations. Each operation is bound deterministically and uniquely to exactly one application plugin, while a workflow may use one or more plugins and the same plugin may serve multiple operations. Before any operation executes, the GVE core validates the complete workflow, every operation, every plugin assignment, every plugin-owned instruction, and all application-independent dependencies and data handoffs. The core controls orchestration, lifecycle, failure handling, evidence aggregation, and authoritative result assembly. All Level 0 authority, effect-state, fail-closed, evidence, and result-truthfulness rules remain applicable.
+GVE Level 1 extends the Level 0 governed-execution model with a workflow, operation, and application-plugin architecture. One instruction payload represents one governed workflow containing one or more governed operations. Every operation in a workflow accepted for execution is bound deterministically and uniquely to exactly one application plugin, while a workflow may use one or more plugins and the same plugin may serve multiple operations. Before workflow execution begins, the GVE core validates the complete workflow, every operation, every plugin assignment, every plugin-owned instruction, all dependencies, and all data-handoff declarations. Actual data handoffs are validated at runtime before their dependent operations begin. The core controls orchestration, lifecycle, failure handling, evidence aggregation, and authoritative result assembly. All Level 0 authority, effect-state, fail-closed, evidence, and result-truthfulness rules remain applicable.
 
 ## Definitions
 
@@ -40,7 +40,7 @@ The governed process by which the GVE core identifies application plugins availa
 
 ### Operation-plugin assignment (`OPERATION-PLUGIN-ASSIGNMENT`)
 
-The deterministic and unique binding of one governed operation to exactly one selected application plugin using application-independent routing information and plugin-declared acceptance criteria.
+The deterministic and unique binding of one governed operation to exactly one selected application plugin using only application-independent routing information and declarative plugin metadata. Candidate plugins must not interpret operation-specific content before assignment.
 
 ### Selected plugin (`SELECTED-PLUGIN`)
 
@@ -104,7 +104,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`
 
 ### L1-REQ-004
 
-Every governed operation must resolve deterministically and uniquely to exactly one selected application plugin. A workflow may use one or more application plugins, and one plugin may be assigned to multiple operations.
+Every governed operation in a workflow accepted for execution must have resolved deterministically and uniquely to exactly one selected application plugin. A workflow may use one or more application plugins, and one plugin may be assigned to multiple operations.
 
 References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `SELECTED-PLUGIN`, `APPLICATION-PLUGIN`
 
@@ -122,9 +122,9 @@ References: `APPLICATION-PLUGIN`, `GOVERNED-OPERATION`, `OPERATION-CONTENT`, `IN
 
 ### L1-REQ-007
 
-A plugin may interpret only the operation-specific content of operations assigned to it. No plugin may interpret an operation assigned to another plugin, and the GVE core must not interpret plugin-owned operation semantics.
+Operation-plugin assignment must be determined solely from application-independent routing information and declarative plugin metadata. Candidate plugins must not interpret operation-specific content before assignment. After assignment, a plugin may interpret only the operation-specific content of operations assigned to it. No plugin may interpret an operation assigned to another plugin, and the GVE core must not interpret plugin-owned operation semantics.
 
-References: `APPLICATION-PLUGIN`, `OPERATION-PLUGIN-ASSIGNMENT`, `OPERATION-CONTENT`, `GVE-CORE`
+References: `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `OPERATION-CONTENT`, `GVE-CORE`
 
 ### L1-REQ-008
 

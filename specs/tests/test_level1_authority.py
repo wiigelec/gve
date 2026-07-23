@@ -59,10 +59,21 @@ class Level1AuthorityTests(unittest.TestCase):
             self.requirements()["L1-REQ-003"]["text"].lower(),
         )
 
-    def test_each_operation_has_exactly_one_plugin(self) -> None:
+    def test_accepted_workflow_operations_have_exactly_one_plugin(self) -> None:
         text = self.requirements()["L1-REQ-004"]["text"].lower()
-        self.assertIn("every governed operation", text)
+        self.assertIn("in a workflow accepted for execution", text)
+        self.assertIn("must have resolved deterministically and uniquely", text)
         self.assertIn("exactly one selected application plugin", text)
+        self.assertNotEqual(
+            text,
+            "every governed operation must resolve deterministically and uniquely "
+            "to exactly one selected application plugin.",
+        )
+
+    def test_assignment_failure_still_blocks_workflow_execution(self) -> None:
+        text = self.requirements()["L1-REQ-009"]["text"].lower()
+        self.assertIn("plugin assignment", text)
+        self.assertIn("fail closed before workflow execution begins", text)
 
     def test_workflow_may_use_multiple_plugins(self) -> None:
         text = self.requirements()["L1-REQ-004"]["text"].lower()
@@ -72,8 +83,26 @@ class Level1AuthorityTests(unittest.TestCase):
         self.assertNotIn("multi-plugin composition", exclusions)
         self.assertNotIn("cross-plugin sequencing", exclusions)
 
+    def test_plugin_assignment_uses_metadata_only(self) -> None:
+        definition = self.definitions()["OPERATION-PLUGIN-ASSIGNMENT"]["text"].lower()
+        self.assertIn("only application-independent routing information", definition)
+        self.assertIn("declarative plugin metadata", definition)
+        self.assertIn(
+            "candidate plugins must not interpret operation-specific content before assignment",
+            definition,
+        )
+
     def test_plugin_semantics_are_operation_scoped(self) -> None:
         text = self.requirements()["L1-REQ-007"]["text"].lower()
+        self.assertIn(
+            "solely from application-independent routing information",
+            text,
+        )
+        self.assertIn("declarative plugin metadata", text)
+        self.assertIn(
+            "candidate plugins must not interpret operation-specific content before assignment",
+            text,
+        )
         self.assertIn(
             "only the operation-specific content of operations assigned to it",
             text,
@@ -85,6 +114,20 @@ class Level1AuthorityTests(unittest.TestCase):
         self.assertIn(
             "core must not interpret plugin-owned operation semantics",
             text,
+        )
+
+    def test_summary_distinguishes_handoff_declarations_from_runtime_handoffs(self) -> None:
+        summary = self.load(LEVEL_1)["summary"].lower()
+        self.assertIn("all data-handoff declarations", summary)
+        self.assertIn(
+            "actual data handoffs are validated at runtime before their dependent operations begin",
+            summary,
+        )
+        self.assertNotIn(
+            "before any operation executes, the gve core validates the complete workflow, "
+            "every operation, every plugin assignment, every plugin-owned instruction, and "
+            "all application-independent dependencies and data handoffs",
+            summary,
         )
 
     def test_handoff_declaration_is_distinct_from_runtime_handoff(self) -> None:
@@ -140,18 +183,9 @@ class Level1AuthorityTests(unittest.TestCase):
 
     def test_assignment_success_does_not_imply_interpretation_success(self) -> None:
         text = self.requirements()["L1-REQ-014"]["text"].lower()
-        self.assertIn(
-            "whose plugin assignment succeeds",
-            text,
-        )
-        self.assertIn(
-            "when instruction interpretation succeeds",
-            text,
-        )
-        self.assertIn(
-            "when instruction interpretation fails",
-            text,
-        )
+        self.assertIn("whose plugin assignment succeeds", text)
+        self.assertIn("when instruction interpretation succeeds", text)
+        self.assertIn("when instruction interpretation fails", text)
         self.assertIn(
             "without claiming that an instruction was successfully interpreted",
             text,
