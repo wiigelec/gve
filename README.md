@@ -163,6 +163,24 @@ Some additional historical operation types are dispatched through the legacy
 `0.7.0` path. Confirm dispatch in `launcher.py` and `__main__.py` before
 generating a payload.
 
+## Chat-to-local execution handoff
+
+The bootstrap executor runs only in the user’s local environment. The chat does not execute the operation against the repository directly.
+
+For each governed change, the chat shall provide:
+
+1. a downloadable JSON operation payload;
+2. an execution instruction block containing the exact local commands required to:
+    * save or move the payload into the external GVE operations directory;
+    * enter the clean local repository checkout;
+    * invoke ./scripts/governed-execute with the payload path;
+    * inspect the generated result artifact;
+3. the expected path of the result artifact that the user should return to the chat for review.
+
+The payload and result evidence shall remain outside the governed repository.
+
+The user executes the supplied instruction block in the local environment. The chat shall not claim that the operation succeeded until it has inspected the resulting execution evidence.
+
 ## Executing an operation
 
 Store operations and result evidence outside the repository:
