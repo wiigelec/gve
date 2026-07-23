@@ -25,4 +25,4 @@ else
     export PYTHONPATH="$ROOT/src"
 fi
 
-exec "$PYTHON" -m scf_governed_executor "$@"
+exec "$PYTHON" -m scf_governed_executor.launcher "$@"
