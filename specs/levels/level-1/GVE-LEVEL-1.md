@@ -50,6 +50,10 @@ The unique application plugin assigned to one governed operation after successfu
 
 The application-specific instruction content of one governed operation whose meaning may be interpreted only by the plugin assigned to that operation.
 
+### Instruction interpretation (`INSTRUCTION-INTERPRETATION`)
+
+The governed attempt by the plugin assigned to an operation to establish the meaning and validity of that operation's application-specific instruction under the plugin's governed instruction set. The attempt may succeed or fail.
+
 ### Interpreted instruction (`INTERPRETED-INSTRUCTION`)
 
 An operation-specific instruction whose meaning was established by the plugin assigned to that operation under its governed instruction set.
@@ -172,7 +176,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `WO
 
 For every operation whose plugin assignment succeeds, the authoritative result must identify the operation and its assigned plugin. When instruction interpretation succeeds, the result must identify the interpreted instructions, lifecycle state, and evidence-supported effect claims for that operation. When instruction interpretation fails, the result must identify the failure without claiming that an instruction was successfully interpreted.
 
-References: `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `PLUGIN-IDENTITY`, `INTERPRETED-INSTRUCTION`, `GVE-LIFECYCLE`
+References: `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNMENT`, `PLUGIN-IDENTITY`, `INSTRUCTION-INTERPRETATION`, `INTERPRETED-INSTRUCTION`, `GVE-LIFECYCLE`
 
 ### L1-REQ-015
 
@@ -195,8 +199,8 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HA
 - `L1-REL-005`: `GOVERNED-OPERATION` **is-bound-by** `OPERATION-PLUGIN-ASSIGNMENT`
 - `L1-REL-006`: `OPERATION-PLUGIN-ASSIGNMENT` **resolves-to** `SELECTED-PLUGIN`
 - `L1-REL-007`: `SELECTED-PLUGIN` **is-an** `APPLICATION-PLUGIN`
-- `L1-REL-008`: `SELECTED-PLUGIN` **interprets** `OPERATION-CONTENT`
-- `L1-REL-009`: `SELECTED-PLUGIN` **establishes** `INTERPRETED-INSTRUCTION`
+- `L1-REL-008`: `SELECTED-PLUGIN` **performs** `INSTRUCTION-INTERPRETATION`
+- `L1-REL-009`: `INSTRUCTION-INTERPRETATION` **may-establish** `INTERPRETED-INSTRUCTION`
 - `L1-REL-010`: `WORKFLOW-VALIDATION` **validates** `WORKFLOW-PLAN`
 - `L1-REL-011`: `GVE-CORE` **performs** `WORKFLOW-VALIDATION`
 - `L1-REL-012`: `GVE-CORE` **controls** `GVE-LIFECYCLE`
@@ -206,6 +210,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HA
 - `L1-REL-016`: `SELECTED-PLUGIN` **has** `PLUGIN-IDENTITY`
 - `L1-REL-017`: `WORKFLOW-PLAN` **declares** `DATA-HANDOFF-DECLARATION`
 - `L1-REL-018`: `DATA-HANDOFF-DECLARATION` **governs** `DATA-HANDOFF`
+- `L1-REL-019`: `INSTRUCTION-INTERPRETATION` **interprets** `OPERATION-CONTENT`
 
 ## Scope
 
@@ -214,7 +219,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HA
 - Level 0 semantic inheritance
 - One governed workflow represented by each accepted payload
 - One or more governed operations in each workflow
-- Deterministic unique assignment of exactly one application plugin to each operation
+- Deterministic unique assignment of exactly one application plugin to each operation in a workflow accepted for execution
 - Use of one or more application plugins across one workflow
 - Core-owned workflow planning, complete pre-execution validation, orchestration, dependency enforcement, data-handoff declaration validation, runtime data-handoff validation, failure handling, evidence aggregation, and result assembly
 - Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data

@@ -75,6 +75,16 @@ class Level1AuthorityTests(unittest.TestCase):
         self.assertIn("plugin assignment", text)
         self.assertIn("fail closed before workflow execution begins", text)
 
+    def test_scope_qualifies_exactly_one_plugin_with_workflow_acceptance(self) -> None:
+        includes = self.load(LEVEL_1)["scope"]["includes"]
+        matching = [
+            item.lower()
+            for item in includes
+            if "exactly one application plugin" in item.lower()
+        ]
+        self.assertEqual(len(matching), 1)
+        self.assertIn("in a workflow accepted for execution", matching[0])
+
     def test_workflow_may_use_multiple_plugins(self) -> None:
         text = self.requirements()["L1-REQ-004"]["text"].lower()
         self.assertIn("workflow may use one or more application plugins", text)
@@ -189,6 +199,36 @@ class Level1AuthorityTests(unittest.TestCase):
         self.assertIn(
             "without claiming that an instruction was successfully interpreted",
             text,
+        )
+
+    def test_interpretation_relationships_do_not_imply_success(self) -> None:
+        relationships = self.relationships()
+        self.assertEqual(
+            relationships["L1-REL-008"],
+            {
+                "id": "L1-REL-008",
+                "source": "SELECTED-PLUGIN",
+                "relation": "performs",
+                "target": "INSTRUCTION-INTERPRETATION",
+            },
+        )
+        self.assertEqual(
+            relationships["L1-REL-009"],
+            {
+                "id": "L1-REL-009",
+                "source": "INSTRUCTION-INTERPRETATION",
+                "relation": "may-establish",
+                "target": "INTERPRETED-INSTRUCTION",
+            },
+        )
+        self.assertEqual(
+            relationships["L1-REL-019"],
+            {
+                "id": "L1-REL-019",
+                "source": "INSTRUCTION-INTERPRETATION",
+                "relation": "interprets",
+                "target": "OPERATION-CONTENT",
+            },
         )
 
     def test_results_report_assignment_and_interpretation_separately(self) -> None:

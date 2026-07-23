@@ -56,6 +56,11 @@
       "text": "The application-specific instruction content of one governed operation whose meaning may be interpreted only by the plugin assigned to that operation."
     },
     {
+      "id": "INSTRUCTION-INTERPRETATION",
+      "term": "Instruction interpretation",
+      "text": "The governed attempt by the plugin assigned to an operation to establish the meaning and validity of that operation's application-specific instruction under the plugin's governed instruction set. The attempt may succeed or fail."
+    },
+    {
       "id": "INTERPRETED-INSTRUCTION",
       "term": "Interpreted instruction",
       "text": "An operation-specific instruction whose meaning was established by the plugin assigned to that operation under its governed instruction set."
@@ -260,6 +265,7 @@
         "GOVERNED-OPERATION",
         "OPERATION-PLUGIN-ASSIGNMENT",
         "PLUGIN-IDENTITY",
+        "INSTRUCTION-INTERPRETATION",
         "INTERPRETED-INSTRUCTION",
         "GVE-LIFECYCLE"
       ]
@@ -335,13 +341,13 @@
     {
       "id": "L1-REL-008",
       "source": "SELECTED-PLUGIN",
-      "relation": "interprets",
-      "target": "OPERATION-CONTENT"
+      "relation": "performs",
+      "target": "INSTRUCTION-INTERPRETATION"
     },
     {
       "id": "L1-REL-009",
-      "source": "SELECTED-PLUGIN",
-      "relation": "establishes",
+      "source": "INSTRUCTION-INTERPRETATION",
+      "relation": "may-establish",
       "target": "INTERPRETED-INSTRUCTION"
     },
     {
@@ -397,6 +403,12 @@
       "source": "DATA-HANDOFF-DECLARATION",
       "relation": "governs",
       "target": "DATA-HANDOFF"
+    },
+    {
+      "id": "L1-REL-019",
+      "source": "INSTRUCTION-INTERPRETATION",
+      "relation": "interprets",
+      "target": "OPERATION-CONTENT"
     }
   ],
   "scope": {
@@ -404,7 +416,7 @@
       "Level 0 semantic inheritance",
       "One governed workflow represented by each accepted payload",
       "One or more governed operations in each workflow",
-      "Deterministic unique assignment of exactly one application plugin to each operation",
+      "Deterministic unique assignment of exactly one application plugin to each operation in a workflow accepted for execution",
       "Use of one or more application plugins across one workflow",
       "Core-owned workflow planning, complete pre-execution validation, orchestration, dependency enforcement, data-handoff declaration validation, runtime data-handoff validation, failure handling, evidence aggregation, and result assembly",
       "Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data",
