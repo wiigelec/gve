@@ -1,0 +1,216 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2",
+    "level": 2,
+    "title": "GVE Level 2",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-1"
+  },
+  "document": {
+    "role": "root",
+    "root": "GVE-LEVEL-2",
+    "imports": []
+  },
+  "summary": "GVE Level 2 defines the normative application-plugin composition layer for governed local CLI workflows. It preserves all accepted Level 0 effect, authority, evidence, fail-closed, and authoritative-result semantics and all accepted Level 1 workflow, operation, plugin-assignment, validated-operation-contract, dependency, handoff, lifecycle, and result boundaries. The Level 2 root establishes the authority, scope, document decomposition, and non-overlapping semantic responsibilities of the Level 2 specification set. Detailed composition semantics are owned by explicitly identified subordinate Level 2 documents. The root does not import subordinate documents, does not reinterpret plugin-specific meaning, and does not authorize maintained runtime implementation.",
+  "definitions": [
+    {
+      "id": "LEVEL-2-COMPOSITION-LAYER",
+      "term": "Level 2 composition layer",
+      "text": "The application-independent normative layer that makes Level 1 workflow and application-plugin architecture precise enough for deterministic composition of governed local CLI operations while preserving all inherited authority, effect, evidence, failure, lifecycle, handoff, and result boundaries."
+    },
+    {
+      "id": "LEVEL-2-SPECIFICATION-SET",
+      "term": "Level 2 specification set",
+      "text": "The complete normative Level 2 authority consisting of exactly one root document and the subordinate Level 2 documents identified by this root. Each document owns a distinct semantic responsibility and participates in the repository-wide deterministic specification graph."
+    },
+    {
+      "id": "LEVEL-2-ROOT",
+      "term": "Level 2 root",
+      "text": "The sole normative root document GVE-LEVEL-2. It establishes Level 2 identity, Level 1 parentage, inherited authority, composition-layer scope, subordinate-document decomposition, and exclusions. It names itself as the specification-set root and imports no subordinate document."
+    },
+    {
+      "id": "LEVEL-2-DOCUMENT-AUTHORITY",
+      "term": "Level 2 document-authority specification",
+      "text": "The subordinate Level 2 specification GVE-LEVEL-2-DOCUMENT-AUTHORITY, which owns normative import, visibility, identifier-resolution, parentage, and conflict semantics for the Level 2 document set."
+    },
+    {
+      "id": "LEVEL-2-WORKFLOW-COMPOSITION",
+      "term": "Level 2 workflow-composition specification",
+      "text": "The subordinate Level 2 specification GVE-LEVEL-2-WORKFLOW-COMPOSITION, which owns normative workflow membership, operation identity, selected-plugin binding, validated-operation-contract participation, ordering constraints, and workflow-plan acceptance semantics."
+    },
+    {
+      "id": "LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "term": "Level 2 dependencies-and-handoffs specification",
+      "text": "The subordinate Level 2 specification GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, which owns normative dependency, sequencing, handoff declaration, actual-handoff validation, blocking, skipping, failure, and partial-progress semantics."
+    },
+    {
+      "id": "LEVEL-2-RESULT-ASSEMBLY",
+      "term": "Level 2 result-assembly specification",
+      "text": "The subordinate Level 2 specification GVE-LEVEL-2-RESULT-ASSEMBLY, which owns normative operation-evidence aggregation and authoritative workflow-result assembly while preserving inherited effect-state distinctions."
+    },
+    {
+      "id": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+      "term": "Level 2 local-plugin-boundaries specification",
+      "text": "The subordinate Level 2 specification GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES, which owns composition-facing responsibility boundaries for local filesystem modification, command execution, and local Git operation domains without defining concrete payload catalogs or maintained implementations."
+    },
+    {
+      "id": "TRANSITIONAL-LEVEL-2-MATERIAL",
+      "term": "Transitional Level 2 material",
+      "text": "The repository-root LEVEL_2.md design note retained as non-normative historical and discovery input. It has no authority over the normative Level 2 specification set and may not be incorporated without explicit review."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-ROOT-REQ-001",
+      "text": "Level 2 must extend Level 1 and must not replace, weaken, collapse, contradict, or bypass any applicable Level 0 or Level 1 definition, requirement, authority boundary, effect distinction, fail-closed rule, evidence obligation, lifecycle boundary, dependency or handoff distinction, validated-operation-contract boundary, or limitation on authoritative result claims.",
+      "references": [
+        "LEVEL-2-COMPOSITION-LAYER",
+        "LEVEL-2-ROOT"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-002",
+      "text": "The Level 2 specification set must contain exactly one root document with identity GVE-LEVEL-2, numeric level 2, normative status, parent GVE-LEVEL-1, document role root, specification-set root GVE-LEVEL-2, and no imports.",
+      "references": [
+        "LEVEL-2-SPECIFICATION-SET",
+        "LEVEL-2-ROOT"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-003",
+      "text": "The normative Level 2 subordinate-document set must consist of GVE-LEVEL-2-DOCUMENT-AUTHORITY, GVE-LEVEL-2-WORKFLOW-COMPOSITION, GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, GVE-LEVEL-2-RESULT-ASSEMBLY, and GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES. Each subordinate document must own only the semantic responsibility assigned by this root.",
+      "references": [
+        "LEVEL-2-SPECIFICATION-SET",
+        "LEVEL-2-DOCUMENT-AUTHORITY",
+        "LEVEL-2-WORKFLOW-COMPOSITION",
+        "LEVEL-2-DEPENDENCIES-HANDOFFS",
+        "LEVEL-2-RESULT-ASSEMBLY",
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-004",
+      "text": "The Level 2 root must not import subordinate documents, duplicate subordinate normative requirements, create precedence among subordinate documents, or make acceptance of the root stand for acceptance of any subordinate document.",
+      "references": [
+        "LEVEL-2-ROOT",
+        "LEVEL-2-SPECIFICATION-SET"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-005",
+      "text": "Level 2 document responsibilities must be non-overlapping. A semantic question assigned to one subordinate document must not be redefined by another document; any apparent overlap, conflict, or unresolved ownership must fail closed until corrected through separately governed specification work.",
+      "references": [
+        "LEVEL-2-SPECIFICATION-SET",
+        "LEVEL-2-DOCUMENT-AUTHORITY"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-006",
+      "text": "The Level 2 composition layer must remain independent of plugin-specific operation meaning. The GVE core may consume only application-independent composition information established through inherited Level 1 boundaries and the accepted subordinate Level 2 specifications.",
+      "references": [
+        "LEVEL-2-COMPOSITION-LAYER",
+        "LEVEL-2-WORKFLOW-COMPOSITION",
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-007",
+      "text": "Identifiers declared by Level 2 normative documents must be stable, globally unique across the governed specification graph, and deterministically resolvable under the accepted document-authority rules. The Level 2 root reserves the prefix L2-ROOT for root requirement and relationship identifiers; subordinate documents must use distinct stable prefixes corresponding to their assigned responsibility.",
+      "references": [
+        "LEVEL-2-SPECIFICATION-SET",
+        "LEVEL-2-DOCUMENT-AUTHORITY"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-008",
+      "text": "Transitional Level 2 material is non-normative input only. It must not override accepted Levels 0 or 1, constrain the accepted decomposition, import GitHub or other remote-service plugin design into the initial Level 2 authority, or become normative by reference.",
+      "references": [
+        "TRANSITIONAL-LEVEL-2-MATERIAL",
+        "LEVEL-2-ROOT"
+      ]
+    },
+    {
+      "id": "L2-ROOT-REQ-009",
+      "text": "Acceptance of Level 2 specification authority does not authorize maintained GVE runtime behavior, concrete plugin payload schemas, exhaustive operation catalogs, production plugin implementations, GitHub or other remote-service plugin semantics, or Level 3 design.",
+      "references": [
+        "LEVEL-2-COMPOSITION-LAYER",
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-ROOT-REL-001",
+      "source": "LEVEL-2-ROOT",
+      "relation": "governs",
+      "target": "LEVEL-2-SPECIFICATION-SET"
+    },
+    {
+      "id": "L2-ROOT-REL-002",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "defines",
+      "target": "LEVEL-2-COMPOSITION-LAYER"
+    },
+    {
+      "id": "L2-ROOT-REL-003",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-2-DOCUMENT-AUTHORITY"
+    },
+    {
+      "id": "L2-ROOT-REL-004",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-2-WORKFLOW-COMPOSITION"
+    },
+    {
+      "id": "L2-ROOT-REL-005",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-2-DEPENDENCIES-HANDOFFS"
+    },
+    {
+      "id": "L2-ROOT-REL-006",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-2-RESULT-ASSEMBLY"
+    },
+    {
+      "id": "L2-ROOT-REL-007",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+    },
+    {
+      "id": "L2-ROOT-REL-008",
+      "source": "TRANSITIONAL-LEVEL-2-MATERIAL",
+      "relation": "is-non-normative-input-to",
+      "target": "LEVEL-2-ROOT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Level 0 and Level 1 semantic inheritance",
+      "The sole normative Level 2 root identity, status, and Level 1 parentage",
+      "The Level 2 application-plugin composition-layer purpose and authority boundary",
+      "The final five-document subordinate decomposition by non-overlapping semantic responsibility",
+      "Normative versus non-normative Level 2 material status",
+      "Stable root and subordinate identifier namespace expectations",
+      "Core independence from plugin-specific operation meaning",
+      "Composition-facing local filesystem, command-execution, and local-Git domain boundaries delegated to a subordinate specification"
+    ],
+    "excludes": [
+      "Detailed document import, visibility, resolution, and conflict rules owned by GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "Detailed workflow composition and plan-acceptance rules owned by GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+      "Detailed dependency, sequencing, handoff, blocking, skipping, and partial-progress rules owned by GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "Detailed evidence aggregation and authoritative workflow-result rules owned by GVE-LEVEL-2-RESULT-ASSEMBLY",
+      "Concrete local plugin payload schemas and operation catalogs",
+      "Maintained GVE runtime and plugin implementations",
+      "GitHub and other remote-service plugin semantics",
+      "Level 3 design",
+      "Bootstrap executor mechanisms and SCF product authority"
+    ]
+  }
+}
