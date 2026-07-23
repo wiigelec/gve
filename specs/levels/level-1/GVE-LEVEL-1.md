@@ -58,6 +58,10 @@ The governed attempt by the plugin assigned to an operation to establish the mea
 
 An operation-specific instruction whose meaning was established by the plugin assigned to that operation under its governed instruction set.
 
+### Validated operation contract (`VALIDATED-OPERATION-CONTRACT`)
+
+The plugin-produced, core-readable pre-execution contract created only when instruction interpretation succeeds. It is bound unambiguously to exactly one governed operation and exactly one selected plugin and exposes only application-independent information the GVE core requires to validate and orchestrate that operation: contract identity and freshness, operation and plugin identity, governing authority, lifecycle readiness, declared dependencies or handoffs, evidence obligations, failure behavior, and result-assembly obligations. Plugin-specific meaning remains owned by the selected plugin and is neither duplicated nor reinterpreted by the core.
+
 ### Workflow plan (`WORKFLOW-PLAN`)
 
 The complete pre-execution representation of a governed workflow, including its operations, operation-plugin assignments, ordering constraints, dependencies, data-handoff declarations, required authority, and failure behavior.
@@ -136,6 +140,24 @@ Before any governed operation begins execution, the GVE core must validate the c
 
 References: `GVE-CORE`, `WORKFLOW-PLAN`, `WORKFLOW-VALIDATION`, `GOVERNED-OPERATION`, `PLUGIN-IDENTITY`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`
 
+### L1-REQ-008A
+
+Successful instruction interpretation by the selected plugin must produce exactly one validated operation contract for that governed operation before the operation may be accepted into the workflow plan. The contract must identify and bind exactly one governed operation, exactly one selected plugin, and the governed instruction set under which interpretation succeeded.
+
+References: `INSTRUCTION-INTERPRETATION`, `INTERPRETED-INSTRUCTION`, `VALIDATED-OPERATION-CONTRACT`, `GOVERNED-OPERATION`, `SELECTED-PLUGIN`, `WORKFLOW-PLAN`
+
+### L1-REQ-008B
+
+The validated operation contract must expose only application-independent information required by the GVE core to validate and orchestrate the operation, including contract identity and freshness, operation and plugin identity, governing authority, lifecycle readiness, declared dependencies or data handoffs, evidence obligations, failure behavior, and result-assembly obligations. The core must not derive, duplicate, or reinterpret plugin-specific operation meaning from the contract.
+
+References: `VALIDATED-OPERATION-CONTRACT`, `GVE-CORE`, `GOVERNED-OPERATION`, `SELECTED-PLUGIN`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `GVE-LIFECYCLE`
+
+### L1-REQ-008C
+
+A missing, malformed, invalid, ambiguous, conflicting, unauthorized, stale, or non-uniquely attributable validated operation contract must cause fail-closed workflow validation before operation execution. Contract validation and workflow-plan acceptance establish no execution success and no requested, authorized, attempted, completed, observed, or verified effect claim by themselves.
+
+References: `VALIDATED-OPERATION-CONTRACT`, `WORKFLOW-VALIDATION`, `WORKFLOW-PLAN`, `GOVERNED-OPERATION`, `GVE-LIFECYCLE`
+
 ### L1-REQ-009
 
 If any workflow, operation, required plugin, plugin assignment, plugin-owned instruction, dependency, data-handoff declaration, or required authority is unsupported, invalid, incomplete, ambiguous, conflicting, unauthorized, or non-uniquely interpretable, GVE must fail closed before workflow execution begins.
@@ -211,6 +233,10 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HA
 - `L1-REL-017`: `WORKFLOW-PLAN` **declares** `DATA-HANDOFF-DECLARATION`
 - `L1-REL-018`: `DATA-HANDOFF-DECLARATION` **governs** `DATA-HANDOFF`
 - `L1-REL-019`: `INSTRUCTION-INTERPRETATION` **interprets** `OPERATION-CONTENT`
+- `L1-REL-020`: `INSTRUCTION-INTERPRETATION` **produces-on-success** `VALIDATED-OPERATION-CONTRACT`
+- `L1-REL-021`: `VALIDATED-OPERATION-CONTRACT` **binds** `GOVERNED-OPERATION`
+- `L1-REL-022`: `VALIDATED-OPERATION-CONTRACT` **identifies** `SELECTED-PLUGIN`
+- `L1-REL-023`: `WORKFLOW-VALIDATION` **validates** `VALIDATED-OPERATION-CONTRACT`
 
 ## Scope
 
@@ -223,12 +249,13 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HA
 - Use of one or more application plugins across one workflow
 - Core-owned workflow planning, complete pre-execution validation, orchestration, dependency enforcement, data-handoff declaration validation, runtime data-handoff validation, failure handling, evidence aggregation, and result assembly
 - Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data
+- Plugin-produced, core-readable validated operation contracts with explicit operation, plugin, authority, readiness, evidence, failure, and result-assembly boundaries
 - Operation-level and workflow-level preservation of Level 0 authority, effect, evidence, fail-closed, and authoritative-result semantics
 
 ### Excludes
 
 - Concrete workflow payload schemas
-- Concrete operation serialization formats and contracts
+- Concrete operation serialization formats, validated-operation-contract serializations, and application-specific contracts
 - Concrete dependency-graph, data-handoff declaration, and runtime handoff representations
 - Concrete plugin APIs or implementations
 - Plugin registry implementations, catalogs, package formats, or discovery transports
