@@ -163,6 +163,53 @@ Some additional historical operation types are dispatched through the legacy
 `0.7.0` path. Confirm dispatch in `launcher.py` and `__main__.py` before
 generating a payload.
 
+## Interaction Model
+
+Actors
+
+Chat
+- Reads the specifications.
+- Generates governed operation payloads.
+- Produces exact local execution instructions.
+- Reviews returned result evidence.
+- Generates successor operations.
+
+User
+- Downloads the generated payload.
+- Executes the provided commands in the local environment.
+- Returns the result artifact to the chat.
+- Never edits generated payloads manually unless explicitly instructed.
+
+Bootstrap Executor
+- Executes the operation.
+- Produces authoritative execution evidence.
+- Never communicates directly with the chat.
+
+Chat
+    │
+    ├── generates operation.json
+    ├── provides execution instructions
+    ▼
+User
+    │
+    ├── saves operation.json
+    ├── executes governed-execute
+    ▼
+Bootstrap Executor
+    │
+    ├── validates
+    ├── executes
+    ├── writes result.json
+    ▼
+User
+    │
+    └── returns result.json
+          ▼
+Chat
+    │
+    ├── reviews evidence
+    └── generates successor operation if needed
+
 ## Chat-to-local execution handoff
 
 The bootstrap executor runs only in the user’s local environment. The chat does not execute the operation against the repository directly.
