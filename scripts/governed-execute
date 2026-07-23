@@ -1,0 +1,28 @@
+#!/bin/sh
+set -eu
+
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+
+if [ ! -d "$ROOT/.git" ]; then
+    printf '%s
+' "governed-execute: repository root verification failed" >&2
+    exit 2
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+    PYTHON=python
+else
+    printf '%s
+' "governed-execute: no supported Python interpreter found" >&2
+    exit 2
+fi
+
+if [ -n "${PYTHONPATH-}" ]; then
+    export PYTHONPATH="$ROOT/src:$PYTHONPATH"
+else
+    export PYTHONPATH="$ROOT/src"
+fi
+
+exec "$PYTHON" -m scf_governed_executor "$@"
