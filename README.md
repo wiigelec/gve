@@ -4,14 +4,18 @@ GVE is being rebuilt from governed execution specifications.
 
 The authoritative design documents are:
 
-1. `LEVEL_0.md`
-2. `LEVEL_1.md`
-3. `LEVEL_2.md`
-4. `LEVEL_3.md`
+1. `specs/levels/level-0/GVE-LEVEL-0.json` — normative Level 0 authority
+2. `specs/levels/level-0/GVE-LEVEL-0.md` — deterministic derived representation
+3. `LEVEL_1.md`
+4. `LEVEL_2.md`
+5. `LEVEL_3.md`
 
-Implement and harden the levels in that order, then implement the maintained
-GVE product. The restored historical executor is bootstrap and executable
-reference material only. It must not override the level specifications.
+Level 0 has migrated to machine-readable authority under `specs/`. Levels 1–3
+remain temporarily at the repository root until their own governed migrations.
+
+Implement and harden the levels in order, then implement the maintained GVE
+product. The restored historical executor is bootstrap and executable reference
+material only. It must not override the level specifications.
 
 ## Bootstrap executor
 
@@ -40,7 +44,7 @@ contract.
 A fresh chat should begin by reading:
 
 - this `README.md`;
-- `LEVEL_0.md` through `LEVEL_3.md`;
+- `specs/levels/level-0/GVE-LEVEL-0.json`, its derived Markdown, and `LEVEL_1.md` through `LEVEL_3.md`;
 - `scripts/governed-execute`;
 - `src/scf_governed_executor/launcher.py`;
 - the implementation and tests for the intended operation type.
