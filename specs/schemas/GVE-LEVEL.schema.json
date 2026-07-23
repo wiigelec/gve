@@ -32,7 +32,7 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^GVE-LEVEL-[0-9]+$"
+          "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
         },
         "level": {
           "type": "integer",
@@ -62,9 +62,39 @@
             },
             {
               "type": "string",
-              "pattern": "^GVE-LEVEL-[0-9]+$"
+              "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
             }
           ]
+        }
+      }
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "root",
+        "imports"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "root",
+            "subordinate"
+          ]
+        },
+        "root": {
+          "type": "string",
+          "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
+        },
+        "imports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
+          },
+          "uniqueItems": true
         }
       }
     },

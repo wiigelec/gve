@@ -23,14 +23,31 @@ def render_markdown(document: Mapping[str, Any]) -> str:
         f"**Version:** {specification['version']}<br>",
         f"**Status:** {specification['status']}<br>",
         f"**Parent:** {parent}",
-        "",
-        "## Summary",
-        "",
-        document["summary"],
-        "",
-        "## Definitions",
-        "",
     ]
+    metadata = document.get("document")
+    if metadata is not None:
+        imports = (
+            ", ".join(f"`{identifier}`" for identifier in metadata["imports"])
+            or "None"
+        )
+        lines.extend(
+            [
+                f"<br>**Document role:** {metadata['role']}<br>",
+                f"**Specification-set root:** `{metadata['root']}`<br>",
+                f"**Imports:** {imports}",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "## Summary",
+            "",
+            document["summary"],
+            "",
+            "## Definitions",
+            "",
+        ]
+    )
     for item in document["definitions"]:
         lines.extend(
             [
