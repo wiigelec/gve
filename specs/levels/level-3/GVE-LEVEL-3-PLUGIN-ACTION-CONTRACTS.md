@@ -177,6 +177,12 @@ This specification must not define maintained runtime, plugin, action, registry,
 
 References: `L3-PAC-COMMON-PLUGIN-CONTRACT`, `L3-PAC-COMMON-ACTION-CONTRACT`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 
+### L3-PAC-REQ-FRESHNESS-BINDING-IDENTITIES
+
+Contract and evidence freshness must bind to stable governed identities sufficient to detect relevant change, including operation content, selected plugin identity, governed instruction set revision, governing authority context, workflow-plan attempt, result-realization attempt, observation context, and freshness boundary. Freshness must not be established by an unbound Boolean assertion, and this requirement does not prescribe a specific digest, cryptographic algorithm, storage mechanism, or transport.
+
+References: None
+
 ## Relationships
 
 - `L3-PAC-REL-001`: `L3-PAC-PLUGIN-REGISTRATION` **conforms-to** `L3-PAC-COMMON-PLUGIN-CONTRACT`
@@ -204,6 +210,7 @@ References: `L3-PAC-COMMON-PLUGIN-CONTRACT`, `L3-PAC-COMMON-ACTION-CONTRACT`, `L
 - Registry completeness, validation, deterministic sealing, snapshot identity, and immutability
 - Fail-closed duplicate, late, missing, ambiguous, unauthorized, stale, incompatible, conflicting, and non-unique facts
 - Action-local source modules and explicit registration entries
+- stable governed identity bindings for contract and evidence freshness
 
 ### Excludes
 

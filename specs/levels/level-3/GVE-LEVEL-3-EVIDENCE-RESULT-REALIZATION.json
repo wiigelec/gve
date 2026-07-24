@@ -99,6 +99,16 @@
       "id": "L3-ERR-RESULT-FINALIZATION",
       "term": "Result finalization",
       "text": "The deterministic fail-closed decision that one proposed authoritative workflow-result version is complete, internally consistent, sufficiently evidenced, uniquely attributable, lineage-consistent, and ready to become immutable. Failure leaves no finalized version for that realization attempt and must remain recorded in the authoritative execution record."
+    },
+    {
+      "id": "L3-ERR-EVIDENCE-INGRESS",
+      "term": "Evidence ingress",
+      "text": "The application-independent lifecycle by which evidence is produced or received, durably recorded, structurally classified, provenance evaluated, and applicability evaluated before a governed disposition is assigned."
+    },
+    {
+      "id": "L3-ERR-EVIDENCE-DISPOSITION",
+      "term": "Evidence disposition",
+      "text": "The attributable determination by which a recorded evidence item is admitted or rejected with reason and then considered in result realization without erasing adverse, malformed, stale, unauthorized, contradictory, or inapplicable evidence."
     }
   ],
   "requirements": [
@@ -329,6 +339,22 @@
         "L3-ERR-EFFECT-CLAIM-STATE",
         "L3-ERR-CURRENT-LINEAGE-HEAD"
       ]
+    },
+    {
+      "id": "L3-ERR-REQ-EVIDENCE-ADMISSION",
+      "text": "Evidence admission does not imply support for any claim. Contradictory evidence may remain admitted and unresolved, and result realization must preserve the contradiction and resulting uncertainty rather than selectively treating admission as favorable support.",
+      "references": [
+        "L3-ERR-EVIDENCE-INGRESS",
+        "L3-ERR-EVIDENCE-DISPOSITION"
+      ]
+    },
+    {
+      "id": "L3-ERR-REQ-EVIDENCE-DISPOSITION-COMPLETENESS",
+      "text": "Every claim-relevant received evidence item must retain an attributable disposition through result realization. Rejected, malformed, stale, unauthorized, contradictory, adverse, or inapplicable evidence must remain represented with its reason and must not be silently omitted.",
+      "references": [
+        "L3-ERR-EVIDENCE-INGRESS",
+        "L3-ERR-EVIDENCE-DISPOSITION"
+      ]
     }
   ],
   "relationships": [
@@ -426,7 +452,8 @@
       "Uniquely identified result-realization attempts and truthful finalization failure",
       "Exactly one realized result per required operation in a finalized workflow-result version",
       "Immutable result versions, explicit acyclic supersession, preserved history, and one current lineage head",
-      "Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition"
+      "Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition",
+      "evidence ingress, attributable disposition, admission boundaries, and preservation of adverse or rejected evidence"
     ],
     "excludes": [
       "Maintained runtime, executor, scheduler, plugin, action, registry, evidence-store, database, and publication implementation",

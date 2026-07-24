@@ -81,6 +81,14 @@ One finalized, uniquely identified, immutable authoritative workflow-result vers
 
 The deterministic fail-closed decision that one proposed authoritative workflow-result version is complete, internally consistent, sufficiently evidenced, uniquely attributable, lineage-consistent, and ready to become immutable. Failure leaves no finalized version for that realization attempt and must remain recorded in the authoritative execution record.
 
+### Evidence ingress (`L3-ERR-EVIDENCE-INGRESS`)
+
+The application-independent lifecycle by which evidence is produced or received, durably recorded, structurally classified, provenance evaluated, and applicability evaluated before a governed disposition is assigned.
+
+### Evidence disposition (`L3-ERR-EVIDENCE-DISPOSITION`)
+
+The attributable determination by which a recorded evidence item is admitted or rejected with reason and then considered in result realization without erasing adverse, malformed, stale, unauthorized, contradictory, or inapplicable evidence.
+
 ## Normative requirements
 
 ### L3-ERR-REQ-001
@@ -239,6 +247,18 @@ Lifecycle status, finalization disposition, result-version status, superseded st
 
 References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-CURRENT-LINEAGE-HEAD`
 
+### L3-ERR-REQ-EVIDENCE-ADMISSION
+
+Evidence admission does not imply support for any claim. Contradictory evidence may remain admitted and unresolved, and result realization must preserve the contradiction and resulting uncertainty rather than selectively treating admission as favorable support.
+
+References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
+
+### L3-ERR-REQ-EVIDENCE-DISPOSITION-COMPLETENESS
+
+Every claim-relevant received evidence item must retain an attributable disposition through result realization. Rejected, malformed, stale, unauthorized, contradictory, adverse, or inapplicable evidence must remain represented with its reason and must not be silently omitted.
+
+References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
+
 ## Relationships
 
 - `L3-ERR-REL-001`: `L3-ERR-EVIDENCE-PROVENANCE` **attributes** `L3-ERR-EVIDENCE-RECORD`
@@ -273,6 +293,7 @@ References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-CURR
 - Exactly one realized result per required operation in a finalized workflow-result version
 - Immutable result versions, explicit acyclic supersession, preserved history, and one current lineage head
 - Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition
+- evidence ingress, attributable disposition, admission boundaries, and preservation of adverse or rejected evidence
 
 ### Excludes
 

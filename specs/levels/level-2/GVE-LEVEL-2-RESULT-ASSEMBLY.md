@@ -89,6 +89,14 @@ A claim that the relevant complete workflow effect was verified against its gove
 
 The deterministic links from every workflow-level and operation-level claim to the workflow identity, operation identity, selected plugin, validated contract, dependencies, handoffs, authority, lifecycle outcome, and supporting evidence from which the claim is derived.
 
+### Evidence disposition (`L2-RA-EVIDENCE-DISPOSITION`)
+
+The attributable result-assembly record of how each claim-relevant evidence item was classified, evaluated, admitted or rejected with reason, and considered during authoritative execution-record and workflow-result realization.
+
+### Rejected evidence (`L2-RA-REJECTED-EVIDENCE`)
+
+Claim-relevant evidence that is not admitted because it is malformed, stale, unauthorized, inapplicable, non-attributable, or otherwise fails a governed admission criterion. Rejection does not erase the evidence record or its attributable reason.
+
 ## Normative requirements
 
 ### L2-RA-REQ-001
@@ -241,6 +249,18 @@ This specification must not define concrete plugin-specific result payload schem
 
 References: `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`, `LEVEL-2-RESULT-ASSEMBLY`
 
+### L2-RA-REQ-026
+
+Evidence aggregation and result assembly must preserve an evidence disposition for every claim-relevant received evidence item, including rejected evidence and admitted evidence that is adverse, contradictory, or unresolved; no such item may disappear merely because it does not support a result claim.
+
+References: `L2-RA-EVIDENCE-DISPOSITION`, `L2-RA-REJECTED-EVIDENCE`, `L2-RA-EVIDENCE-AGGREGATION`, `L2-RA-WORKFLOW-EXECUTION-RECORD`
+
+### L2-RA-REQ-027
+
+Evidence admission does not imply support for a claim. Every operation- or workflow-level claim must remain traceable only to evidence that actually supports that claim, while contradictory admitted evidence and rejected evidence remain attributable and inspectable.
+
+References: `L2-RA-EVIDENCE-DISPOSITION`, `L2-RA-RESULT-TRACEABILITY`, `L2-RA-OPERATION-EVIDENCE`, `L2-RA-WORKFLOW-EVIDENCE`
+
 ## Relationships
 
 - `L2-RA-REL-001`: `LEVEL-2-RESULT-ASSEMBLY` **is-governed-by** `LEVEL-2-ROOT`
@@ -276,6 +296,7 @@ References: `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`, `LEVEL-2-RESULT-ASSEMBLY`
 - Partial effects, incomplete evidence, and contradictory evidence
 - Workflow completion, observation, and verification evidence gates
 - Complete result traceability and preserved historical lineage
+- evidence disposition, rejected-evidence preservation, and separation of admission from claim support
 
 ### Excludes
 
