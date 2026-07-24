@@ -1,0 +1,333 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+    "level": 3,
+    "title": "GVE Level 3 Plugin and Action Contracts",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-3"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-3",
+    "imports": [
+      "GVE-LEVEL-3",
+      "GVE-LEVEL-3-RUNTIME-OWNERSHIP"
+    ]
+  },
+  "summary": "GVE Level 3 Plugin and Action Contracts defines the application-independent contracts and registry rules through which the core resolves plugins, selected plugins resolve their own actions, actions declare and interpret their inputs, and exactly one fresh uniquely attributable validated operation contract is produced for each accepted operation. It assigns plugin registration to the core-owned plugin registry, action registration to plugin-owned action registries, requires deterministic validated and sealed registry snapshots, and preserves plugin and action ownership of application-specific meaning.",
+  "definitions": [
+    {
+      "id": "L3-PAC-COMMON-PLUGIN-CONTRACT",
+      "term": "Common plugin contract",
+      "text": "The application-independent contract enforced by the core for one plugin, including stable plugin identity, compatible plugin-interface version, one plugin-owned action registry, and the common facts needed for deterministic registration and resolution without exposing action-specific meaning."
+    },
+    {
+      "id": "L3-PAC-COMMON-ACTION-CONTRACT",
+      "term": "Common action contract",
+      "text": "The application-independent contract enforced by an owning plugin for one action, including stable action identity, compatible action-interface version, one declared input contract, and the common capabilities required to interpret and contract one governed operation."
+    },
+    {
+      "id": "L3-PAC-PLUGIN-REGISTRATION",
+      "term": "Plugin registration",
+      "text": "The explicit association of one plugin identity and common plugin contract with the core-owned plugin registry before that registry is validated and sealed."
+    },
+    {
+      "id": "L3-PAC-ACTION-REGISTRATION",
+      "term": "Action registration",
+      "text": "The explicit association of one action identity and common action contract with exactly one owning plugin's action registry before that registry is validated and sealed."
+    },
+    {
+      "id": "L3-PAC-PLUGIN-RESOLUTION",
+      "term": "Plugin resolution",
+      "text": "The core-owned deterministic resolution of one requested plugin identity to exactly one compatible registered plugin using only application-independent plugin-registry facts."
+    },
+    {
+      "id": "L3-PAC-ACTION-RESOLUTION",
+      "term": "Action resolution",
+      "text": "The selected-plugin-owned deterministic resolution of one requested action identity to exactly one compatible registered action in that plugin's sealed action registry."
+    },
+    {
+      "id": "L3-PAC-DECLARED-INPUT-CONTRACT",
+      "term": "Declared action input contract",
+      "text": "The complete action-owned declaration of required, optional, forbidden, and structurally constrained inputs for that action, together with the action-owned rules needed to interpret their application-specific meaning."
+    },
+    {
+      "id": "L3-PAC-STRUCTURAL-INPUT-CONFORMANCE",
+      "term": "Structural input conformance",
+      "text": "The application-independent determination that supplied input has the declared shape, presence, identity, and representation required by an action contract, without interpreting the application's semantic meaning."
+    },
+    {
+      "id": "L3-PAC-ACTION-INTERPRETATION",
+      "term": "Action-owned interpretation",
+      "text": "The selected action's authoritative interpretation of its supplied inputs, governing authority, and requested operation meaning after structural conformance has been established."
+    },
+    {
+      "id": "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+      "term": "Validated operation contract",
+      "text": "The single fresh immutable contract produced for one successfully interpreted operation and uniquely attributable to the workflow, operation, selected plugin, selected action, interface versions, registry snapshots, governing authority, and complete interpreted inputs that produced it."
+    },
+    {
+      "id": "L3-PAC-CONTRACT-FRESHNESS",
+      "term": "Validated-contract freshness",
+      "text": "The property that a validated operation contract was produced from the current operation content, complete interpreted inputs, selected plugin and action, compatible interface versions, sealed registry snapshots, and governing authority and has not been invalidated or superseded."
+    },
+    {
+      "id": "L3-PAC-REGISTRY-VALIDATION",
+      "term": "Registry validation",
+      "text": "The fail-closed determination that a plugin or action registry is complete, deterministic, internally compatible, free of duplicate or conflicting identities, and suitable to become immutable for one planning and execution attempt."
+    },
+    {
+      "id": "L3-PAC-SEALED-REGISTRY-SNAPSHOT",
+      "term": "Sealed registry snapshot",
+      "text": "A uniquely identifiable immutable snapshot of a validated plugin registry or action registry after which registration, replacement, identity mutation, and interface-version mutation are forbidden for the governed attempt."
+    },
+    {
+      "id": "L3-PAC-CONTRACT-ATTRIBUTION",
+      "term": "Validated-contract attribution",
+      "text": "The deterministic binding of exactly one validated operation contract to all identities, versions, snapshots, authority, and interpreted inputs that govern one operation."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L3-PAC-REQ-001",
+      "text": "Each governed operation must request exactly one nonempty plugin identity and exactly one nonempty action identity owned by that plugin; missing, multiple, conflicting, or ambiguous requested identities must fail closed.",
+      "references": [
+        "L3-PAC-PLUGIN-RESOLUTION",
+        "L3-PAC-ACTION-RESOLUTION",
+        "L3-RO-OPERATION-REPRESENTATION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-002",
+      "text": "Plugins must register only with the core-owned plugin registry through the common plugin contract, and each plugin identity must resolve to at most one compatible registered plugin.",
+      "references": [
+        "L3-PAC-COMMON-PLUGIN-CONTRACT",
+        "L3-PAC-PLUGIN-REGISTRATION",
+        "L3-RO-PLUGIN-REGISTRY-OWNER"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-003",
+      "text": "Actions must register only with exactly one owning plugin's action registry through the common action contract and must not register directly with the core.",
+      "references": [
+        "L3-PAC-COMMON-ACTION-CONTRACT",
+        "L3-PAC-ACTION-REGISTRATION",
+        "L3-RO-ACTION-REGISTRY-OWNER"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-004",
+      "text": "The core must complete deterministic plugin resolution before action resolution, and only the selected plugin may resolve the requested action from its own validated sealed action-registry snapshot.",
+      "references": [
+        "L3-PAC-PLUGIN-RESOLUTION",
+        "L3-PAC-ACTION-RESOLUTION",
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT",
+        "L3-RO-PLUGIN-INTERFACE-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-005",
+      "text": "The core may validate common plugin-contract identity, interface-version compatibility, registry attribution, and structural conformance, but must not interpret, derive, normalize, override, compare, or validate plugin-owned action or input meaning.",
+      "references": [
+        "L3-PAC-COMMON-PLUGIN-CONTRACT",
+        "L3-PAC-STRUCTURAL-INPUT-CONFORMANCE",
+        "L3-RO-CORE-ORCHESTRATOR",
+        "L3-RO-PLUGIN-INTERFACE-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-006",
+      "text": "Each action must own one complete declared input contract and must retain authoritative application-specific interpretation of every supplied input and the requested operation meaning.",
+      "references": [
+        "L3-PAC-DECLARED-INPUT-CONTRACT",
+        "L3-PAC-ACTION-INTERPRETATION",
+        "L3-RO-ACTION-INTERFACE-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-007",
+      "text": "Structural input conformance must be evaluated before action interpretation; missing required input, forbidden input, duplicate input identity, malformed representation, or structural mismatch must fail closed without inventing action-specific meaning.",
+      "references": [
+        "L3-PAC-DECLARED-INPUT-CONTRACT",
+        "L3-PAC-STRUCTURAL-INPUT-CONFORMANCE",
+        "L3-PAC-ACTION-INTERPRETATION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-008",
+      "text": "One successfully resolved and interpreted operation must produce exactly one fresh, valid, immutable, and uniquely attributable validated operation contract; zero contracts, multiple contracts, reused contracts, or non-unique attribution must fail closed.",
+      "references": [
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+        "L3-PAC-CONTRACT-FRESHNESS",
+        "L3-PAC-CONTRACT-ATTRIBUTION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-009",
+      "text": "Every validated operation contract must bind the current workflow identity, operation identity, plugin identity, action identity, plugin-interface version, action-interface version, plugin-registry snapshot identity, action-registry snapshot identity, governing authority, and complete interpreted inputs.",
+      "references": [
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+        "L3-PAC-CONTRACT-ATTRIBUTION",
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT",
+        "L3-RO-WORKFLOW-REPRESENTATION",
+        "L3-RO-OPERATION-REPRESENTATION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-010",
+      "text": "A validated operation contract must be fresh for every fact to which it is bound; any change to operation content, interpreted inputs, selected plugin or action, interface version, registry snapshot, or governing authority must invalidate the prior contract and require fresh production.",
+      "references": [
+        "L3-PAC-CONTRACT-FRESHNESS",
+        "L3-PAC-CONTRACT-ATTRIBUTION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-011",
+      "text": "Before a planning or execution attempt, the core-owned plugin registry and every participating plugin-owned action registry must be complete, validated, deterministic, sealed, uniquely identified, and immutable for that attempt.",
+      "references": [
+        "L3-PAC-REGISTRY-VALIDATION",
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT",
+        "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-012",
+      "text": "Duplicate registration, late registration, unavailable identity, unauthorized registration, conflicting ownership, ambiguous resolution, identity mutation, incompatible interface version, incomplete registry validation, or registry snapshot drift must fail closed.",
+      "references": [
+        "L3-PAC-PLUGIN-REGISTRATION",
+        "L3-PAC-ACTION-REGISTRATION",
+        "L3-PAC-REGISTRY-VALIDATION",
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-013",
+      "text": "A missing, malformed, unauthorized, stale, incompatible, conflicting, duplicate, incomplete, or non-uniquely attributable validated operation contract must fail closed and must not be repaired by inference, fallback selection, or reuse.",
+      "references": [
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+        "L3-PAC-CONTRACT-FRESHNESS",
+        "L3-PAC-CONTRACT-ATTRIBUTION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-014",
+      "text": "Each action must have an independently identifiable source module and one explicit registration entry in its owning plugin; adding an action must not require core modification or modification to unrelated action implementations.",
+      "references": [
+        "L3-PAC-ACTION-REGISTRATION",
+        "L3-RO-ACTION-MODULE-BOUNDARY",
+        "L3-RO-ACTION-REGISTRY-OWNER"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-015",
+      "text": "Registry validity, successful resolution, structural conformance, action interpretation, and validated-contract production establish no workflow-plan acceptance, operation eligibility, attempt, completion, observation, verification, effect, evidence sufficiency, or authoritative result claim.",
+      "references": [
+        "L3-PAC-REGISTRY-VALIDATION",
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-016",
+      "text": "This specification must not define workflow-plan states, dependency or handoff eligibility, attempt ordering, blocking, skipping, cancellation, timeout, lifecycle transitions, evidence schemas, effect-claim realization, operation-result schemas, uncertainty, or authoritative workflow-result assembly.",
+      "references": [
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-017",
+      "text": "This specification must not define maintained runtime, plugin, action, registry, or executor implementation; language-specific interface syntax; exhaustive production action catalogs; plugin-specific credentials or publication semantics; production payload schemas; bootstrap executor formats; or changes to accepted Levels 0 through 2.",
+      "references": [
+        "L3-PAC-COMMON-PLUGIN-CONTRACT",
+        "L3-PAC-COMMON-ACTION-CONTRACT",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L3-PAC-REL-001",
+      "source": "L3-PAC-PLUGIN-REGISTRATION",
+      "relation": "conforms-to",
+      "target": "L3-PAC-COMMON-PLUGIN-CONTRACT"
+    },
+    {
+      "id": "L3-PAC-REL-002",
+      "source": "L3-PAC-ACTION-REGISTRATION",
+      "relation": "conforms-to",
+      "target": "L3-PAC-COMMON-ACTION-CONTRACT"
+    },
+    {
+      "id": "L3-PAC-REL-003",
+      "source": "L3-PAC-PLUGIN-RESOLUTION",
+      "relation": "precedes",
+      "target": "L3-PAC-ACTION-RESOLUTION"
+    },
+    {
+      "id": "L3-PAC-REL-004",
+      "source": "L3-PAC-ACTION-RESOLUTION",
+      "relation": "selects",
+      "target": "L3-PAC-ACTION-INTERPRETATION"
+    },
+    {
+      "id": "L3-PAC-REL-005",
+      "source": "L3-PAC-DECLARED-INPUT-CONTRACT",
+      "relation": "constrains",
+      "target": "L3-PAC-STRUCTURAL-INPUT-CONFORMANCE"
+    },
+    {
+      "id": "L3-PAC-REL-006",
+      "source": "L3-PAC-ACTION-INTERPRETATION",
+      "relation": "produces",
+      "target": "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+    },
+    {
+      "id": "L3-PAC-REL-007",
+      "source": "L3-PAC-CONTRACT-FRESHNESS",
+      "relation": "constrains",
+      "target": "L3-PAC-CONTRACT-ATTRIBUTION"
+    },
+    {
+      "id": "L3-PAC-REL-008",
+      "source": "L3-PAC-REGISTRY-VALIDATION",
+      "relation": "produces",
+      "target": "L3-PAC-SEALED-REGISTRY-SNAPSHOT"
+    },
+    {
+      "id": "L3-PAC-REL-009",
+      "source": "L3-PAC-CONTRACT-ATTRIBUTION",
+      "relation": "binds",
+      "target": "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Common application-independent plugin and action contracts",
+      "Core-owned plugin registration and deterministic plugin resolution",
+      "Plugin-owned action registration and deterministic action resolution",
+      "Plugin and action interface-version identity and compatibility",
+      "Action-owned declared input contracts and structural input conformance",
+      "Action-owned application-specific interpretation",
+      "Exactly one fresh immutable uniquely attributable validated operation contract per accepted operation",
+      "Validated-contract identity, freshness, and complete attribution bindings",
+      "Registry completeness, validation, deterministic sealing, snapshot identity, and immutability",
+      "Fail-closed duplicate, late, missing, ambiguous, unauthorized, stale, incompatible, conflicting, and non-unique facts",
+      "Action-local source modules and explicit registration entries"
+    ],
+    "excludes": [
+      "Maintained runtime, plugin, action, registry, or executor implementation",
+      "Language-specific protocol, interface, abstract-base-class, or dependency-injection syntax",
+      "Workflow-plan states, operation eligibility, dependency and handoff enforcement, attempt ordering, blocking, skipping, cancellation, timeout, and lifecycle transitions",
+      "Evidence schemas, effect-claim realization, operation-result schemas, uncertainty, and authoritative workflow-result assembly",
+      "Exhaustive filesystem, command-execution, local-Git, GitHub, and remote-service action catalogs",
+      "Plugin-specific credentials and publication semantics",
+      "Concrete production payload schemas",
+      "Bootstrap executor operation formats and implementation behavior",
+      "Modification of accepted Levels 0 through 2"
+    ]
+  }
+}
