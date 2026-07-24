@@ -7,28 +7,6 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
-EXPECTED_SPECIFICATION_SETS = {
-    2: {
-        "GVE-LEVEL-2",
-        "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
-        "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
-        "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
-        "GVE-LEVEL-2-RESULT-ASSEMBLY",
-        "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
-    },
-    3: {
-        "GVE-LEVEL-3",
-        "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
-        "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
-        "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
-        "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
-    },
-}
-
-ROOT_MEMBERSHIP_REQUIREMENTS = {
-    2: "L2-ROOT-REQ-003",
-    3: "L3-ROOT-REQ-004",
-}
 
 
 class SemanticValidationError(ValueError):
@@ -190,15 +168,27 @@ def validate_hierarchy(
         if metadata[root_id]["imports"]:
             _fail(root_id, "root document must not import subordinate documents")
 
-        membership_requirement = ROOT_MEMBERSHIP_REQUIREMENTS.get(level)
-        root_requirement_ids = {
-            item["id"] for item in by_id[root_id][1]["requirements"]
-        }
-        if (
-            membership_requirement is not None
-            and membership_requirement in root_requirement_ids
-        ):
-            expected_members = EXPECTED_SPECIFICATION_SETS[level]
+        declared_members = metadata[root_id].get("members")
+        if len(identifiers) > 1 and declared_members is None:
+            _fail(
+                root_id,
+                "decomposed specification-set root must declare document.members",
+            )
+        if declared_members is not None:
+            for identifier in declared_members:
+                if identifier not in by_id:
+                    _fail(
+                        root_id,
+                        f"unresolved specification-set member {identifier}",
+                    )
+                declared_role = metadata[identifier]["role"]
+                if declared_role == "root" and identifier != root_id:
+                    _fail(
+                        root_id,
+                        f"declared specification-set member {identifier} "
+                        "is another specification-set root",
+                    )
+            expected_members = set(declared_members)
             discovered_members = set(identifiers)
             if discovered_members != expected_members:
                 missing = sorted(expected_members - discovered_members)
@@ -228,6 +218,8 @@ def validate_hierarchy(
                 )
             if identifier != root_id and item["role"] != "subordinate":
                 _fail(identifier, "non-root document must have subordinate role")
+            if identifier != root_id and "members" in item:
+                _fail(identifier, "subordinate document must not declare members")
 
     inheritance: dict[str, list[str]] = {}
     imports: dict[str, list[str]] = {}

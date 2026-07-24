@@ -9,7 +9,8 @@
 **Parent:** `GVE-LEVEL-1`
 <br>**Document role:** root<br>
 **Specification-set root:** `GVE-LEVEL-2`<br>
-**Imports:** None
+**Imports:** None<br>
+**Specification-set members:** `GVE-LEVEL-2`, `GVE-LEVEL-2-DOCUMENT-AUTHORITY`, `GVE-LEVEL-2-WORKFLOW-COMPOSITION`, `GVE-LEVEL-2-DEPENDENCIES-HANDOFFS`, `GVE-LEVEL-2-RESULT-ASSEMBLY`, `GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 
 ## Summary
 

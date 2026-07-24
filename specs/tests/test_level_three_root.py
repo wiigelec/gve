@@ -54,6 +54,13 @@ class LevelThreeRootTests(unittest.TestCase):
                 "role": "root",
                 "root": "GVE-LEVEL-3",
                 "imports": [],
+                "members": [
+                    "GVE-LEVEL-3",
+                    "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+                    "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+                    "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+                    "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+                ],
             },
         )
 

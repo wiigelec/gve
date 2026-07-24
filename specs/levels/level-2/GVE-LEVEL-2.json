@@ -11,7 +11,15 @@
   "document": {
     "role": "root",
     "root": "GVE-LEVEL-2",
-    "imports": []
+    "imports": [],
+    "members": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+      "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "GVE-LEVEL-2-RESULT-ASSEMBLY",
+      "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+    ]
   },
   "summary": "GVE Level 2 defines the normative application-plugin composition layer for governed local CLI workflows. It preserves all accepted Level 0 effect, authority, evidence, fail-closed, and authoritative-result semantics and all accepted Level 1 workflow, operation, plugin-assignment, validated-operation-contract, dependency, handoff, lifecycle, and result boundaries. The Level 2 root establishes the authority, scope, document decomposition, and non-overlapping semantic responsibilities of the Level 2 specification set. Detailed composition semantics are owned by explicitly identified subordinate Level 2 documents. The root does not import subordinate documents, does not reinterpret plugin-specific meaning, and does not authorize maintained runtime implementation.",
   "definitions": [

@@ -11,7 +11,14 @@
   "document": {
     "role": "root",
     "root": "GVE-LEVEL-3",
-    "imports": []
+    "imports": [],
+    "members": [
+      "GVE-LEVEL-3",
+      "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+      "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+      "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+      "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+    ]
   },
   "summary": "GVE Level 3 defines the normative implementation-architecture layer that refines accepted Levels 0 through 2 without replacing or weakening them. The Level 3 root establishes implementation-facing, application-independent responsibility boundaries for the maintained core, plugins, actions, registries, validated operation contracts, workflow planning and lifecycle, evidence, operation results, and authoritative execution-record and versioned workflow-result realization. It defines the exact Level 3 specification-set decomposition while leaving detailed semantics to separately governed subordinate documents. Acceptance of Level 3 specifications does not itself accept maintained runtime code, plugin implementations, production payload schemas, or plugin-specific service behavior.",
   "definitions": [

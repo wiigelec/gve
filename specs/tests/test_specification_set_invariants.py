@@ -151,8 +151,8 @@ class SpecificationSetInvariantTests(unittest.TestCase):
         )
         self._assert_rejected(
             specs_root,
-            "GVE-LEVEL-2: specification-set membership mismatch; "
-            "missing=['GVE-LEVEL-2-RESULT-ASSEMBLY'], unexpected=[]",
+            "GVE-LEVEL-2: unresolved specification-set member "
+            "GVE-LEVEL-2-RESULT-ASSEMBLY",
         )
 
     def test_rejects_unexpected_level_two_member(self) -> None:
@@ -177,8 +177,8 @@ class SpecificationSetInvariantTests(unittest.TestCase):
         )
         self._assert_rejected(
             specs_root,
-            "GVE-LEVEL-3: specification-set membership mismatch; "
-            "missing=['GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION'], unexpected=[]",
+            "GVE-LEVEL-3: unresolved specification-set member "
+            "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
         )
 
     def test_rejects_unexpected_level_three_member(self) -> None:

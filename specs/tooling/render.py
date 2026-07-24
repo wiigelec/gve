@@ -30,13 +30,18 @@ def render_markdown(document: Mapping[str, Any]) -> str:
             ", ".join(f"`{identifier}`" for identifier in metadata["imports"])
             or "None"
         )
-        lines.extend(
-            [
-                f"<br>**Document role:** {metadata['role']}<br>",
-                f"**Specification-set root:** `{metadata['root']}`<br>",
-                f"**Imports:** {imports}",
-            ]
-        )
+        metadata_lines = [
+            f"<br>**Document role:** {metadata['role']}<br>",
+            f"**Specification-set root:** `{metadata['root']}`<br>",
+            f"**Imports:** {imports}",
+        ]
+        if "members" in metadata:
+            members = ", ".join(
+                f"`{identifier}`" for identifier in metadata["members"]
+            )
+            metadata_lines[-1] += "<br>"
+            metadata_lines.append(f"**Specification-set members:** {members}")
+        lines.extend(metadata_lines)
     lines.extend(
         [
             "",
