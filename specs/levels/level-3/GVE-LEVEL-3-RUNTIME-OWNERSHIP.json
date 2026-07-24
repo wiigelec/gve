@@ -1,0 +1,316 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+    "level": 3,
+    "title": "GVE Level 3 Runtime Ownership",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-3"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-3",
+    "imports": [
+      "GVE-LEVEL-3"
+    ]
+  },
+  "summary": "GVE Level 3 Runtime Ownership defines the application-independent runtime components and responsibility boundaries that realize accepted GVE authority without defining maintained implementation code. It assigns common-envelope loading, workflow and operation representations, core orchestration, plugin registry ownership, plugin and action interface boundaries, plugin-owned action registries, operation execution contexts, common interruption and failure facilities, immutable runtime snapshots, and implementation responsibility boundaries while preserving plugin and action ownership of application-specific meaning.",
+  "definitions": [
+    {
+      "id": "L3-RO-RUNTIME-COMPONENT-MODEL",
+      "term": "Runtime component model",
+      "text": "The application-independent set of runtime responsibilities and interfaces needed to load governed input, represent workflows and operations, resolve component ownership, establish execution contexts, and coordinate common runtime facilities without implementing plugin-specific meaning."
+    },
+    {
+      "id": "L3-RO-COMMON-ENVELOPE-LOADER",
+      "term": "Common-envelope loader",
+      "text": "The core-owned runtime component that reads a governed payload and validates only application-independent envelope structure, identity presence, and representation integrity before plugin-owned action interpretation."
+    },
+    {
+      "id": "L3-RO-WORKFLOW-REPRESENTATION",
+      "term": "Governed workflow runtime representation",
+      "text": "The application-independent runtime representation of one governed workflow, its stable identity, its governed operations, and the common facts required for later planning, execution coordination, evidence attribution, and result assembly."
+    },
+    {
+      "id": "L3-RO-OPERATION-REPRESENTATION",
+      "term": "Governed operation runtime representation",
+      "text": "The application-independent runtime representation of one governed operation, including its stable identity and references to its requested plugin and plugin-owned action without interpreting action-specific meaning."
+    },
+    {
+      "id": "L3-RO-CORE-ORCHESTRATOR",
+      "term": "Core runtime orchestrator",
+      "text": "The core-owned component that coordinates application-independent loading, identity, registry, planning handoff, execution eligibility handoff, common runtime facilities, evidence routing, and result routing while remaining outside plugin-specific semantic interpretation."
+    },
+    {
+      "id": "L3-RO-PLUGIN-REGISTRY-OWNER",
+      "term": "Core-owned plugin registry",
+      "text": "The deterministic core-owned registry of eligible plugin identities and common plugin interface facts. The registry identifies plugins but does not own or interpret plugin-specific actions."
+    },
+    {
+      "id": "L3-RO-PLUGIN-INTERFACE-BOUNDARY",
+      "term": "Plugin interface boundary",
+      "text": "The application-independent boundary through which a selected plugin exposes its identity, action registry, common structural capabilities, and governed handoffs while retaining ownership of application-specific meaning."
+    },
+    {
+      "id": "L3-RO-ACTION-REGISTRY-OWNER",
+      "term": "Plugin-owned action registry",
+      "text": "The deterministic registry owned by one plugin that contains that plugin's eligible action identities and common interface facts. Actions register with their owning plugin rather than directly with the core."
+    },
+    {
+      "id": "L3-RO-ACTION-INTERFACE-BOUNDARY",
+      "term": "Action interface boundary",
+      "text": "The boundary through which one plugin-owned action exposes application-independent interface facts while retaining ownership of its declared inputs, semantic interpretation, governed execution behavior, evidence meaning, and result meaning."
+    },
+    {
+      "id": "L3-RO-EXECUTION-CONTEXT",
+      "term": "Operation execution context",
+      "text": "The operation-scoped runtime context that binds stable workflow and operation identities, selected plugin and action identities, accepted planning facts, common cancellation and timeout facilities, evidence routing, and result routing without creating a new unit of authority."
+    },
+    {
+      "id": "L3-RO-COMMON-RUNTIME-FACILITIES",
+      "term": "Common runtime facilities",
+      "text": "Application-independent facilities for cancellation signaling, timeout coordination, bounded common failure representation, and shared resource lifetime management that do not reinterpret plugin-specific execution or effect meaning."
+    },
+    {
+      "id": "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT",
+      "term": "Immutable runtime snapshot",
+      "text": "A stable, uniquely identifiable snapshot of application-independent runtime facts required by a planning or execution attempt, including relevant registry and representation identities, that cannot change during that attempt."
+    },
+    {
+      "id": "L3-RO-ACTION-MODULE-BOUNDARY",
+      "term": "Action implementation module boundary",
+      "text": "The independently identifiable implementation boundary for one action, within which action-specific input declaration, interpretation, execution, evidence, and result behavior remain localized except for explicit shared contracts or shared facilities."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L3-RO-REQ-001",
+      "text": "The runtime architecture must preserve the governed workflow and governed operation as the stable units of identity, authority, planning, execution, evidence attribution, and result representation; runtime components and execution contexts must not replace them with anonymous steps.",
+      "references": [
+        "L3-RO-RUNTIME-COMPONENT-MODEL",
+        "L3-RO-WORKFLOW-REPRESENTATION",
+        "L3-RO-OPERATION-REPRESENTATION",
+        "L3-RO-EXECUTION-CONTEXT",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-002",
+      "text": "The common-envelope loader must validate application-independent representation and identity facts and must fail closed on missing, malformed, duplicate, conflicting, ambiguous, or non-uniquely attributable common-envelope facts.",
+      "references": [
+        "L3-RO-COMMON-ENVELOPE-LOADER",
+        "L3-RO-WORKFLOW-REPRESENTATION",
+        "L3-RO-OPERATION-REPRESENTATION"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-003",
+      "text": "The core runtime orchestrator must own only application-independent coordination, common structural conformance, component identity, registry ownership, and routing responsibilities and must not interpret, derive, normalize, override, or validate plugin-owned action or input meaning.",
+      "references": [
+        "L3-RO-CORE-ORCHESTRATOR",
+        "L3-RO-PLUGIN-INTERFACE-BOUNDARY",
+        "L3-RO-ACTION-INTERFACE-BOUNDARY",
+        "LEVEL-3-RUNTIME-OWNERSHIP"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-004",
+      "text": "The core must own the plugin registry, and the registry must identify eligible plugins through deterministic application-independent facts without containing or interpreting plugin-owned action semantics.",
+      "references": [
+        "L3-RO-PLUGIN-REGISTRY-OWNER",
+        "L3-RO-CORE-ORCHESTRATOR"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-005",
+      "text": "Each plugin must own exactly one action registry for its eligible actions; actions must register with their owning plugin rather than directly with the core, and the core must reach action identity only through the selected plugin.",
+      "references": [
+        "L3-RO-PLUGIN-INTERFACE-BOUNDARY",
+        "L3-RO-ACTION-REGISTRY-OWNER",
+        "L3-RO-ACTION-INTERFACE-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-006",
+      "text": "Each action must retain ownership of its declared input meaning, semantic interpretation, governed execution behavior, evidence meaning, and result meaning; common interfaces may expose structural facts but must not transfer that ownership to the plugin container or core.",
+      "references": [
+        "L3-RO-ACTION-INTERFACE-BOUNDARY",
+        "L3-RO-PLUGIN-INTERFACE-BOUNDARY",
+        "L3-RO-ACTION-MODULE-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-007",
+      "text": "Every operation execution context must be attributable to exactly one workflow identity and one operation identity and must bind the selected plugin and action identities and accepted immutable runtime facts without creating independent authority or weakening accepted planning preconditions.",
+      "references": [
+        "L3-RO-EXECUTION-CONTEXT",
+        "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT",
+        "L3-RO-WORKFLOW-REPRESENTATION",
+        "L3-RO-OPERATION-REPRESENTATION"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-008",
+      "text": "Runtime representations, plugin registry entries, plugin interfaces, action registry entries, action interfaces, execution contexts, and immutable runtime snapshots must have deterministic identities or deterministic attribution; missing, duplicate, conflicting, ambiguous, stale, incompatible, or mutated facts must fail closed.",
+      "references": [
+        "L3-RO-PLUGIN-REGISTRY-OWNER",
+        "L3-RO-ACTION-REGISTRY-OWNER",
+        "L3-RO-EXECUTION-CONTEXT",
+        "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-009",
+      "text": "A planning or execution attempt must use immutable runtime snapshots sufficient to prevent late registration, identity mutation, registry drift, representation replacement, or other runtime-fact changes from altering the meaning or eligibility of that attempt.",
+      "references": [
+        "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT",
+        "L3-RO-PLUGIN-REGISTRY-OWNER",
+        "L3-RO-ACTION-REGISTRY-OWNER"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-010",
+      "text": "Common runtime facilities may coordinate cancellation, timeout, bounded common failure representation, and shared resource lifetime, but they must not infer plugin-specific completion, observation, verification, effects, evidence meaning, or result meaning.",
+      "references": [
+        "L3-RO-COMMON-RUNTIME-FACILITIES",
+        "L3-RO-CORE-ORCHESTRATOR",
+        "L3-RO-EXECUTION-CONTEXT"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-011",
+      "text": "Lifecycle, component, registry, cancellation, timeout, or failure status must not substitute for requested, authorized, attempted, completed, observed, or verified effect claims.",
+      "references": [
+        "L3-RO-COMMON-RUNTIME-FACILITIES",
+        "L3-RO-EXECUTION-CONTEXT",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-012",
+      "text": "Each action must have an independently identifiable implementation module, and adding an action must require only that action module and one explicit registration entry, without core modification or modification to unrelated action implementations.",
+      "references": [
+        "L3-RO-ACTION-MODULE-BOUNDARY",
+        "L3-RO-ACTION-REGISTRY-OWNER",
+        "L3-RO-CORE-ORCHESTRATOR"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-013",
+      "text": "Ordinary changes to one action's semantics must remain localized to that action module; changes to shared contracts or deliberately shared facilities must be separately identifiable and must not be hidden as action-local changes.",
+      "references": [
+        "L3-RO-ACTION-MODULE-BOUNDARY",
+        "L3-RO-COMMON-RUNTIME-FACILITIES"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-014",
+      "text": "Implementation package or module boundaries must follow normative semantic ownership and common interface responsibilities; source layout must not transfer plugin-specific meaning to the core or create precedence among Level 3 subordinate specifications.",
+      "references": [
+        "L3-RO-RUNTIME-COMPONENT-MODEL",
+        "L3-RO-ACTION-MODULE-BOUNDARY",
+        "LEVEL-3-SPECIFICATION-SET"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-015",
+      "text": "This specification must not define detailed plugin or action contract fields, registry sealing mechanics, action input-contract validation, validated-operation-contract production, workflow-plan state transitions, dependency or handoff eligibility, evidence schemas, operation-result schemas, effect-claim realization, or authoritative workflow-result assembly.",
+      "references": [
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-RO-REQ-016",
+      "text": "This specification must not define maintained runtime code, language-specific interface syntax, deployment, package-manager, performance, caching, concurrency, plugin-specific service semantics, credentials, publication behavior, bootstrap executor formats, or modifications to accepted Levels 0 through 2.",
+      "references": [
+        "L3-RO-RUNTIME-COMPONENT-MODEL",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L3-RO-REL-001",
+      "source": "L3-RO-RUNTIME-COMPONENT-MODEL",
+      "relation": "realizes",
+      "target": "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+    },
+    {
+      "id": "L3-RO-REL-002",
+      "source": "L3-RO-COMMON-ENVELOPE-LOADER",
+      "relation": "produces",
+      "target": "L3-RO-WORKFLOW-REPRESENTATION"
+    },
+    {
+      "id": "L3-RO-REL-003",
+      "source": "L3-RO-WORKFLOW-REPRESENTATION",
+      "relation": "contains",
+      "target": "L3-RO-OPERATION-REPRESENTATION"
+    },
+    {
+      "id": "L3-RO-REL-004",
+      "source": "L3-RO-CORE-ORCHESTRATOR",
+      "relation": "owns",
+      "target": "L3-RO-PLUGIN-REGISTRY-OWNER"
+    },
+    {
+      "id": "L3-RO-REL-005",
+      "source": "L3-RO-PLUGIN-INTERFACE-BOUNDARY",
+      "relation": "owns",
+      "target": "L3-RO-ACTION-REGISTRY-OWNER"
+    },
+    {
+      "id": "L3-RO-REL-006",
+      "source": "L3-RO-ACTION-REGISTRY-OWNER",
+      "relation": "contains",
+      "target": "L3-RO-ACTION-INTERFACE-BOUNDARY"
+    },
+    {
+      "id": "L3-RO-REL-007",
+      "source": "L3-RO-EXECUTION-CONTEXT",
+      "relation": "binds",
+      "target": "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT"
+    },
+    {
+      "id": "L3-RO-REL-008",
+      "source": "L3-RO-ACTION-MODULE-BOUNDARY",
+      "relation": "implements",
+      "target": "L3-RO-ACTION-INTERFACE-BOUNDARY"
+    },
+    {
+      "id": "L3-RO-REL-009",
+      "source": "L3-RO-COMMON-RUNTIME-FACILITIES",
+      "relation": "supports",
+      "target": "L3-RO-EXECUTION-CONTEXT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Application-independent runtime component and responsibility ownership",
+      "Common-envelope loading and common structural validation boundaries",
+      "Governed workflow and governed operation runtime representations",
+      "Core runtime orchestration and core-owned plugin registry responsibility",
+      "Plugin interface boundaries and plugin-owned action registries",
+      "Action interface ownership and independently identifiable action modules",
+      "Operation-scoped execution contexts without new authority",
+      "Common cancellation, timeout, failure, and shared-resource facilities",
+      "Deterministic identities and immutable runtime snapshots",
+      "Semantic ownership-driven implementation package or module boundaries"
+    ],
+    "excludes": [
+      "Detailed plugin and action contract fields, versions, and registry sealing mechanics",
+      "Declared action input-contract validation and validated-operation-contract production",
+      "Workflow resolution, accepted-plan states, eligibility, dependency, handoff, and lifecycle transitions",
+      "Evidence schemas, effect-claim realization, operation-result schemas, uncertainty, and authoritative workflow-result assembly",
+      "Maintained runtime, plugin, action, registry, or executor implementation",
+      "Language-specific protocol, interface, or abstract-base-class syntax",
+      "Deployment, package-manager, performance, caching, and concurrency choices",
+      "Plugin-specific filesystem, command-execution, local-Git, remote-service, credential, and publication semantics",
+      "Bootstrap executor operation formats and implementation behavior",
+      "Modification of accepted Levels 0 through 2"
+    ]
+  }
+}
