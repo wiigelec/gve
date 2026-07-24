@@ -90,6 +90,16 @@ class LevelThreeRootTests(unittest.TestCase):
         )
         self.assertTrue(requirement_ids.isdisjoint(relationship_ids))
 
+    def test_evidence_result_realization_owns_versioned_results(self) -> None:
+        definition = next(
+            item
+            for item in self.document["definitions"]
+            if item["id"] == "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+        )
+        self.assertIn("authoritative execution-record realization", definition["text"])
+        self.assertIn("explicit supersession", definition["text"])
+        self.assertIn("one current lineage head", definition["text"])
+
     def test_historical_level_three_is_non_normative(self) -> None:
         historical = next(
             item

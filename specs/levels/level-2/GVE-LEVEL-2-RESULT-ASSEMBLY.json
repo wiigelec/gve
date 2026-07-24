@@ -18,7 +18,7 @@
       "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS"
     ]
   },
-  "summary": "GVE Level 2 Result Assembly defines composition-facing operation results and evidence, deterministic evidence aggregation, exactly one authoritative workflow result for each governed workflow outcome, truthful representation of pre-execution failure and every operation outcome, explicit partial effects and incomplete evidence, evidence-sufficiency gates for workflow completion, observation, and verification claims, and complete result traceability while preserving every inherited effect-state distinction.",
+  "summary": "GVE Level 2 Result Assembly defines authoritative workflow execution records, composition-facing operation results and evidence, deterministic evidence aggregation, optional fail-closed finalization of immutable authoritative workflow-result versions, explicit result supersession and one current lineage head, truthful representation of pre-execution failure and every operation outcome, partial effects, incomplete or contradictory evidence, and complete evidence-bound traceability.",
   "definitions": [
     {
       "id": "L2-RA-OPERATION-RESULT",
@@ -41,14 +41,39 @@
       "text": "The deterministic assembly of operation evidence and workflow evidence without converting lifecycle, validation, plugin, dependency, handoff, blocked, skipped, failed, or unattempted status into an effect claim."
     },
     {
+      "id": "L2-RA-WORKFLOW-EXECUTION-RECORD",
+      "term": "Authoritative workflow execution record",
+      "text": "The immutable authoritative record of one governed workflow processing or execution identity, including planning or validation disposition, lifecycle facts, operation outcomes, evidence, uncertainty, contradictions, finalization disposition, and only the effect claims supported by evidence. It exists whether or not a workflow result can be finalized."
+    },
+    {
+      "id": "L2-RA-RESULT-VERSION",
+      "term": "Workflow-result version",
+      "text": "One uniquely identified immutable finalized authoritative workflow result in a result lineage. A correction creates a new version and never mutates an accepted historical version."
+    },
+    {
+      "id": "L2-RA-RESULT-SUPERSESSION",
+      "term": "Result supersession",
+      "text": "The explicit evidence-bound relationship by which a new finalized result version identifies the prior version it supersedes and states the correction reason without deleting or rewriting prior authoritative history."
+    },
+    {
+      "id": "L2-RA-CURRENT-LINEAGE-HEAD",
+      "term": "Current result-lineage head",
+      "text": "The single finalized result version in one workflow-result lineage that is not superseded by another accepted version. Historical superseded versions remain authoritative records of their accepted content but are not current."
+    },
+    {
+      "id": "L2-RA-FINALIZATION-FAILURE",
+      "term": "Result-finalization failure",
+      "text": "The fail-closed disposition recorded in the authoritative workflow execution record when available facts cannot produce a complete, consistent, uniquely attributable, sufficiently evidenced finalized workflow result. It is not itself a finalized workflow result."
+    },
+    {
       "id": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
       "term": "Authoritative workflow result",
-      "text": "The single canonical result record for one governed workflow outcome. It includes the workflow identity, workflow-plan acceptance outcome, every declared operation result, workflow evidence, aggregate claims, partial effects, incomplete evidence, and traceability."
+      "text": "A finalized immutable result version for one governed workflow realization. It includes the workflow and execution identities, applicable accepted or rejected plan identity, every required operation result, workflow evidence, aggregate claims, partial effects, incomplete evidence, and traceability. It exists only when result finalization succeeds."
     },
     {
       "id": "L2-RA-PREEXECUTION-FAILURE-RESULT",
-      "term": "Pre-execution failure result",
-      "text": "An authoritative workflow result representing rejection before any operation attempt. It records the validation failure and all operations as unattempted without claiming workflow execution, operation attempt, completion, observation, or verification."
+      "term": "Pre-execution failure record",
+      "text": "An authoritative workflow execution record representing rejection before any operation attempt. It records the rejection cause and all identifiable operations as unattempted without claiming workflow execution, operation attempt, completion, observation, verification, or successful result finalization."
     },
     {
       "id": "L2-RA-OPERATION-OUTCOME",
@@ -89,15 +114,15 @@
   "requirements": [
     {
       "id": "L2-RA-REQ-001",
-      "text": "Exactly one authoritative workflow result must be produced for each governed workflow outcome, including pre-execution rejection, partial progress, failure, and successful completion.",
+      "text": "Exactly one authoritative workflow execution record must represent each governed workflow processing or execution identity, including pre-execution rejection, partial progress, failure, successful completion, and result-finalization failure.",
       "references": [
-        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+        "L2-RA-WORKFLOW-EXECUTION-RECORD",
         "L2-WC-WORKFLOW-IDENTITY"
       ]
     },
     {
       "id": "L2-RA-REQ-002",
-      "text": "The authoritative workflow result must represent every operation declared in the accepted or rejected workflow plan exactly once and must preserve each operation's identity and actual outcome.",
+      "text": "A finalized authoritative workflow result may be produced only when finalization succeeds. Each finalized result version must represent every operation required by the applicable accepted or rejected plan exactly once and preserve each operation's identity and actual outcome.",
       "references": [
         "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
         "L2-RA-OPERATION-OUTCOME",
@@ -135,7 +160,7 @@
     },
     {
       "id": "L2-RA-REQ-006",
-      "text": "A pre-execution validation failure must produce a pre-execution failure result that records the rejection cause, represents every operation as unattempted, and does not claim that workflow execution began.",
+      "text": "A pre-execution validation failure must produce a pre-execution failure record that records the rejection cause, represents every identifiable operation as unattempted, and does not claim that workflow execution or successful result finalization began.",
       "references": [
         "L2-RA-PREEXECUTION-FAILURE-RESULT",
         "L2-WC-PLAN-ACCEPTANCE",
@@ -144,7 +169,7 @@
     },
     {
       "id": "L2-RA-REQ-007",
-      "text": "Failed, blocked, skipped, and otherwise unattempted operations must be represented explicitly and distinctly in the authoritative workflow result and must not be omitted or collapsed into a generic non-success status.",
+      "text": "Failed, blocked, skipped, and otherwise unattempted operations must be represented explicitly and distinctly in the authoritative workflow execution record and, when finalization succeeds, in the finalized workflow result; they must not be omitted or collapsed into a generic non-success status.",
       "references": [
         "L2-RA-OPERATION-OUTCOME",
         "L2-DH-FAILED-OPERATION",
@@ -180,7 +205,7 @@
     },
     {
       "id": "L2-RA-REQ-011",
-      "text": "Partial effects must be represented explicitly with the operations and effect dimensions they cover, and must not be represented as complete workflow success.",
+      "text": "Partial effects must be represented explicitly with the operations and effect dimensions they cover in the authoritative workflow execution record and any finalized workflow result, and must not be represented as complete workflow success.",
       "references": [
         "L2-RA-PARTIAL-EFFECT",
         "L2-DH-PARTIAL-PROGRESS",
@@ -234,7 +259,7 @@
     },
     {
       "id": "L2-RA-REQ-017",
-      "text": "Conflicting, duplicate, ambiguous, stale, unauthorized, malformed, or non-attributable operation results or evidence must fail result assembly closed and must prevent unsupported authoritative claims.",
+      "text": "Conflicting, duplicate, ambiguous, stale, unauthorized, malformed, or non-attributable operation results or evidence must fail result finalization closed, remain truthfully represented in the authoritative workflow execution record, and prevent unsupported authoritative claims.",
       "references": [
         "L2-RA-OPERATION-RESULT",
         "L2-RA-EVIDENCE-AGGREGATION",
@@ -243,6 +268,59 @@
     },
     {
       "id": "L2-RA-REQ-018",
+      "text": "The authoritative workflow execution record must bind one workflow identity and one governed processing or execution identity and must identify the accepted-plan identity when one exists, or the rejected planning or validation context when no plan was accepted.",
+      "references": [
+        "L2-RA-WORKFLOW-EXECUTION-RECORD",
+        "L2-WC-WORKFLOW-IDENTITY",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-019",
+      "text": "When result finalization fails because evidence or result facts are incomplete, contradictory, ambiguous, stale, malformed, unauthorized, or non-attributable, the execution record must preserve that disposition and its supporting facts, and no finalized authoritative workflow result may be claimed.",
+      "references": [
+        "L2-RA-FINALIZATION-FAILURE",
+        "L2-RA-WORKFLOW-EXECUTION-RECORD",
+        "L2-RA-INCOMPLETE-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-020",
+      "text": "Every finalized authoritative workflow result must have one stable result-version identity and must remain immutable after acceptance.",
+      "references": [
+        "L2-RA-RESULT-VERSION",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-021",
+      "text": "A correction must create a new finalized result version that explicitly identifies the directly superseded version, the correction reason, and the evidence basis; it must not mutate, delete, or silently replace accepted historical result content.",
+      "references": [
+        "L2-RA-RESULT-SUPERSESSION",
+        "L2-RA-RESULT-VERSION",
+        "L2-RA-RESULT-TRACEABILITY"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-022",
+      "text": "Each workflow-result lineage must have at most one current lineage head. Multiple immutable historical versions are permitted only through explicit acyclic supersession relationships, and every superseded version must remain attributable and inspectable as accepted history.",
+      "references": [
+        "L2-RA-CURRENT-LINEAGE-HEAD",
+        "L2-RA-RESULT-SUPERSESSION",
+        "L2-RA-RESULT-VERSION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-023",
+      "text": "Lifecycle, validation, finalization, current-head, and superseded status are record or lineage facts and must not substitute for requested, authorized, attempted, completed, observed, or verified effect claims.",
+      "references": [
+        "L2-RA-WORKFLOW-EXECUTION-RECORD",
+        "L2-RA-CURRENT-LINEAGE-HEAD",
+        "L2-RA-EVIDENCE-AGGREGATION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-024",
       "text": "The core may assemble application-independent result facts and evidence obligations, but it must not interpret, normalize, override, or derive plugin-specific result meaning.",
       "references": [
         "L2-RA-OPERATION-RESULT",
@@ -250,7 +328,7 @@
       ]
     },
     {
-      "id": "L2-RA-REQ-019",
+      "id": "L2-RA-REQ-025",
       "text": "This specification must not define concrete plugin-specific result payload schemas, maintained runtime implementation, GitHub or remote-service behavior, or sibling Level 2 local-plugin-boundary responsibilities.",
       "references": [
         "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
@@ -275,19 +353,19 @@
       "id": "L2-RA-REL-003",
       "source": "L2-RA-WORKFLOW-EVIDENCE",
       "relation": "supports",
-      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      "target": "L2-RA-WORKFLOW-EXECUTION-RECORD"
     },
     {
       "id": "L2-RA-REL-004",
       "source": "L2-RA-EVIDENCE-AGGREGATION",
       "relation": "assembles",
-      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      "target": "L2-RA-WORKFLOW-EXECUTION-RECORD"
     },
     {
       "id": "L2-RA-REL-005",
       "source": "L2-RA-PREEXECUTION-FAILURE-RESULT",
       "relation": "specializes",
-      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      "target": "L2-RA-WORKFLOW-EXECUTION-RECORD"
     },
     {
       "id": "L2-RA-REL-006",
@@ -330,20 +408,46 @@
       "source": "L2-RA-RESULT-TRACEABILITY",
       "relation": "constrains",
       "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-013",
+      "source": "L2-RA-WORKFLOW-EXECUTION-RECORD",
+      "relation": "may-support-finalization-of",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-014",
+      "source": "L2-RA-FINALIZATION-FAILURE",
+      "relation": "is-recorded-by",
+      "target": "L2-RA-WORKFLOW-EXECUTION-RECORD"
+    },
+    {
+      "id": "L2-RA-REL-015",
+      "source": "L2-RA-RESULT-SUPERSESSION",
+      "relation": "links",
+      "target": "L2-RA-RESULT-VERSION"
+    },
+    {
+      "id": "L2-RA-REL-016",
+      "source": "L2-RA-CURRENT-LINEAGE-HEAD",
+      "relation": "selects-one-current",
+      "target": "L2-RA-RESULT-VERSION"
     }
   ],
   "scope": {
     "includes": [
+      "Authoritative workflow execution records for every governed processing or execution identity",
       "Composition-facing operation results",
       "Operation evidence and workflow evidence",
       "Deterministic evidence aggregation",
-      "Exactly one authoritative workflow result",
-      "Pre-execution failure representation",
+      "Optional fail-closed finalization of authoritative workflow-result versions",
+      "Result-version identity, immutability, explicit supersession, and one current lineage head",
+      "Pre-execution failure and result-finalization-failure representation",
       "Failed, blocked, skipped, and unattempted operation representation",
       "Separate requested, authorized, attempted, completed, observed, and verified claims",
-      "Partial effects and incomplete evidence",
+      "Partial effects, incomplete evidence, and contradictory evidence",
       "Workflow completion, observation, and verification evidence gates",
-      "Complete result traceability"
+      "Complete result traceability and preserved historical lineage"
     ],
     "excludes": [
       "Concrete plugin-specific result payload schemas",
