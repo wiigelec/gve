@@ -1,5 +1,6 @@
 #!/bin/sh
 set -eu
 
-shift
 exec python3 -m specs.tooling.validate "$@"
+exec python -m unittest discover -s specs/tests
+exec git diff --check
