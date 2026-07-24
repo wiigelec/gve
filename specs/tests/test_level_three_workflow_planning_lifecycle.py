@@ -105,14 +105,21 @@ class LevelThreeWorkflowPlanningLifecycleTests(unittest.TestCase):
         handoffs = self.requirements["L3-WPL-REQ-006"]
 
         for phrase in (
+            "complete deterministic acyclic partial order",
+            "Independent operations require no artificial ordering edge",
+            "multiple topological serializations",
             "missing operations",
             "duplicate identities",
+            "unresolved operation references",
+            "self-ordering",
             "contradictory constraints",
             "cycles",
-            "duplicate positions",
-            "multiple unresolved valid orders",
+            "missing required sequencing",
+            "ambiguous constraint meaning",
         ):
             self.assertIn(phrase, ordering)
+        self.assertNotIn("duplicate positions", ordering)
+        self.assertNotIn("multiple unresolved valid orders", ordering)
         self.assertIn("must fail closed", ordering)
 
         for phrase in (

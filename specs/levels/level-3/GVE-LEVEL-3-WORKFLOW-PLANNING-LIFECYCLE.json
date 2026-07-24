@@ -17,17 +17,17 @@
       "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS"
     ]
   },
-  "summary": "GVE Level 3 Workflow Planning and Lifecycle defines complete workflow-plan construction and fail-closed acceptance, immutable accepted-plan binding, deterministic ordering, dependency and handoff validation, operation eligibility, attempt identity and ordering, lifecycle-state distinctions, cancellation and timeout observation, retry requirements, partial-progress accounting, and workflow terminality without defining maintained scheduling implementation or evidence and result realization.",
+  "summary": "GVE Level 3 Workflow Planning and Lifecycle defines complete workflow-plan construction and fail-closed acceptance, immutable accepted-plan binding, deterministic acyclic partial-order semantics, dependency and handoff validation, operation eligibility, attempt identity and ordering constraints, lifecycle-state distinctions, cancellation and timeout observation, retry requirements, partial-progress accounting, and workflow terminality without defining maintained scheduling implementation or evidence and result realization.",
   "definitions": [
     {
       "id": "L3-WPL-COMPLETE-WORKFLOW-PLAN",
       "term": "Complete workflow plan",
-      "text": "The pre-execution plan containing the single workflow identity, complete operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract for every operation, all ordering constraints, dependency edges, handoff declarations, governing authority, and immutable registry and runtime snapshot identities."
+      "text": "The pre-execution plan containing the single workflow identity, complete operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract for every operation, the complete deterministic acyclic partial-order relation, dependency edges, handoff declarations, governing authority, and immutable registry and runtime snapshot identities."
     },
     {
       "id": "L3-WPL-PLAN-ACCEPTANCE",
       "term": "Workflow-plan acceptance",
-      "text": "The single fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, dependency- and handoff-valid, and eligible for lifecycle processing."
+      "text": "The single fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, partial-order-valid, dependency- and handoff-valid, and eligible for lifecycle processing. Determinism does not require a unique topological serialization."
     },
     {
       "id": "L3-WPL-ACCEPTED-PLAN-SNAPSHOT",
@@ -47,7 +47,7 @@
     {
       "id": "L3-WPL-OPERATION-ELIGIBILITY",
       "term": "Operation eligibility",
-      "text": "The fail-closed lifecycle determination that one operation may begin an attempt under the accepted plan because authority, ordering, dependencies, handoffs, contract freshness, and current lifecycle conditions are all satisfied."
+      "text": "The fail-closed lifecycle determination that one operation may begin an attempt under the accepted plan because authority, required predecessor relations, dependencies, handoffs, contract freshness, and current lifecycle conditions are all satisfied."
     },
     {
       "id": "L3-WPL-ATTEMPT-IDENTITY",
@@ -56,8 +56,8 @@
     },
     {
       "id": "L3-WPL-ATTEMPT-ORDER",
-      "term": "Deterministic attempt order",
-      "text": "The uniquely determined order in which eligible operation attempts may begin, independent of declaration order, discovery order, filesystem order, registry iteration, or unspecified concurrency."
+      "term": "Attempt ordering constraints",
+      "text": "The accepted-plan partial order governing which eligible operation attempts must precede which others. Eligible attempts not related by the partial order may be serialized or scheduled in more than one valid way without changing accepted-plan meaning."
     },
     {
       "id": "L3-WPL-LIFECYCLE-STATE",
@@ -93,7 +93,7 @@
   "requirements": [
     {
       "id": "L3-WPL-REQ-001",
-      "text": "One workflow-plan acceptance attempt must evaluate exactly one complete workflow plan containing the full operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract per operation, all ordering constraints, all dependency edges, all handoff declarations, governing authority, and immutable registry and runtime snapshots.",
+      "text": "One workflow-plan acceptance attempt must evaluate exactly one complete workflow plan containing the full operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract per operation, all ordering constraints expressed as the complete partial-order relation, all dependency edges, all handoff declarations, governing authority, and immutable registry and runtime snapshots.",
       "references": [
         "L3-WPL-COMPLETE-WORKFLOW-PLAN",
         "L3-WPL-PLAN-ACCEPTANCE",
@@ -119,7 +119,7 @@
     },
     {
       "id": "L3-WPL-REQ-004",
-      "text": "Operation membership and ordering must be complete and deterministic; missing operations, duplicate identities, contradictory constraints, cycles, duplicate positions, or multiple unresolved valid orders must fail closed.",
+      "text": "Operation membership and ordering constraints must define one complete deterministic acyclic partial order over stable operation identities. Independent operations require no artificial ordering edge, and multiple topological serializations of the same accepted partial order are valid. Total-order position rules and rejection merely because more than one valid serialization exists must not be used to reject independent operations or impose artificial precedence. The plan must fail closed for missing operations, duplicate identities, unresolved operation references, self-ordering, conflicting or contradictory constraints, cycles, missing required sequencing, or ambiguous constraint meaning.",
       "references": [
         "L3-WPL-COMPLETE-WORKFLOW-PLAN",
         "L3-WPL-ATTEMPT-ORDER"
@@ -143,7 +143,7 @@
     },
     {
       "id": "L3-WPL-REQ-007",
-      "text": "Operation eligibility must be derived only from the accepted-plan snapshot, governing authority, valid fresh operation contract, deterministic ordering, satisfied dependencies, valid handoffs, and current lifecycle facts.",
+      "text": "Operation eligibility must be derived only from the accepted-plan snapshot, governing authority, valid fresh operation contract, deterministic ordering through satisfied predecessor constraints, satisfied dependencies, valid handoffs, and current lifecycle facts.",
       "references": [
         "L3-WPL-OPERATION-ELIGIBILITY",
         "L3-WPL-ACCEPTED-PLAN-SNAPSHOT",
@@ -168,7 +168,7 @@
     },
     {
       "id": "L3-WPL-REQ-010",
-      "text": "Attempt ordering must be deterministic and must not depend on declaration order, discovery order, filesystem order, registry iteration order, validator iteration order, process timing, or unspecified concurrency.",
+      "text": "A scheduler or concrete topological serialization may choose among currently eligible attempts only within the accepted partial-order constraints and must not alter accepted-plan meaning, introduce an undeclared precedence edge, or be treated as part of accepted-plan identity. Scheduler choice, including any choice under unspecified concurrency, must not depend semantically on declaration order, discovery order, filesystem order, registry iteration order, validator iteration order, or process timing.",
       "references": [
         "L3-WPL-ATTEMPT-ORDER",
         "L3-WPL-OPERATION-ELIGIBILITY"
@@ -315,11 +315,12 @@
     "includes": [
       "Complete workflow-plan construction and fail-closed acceptance",
       "Immutable accepted-plan, contract, authority, registry, and runtime snapshot binding",
-      "Deterministic operation membership and ordering",
+      "Deterministic operation membership and acyclic partial-order constraints",
+      "Independent operations without artificial ordering edges",
       "Dependency graph validation and satisfaction",
       "Lifecycle handoff declarations and eligibility",
       "Operation eligibility and prohibition on premature attempts",
-      "Unique attempt identity and deterministic attempt ordering",
+      "Unique attempt identity and partial-order-constrained attempt eligibility",
       "Distinct eligible, blocked, skipped, unattempted, attempted, interrupted, cancelled, timed-out, failed, and completed facts",
       "Distinct cancellation and timeout request, observation, interruption, and terminal facts",
       "Retry authority, fresh-attempt identity, and re-evaluation requirements",
@@ -329,6 +330,7 @@
     ],
     "excludes": [
       "Maintained runtime, scheduler, executor, queue, plugin, action, and registry implementation",
+      "Concrete scheduler algorithms and topological-serialization policy",
       "Language-specific state-machine, coroutine, thread, process, and concurrency primitives",
       "Detailed plugin and action contract fields, registration mechanics, input interpretation, and validated-contract production",
       "Evidence schemas, evidence sufficiency, effect-claim realization, operation-result schemas, uncertainty, and authoritative workflow-result assembly",
