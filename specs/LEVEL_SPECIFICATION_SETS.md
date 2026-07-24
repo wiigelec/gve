@@ -44,6 +44,23 @@ Exactly one document per numeric level has role `root`. Its identity is
 documents. Every subordinate names that root and declares the root as its
 `specification.parent`.
 
+## Current Level 3 decomposition
+
+The normative Level 3 specification set is decomposed into exactly these
+documents:
+
+```text
+GVE-LEVEL-3
+GVE-LEVEL-3-RUNTIME-OWNERSHIP
+GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS
+GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE
+GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION
+```
+
+`GVE-LEVEL-3` is the sole root and has no imports. The four subordinate
+documents are separately governed work and must each preserve the
+non-overlapping semantic responsibility assigned by the root.
+
 ## Resolution and conflicts
 
 Imports are explicit, same-level, acyclic visibility edges. A document can

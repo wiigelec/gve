@@ -1,0 +1,236 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-3",
+    "level": 3,
+    "title": "GVE Level 3",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "root",
+    "root": "GVE-LEVEL-3",
+    "imports": []
+  },
+  "summary": "GVE Level 3 defines the normative implementation-architecture layer that refines accepted Levels 0 through 2 without replacing or weakening them. The Level 3 root establishes implementation-facing, application-independent responsibility boundaries for the maintained core, plugins, actions, registries, validated operation contracts, workflow planning and lifecycle, evidence, operation results, and authoritative workflow-result realization. It defines the exact Level 3 specification-set decomposition while leaving detailed semantics to separately governed subordinate documents. Acceptance of Level 3 specifications does not itself accept maintained runtime code, plugin implementations, production payload schemas, or plugin-specific service behavior.",
+  "definitions": [
+    {
+      "id": "LEVEL-3-IMPLEMENTATION-ARCHITECTURE",
+      "term": "Level 3 implementation architecture",
+      "text": "The application-independent normative architecture that assigns implementation-facing responsibilities for realizing accepted GVE workflow, operation, plugin, contract, planning, lifecycle, evidence, effect-state, and authoritative-result semantics without defining maintained implementation code."
+    },
+    {
+      "id": "LEVEL-3-SPECIFICATION-SET",
+      "term": "Level 3 specification set",
+      "text": "The complete normative Level 3 authority consisting of exactly the root GVE-LEVEL-3 and four subordinate documents with distinct, non-overlapping primary semantic responsibilities."
+    },
+    {
+      "id": "LEVEL-3-ROOT",
+      "term": "Level 3 root",
+      "text": "The sole normative root document GVE-LEVEL-3. It establishes Level 3 identity, Level 2 parentage, inherited invariants, implementation-architecture scope, exact document decomposition, responsibility ownership, historical disposition, and exclusions."
+    },
+    {
+      "id": "LEVEL-3-RUNTIME-OWNERSHIP",
+      "term": "Level 3 runtime-ownership specification",
+      "text": "The subordinate Level 3 specification GVE-LEVEL-3-RUNTIME-OWNERSHIP, which owns runtime component boundaries and core, plugin, action, registry, planning, execution-context, and shared-facility responsibility allocation."
+    },
+    {
+      "id": "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+      "term": "Level 3 plugin-action-contracts specification",
+      "text": "The subordinate Level 3 specification GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS, which owns common plugin and action contracts, registration, registry validation and sealing, declared input contracts, plugin-owned interpretation, and fresh validated-operation-contract production."
+    },
+    {
+      "id": "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+      "term": "Level 3 workflow-planning-lifecycle specification",
+      "text": "The subordinate Level 3 specification GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE, which owns workflow resolution, complete immutable plan acceptance, operation eligibility, dependency and actual-handoff enforcement, attempt ordering, blocking, skipping, failure, cancellation, timeout, and lifecycle realization."
+    },
+    {
+      "id": "LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+      "term": "Level 3 evidence-result-realization specification",
+      "text": "The subordinate Level 3 specification GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION, which owns evidence capture and attribution, operation-result production, incomplete and conflicting evidence, uncertainty, effect-state traceability, and exactly one authoritative workflow-result realization."
+    },
+    {
+      "id": "HISTORICAL-LEVEL-3-MATERIAL",
+      "term": "Historical Level 3 material",
+      "text": "The repository-root LEVEL_3.md document retained only as non-normative historical input. It is superseded as Level 3 authority, and compatible material may be redistributed only through separately governed normative Level 3 or plugin-specific specifications."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L3-ROOT-REQ-001",
+      "text": "Level 3 must refine implementation-facing realization of accepted Levels 0 through 2 and must not replace, weaken, collapse, contradict, bypass, or redefine any applicable workflow, operation, authority, plugin-assignment, validated-operation-contract, workflow-plan, dependency, sequencing, handoff, lifecycle, evidence, fail-closed, effect-state, or authoritative-result semantic.",
+      "references": [
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE",
+        "LEVEL-3-ROOT"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-002",
+      "text": "The Level 3 specification set must contain exactly one root document with identity GVE-LEVEL-3, numeric level 3, normative status, parent GVE-LEVEL-2, document role root, specification-set root GVE-LEVEL-3, and no imports.",
+      "references": [
+        "LEVEL-3-SPECIFICATION-SET",
+        "LEVEL-3-ROOT"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-003",
+      "text": "The Level 3 root must preserve the complete applicable Level 2 authority through parentage and inherited specification semantics without importing subordinate documents.",
+      "references": [
+        "LEVEL-3-ROOT",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-004",
+      "text": "The normative Level 3 specification set must consist exactly of GVE-LEVEL-3, GVE-LEVEL-3-RUNTIME-OWNERSHIP, GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS, GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE, and GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION.",
+      "references": [
+        "LEVEL-3-SPECIFICATION-SET",
+        "LEVEL-3-ROOT",
+        "LEVEL-3-RUNTIME-OWNERSHIP",
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-005",
+      "text": "Each Level 3 subordinate document must own exactly one primary semantic responsibility assigned by this root. Responsibilities must not overlap, create precedence, or permit one subordinate to redefine another; ambiguity or conflict must fail closed until corrected through separately governed specification work.",
+      "references": [
+        "LEVEL-3-SPECIFICATION-SET",
+        "LEVEL-3-RUNTIME-OWNERSHIP",
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-006",
+      "text": "Level 3 must preserve one governed workflow containing one or more governed operations, stable workflow and operation identities, exactly one selected plugin per operation, exactly one fresh valid uniquely attributable validated operation contract per accepted operation, and complete fail-closed workflow-plan acceptance before any operation attempt.",
+      "references": [
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE",
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-007",
+      "text": "The maintained core architecture must own only application-independent orchestration and common structural conformance, while the selected plugin and action must own application-specific action identity, input meaning, semantic interpretation, governed execution behavior, evidence obligations, and result obligations.",
+      "references": [
+        "LEVEL-3-RUNTIME-OWNERSHIP",
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-008",
+      "text": "Level 3 must preserve explicit dependency and sequencing declarations, distinguish handoff declarations from actual runtime handoffs, preserve blocked, skipped, failed, and otherwise unattempted outcomes, and prohibit operation attempts before complete workflow-plan acceptance.",
+      "references": [
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-009",
+      "text": "Level 3 must preserve separate requested, authorized, attempted, completed, observed, and verified claims; require traceability from every result claim to the governing workflow, operation, plugin, action, validated contract, authority, and evidence; and produce exactly one authoritative workflow result for every governed workflow outcome.",
+      "references": [
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-010",
+      "text": "Missing, malformed, conflicting, ambiguous, stale, unauthorized, incomplete, duplicate, or non-uniquely attributable plugin, action, registry, contract, plan, dependency, handoff, evidence, effect, operation-result, or workflow-result facts must fail closed or remain explicitly incomplete or uncertain rather than being inferred as successful.",
+      "references": [
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-011",
+      "text": "Historical LEVEL_3.md is superseded as Level 3 authority and must not authorize anonymous sequential steps as the governed unit, sequential validation and execution before complete plan acceptance, a plugin-wide instruction interface that bypasses action ownership, string traversal into prior outputs as handoff semantics, status as a substitute for effect claims, or a fixed linear execution pipeline.",
+      "references": [
+        "HISTORICAL-LEVEL-3-MATERIAL",
+        "LEVEL-3-ROOT"
+      ]
+    },
+    {
+      "id": "L3-ROOT-REQ-012",
+      "text": "Acceptance of Level 3 specification authority does not itself accept maintained runtime implementation, language-specific interface syntax, package-manager or deployment choices, performance, caching, concurrency, production payload schemas, exhaustive action catalogs, plugin-specific filesystem, command, local-Git, remote-service, credential, publication semantics, or bootstrap executor formats.",
+      "references": [
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE",
+        "LEVEL-3-ROOT"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L3-ROOT-REL-001",
+      "source": "LEVEL-3-ROOT",
+      "relation": "governs",
+      "target": "LEVEL-3-SPECIFICATION-SET"
+    },
+    {
+      "id": "L3-ROOT-REL-002",
+      "source": "LEVEL-3-SPECIFICATION-SET",
+      "relation": "defines",
+      "target": "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+    },
+    {
+      "id": "L3-ROOT-REL-003",
+      "source": "LEVEL-3-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-3-RUNTIME-OWNERSHIP"
+    },
+    {
+      "id": "L3-ROOT-REL-004",
+      "source": "LEVEL-3-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-3-PLUGIN-ACTION-CONTRACTS"
+    },
+    {
+      "id": "L3-ROOT-REL-005",
+      "source": "LEVEL-3-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE"
+    },
+    {
+      "id": "L3-ROOT-REL-006",
+      "source": "LEVEL-3-SPECIFICATION-SET",
+      "relation": "contains-responsibility",
+      "target": "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+    },
+    {
+      "id": "L3-ROOT-REL-007",
+      "source": "HISTORICAL-LEVEL-3-MATERIAL",
+      "relation": "is-superseded-as-authority-by",
+      "target": "LEVEL-3-ROOT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Complete semantic inheritance from accepted Levels 0 through 2",
+      "The sole normative Level 3 root identity, status, Level 2 parentage, and no imports",
+      "Implementation-facing application-independent architecture",
+      "Core, plugin, action, registry, contract, planning, lifecycle, evidence, and result responsibility boundaries",
+      "The exact five-document Level 3 specification set",
+      "Non-overlapping subordinate specification ordering and semantic ownership",
+      "Complete fail-closed workflow-plan acceptance before operation attempts",
+      "Inherited dependency, handoff, effect-state, evidence, uncertainty, and authoritative-result constraints",
+      "Historical Level 3 disposition and explicit rejection of incompatible designs"
+    ],
+    "excludes": [
+      "Detailed runtime component and ownership requirements assigned to GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+      "Detailed plugin, action, registration, registry, input-contract, and validated-operation-contract requirements assigned to GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+      "Detailed workflow planning, operation eligibility, dependency, handoff, and lifecycle requirements assigned to GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+      "Detailed evidence, operation-result, uncertainty, traceability, and workflow-result requirements assigned to GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+      "Maintained runtime implementation",
+      "Language-specific interface syntax and source-package layout",
+      "Package-manager, deployment, performance, caching, and concurrency choices",
+      "Concrete production payload schemas and exhaustive plugin action catalogs",
+      "Plugin-specific filesystem, command-execution, local-Git, GitHub, remote-service, credential, and publication semantics",
+      "Bootstrap executor operation formats and implementation behavior",
+      "Modification of accepted Levels 0 through 2"
+    ]
+  }
+}
