@@ -2,18 +2,14 @@
 
 GVE is being rebuilt from governed execution specifications.
 
-The authoritative design documents are:
+The authoritative design is the complete normative JSON specification graph
+under `specs/levels/level-0` through `specs/levels/level-3`.
 
-1. `specs/levels/level-0/GVE-LEVEL-0.json` — normative Level 0 authority
-2. `specs/levels/level-0/GVE-LEVEL-0.md` — deterministic Level 0 representation
-3. `specs/levels/level-1/GVE-LEVEL-1.json` — normative Level 1 authority
-4. `specs/levels/level-1/GVE-LEVEL-1.md` — deterministic Level 1 representation
-5. `LEVEL_2.md`
-6. `LEVEL_3.md`
-
-Levels 0 and 1 have migrated to machine-readable authority under `specs/`.
-Levels 2 and 3 remain temporarily at the repository root pending their own
-governed migrations.
+For each level, read the root `GVE-LEVEL-<n>.json` and every subordinate
+`GVE-LEVEL-<n>-*.json` document in that level directory. Normative JSON is
+authoritative. A Markdown file with the same stem is a deterministic derived
+representation and must not be edited independently or treated as separate
+authority.
 
 Implement and harden the levels in order, then implement the maintained GVE
 product. The restored historical executor is bootstrap and executable reference
@@ -46,7 +42,7 @@ contract.
 A fresh chat should begin by reading:
 
 - this `README.md`;
-- `specs/levels/level-0/GVE-LEVEL-0.json`, `specs/levels/level-1/GVE-LEVEL-1.json`, their derived Markdown, and `LEVEL_2.md` through `LEVEL_3.md`;
+- every root and subordinate normative JSON document under `specs/levels/level-0` through `specs/levels/level-3`, together with each same-stem derived Markdown projection;
 - `scripts/governed-execute`;
 - `src/scf_governed_executor/launcher.py`;
 - the implementation and tests for the intended operation type.

@@ -27,7 +27,7 @@ The complete normative Level 3 authority consisting of exactly the root GVE-LEVE
 
 ### Level 3 root (`LEVEL-3-ROOT`)
 
-The sole normative root document GVE-LEVEL-3. It establishes Level 3 identity, Level 2 parentage, inherited invariants, implementation-architecture scope, exact document decomposition, responsibility ownership, historical disposition, and exclusions.
+The sole normative root document GVE-LEVEL-3. It establishes Level 3 identity, Level 2 parentage, inherited invariants, implementation-architecture scope, exact document decomposition, responsibility ownership, and exclusions.
 
 ### Level 3 runtime-ownership specification (`LEVEL-3-RUNTIME-OWNERSHIP`)
 
@@ -44,10 +44,6 @@ The subordinate Level 3 specification GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE, w
 ### Level 3 evidence-result-realization specification (`LEVEL-3-EVIDENCE-RESULT-REALIZATION`)
 
 The subordinate Level 3 specification GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION, which owns evidence capture and attribution, authoritative execution-record realization, operation-result production, incomplete and conflicting evidence, uncertainty, fail-closed workflow-result finalization, immutable result versions, explicit supersession, and one current lineage head.
-
-### Historical Level 3 material (`HISTORICAL-LEVEL-3-MATERIAL`)
-
-The repository-root LEVEL_3.md document retained only as non-normative historical input. It is superseded as Level 3 authority, and compatible material may be redistributed only through separately governed normative Level 3 or plugin-specific specifications.
 
 ## Normative requirements
 
@@ -111,12 +107,6 @@ Missing, malformed, conflicting, ambiguous, stale, unauthorized, incomplete, dup
 
 References: `LEVEL-3-PLUGIN-ACTION-CONTRACTS`, `LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE`, `LEVEL-3-EVIDENCE-RESULT-REALIZATION`
 
-### L3-ROOT-REQ-011
-
-Historical LEVEL_3.md is superseded as Level 3 authority and must not authorize anonymous sequential steps as the governed unit, sequential validation and execution before complete plan acceptance, a plugin-wide instruction interface that bypasses action ownership, string traversal into prior outputs as handoff semantics, status as a substitute for effect claims, or a fixed linear execution pipeline.
-
-References: `HISTORICAL-LEVEL-3-MATERIAL`, `LEVEL-3-ROOT`
-
 ### L3-ROOT-REQ-012
 
 Acceptance of Level 3 specification authority does not itself accept maintained runtime implementation, language-specific interface syntax, package-manager or deployment choices, performance, caching, concurrency, production payload schemas, exhaustive action catalogs, plugin-specific filesystem, command, local-Git, remote-service, credential, publication semantics, or bootstrap executor formats.
@@ -131,7 +121,6 @@ References: `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`, `LEVEL-3-ROOT`
 - `L3-ROOT-REL-004`: `LEVEL-3-SPECIFICATION-SET` **contains-responsibility** `LEVEL-3-PLUGIN-ACTION-CONTRACTS`
 - `L3-ROOT-REL-005`: `LEVEL-3-SPECIFICATION-SET` **contains-responsibility** `LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE`
 - `L3-ROOT-REL-006`: `LEVEL-3-SPECIFICATION-SET` **contains-responsibility** `LEVEL-3-EVIDENCE-RESULT-REALIZATION`
-- `L3-ROOT-REL-007`: `HISTORICAL-LEVEL-3-MATERIAL` **is-superseded-as-authority-by** `LEVEL-3-ROOT`
 
 ## Scope
 
@@ -145,7 +134,6 @@ References: `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`, `LEVEL-3-ROOT`
 - Non-overlapping subordinate specification ordering and semantic ownership
 - Complete fail-closed workflow-plan acceptance before operation attempts
 - Inherited dependency, handoff, effect-state, evidence, uncertainty, authoritative execution-record, finalized-result, and supersession constraints
-- Historical Level 3 disposition and explicit rejection of incompatible designs
 
 ### Excludes
 

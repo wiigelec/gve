@@ -49,10 +49,6 @@ The subordinate Level 2 specification GVE-LEVEL-2-RESULT-ASSEMBLY, which owns no
 
 The subordinate Level 2 specification GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES, which owns composition-facing responsibility boundaries for local filesystem modification, command execution, and local Git operation domains without defining concrete payload catalogs or maintained implementations.
 
-### Transitional Level 2 material (`TRANSITIONAL-LEVEL-2-MATERIAL`)
-
-The repository-root LEVEL_2.md design note retained as non-normative historical and discovery input. It has no authority over the normative Level 2 specification set and may not be incorporated without explicit review.
-
 ## Normative requirements
 
 ### L2-ROOT-REQ-001
@@ -97,12 +93,6 @@ Identifiers declared by Level 2 normative documents must be stable, globally uni
 
 References: `LEVEL-2-SPECIFICATION-SET`, `LEVEL-2-DOCUMENT-AUTHORITY`
 
-### L2-ROOT-REQ-008
-
-Transitional Level 2 material is non-normative input only. It must not override accepted Levels 0 or 1, constrain the accepted decomposition, import GitHub or other remote-service plugin design into the initial Level 2 authority, or become normative by reference.
-
-References: `TRANSITIONAL-LEVEL-2-MATERIAL`, `LEVEL-2-ROOT`
-
 ### L2-ROOT-REQ-009
 
 Acceptance of Level 2 specification authority does not authorize maintained GVE runtime behavior, concrete plugin payload schemas, exhaustive operation catalogs, production plugin implementations, GitHub or other remote-service plugin semantics, or Level 3 design.
@@ -118,7 +108,6 @@ References: `LEVEL-2-COMPOSITION-LAYER`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 - `L2-ROOT-REL-005`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-DEPENDENCIES-HANDOFFS`
 - `L2-ROOT-REL-006`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-RESULT-ASSEMBLY`
 - `L2-ROOT-REL-007`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
-- `L2-ROOT-REL-008`: `TRANSITIONAL-LEVEL-2-MATERIAL` **is-non-normative-input-to** `LEVEL-2-ROOT`
 
 ## Scope
 
@@ -128,7 +117,6 @@ References: `LEVEL-2-COMPOSITION-LAYER`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 - The sole normative Level 2 root identity, status, and Level 1 parentage
 - The Level 2 application-plugin composition-layer purpose and authority boundary
 - The final five-document subordinate decomposition by non-overlapping semantic responsibility
-- Normative versus non-normative Level 2 material status
 - Stable root and subordinate identifier namespace expectations
 - Core independence from plugin-specific operation meaning
 - Composition-facing local filesystem, command-execution, and local-Git domain boundaries delegated to a subordinate specification
