@@ -7,6 +7,30 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 
+EXPECTED_SPECIFICATION_SETS = {
+    2: {
+        "GVE-LEVEL-2",
+        "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+        "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+        "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+        "GVE-LEVEL-2-RESULT-ASSEMBLY",
+        "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+    },
+    3: {
+        "GVE-LEVEL-3",
+        "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+        "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+        "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+    },
+}
+
+ROOT_MEMBERSHIP_REQUIREMENTS = {
+    2: "L2-ROOT-REQ-003",
+    3: "L3-ROOT-REQ-004",
+}
+
+
 class SemanticValidationError(ValueError):
     """Raised when a structurally valid level specification is inconsistent."""
 
@@ -141,6 +165,7 @@ def validate_hierarchy(
         inventories[specification_id] = _identifier_inventory(document)
 
     roots_by_level: dict[int, str] = {}
+    exact_membership_levels: set[int] = set()
     for level, identifiers in sorted(by_level.items()):
         roots = [
             identifier
@@ -164,6 +189,34 @@ def validate_hierarchy(
             _fail(root_id, f"root document must name itself as set root {root_id}")
         if metadata[root_id]["imports"]:
             _fail(root_id, "root document must not import subordinate documents")
+
+        membership_requirement = ROOT_MEMBERSHIP_REQUIREMENTS.get(level)
+        root_requirement_ids = {
+            item["id"] for item in by_id[root_id][1]["requirements"]
+        }
+        if (
+            membership_requirement is not None
+            and membership_requirement in root_requirement_ids
+        ):
+            expected_members = EXPECTED_SPECIFICATION_SETS[level]
+            discovered_members = set(identifiers)
+            if discovered_members != expected_members:
+                missing = sorted(expected_members - discovered_members)
+                unexpected = sorted(discovered_members - expected_members)
+                _fail(
+                    root_id,
+                    f"specification-set membership mismatch; missing={missing}, "
+                    f"unexpected={unexpected}",
+                )
+            exact_membership_levels.add(level)
+            for identifier in sorted(expected_members):
+                status = by_id[identifier][1]["specification"]["status"]
+                if status != "normative":
+                    _fail(
+                        identifier,
+                        "accepted specification-set member must have normative "
+                        f"status; found {status}",
+                    )
 
         for identifier in identifiers:
             item = metadata[identifier]
@@ -201,6 +254,14 @@ def validate_hierarchy(
                     _fail(
                         specification_id,
                         f"subordinate parent must be specification-set root "
+                        f"{expected_parent}; found {parent}",
+                    )
+            elif level in exact_membership_levels:
+                expected_parent = roots_by_level.get(level - 1)
+                if parent != expected_parent:
+                    _fail(
+                        specification_id,
+                        "root parent must be immediate prior-level root "
                         f"{expected_parent}; found {parent}",
                     )
         inheritance[specification_id] = [] if parent is None else [parent]
