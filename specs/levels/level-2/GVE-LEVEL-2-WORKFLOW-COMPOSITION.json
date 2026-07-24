@@ -1,0 +1,282 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+    "level": 2,
+    "title": "GVE Level 2 Workflow Composition",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-DOCUMENT-AUTHORITY"
+    ]
+  },
+  "summary": "GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and ordering constraints, selected-plugin binding, validated-operation-contract participation, and complete workflow-plan acceptance before execution. It preserves inherited Level 1 ownership of plugin-specific meaning and permits the GVE core to consume only application-independent contract facts.",
+  "definitions": [
+    {
+      "id": "L2-WC-WORKFLOW-IDENTITY",
+      "term": "Composition workflow identity",
+      "text": "The stable application-independent identity of the single governed workflow represented by an accepted payload. It uniquely names the composition whose operations and contracts are evaluated together."
+    },
+    {
+      "id": "L2-WC-OPERATION-IDENTITY",
+      "term": "Composition operation identity",
+      "text": "A stable identifier unique within its governed workflow and used consistently for membership, ordering, selected-plugin binding, contract attribution, validation evidence, and result correlation."
+    },
+    {
+      "id": "L2-WC-COMPOSITION-MEMBERSHIP",
+      "term": "Composition membership",
+      "text": "The explicit association of each governed operation with exactly one governed workflow. Membership is complete, unique, and fixed for one workflow-plan acceptance attempt."
+    },
+    {
+      "id": "L2-WC-ORDERING-CONSTRAINT",
+      "term": "Composition ordering constraint",
+      "text": "An application-independent pre-execution constraint that contributes to a deterministic operation order. This document defines plan-level ordering validity only and does not define runtime dependency, handoff, blocking, skipping, or partial-progress behavior."
+    },
+    {
+      "id": "L2-WC-PLUGIN-BINDING",
+      "term": "Composition plugin binding",
+      "text": "The unique association of one operation identity with exactly one selected plugin identity for one workflow-plan acceptance attempt."
+    },
+    {
+      "id": "L2-WC-CONTRACT-ATTRIBUTION",
+      "term": "Validated-contract attribution",
+      "text": "The deterministic binding of exactly one validated operation contract to one operation identity, one selected plugin identity, one governing instruction set, and one workflow-plan acceptance attempt."
+    },
+    {
+      "id": "L2-WC-CONTRACT-FRESHNESS",
+      "term": "Contract freshness",
+      "text": "The property that a validated operation contract was produced for the current operation content, selected plugin, governing instruction set, authority context, and workflow-plan acceptance attempt and has not been superseded or invalidated by any relevant change."
+    },
+    {
+      "id": "L2-WC-CORE-CONTRACT-FACTS",
+      "term": "Core-readable contract facts",
+      "text": "Application-independent facts exposed by a validated operation contract for composition and orchestration, including contract identity and freshness, workflow and operation identity, selected plugin identity, governing authority, lifecycle readiness, declared ordering participation, evidence obligations, failure behavior, and result-assembly obligations."
+    },
+    {
+      "id": "L2-WC-COMPLETE-PLAN",
+      "term": "Complete workflow plan",
+      "text": "The pre-execution composition containing the single workflow identity, the full operation membership, unique operation identities, selected-plugin bindings, exactly one attributable fresh validated contract for every operation, and all composition ordering constraints."
+    },
+    {
+      "id": "L2-WC-PLAN-ACCEPTANCE",
+      "term": "Workflow-plan acceptance",
+      "text": "The fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, and ready for later lifecycle processing. Acceptance establishes no attempted or completed effect."
+    },
+    {
+      "id": "L2-WC-PLUGIN-MEANING-BOUNDARY",
+      "term": "Plugin meaning boundary",
+      "text": "The authority boundary under which only the selected plugin interprets operation-specific content, while the core consumes only core-readable contract facts and never derives, duplicates, compares, or reinterprets plugin-specific meaning."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-WC-REQ-001",
+      "text": "Every Level 2 composition accepted for planning must identify exactly one governed workflow with one stable workflow identity.",
+      "references": [
+        "LEVEL-2-WORKFLOW-COMPOSITION",
+        "L2-WC-WORKFLOW-IDENTITY"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-002",
+      "text": "Every governed workflow must declare one or more operations, and every declared operation must be an explicit member of exactly that workflow.",
+      "references": [
+        "L2-WC-COMPOSITION-MEMBERSHIP",
+        "L2-WC-COMPLETE-PLAN"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-003",
+      "text": "Every operation identity must be stable, nonempty, unique within the workflow, and used consistently across membership, ordering, plugin binding, contract attribution, evidence, and result correlation.",
+      "references": [
+        "L2-WC-OPERATION-IDENTITY",
+        "L2-WC-COMPOSITION-MEMBERSHIP"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-004",
+      "text": "Every operation in an accepted workflow plan must be bound deterministically and uniquely to exactly one selected plugin. Zero, multiple, conflicting, or ambiguous plugin bindings must fail closed.",
+      "references": [
+        "L2-WC-PLUGIN-BINDING",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-005",
+      "text": "Every operation in an accepted workflow plan must have exactly one validated operation contract attributable to that operation, its selected plugin, its governing instruction set, and the current workflow-plan acceptance attempt.",
+      "references": [
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-COMPLETE-PLAN"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-006",
+      "text": "Every validated operation contract used for plan acceptance must be fresh for the current operation content, selected plugin, governing instruction set, authority context, and acceptance attempt.",
+      "references": [
+        "L2-WC-CONTRACT-FRESHNESS",
+        "L2-WC-CONTRACT-ATTRIBUTION"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-007",
+      "text": "The core may consume from each validated operation contract only application-independent facts required for composition, validation, orchestration, evidence, failure handling, lifecycle readiness, and later result assembly.",
+      "references": [
+        "L2-WC-CORE-CONTRACT-FACTS",
+        "L2-WC-PLUGIN-MEANING-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-008",
+      "text": "The core must not infer, derive, duplicate, compare, normalize, override, or reinterpret plugin-specific operation meaning from operation content, contract content, ordering constraints, or another plugin's interpretation.",
+      "references": [
+        "L2-WC-PLUGIN-MEANING-BOUNDARY",
+        "LEVEL-2-COMPOSITION-LAYER"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-009",
+      "text": "Composition ordering constraints must be explicit and must yield one deterministic valid plan order. Missing identities, duplicate positions, contradictory constraints, cycles, or multiple unresolved valid orders must fail closed before execution.",
+      "references": [
+        "L2-WC-ORDERING-CONSTRAINT",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-010",
+      "text": "Workflow-plan acceptance must evaluate the complete operation membership, all operation identities, every selected-plugin binding, every validated operation contract, contract freshness and attribution, and all composition ordering constraints as one complete pre-execution decision.",
+      "references": [
+        "L2-WC-COMPLETE-PLAN",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-011",
+      "text": "A missing, stale, malformed, invalid, conflicting, duplicate, ambiguous, unauthorized, incomplete, or non-uniquely attributable contract or composition fact must fail workflow-plan acceptance before any operation is attempted.",
+      "references": [
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-CONTRACT-FRESHNESS",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-012",
+      "text": "A workflow plan must be rejected if any declared operation is absent from the complete plan, appears more than once, belongs to another workflow, lacks a selected plugin, lacks exactly one valid fresh contract, or cannot be placed deterministically under the ordering constraints.",
+      "references": [
+        "L2-WC-COMPLETE-PLAN",
+        "L2-WC-COMPOSITION-MEMBERSHIP",
+        "L2-WC-ORDERING-CONSTRAINT"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-013",
+      "text": "Workflow-plan acceptance must be deterministic and independent of declaration order, filesystem order, plugin discovery order, validator iteration order, or any implicit precedence.",
+      "references": [
+        "L2-WC-PLAN-ACCEPTANCE",
+        "L2-DA-DETERMINISTIC-RESOLUTION"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-014",
+      "text": "Successful workflow-plan acceptance establishes composition validity only. It must not by itself establish that any operation or workflow effect was requested, authorized, attempted, completed, observed, or verified.",
+      "references": [
+        "L2-WC-PLAN-ACCEPTANCE",
+        "LEVEL-2-COMPOSITION-LAYER"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-015",
+      "text": "This specification must not define runtime dependency enforcement, data-handoff validation, blocking, skipping, partial-progress, evidence aggregation, authoritative result assembly, concrete plugin payload schemas, or maintained runtime implementation.",
+      "references": [
+        "LEVEL-2-DEPENDENCIES-HANDOFFS",
+        "LEVEL-2-RESULT-ASSEMBLY",
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-WC-REL-001",
+      "source": "LEVEL-2-WORKFLOW-COMPOSITION",
+      "relation": "is-governed-by",
+      "target": "LEVEL-2-ROOT"
+    },
+    {
+      "id": "L2-WC-REL-002",
+      "source": "L2-WC-WORKFLOW-IDENTITY",
+      "relation": "contains",
+      "target": "L2-WC-COMPOSITION-MEMBERSHIP"
+    },
+    {
+      "id": "L2-WC-REL-003",
+      "source": "L2-WC-COMPOSITION-MEMBERSHIP",
+      "relation": "identifies",
+      "target": "L2-WC-OPERATION-IDENTITY"
+    },
+    {
+      "id": "L2-WC-REL-004",
+      "source": "L2-WC-OPERATION-IDENTITY",
+      "relation": "is-bound-by",
+      "target": "L2-WC-PLUGIN-BINDING"
+    },
+    {
+      "id": "L2-WC-REL-005",
+      "source": "L2-WC-PLUGIN-BINDING",
+      "relation": "is-evidenced-by",
+      "target": "L2-WC-CONTRACT-ATTRIBUTION"
+    },
+    {
+      "id": "L2-WC-REL-006",
+      "source": "L2-WC-CONTRACT-FRESHNESS",
+      "relation": "constrains",
+      "target": "L2-WC-CONTRACT-ATTRIBUTION"
+    },
+    {
+      "id": "L2-WC-REL-007",
+      "source": "L2-WC-CORE-CONTRACT-FACTS",
+      "relation": "respects",
+      "target": "L2-WC-PLUGIN-MEANING-BOUNDARY"
+    },
+    {
+      "id": "L2-WC-REL-008",
+      "source": "L2-WC-COMPLETE-PLAN",
+      "relation": "is-evaluated-by",
+      "target": "L2-WC-PLAN-ACCEPTANCE"
+    },
+    {
+      "id": "L2-WC-REL-009",
+      "source": "L2-WC-ORDERING-CONSTRAINT",
+      "relation": "contributes-to",
+      "target": "L2-WC-COMPLETE-PLAN"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Deterministic workflow identity",
+      "Deterministic operation identity and unique workflow membership",
+      "Composition-level ordering constraints",
+      "Exactly one selected-plugin binding per operation",
+      "Exactly one validated operation contract per accepted operation",
+      "Contract identity, attribution, freshness, and uniqueness",
+      "Application-independent core-readable contract facts",
+      "Complete fail-closed workflow-plan acceptance before execution",
+      "The core boundary against plugin-specific meaning"
+    ],
+    "excludes": [
+      "Concrete plugin-owned operation payload schemas",
+      "Plugin registry, package, discovery, and transport implementation",
+      "Runtime executor implementation",
+      "Detailed dependency and data-handoff semantics",
+      "Runtime blocking, skipping, and partial-progress semantics",
+      "Evidence aggregation and authoritative result assembly",
+      "GitHub and other remote-service plugin behavior",
+      "Sibling Level 2 semantic responsibilities",
+      "Maintained implementation and Level 3 design"
+    ]
+  }
+}
