@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and ordering constraints, selected-plugin binding, validated-operation-contract participation, and complete workflow-plan acceptance before execution. It preserves inherited Level 1 ownership of plugin-specific meaning and permits the GVE core to consume only application-independent contract facts.
+GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and acyclic partial-order constraints, selected-plugin binding, validated-operation-contract participation, and complete workflow-plan acceptance before execution. It preserves inherited Level 1 ownership of plugin-specific meaning and permits the GVE core to consume only application-independent contract facts.
 
 ## Definitions
 
@@ -31,7 +31,7 @@ The explicit association of each governed operation with exactly one governed wo
 
 ### Composition ordering constraint (`L2-WC-ORDERING-CONSTRAINT`)
 
-An application-independent pre-execution constraint that contributes to a deterministic operation order. This document defines plan-level ordering validity only and does not define runtime dependency, handoff, blocking, skipping, or partial-progress behavior.
+An application-independent pre-execution predecessor-to-successor constraint that contributes one directed edge to the deterministic acyclic partial order of accepted operations. Operations with no required predecessor or successor relation remain independent. This document defines plan-level ordering validity only and does not select a topological serialization or define runtime scheduling, dependency, handoff, blocking, skipping, or partial-progress behavior.
 
 ### Composition plugin binding (`L2-WC-PLUGIN-BINDING`)
 
@@ -51,11 +51,11 @@ Application-independent facts exposed by a validated operation contract for comp
 
 ### Complete workflow plan (`L2-WC-COMPLETE-PLAN`)
 
-The pre-execution composition containing the single workflow identity, the full operation membership, unique operation identities, selected-plugin bindings, exactly one attributable fresh validated contract for every operation, and all composition ordering constraints.
+The pre-execution composition containing the single workflow identity, the full operation membership, unique operation identities, selected-plugin bindings, exactly one attributable fresh validated contract for every operation, and the complete deterministic acyclic partial-order relation required by all composition ordering constraints.
 
 ### Workflow-plan acceptance (`L2-WC-PLAN-ACCEPTANCE`)
 
-The fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, and ready for later lifecycle processing. Acceptance establishes no attempted or completed effect.
+The fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, and ready for later lifecycle processing. Determinism concerns accepted membership, identities, constraints, and predecessor/successor meaning, not a unique topological serialization. Acceptance establishes no attempted or completed effect.
 
 ### Plugin meaning boundary (`L2-WC-PLUGIN-MEANING-BOUNDARY`)
 
@@ -113,13 +113,13 @@ References: `L2-WC-PLUGIN-MEANING-BOUNDARY`, `LEVEL-2-COMPOSITION-LAYER`
 
 ### L2-WC-REQ-009
 
-Composition ordering constraints must be explicit and must yield one deterministic valid plan order. Missing identities, duplicate positions, contradictory constraints, cycles, or multiple unresolved valid orders must fail closed before execution.
+Composition ordering constraints must explicitly identify predecessor and successor operation identities and must define one deterministic acyclic partial order. Independent operations require no artificial ordering edge, and multiple topological serializations of the same accepted partial order are valid and do not constitute semantic ambiguity. Unresolved operation identities, duplicate or conflicting edges, self-ordering, contradictory constraints, cycles, missing required sequencing, or ambiguous constraint meaning must fail closed before execution.
 
 References: `L2-WC-ORDERING-CONSTRAINT`, `L2-WC-PLAN-ACCEPTANCE`
 
 ### L2-WC-REQ-010
 
-Workflow-plan acceptance must evaluate the complete operation membership, all operation identities, every selected-plugin binding, every validated operation contract, contract freshness and attribution, and all composition ordering constraints as one complete pre-execution decision.
+Workflow-plan acceptance must evaluate the complete operation membership, all operation identities, every selected-plugin binding, every validated operation contract, contract freshness and attribution, and the complete partial-order constraints as one complete pre-execution decision.
 
 References: `L2-WC-COMPLETE-PLAN`, `L2-WC-PLAN-ACCEPTANCE`
 
@@ -131,13 +131,13 @@ References: `L2-WC-CONTRACT-ATTRIBUTION`, `L2-WC-CONTRACT-FRESHNESS`, `L2-WC-PLA
 
 ### L2-WC-REQ-012
 
-A workflow plan must be rejected if any declared operation is absent from the complete plan, appears more than once, belongs to another workflow, lacks a selected plugin, lacks exactly one valid fresh contract, or cannot be placed deterministically under the ordering constraints.
+A workflow plan must be rejected if any declared operation is absent from the complete plan, appears more than once, belongs to another workflow, lacks a selected plugin, lacks exactly one valid fresh contract, or participates in an invalid, incomplete, contradictory, cyclic, or ambiguous required ordering relation.
 
 References: `L2-WC-COMPLETE-PLAN`, `L2-WC-COMPOSITION-MEMBERSHIP`, `L2-WC-ORDERING-CONSTRAINT`
 
 ### L2-WC-REQ-013
 
-Workflow-plan acceptance must be deterministic and independent of declaration order, filesystem order, plugin discovery order, validator iteration order, or any implicit precedence.
+Workflow-plan acceptance and accepted partial-order identity must be deterministic and independent of declaration order, filesystem order, plugin discovery order, validator iteration order, any chosen topological serialization, or any implicit precedence.
 
 References: `L2-WC-PLAN-ACCEPTANCE`, `L2-DA-DETERMINISTIC-RESOLUTION`
 
@@ -149,7 +149,7 @@ References: `L2-WC-PLAN-ACCEPTANCE`, `LEVEL-2-COMPOSITION-LAYER`
 
 ### L2-WC-REQ-015
 
-This specification must not define runtime dependency enforcement, data-handoff validation, blocking, skipping, partial-progress, evidence aggregation, authoritative result assembly, concrete plugin payload schemas, or maintained runtime implementation.
+This specification must not define runtime dependency enforcement, data-handoff validation, scheduler or topological-serialization selection, blocking, skipping, partial-progress, evidence aggregation, authoritative result assembly, concrete plugin payload schemas, or maintained runtime implementation.
 
 References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 
@@ -171,7 +171,8 @@ References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2
 
 - Deterministic workflow identity
 - Deterministic operation identity and unique workflow membership
-- Composition-level ordering constraints
+- Composition-level deterministic acyclic partial-order constraints
+- Independent operations without artificial ordering edges
 - Exactly one selected-plugin binding per operation
 - Exactly one validated operation contract per accepted operation
 - Contract identity, attribution, freshness, and uniqueness
@@ -184,6 +185,7 @@ References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2
 - Concrete plugin-owned operation payload schemas
 - Plugin registry, package, discovery, and transport implementation
 - Runtime executor implementation
+- Runtime scheduler and topological-serialization selection
 - Detailed dependency and data-handoff semantics
 - Runtime blocking, skipping, and partial-progress semantics
 - Evidence aggregation and authoritative result assembly
