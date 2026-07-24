@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 3 defines the normative implementation-architecture layer that refines accepted Levels 0 through 2 without replacing or weakening them. The Level 3 root establishes implementation-facing, application-independent responsibility boundaries for the maintained core, plugins, actions, registries, validated operation contracts, workflow planning and lifecycle, evidence, operation results, and authoritative workflow-result realization. It defines the exact Level 3 specification-set decomposition while leaving detailed semantics to separately governed subordinate documents. Acceptance of Level 3 specifications does not itself accept maintained runtime code, plugin implementations, production payload schemas, or plugin-specific service behavior.
+GVE Level 3 defines the normative implementation-architecture layer that refines accepted Levels 0 through 2 without replacing or weakening them. The Level 3 root establishes implementation-facing, application-independent responsibility boundaries for the maintained core, plugins, actions, registries, validated operation contracts, workflow planning and lifecycle, evidence, operation results, and authoritative execution-record and versioned workflow-result realization. It defines the exact Level 3 specification-set decomposition while leaving detailed semantics to separately governed subordinate documents. Acceptance of Level 3 specifications does not itself accept maintained runtime code, plugin implementations, production payload schemas, or plugin-specific service behavior.
 
 ## Definitions
 
@@ -43,7 +43,7 @@ The subordinate Level 3 specification GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE, w
 
 ### Level 3 evidence-result-realization specification (`LEVEL-3-EVIDENCE-RESULT-REALIZATION`)
 
-The subordinate Level 3 specification GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION, which owns evidence capture and attribution, operation-result production, incomplete and conflicting evidence, uncertainty, effect-state traceability, and exactly one authoritative workflow-result realization.
+The subordinate Level 3 specification GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION, which owns evidence capture and attribution, authoritative execution-record realization, operation-result production, incomplete and conflicting evidence, uncertainty, fail-closed workflow-result finalization, immutable result versions, explicit supersession, and one current lineage head.
 
 ### Historical Level 3 material (`HISTORICAL-LEVEL-3-MATERIAL`)
 
@@ -101,7 +101,7 @@ References: `LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE`, `LEVEL-3-IMPLEMENTATION-ARCHI
 
 ### L3-ROOT-REQ-009
 
-Level 3 must preserve separate requested, authorized, attempted, completed, observed, and verified claims; require traceability from every result claim to the governing workflow, operation, plugin, action, validated contract, authority, and evidence; and produce exactly one authoritative workflow result for every governed workflow outcome.
+Level 3 must preserve separate requested, authorized, attempted, completed, observed, and verified claims; require traceability from every record and result claim to the governing workflow, execution, operation, plugin, action, validated contract, authority, and evidence; produce one authoritative workflow execution record for every governed workflow processing or execution identity; and permit a finalized workflow result only through fail-closed versioned result realization.
 
 References: `LEVEL-3-EVIDENCE-RESULT-REALIZATION`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 
@@ -144,7 +144,7 @@ References: `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`, `LEVEL-3-ROOT`
 - The exact five-document Level 3 specification set
 - Non-overlapping subordinate specification ordering and semantic ownership
 - Complete fail-closed workflow-plan acceptance before operation attempts
-- Inherited dependency, handoff, effect-state, evidence, uncertainty, and authoritative-result constraints
+- Inherited dependency, handoff, effect-state, evidence, uncertainty, authoritative execution-record, finalized-result, and supersession constraints
 - Historical Level 3 disposition and explicit rejection of incompatible designs
 
 ### Excludes

@@ -8,7 +8,7 @@
     "status": "normative",
     "parent": null
   },
-  "summary": "GVE is a governed instruction executor. It receives an instruction payload, performs governed execution according to a governed instruction set, and emits an authoritative result whose claims are limited to GVE's execution record, observations, and evidence-supported conclusions.",
+  "summary": "GVE is a governed instruction executor. It receives an instruction payload, performs or refuses governed execution according to a governed instruction set, and emits an authoritative record whose claims are limited to GVE's execution record, observations, evidence, and evidence-supported conclusions. A stronger finalized result exists only when its governing finalization requirements are satisfied.",
   "definitions": [
     {
       "id": "GVE",
@@ -33,7 +33,12 @@
     {
       "id": "AUTHORITATIVE-RESULT",
       "term": "Authoritative result",
-      "text": "GVE's authoritative record of its execution, observations, evidence, and evidence-supported conclusions. It is not an unrestricted assertion about external reality."
+      "text": "GVE's authoritative record of its governed processing, execution, observations, evidence, and evidence-supported conclusions. It may truthfully report refusal, incomplete execution, uncertainty, or inability to finalize a stronger result and is not an unrestricted assertion about external reality."
+    },
+    {
+      "id": "FINALIZED-RESULT",
+      "term": "Finalized result",
+      "text": "An authoritative result accepted only after the governed instruction set establishes its required completeness, consistency, attribution, evidence sufficiency, and immutability. Failure to finalize must not erase or falsify the authoritative execution record."
     },
     {
       "id": "EXECUTION-EVIDENCE",
@@ -86,7 +91,7 @@
     },
     {
       "id": "L0-REQ-002",
-      "text": "GVE must implement the model instruction payload to governed execution to authoritative result.",
+      "text": "GVE must implement the model instruction payload to governed execution or governed refusal to authoritative result.",
       "references": [
         "INSTRUCTION-PAYLOAD",
         "GOVERNED-EXECUTION",
@@ -137,9 +142,10 @@
     },
     {
       "id": "L0-REQ-008",
-      "text": "An authoritative result must distinguish requested, authorized, attempted, completed, observed, and verified effects.",
+      "text": "Every authoritative result must distinguish requested, authorized, attempted, completed, observed, and verified effects and must distinguish an execution record from any stronger finalized result.",
       "references": [
         "AUTHORITATIVE-RESULT",
+        "FINALIZED-RESULT",
         "REQUESTED-EFFECT",
         "AUTHORIZED-EFFECT",
         "ATTEMPTED-EFFECT",
@@ -172,7 +178,7 @@
     },
     {
       "id": "L0-REQ-011",
-      "text": "An authoritative result is authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality.",
+      "text": "An authoritative result is authoritative only for GVE's governed processing and execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality; inability to finalize a stronger result must remain reportable without falsely claiming finalization.",
       "references": [
         "AUTHORITATIVE-RESULT",
         "EXECUTION-EVIDENCE"
@@ -180,6 +186,16 @@
     },
     {
       "id": "L0-REQ-012",
+      "text": "A finalized result may be claimed only when the governed instruction set's finalization requirements are satisfied. Finalization failure must preserve a truthful authoritative result and must not be represented as successful finalization.",
+      "references": [
+        "AUTHORITATIVE-RESULT",
+        "FINALIZED-RESULT",
+        "FAIL-CLOSED",
+        "EXECUTION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L0-REQ-013",
       "text": "Level 0 must remain independent of later-level architecture, concrete operation contracts, plugins, repository guards, publication workflows, and implementation mechanisms.",
       "references": [
         "GVE"
@@ -222,6 +238,12 @@
       "source": "GOVERNED-INSTRUCTION-SET",
       "relation": "interprets",
       "target": "EXECUTION-EVIDENCE"
+    },
+    {
+      "id": "L0-REL-007",
+      "source": "FINALIZED-RESULT",
+      "relation": "specializes",
+      "target": "AUTHORITATIVE-RESULT"
     }
   ],
   "scope": {
@@ -230,6 +252,7 @@
       "The authority boundary formed by the payload and governed instruction set",
       "Fail-closed behavior",
       "Evidence-supported result claims",
+      "Truthful authoritative reporting when stronger result finalization is unavailable",
       "Execution evidence and its governed interpretation",
       "Distinct execution-effect states"
     ],

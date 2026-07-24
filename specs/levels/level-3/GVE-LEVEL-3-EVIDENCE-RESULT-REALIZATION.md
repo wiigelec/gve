@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 3 Evidence and Result Realization defines evidence identity, attribution, provenance, freshness, integrity, effect-claim state separation, uncertainty, sufficiency, contradiction handling, operation-result realization, authoritative workflow-result assembly, fail-closed finalization, and immutable finalized results without defining maintained runtime, lifecycle, or plugin-specific evidence implementation.
+GVE Level 3 Evidence and Result Realization defines evidence identity, attribution, provenance, freshness, integrity, effect-claim state separation, uncertainty, sufficiency, contradiction handling, authoritative execution-record realization, operation-result realization, fail-closed workflow-result finalization, immutable result versions, explicit supersession, preserved history, and one current lineage head without defining maintained runtime, lifecycle, storage, or plugin-specific evidence implementation.
 
 ## Definitions
 
@@ -45,17 +45,41 @@ The fail-closed determination that a complete attributable evidence set satisfie
 
 Two or more attributable evidence records or claims that cannot simultaneously be accepted as true under the same governing authority and realization context.
 
+### Authoritative execution record (`L3-ERR-EXECUTION-RECORD`)
+
+The immutable uniquely identified record for one governed workflow processing or execution identity, binding all available planning, validation, lifecycle, attempt, operation-result, evidence, uncertainty, contradiction, and finalization facts whether or not workflow-result finalization succeeds.
+
+### Result-realization attempt (`L3-ERR-RESULT-REALIZATION-ATTEMPT`)
+
+One uniquely identified evaluation of the complete available execution record, operation results, evidence, uncertainty, and lineage context to determine whether a new authoritative workflow-result version can be finalized.
+
+### Authoritative workflow-result version (`L3-ERR-RESULT-VERSION`)
+
+One uniquely identified immutable finalized workflow result in a lineage, bound to the workflow identity, execution record, applicable plan identity, realization-attempt identity, complete accepted evidence set, and lineage facts.
+
+### Result supersession (`L3-ERR-SUPERSESSION`)
+
+The explicit acyclic relationship from a new finalized result version to the directly prior version it corrects, including a non-empty correction reason and evidence basis while preserving the prior version unchanged.
+
+### Current result-lineage head (`L3-ERR-CURRENT-LINEAGE-HEAD`)
+
+The unique finalized result version in one lineage that has not been superseded by another accepted version. Superseded versions remain immutable authoritative historical results but are not current.
+
+### Finalization-failure disposition (`L3-ERR-FINALIZATION-FAILURE`)
+
+The evidence-bound fail-closed disposition in an authoritative execution record when a result-realization attempt cannot finalize a complete, consistent, uniquely attributable, sufficiently evidenced, lineage-valid workflow-result version.
+
 ### Realized operation result (`L3-ERR-OPERATION-RESULT`)
 
 The uniquely identified result bound to one workflow, one operation, one accepted-plan snapshot, one validated operation contract, the complete set of operation attempts, and the complete accepted evidence and uncertainty set.
 
 ### Authoritative workflow result (`L3-ERR-WORKFLOW-RESULT`)
 
-The complete uniquely identified assembly containing exactly one realized result for every operation in the accepted workflow plan and preserving all partial, failed, blocked, skipped, cancelled, timed-out, interrupted, unattempted, and unresolved conditions.
+One finalized, uniquely identified, immutable authoritative workflow-result version containing exactly one realized result for every operation required by the applicable accepted plan and preserving all partial, failed, blocked, skipped, cancelled, timed-out, interrupted, unattempted, and unresolved conditions.
 
 ### Result finalization (`L3-ERR-RESULT-FINALIZATION`)
 
-The single fail-closed determination that one authoritative workflow result is complete, internally consistent, sufficiently evidenced, uniquely attributable, and immutable.
+The deterministic fail-closed decision that one proposed authoritative workflow-result version is complete, internally consistent, sufficiently evidenced, uniquely attributable, lineage-consistent, and ready to become immutable. Failure leaves no finalized version for that realization attempt and must remain recorded in the authoritative execution record.
 
 ## Normative requirements
 
@@ -115,25 +139,25 @@ References: `L3-ERR-OPERATION-RESULT`, `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-UNCE
 
 ### L3-ERR-REQ-010
 
-An authoritative workflow result must contain exactly one realized operation result for every operation in the accepted workflow plan and must preserve partial, failed, blocked, skipped, cancelled, timed-out, interrupted, unattempted, and unresolved conditions.
+A proposed authoritative workflow-result version must contain exactly one realized operation result for every operation in the accepted workflow plan when an accepted plan exists, and for every operation required by the applicable rejected planning context otherwise; it must preserve partial, failed, blocked, skipped, cancelled, timed-out, interrupted, unattempted, and unresolved conditions.
 
 References: `L3-ERR-WORKFLOW-RESULT`, `L3-ERR-OPERATION-RESULT`, `L3-WPL-COMPLETE-WORKFLOW-PLAN`
 
 ### L3-ERR-REQ-011
 
-Workflow-result assembly must fail closed on missing, duplicate, conflicting, stale, ambiguous, non-unique, or operation-mismatched results and must not finalize an incomplete or internally inconsistent result set.
+Workflow-result assembly must fail closed on missing, duplicate, conflicting, stale, ambiguous, non-unique, operation-mismatched, or lineage-inconsistent facts and must not finalize an incomplete or internally inconsistent result set. The failure and supporting facts must remain in the authoritative execution record.
 
 References: `L3-ERR-WORKFLOW-RESULT`, `L3-ERR-RESULT-FINALIZATION`
 
 ### L3-ERR-REQ-012
 
-Result finalization must be one deterministic fail-closed decision over the complete workflow result, including all operation results, lifecycle facts, effect claims, evidence, uncertainty, contradictions, and unresolved conditions.
+Each result-realization attempt must be one deterministic fail-closed decision over the complete authoritative execution record, proposed workflow-result version, all operation results, lifecycle facts, effect claims, evidence, uncertainty, contradictions, unresolved conditions, and lineage context.
 
 References: `L3-ERR-RESULT-FINALIZATION`, `L3-ERR-WORKFLOW-RESULT`
 
 ### L3-ERR-REQ-013
 
-A finalized authoritative workflow result and every finalized operation result must remain immutable; correction or supersession must create a new uniquely attributable result version rather than mutate accepted result history.
+A finalized authoritative workflow-result version and every finalized operation result must remain immutable; correction must create a new uniquely attributable result version through explicit supersession rather than mutate accepted result history.
 
 References: `L3-ERR-RESULT-FINALIZATION`, `L3-ERR-WORKFLOW-RESULT`, `L3-ERR-OPERATION-RESULT`
 
@@ -167,6 +191,54 @@ This specification must not define exhaustive plugin-specific filesystem, comman
 
 References: `L3-ERR-EVIDENCE-RECORD`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 
+### L3-ERR-REQ-019
+
+Every authoritative execution record must have one stable identity, bind exactly one workflow processing or execution identity, identify the accepted-plan snapshot when one exists or the rejected planning context otherwise, and preserve all available lifecycle, result, evidence, uncertainty, contradiction, and finalization facts.
+
+References: `L3-ERR-EXECUTION-RECORD`, `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`, `L3-ERR-EVIDENCE-RECORD`
+
+### L3-ERR-REQ-020
+
+Pre-execution validation failure, partial execution, contradictory evidence, and inability to finalize must remain truthfully reportable in the authoritative execution record without claiming that a finalized authoritative workflow-result version exists.
+
+References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-FINALIZATION-FAILURE`, `L3-ERR-CONTRADICTION`, `L3-ERR-UNCERTAINTY-STATE`
+
+### L3-ERR-REQ-021
+
+Every result-realization attempt must have one stable identity and bind the exact authoritative execution record, proposed result-version identity, complete evidence and uncertainty set, and prior lineage head evaluated by that attempt.
+
+References: `L3-ERR-RESULT-REALIZATION-ATTEMPT`, `L3-ERR-EXECUTION-RECORD`, `L3-ERR-RESULT-VERSION`, `L3-ERR-CURRENT-LINEAGE-HEAD`
+
+### L3-ERR-REQ-022
+
+A result-realization attempt that fails finalization must record a finalization-failure disposition and must not create, publish, or designate a finalized workflow-result version or change the current lineage head.
+
+References: `L3-ERR-FINALIZATION-FAILURE`, `L3-ERR-RESULT-FINALIZATION`, `L3-ERR-CURRENT-LINEAGE-HEAD`
+
+### L3-ERR-REQ-023
+
+Every finalized authoritative workflow-result version must bind one workflow identity, one authoritative execution-record identity, the applicable accepted-plan identity, one result-realization-attempt identity, and the complete accepted evidence and uncertainty set supporting its exact claims.
+
+References: `L3-ERR-RESULT-VERSION`, `L3-ERR-EXECUTION-RECORD`, `L3-ERR-RESULT-REALIZATION-ATTEMPT`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
+### L3-ERR-REQ-024
+
+A superseding result version must explicitly identify exactly one directly superseded version in the same lineage, a non-empty correction reason, and the evidence basis for the correction; supersession relationships must be acyclic and must preserve every prior finalized version unchanged.
+
+References: `L3-ERR-SUPERSESSION`, `L3-ERR-RESULT-VERSION`, `L3-ERR-EVIDENCE-PROVENANCE`
+
+### L3-ERR-REQ-025
+
+Each workflow-result lineage must have at most one current lineage head. Accepting a valid superseding version moves current-head designation to the new version without deleting, mutating, or making non-authoritative the historical content of the superseded version.
+
+References: `L3-ERR-CURRENT-LINEAGE-HEAD`, `L3-ERR-SUPERSESSION`, `L3-ERR-RESULT-VERSION`
+
+### L3-ERR-REQ-026
+
+Lifecycle status, finalization disposition, result-version status, superseded status, and current-head designation must remain distinct record or lineage facts and must not substitute for any effect-claim state.
+
+References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-CURRENT-LINEAGE-HEAD`
+
 ## Relationships
 
 - `L3-ERR-REL-001`: `L3-ERR-EVIDENCE-PROVENANCE` **attributes** `L3-ERR-EVIDENCE-RECORD`
@@ -177,6 +249,11 @@ References: `L3-ERR-EVIDENCE-RECORD`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 - `L3-ERR-REL-006`: `L3-ERR-UNCERTAINTY-STATE` **is-preserved-by** `L3-ERR-OPERATION-RESULT`
 - `L3-ERR-REL-007`: `L3-ERR-OPERATION-RESULT` **is-assembled-into** `L3-ERR-WORKFLOW-RESULT`
 - `L3-ERR-REL-008`: `L3-ERR-RESULT-FINALIZATION` **finalizes** `L3-ERR-WORKFLOW-RESULT`
+- `L3-ERR-REL-009`: `L3-ERR-EXECUTION-RECORD` **is-evaluated-by** `L3-ERR-RESULT-REALIZATION-ATTEMPT`
+- `L3-ERR-REL-010`: `L3-ERR-RESULT-REALIZATION-ATTEMPT` **may-finalize** `L3-ERR-RESULT-VERSION`
+- `L3-ERR-REL-011`: `L3-ERR-FINALIZATION-FAILURE` **is-recorded-by** `L3-ERR-EXECUTION-RECORD`
+- `L3-ERR-REL-012`: `L3-ERR-SUPERSESSION` **links** `L3-ERR-RESULT-VERSION`
+- `L3-ERR-REL-013`: `L3-ERR-CURRENT-LINEAGE-HEAD` **designates** `L3-ERR-RESULT-VERSION`
 
 ## Scope
 
@@ -189,10 +266,12 @@ References: `L3-ERR-EVIDENCE-RECORD`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 - Explicit unknown, unavailable, not-observed, contradicted, and insufficient-evidence states
 - Evidence sufficiency tied to exact effect claims and governing authority
 - Fail-closed duplicate, stale, ambiguous, unauthorized, malformed, conflicting, contradictory, and non-unique evidence handling
+- Authoritative execution-record identity and complete binding
 - Operation-result identity and complete binding
 - Complete lifecycle, effect, evidence, uncertainty, contradiction, and unresolved accounting
-- Exactly one realized result per operation in authoritative workflow-result assembly
-- Fail-closed finalization and immutable finalized results
+- Uniquely identified result-realization attempts and truthful finalization failure
+- Exactly one realized result per required operation in a finalized workflow-result version
+- Immutable result versions, explicit acyclic supersession, preserved history, and one current lineage head
 - Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition
 
 ### Excludes

@@ -10,7 +10,7 @@
 
 ## Summary
 
-GVE is a governed instruction executor. It receives an instruction payload, performs governed execution according to a governed instruction set, and emits an authoritative result whose claims are limited to GVE's execution record, observations, and evidence-supported conclusions.
+GVE is a governed instruction executor. It receives an instruction payload, performs or refuses governed execution according to a governed instruction set, and emits an authoritative record whose claims are limited to GVE's execution record, observations, evidence, and evidence-supported conclusions. A stronger finalized result exists only when its governing finalization requirements are satisfied.
 
 ## Definitions
 
@@ -32,7 +32,11 @@ Execution constrained jointly by the instruction payload and the governed instru
 
 ### Authoritative result (`AUTHORITATIVE-RESULT`)
 
-GVE's authoritative record of its execution, observations, evidence, and evidence-supported conclusions. It is not an unrestricted assertion about external reality.
+GVE's authoritative record of its governed processing, execution, observations, evidence, and evidence-supported conclusions. It may truthfully report refusal, incomplete execution, uncertainty, or inability to finalize a stronger result and is not an unrestricted assertion about external reality.
+
+### Finalized result (`FINALIZED-RESULT`)
+
+An authoritative result accepted only after the governed instruction set establishes its required completeness, consistency, attribution, evidence sufficiency, and immutability. Failure to finalize must not erase or falsify the authoritative execution record.
 
 ### Execution evidence (`EXECUTION-EVIDENCE`)
 
@@ -76,7 +80,7 @@ References: `GVE`
 
 ### L0-REQ-002
 
-GVE must implement the model instruction payload to governed execution to authoritative result.
+GVE must implement the model instruction payload to governed execution or governed refusal to authoritative result.
 
 References: `INSTRUCTION-PAYLOAD`, `GOVERNED-EXECUTION`, `AUTHORITATIVE-RESULT`
 
@@ -112,9 +116,9 @@ References: `INSTRUCTION-PAYLOAD`, `GOVERNED-INSTRUCTION-SET`, `FAIL-CLOSED`
 
 ### L0-REQ-008
 
-An authoritative result must distinguish requested, authorized, attempted, completed, observed, and verified effects.
+Every authoritative result must distinguish requested, authorized, attempted, completed, observed, and verified effects and must distinguish an execution record from any stronger finalized result.
 
-References: `AUTHORITATIVE-RESULT`, `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`, `ATTEMPTED-EFFECT`, `COMPLETED-EFFECT`, `OBSERVED-EFFECT`, `VERIFIED-EFFECT`
+References: `AUTHORITATIVE-RESULT`, `FINALIZED-RESULT`, `REQUESTED-EFFECT`, `AUTHORIZED-EFFECT`, `ATTEMPTED-EFFECT`, `COMPLETED-EFFECT`, `OBSERVED-EFFECT`, `VERIFIED-EFFECT`
 
 ### L0-REQ-009
 
@@ -130,11 +134,17 @@ References: `AUTHORITATIVE-RESULT`, `GOVERNED-INSTRUCTION-SET`, `EXECUTION-EVIDE
 
 ### L0-REQ-011
 
-An authoritative result is authoritative only for GVE's execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality.
+An authoritative result is authoritative only for GVE's governed processing and execution record, observations, evidence, and evidence-supported conclusions, not for unrestricted external reality; inability to finalize a stronger result must remain reportable without falsely claiming finalization.
 
 References: `AUTHORITATIVE-RESULT`, `EXECUTION-EVIDENCE`
 
 ### L0-REQ-012
+
+A finalized result may be claimed only when the governed instruction set's finalization requirements are satisfied. Finalization failure must preserve a truthful authoritative result and must not be represented as successful finalization.
+
+References: `AUTHORITATIVE-RESULT`, `FINALIZED-RESULT`, `FAIL-CLOSED`, `EXECUTION-EVIDENCE`
+
+### L0-REQ-013
 
 Level 0 must remain independent of later-level architecture, concrete operation contracts, plugins, repository guards, publication workflows, and implementation mechanisms.
 
@@ -148,6 +158,7 @@ References: `GVE`
 - `L0-REL-004`: `VERIFIED-EFFECT` **is-stronger-than** `OBSERVED-EFFECT`
 - `L0-REL-005`: `OBSERVED-EFFECT` **is-distinct-from** `COMPLETED-EFFECT`
 - `L0-REL-006`: `GOVERNED-INSTRUCTION-SET` **interprets** `EXECUTION-EVIDENCE`
+- `L0-REL-007`: `FINALIZED-RESULT` **specializes** `AUTHORITATIVE-RESULT`
 
 ## Scope
 
@@ -157,6 +168,7 @@ References: `GVE`
 - The authority boundary formed by the payload and governed instruction set
 - Fail-closed behavior
 - Evidence-supported result claims
+- Truthful authoritative reporting when stronger result finalization is unavailable
 - Execution evidence and its governed interpretation
 - Distinct execution-effect states
 
