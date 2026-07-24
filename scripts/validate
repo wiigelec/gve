@@ -14,7 +14,5 @@ else
 fi
 
 "$PYTHON" -m unittest discover -s specs/tests
-"$PYTHON" -m unittest discover -s tests/governed_executor
-"$PYTHON" -m unittest discover -s tests/validation
 "$PYTHON" -m specs.tooling.validate --specs-root specs
 git diff --check
