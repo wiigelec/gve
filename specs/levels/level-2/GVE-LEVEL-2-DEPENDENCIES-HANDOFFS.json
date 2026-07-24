@@ -1,0 +1,359 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+    "level": 2,
+    "title": "GVE Level 2 Dependencies and Handoffs",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "GVE-LEVEL-2-WORKFLOW-COMPOSITION"
+    ]
+  },
+  "summary": "GVE Level 2 Dependencies and Handoffs defines deterministic operation-dependency and sequencing graphs, pre-execution data-handoff declarations, runtime validation of actual handoffs before dependent-operation attempt, blocked and unattempted operation behavior, deterministic propagation, and partial workflow progress. It preserves the normative distinction between dependencies, declared handoff contracts, and actual runtime data handoffs and preserves all inherited effect-state truthfulness.",
+  "definitions": [
+    {
+      "id": "L2-DH-OPERATION-DEPENDENCY",
+      "term": "Level 2 operation dependency",
+      "text": "An application-independent prerequisite relationship in which one governed operation may become eligible for attempt only after the declared prerequisite operation satisfies the dependency condition established by the accepted workflow plan."
+    },
+    {
+      "id": "L2-DH-SEQUENCING-EDGE",
+      "term": "Sequencing edge",
+      "text": "A directed composition relationship from one operation identity to another that constrains eligible execution order without by itself declaring a data transfer."
+    },
+    {
+      "id": "L2-DH-DEPENDENCY-ENDPOINT",
+      "term": "Dependency endpoint",
+      "text": "A source or target operation identity named by a dependency or sequencing edge and required to resolve uniquely to an operation in the same accepted workflow plan."
+    },
+    {
+      "id": "L2-DH-DEPENDENCY-GRAPH",
+      "term": "Dependency graph",
+      "text": "The directed acyclic graph formed by the accepted workflow plan's operation identities and explicit dependency and sequencing edges."
+    },
+    {
+      "id": "L2-DH-HANDOFF-DECLARATION",
+      "term": "Data-handoff declaration",
+      "text": "The application-independent pre-execution contract that names exactly one source operation, one target operation, the required source result, the intended target input, compatibility conditions, authority requirements, and evidence obligations."
+    },
+    {
+      "id": "L2-DH-ACTUAL-HANDOFF",
+      "term": "Actual data handoff",
+      "text": "The runtime transfer candidate produced from actual evidence-supported source result data for a target operation under exactly one previously accepted handoff declaration."
+    },
+    {
+      "id": "L2-DH-SOURCE-RESULT-OBLIGATION",
+      "term": "Source-result obligation",
+      "text": "The requirement that the source operation produce the specific declared result data with sufficient evidence and authority before that data may participate in an actual handoff."
+    },
+    {
+      "id": "L2-DH-TARGET-INPUT-OBLIGATION",
+      "term": "Target-input obligation",
+      "text": "The requirement that the target operation and its selected plugin accept the declared application-independent input role before an actual handoff may satisfy it."
+    },
+    {
+      "id": "L2-DH-HANDOFF-COMPATIBILITY",
+      "term": "Handoff compatibility",
+      "text": "The application-independent determination that actual source result data satisfies the accepted declaration's target-input, identity, version, authority, and evidence conditions without the core interpreting plugin-specific data meaning."
+    },
+    {
+      "id": "L2-DH-HANDOFF-AUTHORITY",
+      "term": "Handoff authority",
+      "text": "The authority required for the source result to be disclosed and for the target operation to consume it under the accepted workflow plan."
+    },
+    {
+      "id": "L2-DH-HANDOFF-EVIDENCE",
+      "term": "Handoff evidence",
+      "text": "The evidence sufficient to establish the source result's identity, provenance, availability, integrity, declared compatibility, and authorized transfer to the target operation."
+    },
+    {
+      "id": "L2-DH-BLOCKED-OPERATION",
+      "term": "Blocked operation",
+      "text": "An operation that remains unattempted because a required dependency condition or actual handoff validation condition is unsatisfied, unavailable, invalid, unauthorized, or insufficiently evidenced."
+    },
+    {
+      "id": "L2-DH-SKIPPED-OPERATION",
+      "term": "Skipped operation",
+      "text": "An operation that remains unattempted because an accepted workflow rule explicitly selects non-attempt after a preceding outcome. Skipped is distinct from blocked and failed."
+    },
+    {
+      "id": "L2-DH-FAILED-OPERATION",
+      "term": "Failed operation",
+      "text": "An operation for which an authorized attempt occurred and the governed operation did not complete successfully. Failure must not be assigned to an operation that was never attempted."
+    },
+    {
+      "id": "L2-DH-UNATTEMPTED-OPERATION",
+      "term": "Unattempted operation",
+      "text": "An operation for which no governed attempt occurred. Blocked and skipped operations are unattempted, but their distinct causes and statuses must remain explicit."
+    },
+    {
+      "id": "L2-DH-PROPAGATION",
+      "term": "Dependency and handoff propagation",
+      "text": "The deterministic derivation of downstream eligibility, blocked, skipped, or unattempted status from accepted dependency, sequencing, failure, and handoff outcomes without converting those statuses into effect claims."
+    },
+    {
+      "id": "L2-DH-PARTIAL-PROGRESS",
+      "term": "Partial workflow progress",
+      "text": "A workflow condition in which some operations have valid evidence-supported outcomes while other operations remain failed, blocked, skipped, or unattempted. Partial progress does not imply complete workflow success."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-DH-REQ-001",
+      "text": "Every dependency and sequencing edge must be explicit and must name exactly one source operation identity and one target operation identity in the same accepted workflow plan.",
+      "references": [
+        "L2-DH-OPERATION-DEPENDENCY",
+        "L2-DH-SEQUENCING-EDGE",
+        "L2-DH-DEPENDENCY-ENDPOINT"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-002",
+      "text": "Every dependency endpoint must resolve deterministically and uniquely to an operation in the accepted workflow plan. Missing, duplicate, cross-workflow, self-referential, ambiguous, or otherwise unresolved endpoints must fail closed.",
+      "references": [
+        "L2-DH-DEPENDENCY-ENDPOINT",
+        "L2-WC-OPERATION-IDENTITY",
+        "L2-WC-COMPLETE-PLAN"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-003",
+      "text": "The dependency graph must be acyclic. Any direct or transitive cycle among dependency or sequencing edges must fail workflow-plan acceptance before execution.",
+      "references": [
+        "L2-DH-DEPENDENCY-GRAPH",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-004",
+      "text": "Operation dependencies and sequencing edges must remain distinct from data-handoff declarations and actual data handoffs. A dependency may exist without a handoff, and a handoff declaration must not be inferred solely from a dependency.",
+      "references": [
+        "L2-DH-OPERATION-DEPENDENCY",
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-DH-ACTUAL-HANDOFF"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-005",
+      "text": "Every planned data handoff must be represented by exactly one valid pre-execution handoff declaration accepted as part of the complete workflow plan.",
+      "references": [
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-WC-COMPLETE-PLAN",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-006",
+      "text": "Each handoff declaration must identify one source operation, one target operation, the required source result, the intended target input, compatibility conditions, required authority, and required evidence.",
+      "references": [
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-DH-SOURCE-RESULT-OBLIGATION",
+        "L2-DH-TARGET-INPUT-OBLIGATION",
+        "L2-DH-HANDOFF-COMPATIBILITY",
+        "L2-DH-HANDOFF-AUTHORITY",
+        "L2-DH-HANDOFF-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-007",
+      "text": "A missing, malformed, conflicting, ambiguous, unauthorized, incomplete, or non-uniquely attributable handoff declaration must fail workflow-plan acceptance before any operation begins.",
+      "references": [
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-008",
+      "text": "An actual data handoff must not occur unless it is attributable to exactly one accepted handoff declaration and exactly one source and target operation pair.",
+      "references": [
+        "L2-DH-ACTUAL-HANDOFF",
+        "L2-DH-HANDOFF-DECLARATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-009",
+      "text": "Before a target operation may be attempted, the core must validate every required actual handoff for that operation against its accepted declaration, source result, target input, compatibility conditions, authority, and evidence obligations.",
+      "references": [
+        "L2-DH-ACTUAL-HANDOFF",
+        "L2-DH-SOURCE-RESULT-OBLIGATION",
+        "L2-DH-TARGET-INPUT-OBLIGATION",
+        "L2-DH-HANDOFF-COMPATIBILITY",
+        "L2-DH-HANDOFF-AUTHORITY",
+        "L2-DH-HANDOFF-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-010",
+      "text": "An undeclared, missing, unavailable, invalid, incompatible, unauthorized, ambiguous, stale, or insufficiently evidenced actual handoff must prevent the dependent operation from being attempted.",
+      "references": [
+        "L2-DH-ACTUAL-HANDOFF",
+        "L2-DH-BLOCKED-OPERATION",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-011",
+      "text": "A dependent operation whose required dependency condition is unsatisfied or whose required actual handoff is unavailable or invalid must be recorded as blocked and unattempted unless an accepted workflow rule deterministically assigns a distinct skipped status.",
+      "references": [
+        "L2-DH-BLOCKED-OPERATION",
+        "L2-DH-SKIPPED-OPERATION",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-012",
+      "text": "Blocked, skipped, failed, and unattempted statuses must remain distinct. A blocked or skipped operation must not be reported as failed because no attempt occurred, and a failed operation must have evidence of an authorized attempt.",
+      "references": [
+        "L2-DH-BLOCKED-OPERATION",
+        "L2-DH-SKIPPED-OPERATION",
+        "L2-DH-FAILED-OPERATION",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-013",
+      "text": "Dependency and handoff outcomes must propagate deterministically through the accepted dependency graph. Propagation must preserve the specific cause of each downstream blocked, skipped, or unattempted status.",
+      "references": [
+        "L2-DH-DEPENDENCY-GRAPH",
+        "L2-DH-PROPAGATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-014",
+      "text": "Dependency, sequencing, declaration, handoff, blocked, skipped, failed, unattempted, and propagation statuses must not by themselves establish that any requested effect was attempted, completed, observed, or verified.",
+      "references": [
+        "L2-DH-PROPAGATION",
+        "LEVEL-2-COMPOSITION-LAYER"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-015",
+      "text": "A workflow may record partial progress only when each operation's actual status and evidence are retained independently. Outcomes of completed or failed operations must not be erased by downstream blocking, and partial progress must not be represented as complete workflow success.",
+      "references": [
+        "L2-DH-PARTIAL-PROGRESS",
+        "L2-DH-PROPAGATION"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-016",
+      "text": "The core may validate application-independent handoff identity, attribution, compatibility claims, authority, and evidence obligations, but it must not interpret plugin-specific source-result or target-input meaning.",
+      "references": [
+        "L2-DH-HANDOFF-COMPATIBILITY",
+        "L2-WC-PLUGIN-MEANING-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-DH-REQ-017",
+      "text": "This specification must not define concrete handoff serialization, plugin-specific data schemas, retries, resume, compensation, rollback, transactions, maintained runtime implementation, evidence aggregation, or authoritative result assembly.",
+      "references": [
+        "LEVEL-2-RESULT-ASSEMBLY",
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-DH-REL-001",
+      "source": "LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "relation": "is-governed-by",
+      "target": "LEVEL-2-ROOT"
+    },
+    {
+      "id": "L2-DH-REL-002",
+      "source": "L2-DH-DEPENDENCY-GRAPH",
+      "relation": "contains",
+      "target": "L2-DH-OPERATION-DEPENDENCY"
+    },
+    {
+      "id": "L2-DH-REL-003",
+      "source": "L2-DH-OPERATION-DEPENDENCY",
+      "relation": "uses",
+      "target": "L2-DH-DEPENDENCY-ENDPOINT"
+    },
+    {
+      "id": "L2-DH-REL-004",
+      "source": "L2-DH-SEQUENCING-EDGE",
+      "relation": "constrains",
+      "target": "L2-DH-DEPENDENCY-GRAPH"
+    },
+    {
+      "id": "L2-DH-REL-005",
+      "source": "L2-DH-HANDOFF-DECLARATION",
+      "relation": "governs",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-006",
+      "source": "L2-DH-SOURCE-RESULT-OBLIGATION",
+      "relation": "constrains",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-007",
+      "source": "L2-DH-TARGET-INPUT-OBLIGATION",
+      "relation": "constrains",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-008",
+      "source": "L2-DH-HANDOFF-COMPATIBILITY",
+      "relation": "validates",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-009",
+      "source": "L2-DH-HANDOFF-AUTHORITY",
+      "relation": "authorizes",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-010",
+      "source": "L2-DH-HANDOFF-EVIDENCE",
+      "relation": "supports",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-DH-REL-011",
+      "source": "L2-DH-PROPAGATION",
+      "relation": "may-produce",
+      "target": "L2-DH-BLOCKED-OPERATION"
+    },
+    {
+      "id": "L2-DH-REL-012",
+      "source": "L2-DH-PARTIAL-PROGRESS",
+      "relation": "preserves",
+      "target": "L2-DH-UNATTEMPTED-OPERATION"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Explicit operation dependencies and sequencing edges",
+      "Deterministic dependency endpoints and acyclic graphs",
+      "Pre-execution data-handoff declarations",
+      "Runtime validation of actual handoffs before dependent-operation attempt",
+      "Source-result, target-input, compatibility, authority, and evidence obligations",
+      "Blocked, skipped, failed, and unattempted operation distinctions",
+      "Deterministic dependency and handoff propagation",
+      "Partial workflow progress",
+      "Effect-state truthfulness for dependency and handoff outcomes"
+    ],
+    "excludes": [
+      "Concrete handoff serialization",
+      "Plugin-specific source-result and target-input schemas",
+      "Retry, resume, compensation, rollback, and transaction algorithms",
+      "Maintained runtime implementation",
+      "Evidence aggregation and authoritative workflow-result assembly",
+      "GitHub and other remote-service plugin behavior",
+      "Sibling Level 2 semantic responsibilities",
+      "Level 3 design"
+    ]
+  }
+}
