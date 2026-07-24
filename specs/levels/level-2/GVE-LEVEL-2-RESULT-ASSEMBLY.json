@@ -1,0 +1,359 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-RESULT-ASSEMBLY",
+    "level": 2,
+    "title": "GVE Level 2 Result Assembly",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+      "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS"
+    ]
+  },
+  "summary": "GVE Level 2 Result Assembly defines composition-facing operation results and evidence, deterministic evidence aggregation, exactly one authoritative workflow result for each governed workflow outcome, truthful representation of pre-execution failure and every operation outcome, explicit partial effects and incomplete evidence, evidence-sufficiency gates for workflow completion, observation, and verification claims, and complete result traceability while preserving every inherited effect-state distinction.",
+  "definitions": [
+    {
+      "id": "L2-RA-OPERATION-RESULT",
+      "term": "Composition-facing operation result",
+      "text": "The application-independent result record for one declared operation, attributable to its operation identity, selected plugin, validated operation contract, lifecycle outcome, effect-state claims, dependencies, handoffs, and supporting evidence."
+    },
+    {
+      "id": "L2-RA-OPERATION-EVIDENCE",
+      "term": "Operation evidence",
+      "text": "Evidence attributable to one operation and sufficient to support only the specific operation-level requested, authorized, attempted, completed, observed, or verified claims stated in that operation result."
+    },
+    {
+      "id": "L2-RA-WORKFLOW-EVIDENCE",
+      "term": "Workflow evidence",
+      "text": "Application-independent evidence that supports workflow-level composition, validation, ordering, dependency, handoff, aggregate effect-state, and result-assembly claims."
+    },
+    {
+      "id": "L2-RA-EVIDENCE-AGGREGATION",
+      "term": "Evidence aggregation",
+      "text": "The deterministic assembly of operation evidence and workflow evidence without converting lifecycle, validation, plugin, dependency, handoff, blocked, skipped, failed, or unattempted status into an effect claim."
+    },
+    {
+      "id": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+      "term": "Authoritative workflow result",
+      "text": "The single canonical result record for one governed workflow outcome. It includes the workflow identity, workflow-plan acceptance outcome, every declared operation result, workflow evidence, aggregate claims, partial effects, incomplete evidence, and traceability."
+    },
+    {
+      "id": "L2-RA-PREEXECUTION-FAILURE-RESULT",
+      "term": "Pre-execution failure result",
+      "text": "An authoritative workflow result representing rejection before any operation attempt. It records the validation failure and all operations as unattempted without claiming workflow execution, operation attempt, completion, observation, or verification."
+    },
+    {
+      "id": "L2-RA-OPERATION-OUTCOME",
+      "term": "Operation outcome representation",
+      "text": "The required result representation for one declared operation, including whether it completed, failed, was blocked, was skipped, or remained otherwise unattempted, together with distinct effect-state claims and supporting evidence."
+    },
+    {
+      "id": "L2-RA-PARTIAL-EFFECT",
+      "term": "Partial effect",
+      "text": "An effect supported for one or more operations or effect dimensions while the complete workflow effect is not supported. Partial effects must be explicit and must not be represented as whole-workflow completion."
+    },
+    {
+      "id": "L2-RA-INCOMPLETE-EVIDENCE",
+      "term": "Incomplete evidence",
+      "text": "A result condition in which available evidence is insufficient to support one or more otherwise possible operation-level or workflow-level claims. Absence of sufficient evidence must remain explicit and must not be converted into a positive claim."
+    },
+    {
+      "id": "L2-RA-WORKFLOW-COMPLETION-CLAIM",
+      "term": "Workflow completion claim",
+      "text": "A claim that the complete governed workflow effect finished successfully. It requires sufficient evidence for every operation and composition condition required by the accepted plan."
+    },
+    {
+      "id": "L2-RA-WORKFLOW-OBSERVATION-CLAIM",
+      "term": "Workflow observation claim",
+      "text": "A claim that the relevant complete workflow effect was independently observed. It requires observation evidence covering the workflow claim and must remain distinct from completion."
+    },
+    {
+      "id": "L2-RA-WORKFLOW-VERIFICATION-CLAIM",
+      "term": "Workflow verification claim",
+      "text": "A claim that the relevant complete workflow effect was verified against its governing criteria. It requires verification evidence covering the workflow claim and must remain distinct from completion and observation."
+    },
+    {
+      "id": "L2-RA-RESULT-TRACEABILITY",
+      "term": "Result traceability",
+      "text": "The deterministic links from every workflow-level and operation-level claim to the workflow identity, operation identity, selected plugin, validated contract, dependencies, handoffs, authority, lifecycle outcome, and supporting evidence from which the claim is derived."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-RA-REQ-001",
+      "text": "Exactly one authoritative workflow result must be produced for each governed workflow outcome, including pre-execution rejection, partial progress, failure, and successful completion.",
+      "references": [
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+        "L2-WC-WORKFLOW-IDENTITY"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-002",
+      "text": "The authoritative workflow result must represent every operation declared in the accepted or rejected workflow plan exactly once and must preserve each operation's identity and actual outcome.",
+      "references": [
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+        "L2-RA-OPERATION-OUTCOME",
+        "L2-WC-COMPOSITION-MEMBERSHIP"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-003",
+      "text": "Every operation result must be attributable to exactly one operation identity, selected plugin, validated operation contract, lifecycle outcome, and supporting operation evidence.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-OPERATION-EVIDENCE",
+        "L2-WC-PLUGIN-BINDING",
+        "L2-WC-CONTRACT-ATTRIBUTION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-004",
+      "text": "Requested, authorized, attempted, completed, observed, and verified must remain separate claims at both operation and workflow levels. No claim may be inferred solely from another claim.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-005",
+      "text": "A plugin, lifecycle, validation, dependency, handoff, blocked, skipped, failed, or unattempted status must not by itself establish that an effect was requested, authorized, attempted, completed, observed, or verified.",
+      "references": [
+        "L2-RA-EVIDENCE-AGGREGATION",
+        "L2-DH-BLOCKED-OPERATION",
+        "L2-DH-SKIPPED-OPERATION",
+        "L2-DH-FAILED-OPERATION",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-006",
+      "text": "A pre-execution validation failure must produce a pre-execution failure result that records the rejection cause, represents every operation as unattempted, and does not claim that workflow execution began.",
+      "references": [
+        "L2-RA-PREEXECUTION-FAILURE-RESULT",
+        "L2-WC-PLAN-ACCEPTANCE",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-007",
+      "text": "Failed, blocked, skipped, and otherwise unattempted operations must be represented explicitly and distinctly in the authoritative workflow result and must not be omitted or collapsed into a generic non-success status.",
+      "references": [
+        "L2-RA-OPERATION-OUTCOME",
+        "L2-DH-FAILED-OPERATION",
+        "L2-DH-BLOCKED-OPERATION",
+        "L2-DH-SKIPPED-OPERATION",
+        "L2-DH-UNATTEMPTED-OPERATION"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-008",
+      "text": "An operation may claim attempted only when evidence supports an authorized governed attempt, and may claim completed only when evidence supports successful completion of that operation's governed effect.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-OPERATION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-009",
+      "text": "An operation may claim observed or verified only when distinct sufficient evidence supports the corresponding observation or verification claim; completion alone is insufficient.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-OPERATION-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-010",
+      "text": "Evidence aggregation must preserve the identity, scope, authority, provenance, and supported claim of each evidence item and must not broaden an operation-level claim into a workflow-level claim without sufficient support.",
+      "references": [
+        "L2-RA-EVIDENCE-AGGREGATION",
+        "L2-RA-OPERATION-EVIDENCE",
+        "L2-RA-WORKFLOW-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-011",
+      "text": "Partial effects must be represented explicitly with the operations and effect dimensions they cover, and must not be represented as complete workflow success.",
+      "references": [
+        "L2-RA-PARTIAL-EFFECT",
+        "L2-DH-PARTIAL-PROGRESS",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-012",
+      "text": "Incomplete evidence must be represented explicitly for every unsupported or indeterminate claim and must prevent any corresponding positive operation-level or workflow-level claim.",
+      "references": [
+        "L2-RA-INCOMPLETE-EVIDENCE",
+        "L2-RA-OPERATION-EVIDENCE",
+        "L2-RA-WORKFLOW-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-013",
+      "text": "A workflow completion claim may be made only when every operation and composition condition required for complete workflow success is represented and supported by sufficient evidence. Partial operation success, blocked or skipped required operations, failed required operations, or incomplete evidence must prevent the claim.",
+      "references": [
+        "L2-RA-WORKFLOW-COMPLETION-CLAIM",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+        "L2-DH-PARTIAL-PROGRESS"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-014",
+      "text": "A workflow observation claim may be made only when distinct sufficient observation evidence covers the complete workflow claim. Workflow completion alone must not establish observation.",
+      "references": [
+        "L2-RA-WORKFLOW-OBSERVATION-CLAIM",
+        "L2-RA-WORKFLOW-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-015",
+      "text": "A workflow verification claim may be made only when distinct sufficient verification evidence covers the complete workflow claim against its governing criteria. Completion or observation alone must not establish verification.",
+      "references": [
+        "L2-RA-WORKFLOW-VERIFICATION-CLAIM",
+        "L2-RA-WORKFLOW-EVIDENCE"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-016",
+      "text": "Every aggregate workflow claim must be traceable deterministically to the operation results and workflow evidence that support it, including relevant operation identities, selected plugins, validated contracts, dependencies, and handoffs.",
+      "references": [
+        "L2-RA-RESULT-TRACEABILITY",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT",
+        "L2-DH-DEPENDENCY-GRAPH",
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-DH-ACTUAL-HANDOFF"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-017",
+      "text": "Conflicting, duplicate, ambiguous, stale, unauthorized, malformed, or non-attributable operation results or evidence must fail result assembly closed and must prevent unsupported authoritative claims.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-EVIDENCE-AGGREGATION",
+        "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-018",
+      "text": "The core may assemble application-independent result facts and evidence obligations, but it must not interpret, normalize, override, or derive plugin-specific result meaning.",
+      "references": [
+        "L2-RA-OPERATION-RESULT",
+        "L2-WC-PLUGIN-MEANING-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-RA-REQ-019",
+      "text": "This specification must not define concrete plugin-specific result payload schemas, maintained runtime implementation, GitHub or remote-service behavior, or sibling Level 2 local-plugin-boundary responsibilities.",
+      "references": [
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+        "LEVEL-2-RESULT-ASSEMBLY"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-RA-REL-001",
+      "source": "LEVEL-2-RESULT-ASSEMBLY",
+      "relation": "is-governed-by",
+      "target": "LEVEL-2-ROOT"
+    },
+    {
+      "id": "L2-RA-REL-002",
+      "source": "L2-RA-OPERATION-EVIDENCE",
+      "relation": "supports",
+      "target": "L2-RA-OPERATION-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-003",
+      "source": "L2-RA-WORKFLOW-EVIDENCE",
+      "relation": "supports",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-004",
+      "source": "L2-RA-EVIDENCE-AGGREGATION",
+      "relation": "assembles",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-005",
+      "source": "L2-RA-PREEXECUTION-FAILURE-RESULT",
+      "relation": "specializes",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-006",
+      "source": "L2-RA-OPERATION-OUTCOME",
+      "relation": "is-included-in",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-007",
+      "source": "L2-RA-PARTIAL-EFFECT",
+      "relation": "is-represented-by",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-008",
+      "source": "L2-RA-INCOMPLETE-EVIDENCE",
+      "relation": "constrains",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    },
+    {
+      "id": "L2-RA-REL-009",
+      "source": "L2-RA-WORKFLOW-COMPLETION-CLAIM",
+      "relation": "requires",
+      "target": "L2-RA-WORKFLOW-EVIDENCE"
+    },
+    {
+      "id": "L2-RA-REL-010",
+      "source": "L2-RA-WORKFLOW-OBSERVATION-CLAIM",
+      "relation": "requires",
+      "target": "L2-RA-WORKFLOW-EVIDENCE"
+    },
+    {
+      "id": "L2-RA-REL-011",
+      "source": "L2-RA-WORKFLOW-VERIFICATION-CLAIM",
+      "relation": "requires",
+      "target": "L2-RA-WORKFLOW-EVIDENCE"
+    },
+    {
+      "id": "L2-RA-REL-012",
+      "source": "L2-RA-RESULT-TRACEABILITY",
+      "relation": "constrains",
+      "target": "L2-RA-AUTHORITATIVE-WORKFLOW-RESULT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Composition-facing operation results",
+      "Operation evidence and workflow evidence",
+      "Deterministic evidence aggregation",
+      "Exactly one authoritative workflow result",
+      "Pre-execution failure representation",
+      "Failed, blocked, skipped, and unattempted operation representation",
+      "Separate requested, authorized, attempted, completed, observed, and verified claims",
+      "Partial effects and incomplete evidence",
+      "Workflow completion, observation, and verification evidence gates",
+      "Complete result traceability"
+    ],
+    "excludes": [
+      "Concrete plugin-specific result payload schemas",
+      "Maintained runtime implementation",
+      "GitHub and other remote-service behavior",
+      "Interpretation of plugin-specific result meaning",
+      "Redefinition of workflow composition",
+      "Redefinition of dependencies and handoffs",
+      "Sibling Level 2 local-plugin-boundary responsibilities",
+      "Level 3 design"
+    ]
+  }
+}
