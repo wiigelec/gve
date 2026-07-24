@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 import unittest
@@ -100,14 +101,10 @@ class LevelThreeRootTests(unittest.TestCase):
         self.assertIn("explicit supersession", definition["text"])
         self.assertIn("one current lineage head", definition["text"])
 
-    def test_historical_level_three_is_non_normative(self) -> None:
-        historical = next(
-            item
-            for item in self.document["definitions"]
-            if item["id"] == "HISTORICAL-LEVEL-3-MATERIAL"
-        )
-        self.assertIn("non-normative historical input", historical["text"])
-        self.assertIn("superseded as Level 3 authority", historical["text"])
+    def test_legacy_level_three_material_is_absent(self) -> None:
+        serialized = json.dumps(self.document, ensure_ascii=False)
+        self.assertNotIn("LEVEL_3.md", serialized)
+        self.assertNotIn("HISTORICAL-LEVEL-3-MATERIAL", serialized)
 
     def test_markdown_is_exact_projection(self) -> None:
         self.assertEqual(
