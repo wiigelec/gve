@@ -1,0 +1,326 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+    "level": 2,
+    "title": "GVE Level 2 Local Plugin Boundaries",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+      "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "GVE-LEVEL-2-RESULT-ASSEMBLY"
+    ]
+  },
+  "summary": "GVE Level 2 Local Plugin Boundaries defines distinct composition-facing responsibilities for local filesystem modification, command execution, and local Git operation plugin domains. It requires deterministic unique domain assignment, explicit validated-contract, evidence, handoff, and result obligations, application-independent core behavior, plugin-owned domain-specific interpretation and execution, and bounded follow-on plugin specification work without authorizing concrete production payload schemas or maintained implementations.",
+  "definitions": [
+    {
+      "id": "L2-LPB-FILESYSTEM-DOMAIN",
+      "term": "Local filesystem modification domain",
+      "text": "The plugin domain responsible for interpreting, validating, executing, evidencing, and reporting governed changes to local filesystem objects and metadata, excluding command process semantics and Git repository semantics that belong to other domains."
+    },
+    {
+      "id": "L2-LPB-COMMAND-DOMAIN",
+      "term": "Command-execution domain",
+      "text": "The plugin domain responsible for interpreting, validating, executing, evidencing, and reporting governed local process invocation and process outcome semantics, excluding direct filesystem-object mutation semantics and Git repository semantics owned by other domains."
+    },
+    {
+      "id": "L2-LPB-LOCAL-GIT-DOMAIN",
+      "term": "Local Git operations domain",
+      "text": "The plugin domain responsible for interpreting, validating, executing, evidencing, and reporting governed operations on local Git repository state, excluding remote-service and hosting-provider behavior."
+    },
+    {
+      "id": "L2-LPB-DOMAIN-OWNERSHIP",
+      "term": "Domain operation ownership",
+      "text": "The normative assignment of one operation's domain-specific meaning to exactly one plugin domain according to non-overlapping composition-facing responsibility boundaries."
+    },
+    {
+      "id": "L2-LPB-DETERMINISTIC-ASSIGNMENT",
+      "term": "Deterministic domain assignment",
+      "text": "The application-independent determination that one declared operation maps uniquely to one eligible plugin domain without ambiguity, overlap, fallback interpretation, or core inference of domain-specific meaning."
+    },
+    {
+      "id": "L2-LPB-CONTRACT-EXPOSURE",
+      "term": "Validated operation-contract exposure",
+      "text": "The domain obligation to expose sufficient application-independent contract identity, authority, input, output, evidence, handoff, and result obligations for core validation and composition while retaining domain-specific meaning inside the selected plugin."
+    },
+    {
+      "id": "L2-LPB-DOMAIN-EVIDENCE",
+      "term": "Domain evidence obligation",
+      "text": "The obligation of each selected plugin domain to produce attributable evidence sufficient for its operation-level claims without requiring the core to interpret domain-specific evidence meaning."
+    },
+    {
+      "id": "L2-LPB-DOMAIN-HANDOFF",
+      "term": "Domain handoff obligation",
+      "text": "The obligation of each selected plugin domain to declare and expose application-independent handoff roles and compatibility claims while retaining interpretation of domain-specific source-result and target-input meaning."
+    },
+    {
+      "id": "L2-LPB-DOMAIN-RESULT",
+      "term": "Domain result obligation",
+      "text": "The obligation of each selected plugin domain to produce an attributable composition-facing operation result with distinct effect-state claims and supporting evidence while retaining plugin-specific result meaning."
+    },
+    {
+      "id": "L2-LPB-CORE-DOMAIN-BOUNDARY",
+      "term": "Core and domain interpretation boundary",
+      "text": "The boundary under which the core owns application-independent identity, authority, composition, dependency, handoff, evidence-sufficiency, and result-assembly rules, while each plugin owns domain-specific interpretation, validation, execution, evidence meaning, and result meaning."
+    },
+    {
+      "id": "L2-LPB-DOMAIN-NONOVERLAP",
+      "term": "Domain non-overlap",
+      "text": "The requirement that filesystem, command-execution, and local-Git composition-facing responsibilities do not overlap in a way that permits more than one domain to claim ownership of the same operation meaning."
+    },
+    {
+      "id": "L2-LPB-FOLLOWON-WORK",
+      "term": "Follow-on plugin specification work",
+      "text": "Separately governed subordinate work that defines plugin-specific contracts and semantics for the filesystem, command-execution, and local-Git domains after these common composition boundaries are accepted."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-LPB-REQ-001",
+      "text": "The local filesystem modification, command-execution, and local Git operation domains must have distinct composition-facing responsibilities sufficient for deterministic unique plugin assignment.",
+      "references": [
+        "L2-LPB-FILESYSTEM-DOMAIN",
+        "L2-LPB-COMMAND-DOMAIN",
+        "L2-LPB-LOCAL-GIT-DOMAIN",
+        "L2-LPB-DETERMINISTIC-ASSIGNMENT"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-002",
+      "text": "Each declared operation requiring local plugin execution must be attributable to exactly one eligible plugin domain before workflow-plan acceptance. Missing, duplicate, ambiguous, or overlapping assignment must fail closed.",
+      "references": [
+        "L2-LPB-DOMAIN-OWNERSHIP",
+        "L2-LPB-DETERMINISTIC-ASSIGNMENT",
+        "L2-WC-PLUGIN-BINDING",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-003",
+      "text": "The local filesystem modification domain owns governed meaning for direct local filesystem-object and metadata changes and must not claim ownership solely because another domain's execution may incidentally read or write filesystem state.",
+      "references": [
+        "L2-LPB-FILESYSTEM-DOMAIN",
+        "L2-LPB-DOMAIN-NONOVERLAP"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-004",
+      "text": "The command-execution domain owns governed meaning for local process invocation and process outcome and must not become the default owner for operations whose governed meaning belongs to filesystem or Git semantics.",
+      "references": [
+        "L2-LPB-COMMAND-DOMAIN",
+        "L2-LPB-DOMAIN-NONOVERLAP"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-005",
+      "text": "The local Git operations domain owns governed meaning for local Git repository state and history operations and must exclude GitHub, hosting-provider, credential, remote publication, issue, pull-request, and review behavior.",
+      "references": [
+        "L2-LPB-LOCAL-GIT-DOMAIN",
+        "L2-LPB-DOMAIN-NONOVERLAP"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-006",
+      "text": "Every plugin domain must expose a validated operation contract sufficient for application-independent core validation of contract identity, selected-plugin binding, authority, declared inputs and outputs, evidence obligations, handoff roles, and result obligations.",
+      "references": [
+        "L2-LPB-CONTRACT-EXPOSURE",
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-CORE-CONTRACT-FACTS"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-007",
+      "text": "Every selected plugin domain must produce operation evidence attributable to the operation identity, selected plugin, validated contract, authority, attempt, outcome, and effect-state claims it supports.",
+      "references": [
+        "L2-LPB-DOMAIN-EVIDENCE",
+        "L2-RA-OPERATION-EVIDENCE",
+        "L2-RA-RESULT-TRACEABILITY"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-008",
+      "text": "Every selected plugin domain participating in a handoff must expose application-independent declaration and compatibility information sufficient for core validation while retaining interpretation of domain-specific source-result and target-input meaning.",
+      "references": [
+        "L2-LPB-DOMAIN-HANDOFF",
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-DH-HANDOFF-COMPATIBILITY"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-009",
+      "text": "Every selected plugin domain must produce one composition-facing operation result attributable to the operation identity, selected plugin, validated contract, lifecycle outcome, separate effect-state claims, and supporting evidence.",
+      "references": [
+        "L2-LPB-DOMAIN-RESULT",
+        "L2-RA-OPERATION-RESULT",
+        "L2-RA-OPERATION-OUTCOME"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-010",
+      "text": "The core must remain application-independent and must not interpret, derive, normalize, override, or validate domain-specific operation, input, output, evidence, handoff, or result meaning.",
+      "references": [
+        "L2-LPB-CORE-DOMAIN-BOUNDARY",
+        "L2-WC-PLUGIN-MEANING-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-011",
+      "text": "Each plugin domain must own domain-specific interpretation, validation, execution, evidence meaning, handoff meaning, and result meaning for operations assigned to that domain.",
+      "references": [
+        "L2-LPB-CORE-DOMAIN-BOUNDARY",
+        "L2-LPB-DOMAIN-OWNERSHIP"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-012",
+      "text": "The core may validate application-independent identity, authority, contract attribution, dependency, declaration, evidence-sufficiency, and result-assembly obligations exposed by a plugin without assuming domain-specific semantics.",
+      "references": [
+        "L2-LPB-CORE-DOMAIN-BOUNDARY",
+        "L2-WC-OPERATION-IDENTITY",
+        "L2-DH-HANDOFF-DECLARATION",
+        "L2-RA-EVIDENCE-AGGREGATION"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-013",
+      "text": "Filesystem, command-execution, and local-Git domain rules must be non-overlapping. A rule set that permits two or more domains to claim the same governed operation meaning must fail specification validation closed.",
+      "references": [
+        "L2-LPB-DOMAIN-NONOVERLAP",
+        "L2-LPB-DETERMINISTIC-ASSIGNMENT"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-014",
+      "text": "Incidental implementation effects must not determine domain ownership. Domain assignment must follow the operation's governed meaning and validated contract rather than incidental filesystem access, process use, or repository access.",
+      "references": [
+        "L2-LPB-DOMAIN-OWNERSHIP",
+        "L2-LPB-DOMAIN-NONOVERLAP"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-015",
+      "text": "Follow-on plugin-specific specification work must proceed only after acceptance of these boundaries and must be ordered as filesystem plugin specification, command-execution plugin specification, and local-Git plugin specification unless a later governed dependency analysis establishes a stricter order.",
+      "references": [
+        "L2-LPB-FOLLOWON-WORK"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-016",
+      "text": "Each follow-on plugin-specific specification must import this document and the applicable Level 2 composition, dependency, handoff, and result-assembly authorities and must remain bounded to one plugin domain.",
+      "references": [
+        "L2-LPB-FOLLOWON-WORK",
+        "L2-DA-IMPORT",
+        "LEVEL-2-WORKFLOW-COMPOSITION",
+        "LEVEL-2-DEPENDENCIES-HANDOFFS",
+        "LEVEL-2-RESULT-ASSEMBLY"
+      ]
+    },
+    {
+      "id": "L2-LPB-REQ-017",
+      "text": "This specification must not define concrete production payload schemas, exhaustive operation catalogs, maintained plugin implementations, remote-service behavior, credentials, publication semantics, or bootstrap executor operation formats.",
+      "references": [
+        "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-LPB-REL-001",
+      "source": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+      "relation": "is-governed-by",
+      "target": "LEVEL-2-ROOT"
+    },
+    {
+      "id": "L2-LPB-REL-002",
+      "source": "L2-LPB-DOMAIN-OWNERSHIP",
+      "relation": "assigns",
+      "target": "L2-LPB-FILESYSTEM-DOMAIN"
+    },
+    {
+      "id": "L2-LPB-REL-003",
+      "source": "L2-LPB-DOMAIN-OWNERSHIP",
+      "relation": "assigns",
+      "target": "L2-LPB-COMMAND-DOMAIN"
+    },
+    {
+      "id": "L2-LPB-REL-004",
+      "source": "L2-LPB-DOMAIN-OWNERSHIP",
+      "relation": "assigns",
+      "target": "L2-LPB-LOCAL-GIT-DOMAIN"
+    },
+    {
+      "id": "L2-LPB-REL-005",
+      "source": "L2-LPB-DOMAIN-NONOVERLAP",
+      "relation": "constrains",
+      "target": "L2-LPB-DETERMINISTIC-ASSIGNMENT"
+    },
+    {
+      "id": "L2-LPB-REL-006",
+      "source": "L2-LPB-CONTRACT-EXPOSURE",
+      "relation": "supports",
+      "target": "L2-WC-CONTRACT-ATTRIBUTION"
+    },
+    {
+      "id": "L2-LPB-REL-007",
+      "source": "L2-LPB-DOMAIN-EVIDENCE",
+      "relation": "supports",
+      "target": "L2-RA-OPERATION-EVIDENCE"
+    },
+    {
+      "id": "L2-LPB-REL-008",
+      "source": "L2-LPB-DOMAIN-HANDOFF",
+      "relation": "supports",
+      "target": "L2-DH-ACTUAL-HANDOFF"
+    },
+    {
+      "id": "L2-LPB-REL-009",
+      "source": "L2-LPB-DOMAIN-RESULT",
+      "relation": "supports",
+      "target": "L2-RA-OPERATION-RESULT"
+    },
+    {
+      "id": "L2-LPB-REL-010",
+      "source": "L2-LPB-CORE-DOMAIN-BOUNDARY",
+      "relation": "constrains",
+      "target": "L2-LPB-DOMAIN-OWNERSHIP"
+    },
+    {
+      "id": "L2-LPB-REL-011",
+      "source": "L2-LPB-FOLLOWON-WORK",
+      "relation": "depends-on",
+      "target": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Local filesystem modification plugin-domain boundaries",
+      "Command-execution plugin-domain boundaries",
+      "Local Git operation plugin-domain boundaries",
+      "Deterministic unique domain assignment",
+      "Validated operation-contract exposure",
+      "Domain evidence, handoff, and result obligations",
+      "Application-independent core responsibilities",
+      "Plugin-owned domain-specific meaning and execution",
+      "Domain non-overlap",
+      "Follow-on plugin-specific specification ordering"
+    ],
+    "excludes": [
+      "Concrete production payload schemas",
+      "Exhaustive operation catalogs",
+      "Maintained plugin implementations",
+      "GitHub and other remote-service behavior",
+      "Credentials and remote publication",
+      "Issue, pull-request, and review semantics",
+      "Bootstrap governed-executor operation formats",
+      "Level 3 design"
+    ]
+  }
+}
