@@ -1,0 +1,238 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+    "level": 2,
+    "title": "GVE Level 2 Document Authority",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2"
+    ]
+  },
+  "summary": "GVE Level 2 Document Authority defines the normative cross-document authority graph for the Level 2 specification set. It establishes explicit same-level imports, transitive visibility, deterministic identifier resolution, relationship-endpoint visibility, import acyclicity, global identifier uniqueness, and fail-closed conflict behavior. It preserves the Level 2 root decomposition and distinguishes specification-document visibility from workflow dependencies and runtime data handoffs.",
+  "definitions": [
+    {
+      "id": "L2-DA-DOCUMENT-GRAPH",
+      "term": "Level 2 document graph",
+      "text": "The directed graph whose nodes are normative Level 2 specification documents and whose edges are explicit document imports. The graph governs authority visibility only and does not represent workflow execution order or runtime data flow."
+    },
+    {
+      "id": "L2-DA-IMPORT",
+      "term": "Specification-document import",
+      "text": "An explicit same-level visibility edge from one Level 2 document to another Level 2 document named in the importing document's document.imports array."
+    },
+    {
+      "id": "L2-DA-LOCAL-IDENTIFIER",
+      "term": "Local identifier",
+      "text": "A definition, requirement, or relationship identifier declared directly by the document being validated."
+    },
+    {
+      "id": "L2-DA-IMPORT-CLOSURE",
+      "term": "Transitive import closure",
+      "text": "The importing document together with every document reachable by following zero or more explicit import edges."
+    },
+    {
+      "id": "L2-DA-VISIBLE-IDENTIFIER",
+      "term": "Visible identifier",
+      "text": "An identifier declared locally or by a document in the importing document's transitive import closure."
+    },
+    {
+      "id": "L2-DA-DETERMINISTIC-RESOLUTION",
+      "term": "Deterministic resolution",
+      "text": "The process of resolving a reference to exactly one globally unique visible identifier without precedence, shadowing, implicit imports, or search-order dependence."
+    },
+    {
+      "id": "L2-DA-CONFLICT",
+      "term": "Document-authority conflict",
+      "text": "Any duplicate specification identity, duplicate semantic identifier, ambiguous ownership, invalid parentage, unresolved root, unresolved import, import cycle, unresolved visible reference, or unresolved relationship endpoint."
+    },
+    {
+      "id": "L2-DA-RELATIONSHIP-VISIBILITY",
+      "term": "Relationship-endpoint visibility",
+      "text": "The requirement that each relationship source and target resolve to a visible definition or requirement in the declaring document's import closure."
+    },
+    {
+      "id": "L2-DA-RUNTIME-DEPENDENCY-DISTINCTION",
+      "term": "Import and runtime dependency distinction",
+      "text": "The normative separation between document imports, which grant specification identifier visibility, and workflow dependencies or runtime handoffs, which govern execution or data transfer and are outside this document's authority."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-DA-REQ-001",
+      "text": "Every normative Level 2 subordinate document must declare document role subordinate, specification-set root GVE-LEVEL-2, and specification parent GVE-LEVEL-2.",
+      "references": [
+        "LEVEL-2-ROOT",
+        "L2-DA-DOCUMENT-GRAPH"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-002",
+      "text": "Every Level 2 document import must be explicit, must name an existing normative Level 2 document, and must not be inferred from parentage, filenames, references, workflow dependencies, handoffs, or repository traversal.",
+      "references": [
+        "L2-DA-IMPORT",
+        "L2-DA-RUNTIME-DEPENDENCY-DISTINCTION"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-003",
+      "text": "A Level 2 document must not import itself or any document outside numeric Level 2.",
+      "references": [
+        "L2-DA-IMPORT",
+        "L2-DA-DOCUMENT-GRAPH"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-004",
+      "text": "The Level 2 import graph must be acyclic. Any direct or transitive import cycle must fail validation.",
+      "references": [
+        "L2-DA-DOCUMENT-GRAPH",
+        "L2-DA-IMPORT"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-005",
+      "text": "A reference declared by a Level 2 document may resolve only to a local identifier or to an identifier declared by a document in its transitive import closure.",
+      "references": [
+        "L2-DA-LOCAL-IDENTIFIER",
+        "L2-DA-IMPORT-CLOSURE",
+        "L2-DA-VISIBLE-IDENTIFIER"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-006",
+      "text": "Identifier resolution must be deterministic and must not use precedence, shadowing, fallback search, implicit imports, declaration order, filesystem order, or validator implementation order.",
+      "references": [
+        "L2-DA-DETERMINISTIC-RESOLUTION",
+        "L2-DA-CONFLICT"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-007",
+      "text": "Specification identities and all definition, requirement, and relationship identifiers must be globally unique across the complete governed specification set. Any duplicate must fail validation.",
+      "references": [
+        "L2-DA-DETERMINISTIC-RESOLUTION",
+        "L2-DA-CONFLICT"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-008",
+      "text": "Every relationship source and target must resolve to a visible definition or requirement. A relationship must not target a relationship identifier or an identifier outside the declaring document's import closure.",
+      "references": [
+        "L2-DA-RELATIONSHIP-VISIBILITY",
+        "L2-DA-VISIBLE-IDENTIFIER"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-009",
+      "text": "An unresolved specification-set root, invalid subordinate parent, unresolved import, unresolved requirement reference, or unresolved relationship endpoint must fail closed.",
+      "references": [
+        "L2-DA-CONFLICT",
+        "L2-DA-RELATIONSHIP-VISIBILITY"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-010",
+      "text": "Conflicting subordinate documents must fail closed. No document may override, shadow, supersede, or gain precedence over another Level 2 document through import order, path order, naming, or declaration order.",
+      "references": [
+        "L2-DA-CONFLICT",
+        "L2-DA-DETERMINISTIC-RESOLUTION"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-011",
+      "text": "Specification-document imports grant authority visibility only. They must not create workflow execution ordering, operation dependencies, runtime data transfer, handoff satisfaction, or plugin-specific payload meaning.",
+      "references": [
+        "L2-DA-IMPORT",
+        "L2-DA-RUNTIME-DEPENDENCY-DISTINCTION"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-012",
+      "text": "Validation of the complete governed specification set must evaluate the full document graph before accepting cross-document resolution and must produce the same result independently of document discovery order.",
+      "references": [
+        "L2-DA-DOCUMENT-GRAPH",
+        "L2-DA-DETERMINISTIC-RESOLUTION"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-DA-REL-001",
+      "source": "LEVEL-2-DOCUMENT-AUTHORITY",
+      "relation": "is-governed-by",
+      "target": "LEVEL-2-ROOT"
+    },
+    {
+      "id": "L2-DA-REL-002",
+      "source": "L2-DA-DOCUMENT-GRAPH",
+      "relation": "contains",
+      "target": "L2-DA-IMPORT"
+    },
+    {
+      "id": "L2-DA-REL-003",
+      "source": "L2-DA-IMPORT",
+      "relation": "contributes-to",
+      "target": "L2-DA-IMPORT-CLOSURE"
+    },
+    {
+      "id": "L2-DA-REL-004",
+      "source": "L2-DA-IMPORT-CLOSURE",
+      "relation": "determines",
+      "target": "L2-DA-VISIBLE-IDENTIFIER"
+    },
+    {
+      "id": "L2-DA-REL-005",
+      "source": "L2-DA-VISIBLE-IDENTIFIER",
+      "relation": "is-resolved-by",
+      "target": "L2-DA-DETERMINISTIC-RESOLUTION"
+    },
+    {
+      "id": "L2-DA-REL-006",
+      "source": "L2-DA-CONFLICT",
+      "relation": "invalidates",
+      "target": "L2-DA-DETERMINISTIC-RESOLUTION"
+    },
+    {
+      "id": "L2-DA-REL-007",
+      "source": "L2-DA-RELATIONSHIP-VISIBILITY",
+      "relation": "constrains",
+      "target": "L2-DA-VISIBLE-IDENTIFIER"
+    },
+    {
+      "id": "L2-DA-REL-008",
+      "source": "L2-DA-RUNTIME-DEPENDENCY-DISTINCTION",
+      "relation": "distinguishes",
+      "target": "L2-DA-IMPORT"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Normative Level 2 subordinate-document role, root, and parentage rules",
+      "Explicit same-level specification-document imports",
+      "Transitive import visibility",
+      "Deterministic local and imported identifier resolution",
+      "Import acyclicity",
+      "Global specification and semantic identifier uniqueness",
+      "Relationship-endpoint visibility",
+      "Fail-closed unresolved and conflicting document behavior",
+      "The distinction between specification imports and runtime dependencies or handoffs"
+    ],
+    "excludes": [
+      "Workflow execution ordering and operation-plan acceptance",
+      "Runtime data transfer and handoff satisfaction",
+      "Plugin-specific payload meaning",
+      "Maintained runtime implementation",
+      "GitHub and other remote-service design",
+      "Precedence, shadowing, fallback resolution, and implicit imports",
+      "Sibling Level 2 semantic responsibilities",
+      "Level 3 design"
+    ]
+  }
+}
