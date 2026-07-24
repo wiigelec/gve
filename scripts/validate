@@ -1,6 +1,20 @@
 #!/bin/sh
 set -eu
 
-exec python3 -m specs.tooling.validate "$@"
-exec python -m unittest discover -s specs/tests
-exec git diff --check
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$ROOT"
+
+if command -v python3 >/dev/null 2>&1; then
+    PYTHON=python3
+elif command -v python >/dev/null 2>&1; then
+    PYTHON=python
+else
+    printf '%s\n' "validate: no supported Python interpreter found" >&2
+    exit 2
+fi
+
+"$PYTHON" -m unittest discover -s specs/tests
+"$PYTHON" -m unittest discover -s tests/governed_executor
+"$PYTHON" -m unittest discover -s tests/validation
+"$PYTHON" -m specs.tooling.validate --specs-root specs
+git diff --check
