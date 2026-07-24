@@ -1,0 +1,341 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+    "level": 3,
+    "title": "GVE Level 3 Workflow Planning and Lifecycle",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-3"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-3",
+    "imports": [
+      "GVE-LEVEL-3",
+      "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+      "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS"
+    ]
+  },
+  "summary": "GVE Level 3 Workflow Planning and Lifecycle defines complete workflow-plan construction and fail-closed acceptance, immutable accepted-plan binding, deterministic ordering, dependency and handoff validation, operation eligibility, attempt identity and ordering, lifecycle-state distinctions, cancellation and timeout observation, retry requirements, partial-progress accounting, and workflow terminality without defining maintained scheduling implementation or evidence and result realization.",
+  "definitions": [
+    {
+      "id": "L3-WPL-COMPLETE-WORKFLOW-PLAN",
+      "term": "Complete workflow plan",
+      "text": "The pre-execution plan containing the single workflow identity, complete operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract for every operation, all ordering constraints, dependency edges, handoff declarations, governing authority, and immutable registry and runtime snapshot identities."
+    },
+    {
+      "id": "L3-WPL-PLAN-ACCEPTANCE",
+      "term": "Workflow-plan acceptance",
+      "text": "The single fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, dependency- and handoff-valid, and eligible for lifecycle processing."
+    },
+    {
+      "id": "L3-WPL-ACCEPTED-PLAN-SNAPSHOT",
+      "term": "Accepted-plan snapshot",
+      "text": "The uniquely identifiable immutable set of accepted plan, contract, registry, runtime, and authority facts governing one lifecycle attempt."
+    },
+    {
+      "id": "L3-WPL-DEPENDENCY-GRAPH",
+      "term": "Dependency graph",
+      "text": "The complete deterministic graph of operation prerequisites whose identities, edges, and satisfaction conditions are uniquely attributable and valid for one accepted plan."
+    },
+    {
+      "id": "L3-WPL-HANDOFF-CONTRACT",
+      "term": "Lifecycle handoff declaration",
+      "text": "The accepted-plan declaration binding one producing operation, one consuming operation, one handoff identity, and the application-independent conditions required before the consumer can become eligible."
+    },
+    {
+      "id": "L3-WPL-OPERATION-ELIGIBILITY",
+      "term": "Operation eligibility",
+      "text": "The fail-closed lifecycle determination that one operation may begin an attempt under the accepted plan because authority, ordering, dependencies, handoffs, contract freshness, and current lifecycle conditions are all satisfied."
+    },
+    {
+      "id": "L3-WPL-ATTEMPT-IDENTITY",
+      "term": "Operation-attempt identity",
+      "text": "A stable identifier unique within the workflow lifecycle and bound to exactly one operation identity, one accepted-plan snapshot, and one attempt ordinal."
+    },
+    {
+      "id": "L3-WPL-ATTEMPT-ORDER",
+      "term": "Deterministic attempt order",
+      "text": "The uniquely determined order in which eligible operation attempts may begin, independent of declaration order, discovery order, filesystem order, registry iteration, or unspecified concurrency."
+    },
+    {
+      "id": "L3-WPL-LIFECYCLE-STATE",
+      "term": "Operation lifecycle state",
+      "text": "The application-independent state of one operation or attempt, preserving distinct eligible, blocked, skipped, unattempted, attempted, interrupted, cancelled, timed-out, failed, and completed facts."
+    },
+    {
+      "id": "L3-WPL-CANCELLATION-OBSERVATION",
+      "term": "Cancellation observation",
+      "text": "The lifecycle fact that a cancellation request was observed by the governed attempt, distinct from the request itself, interruption, terminal cancellation, and any effect claim."
+    },
+    {
+      "id": "L3-WPL-TIMEOUT-OBSERVATION",
+      "term": "Timeout observation",
+      "text": "The lifecycle fact that an applicable timeout condition was observed by the governed attempt, distinct from timeout configuration, interruption, terminal timeout, and any effect claim."
+    },
+    {
+      "id": "L3-WPL-RETRY-ELIGIBILITY",
+      "term": "Retry eligibility",
+      "text": "The fail-closed determination that explicit governing authority permits another attempt after a prior attempt and that all relevant plan, contract, registry, runtime, dependency, handoff, and lifecycle freshness conditions have been re-evaluated."
+    },
+    {
+      "id": "L3-WPL-PARTIAL-PROGRESS",
+      "term": "Partial-progress accounting",
+      "text": "The complete representation of all operations and attempts that are terminal, nonterminal, blocked, skipped, unattempted, interrupted, or otherwise unresolved at a lifecycle observation point without converting lifecycle state into effect evidence."
+    },
+    {
+      "id": "L3-WPL-WORKFLOW-TERMINALITY",
+      "term": "Workflow terminality",
+      "text": "The fail-closed determination that every operation and every created attempt has complete, consistent, uniquely attributable terminal lifecycle accounting."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L3-WPL-REQ-001",
+      "text": "One workflow-plan acceptance attempt must evaluate exactly one complete workflow plan containing the full operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract per operation, all ordering constraints, all dependency edges, all handoff declarations, governing authority, and immutable registry and runtime snapshots.",
+      "references": [
+        "L3-WPL-COMPLETE-WORKFLOW-PLAN",
+        "L3-WPL-PLAN-ACCEPTANCE",
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-002",
+      "text": "Workflow-plan acceptance must be one deterministic fail-closed pre-execution decision over the complete plan; missing, duplicate, conflicting, ambiguous, stale, unauthorized, incomplete, or non-uniquely attributable plan facts must reject acceptance before any operation is attempted.",
+      "references": [
+        "L3-WPL-PLAN-ACCEPTANCE",
+        "L3-WPL-COMPLETE-WORKFLOW-PLAN"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-003",
+      "text": "An accepted plan must have one stable accepted-plan snapshot identity, and its operation, contract, authority, registry, and runtime facts must remain immutable for the governed lifecycle attempt.",
+      "references": [
+        "L3-WPL-ACCEPTED-PLAN-SNAPSHOT",
+        "L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT",
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-004",
+      "text": "Operation membership and ordering must be complete and deterministic; missing operations, duplicate identities, contradictory constraints, cycles, duplicate positions, or multiple unresolved valid orders must fail closed.",
+      "references": [
+        "L3-WPL-COMPLETE-WORKFLOW-PLAN",
+        "L3-WPL-ATTEMPT-ORDER"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-005",
+      "text": "The dependency graph must identify every prerequisite edge and satisfaction condition uniquely, must reject unknown or duplicate operation identities, self-dependencies, conflicting edges, and prohibited cycles, and must remain immutable after plan acceptance.",
+      "references": [
+        "L3-WPL-DEPENDENCY-GRAPH",
+        "L3-WPL-ACCEPTED-PLAN-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-006",
+      "text": "Every lifecycle handoff declaration must bind exactly one producer operation, one consumer operation, one handoff identity, and explicit acceptance conditions; missing, duplicate, ambiguous, stale, incompatible, or non-uniquely attributable handoffs must fail closed.",
+      "references": [
+        "L3-WPL-HANDOFF-CONTRACT",
+        "L3-WPL-DEPENDENCY-GRAPH"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-007",
+      "text": "Operation eligibility must be derived only from the accepted-plan snapshot, governing authority, valid fresh operation contract, deterministic ordering, satisfied dependencies, valid handoffs, and current lifecycle facts.",
+      "references": [
+        "L3-WPL-OPERATION-ELIGIBILITY",
+        "L3-WPL-ACCEPTED-PLAN-SNAPSHOT",
+        "L3-PAC-CONTRACT-FRESHNESS"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-008",
+      "text": "No operation attempt may be created or begun before operation eligibility is established; attempted execution without eligibility must fail closed and remain distinguishable from an authorized eligible attempt.",
+      "references": [
+        "L3-WPL-OPERATION-ELIGIBILITY",
+        "L3-WPL-ATTEMPT-IDENTITY"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-009",
+      "text": "Every created attempt must have one fresh unique attempt identity bound to exactly one operation identity, one accepted-plan snapshot identity, and one deterministic attempt ordinal; identity reuse or ambiguous attribution must fail closed.",
+      "references": [
+        "L3-WPL-ATTEMPT-IDENTITY",
+        "L3-WPL-ACCEPTED-PLAN-SNAPSHOT"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-010",
+      "text": "Attempt ordering must be deterministic and must not depend on declaration order, discovery order, filesystem order, registry iteration order, validator iteration order, process timing, or unspecified concurrency.",
+      "references": [
+        "L3-WPL-ATTEMPT-ORDER",
+        "L3-WPL-OPERATION-ELIGIBILITY"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-011",
+      "text": "Eligible, blocked, skipped, unattempted, attempted, interrupted, cancelled, timed-out, failed, and completed lifecycle facts must remain distinct; no state may be inferred from another merely because both are terminal or prevent further work.",
+      "references": [
+        "L3-WPL-LIFECYCLE-STATE",
+        "L3-WPL-PARTIAL-PROGRESS"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-012",
+      "text": "A cancellation request, cancellation observation, interruption caused by cancellation, and terminal cancelled state must be represented as distinct uniquely attributable lifecycle facts.",
+      "references": [
+        "L3-WPL-CANCELLATION-OBSERVATION",
+        "L3-WPL-LIFECYCLE-STATE"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-013",
+      "text": "A timeout configuration or request, timeout observation, interruption caused by timeout, and terminal timed-out state must be represented as distinct uniquely attributable lifecycle facts.",
+      "references": [
+        "L3-WPL-TIMEOUT-OBSERVATION",
+        "L3-WPL-LIFECYCLE-STATE"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-014",
+      "text": "Retry eligibility must require explicit governing authority, a fresh unique attempt identity, a new deterministic attempt ordinal, and re-evaluation of all relevant plan, contract, registry, runtime, dependency, handoff, and lifecycle freshness conditions.",
+      "references": [
+        "L3-WPL-RETRY-ELIGIBILITY",
+        "L3-WPL-ATTEMPT-IDENTITY",
+        "L3-WPL-OPERATION-ELIGIBILITY"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-015",
+      "text": "Partial-progress accounting must include every operation and every created attempt with complete current lifecycle attribution and must not omit blocked, skipped, unattempted, interrupted, cancelled, timed-out, failed, or nonterminal facts.",
+      "references": [
+        "L3-WPL-PARTIAL-PROGRESS",
+        "L3-WPL-LIFECYCLE-STATE"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-016",
+      "text": "Workflow terminality must be established only when every operation and every created attempt has complete, consistent, uniquely attributable terminal lifecycle accounting; unresolved, conflicting, missing, or ambiguous lifecycle facts must prevent terminality.",
+      "references": [
+        "L3-WPL-WORKFLOW-TERMINALITY",
+        "L3-WPL-PARTIAL-PROGRESS"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-017",
+      "text": "Workflow-plan acceptance, eligibility, attempt creation, blocking, skipping, cancellation, timeout, interruption, failure, completion, retry, and terminality are lifecycle facts only and must not by themselves establish requested, authorized, attempted, completed, observed, or verified effect claims.",
+      "references": [
+        "L3-WPL-PLAN-ACCEPTANCE",
+        "L3-WPL-LIFECYCLE-STATE",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-018",
+      "text": "This specification must not define detailed plugin or action contract fields, registration mechanics, action input interpretation, validated-operation-contract production, evidence schemas, evidence sufficiency, effect-claim realization, operation-result schemas, uncertainty semantics, or authoritative workflow-result assembly.",
+      "references": [
+        "LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+        "LEVEL-3-EVIDENCE-RESULT-REALIZATION"
+      ]
+    },
+    {
+      "id": "L3-WPL-REQ-019",
+      "text": "This specification must not define maintained runtime, scheduler, executor, queue, plugin, action, or registry implementation; language-specific state-machine or concurrency primitives; deployment, persistence, caching, performance, or distributed-coordination choices; bootstrap executor formats; or changes to accepted Levels 0 through 2.",
+      "references": [
+        "L3-WPL-COMPLETE-WORKFLOW-PLAN",
+        "LEVEL-3-IMPLEMENTATION-ARCHITECTURE"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L3-WPL-REL-001",
+      "source": "L3-WPL-COMPLETE-WORKFLOW-PLAN",
+      "relation": "is-accepted-by",
+      "target": "L3-WPL-PLAN-ACCEPTANCE"
+    },
+    {
+      "id": "L3-WPL-REL-002",
+      "source": "L3-WPL-PLAN-ACCEPTANCE",
+      "relation": "produces",
+      "target": "L3-WPL-ACCEPTED-PLAN-SNAPSHOT"
+    },
+    {
+      "id": "L3-WPL-REL-003",
+      "source": "L3-WPL-DEPENDENCY-GRAPH",
+      "relation": "constrains",
+      "target": "L3-WPL-OPERATION-ELIGIBILITY"
+    },
+    {
+      "id": "L3-WPL-REL-004",
+      "source": "L3-WPL-HANDOFF-CONTRACT",
+      "relation": "constrains",
+      "target": "L3-WPL-OPERATION-ELIGIBILITY"
+    },
+    {
+      "id": "L3-WPL-REL-005",
+      "source": "L3-WPL-OPERATION-ELIGIBILITY",
+      "relation": "permits",
+      "target": "L3-WPL-ATTEMPT-IDENTITY"
+    },
+    {
+      "id": "L3-WPL-REL-006",
+      "source": "L3-WPL-ATTEMPT-ORDER",
+      "relation": "orders",
+      "target": "L3-WPL-ATTEMPT-IDENTITY"
+    },
+    {
+      "id": "L3-WPL-REL-007",
+      "source": "L3-WPL-CANCELLATION-OBSERVATION",
+      "relation": "contributes-to",
+      "target": "L3-WPL-LIFECYCLE-STATE"
+    },
+    {
+      "id": "L3-WPL-REL-008",
+      "source": "L3-WPL-TIMEOUT-OBSERVATION",
+      "relation": "contributes-to",
+      "target": "L3-WPL-LIFECYCLE-STATE"
+    },
+    {
+      "id": "L3-WPL-REL-009",
+      "source": "L3-WPL-RETRY-ELIGIBILITY",
+      "relation": "permits",
+      "target": "L3-WPL-ATTEMPT-IDENTITY"
+    },
+    {
+      "id": "L3-WPL-REL-010",
+      "source": "L3-WPL-PARTIAL-PROGRESS",
+      "relation": "constrains",
+      "target": "L3-WPL-WORKFLOW-TERMINALITY"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Complete workflow-plan construction and fail-closed acceptance",
+      "Immutable accepted-plan, contract, authority, registry, and runtime snapshot binding",
+      "Deterministic operation membership and ordering",
+      "Dependency graph validation and satisfaction",
+      "Lifecycle handoff declarations and eligibility",
+      "Operation eligibility and prohibition on premature attempts",
+      "Unique attempt identity and deterministic attempt ordering",
+      "Distinct eligible, blocked, skipped, unattempted, attempted, interrupted, cancelled, timed-out, failed, and completed facts",
+      "Distinct cancellation and timeout request, observation, interruption, and terminal facts",
+      "Retry authority, fresh-attempt identity, and re-evaluation requirements",
+      "Complete partial-progress accounting",
+      "Fail-closed workflow terminality",
+      "Lifecycle and effect-claim separation"
+    ],
+    "excludes": [
+      "Maintained runtime, scheduler, executor, queue, plugin, action, and registry implementation",
+      "Language-specific state-machine, coroutine, thread, process, and concurrency primitives",
+      "Detailed plugin and action contract fields, registration mechanics, input interpretation, and validated-contract production",
+      "Evidence schemas, evidence sufficiency, effect-claim realization, operation-result schemas, uncertainty, and authoritative workflow-result assembly",
+      "Plugin-specific filesystem, command-execution, local-Git, remote-service, credential, and publication semantics",
+      "Deployment, persistence, caching, performance, and distributed-coordination choices",
+      "Bootstrap executor operation formats and implementation behavior",
+      "Modification of accepted Levels 0 through 2"
+    ]
+  }
+}
