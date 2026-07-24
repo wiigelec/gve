@@ -52,7 +52,7 @@ class LevelTwoSpecificationSetTests(unittest.TestCase):
                 "level": 2,
                 "title": title,
                 "version": "0.1.0",
-                "status": "draft",
+                "status": "normative",
                 "parent": parent,
             }
         )
@@ -79,6 +79,11 @@ class LevelTwoSpecificationSetTests(unittest.TestCase):
             root="GVE-LEVEL-2",
             imports=[],
         )
+        root["document"]["members"] = [
+            "GVE-LEVEL-2",
+            "GVE-LEVEL-2-ALPHA",
+            "GVE-LEVEL-2-BETA",
+        ]
         root["definitions"] = [
             {"id": "L2-ROOT-TERM", "term": "Root term", "text": "Root definition."}
         ]
@@ -182,6 +187,58 @@ class LevelTwoSpecificationSetTests(unittest.TestCase):
         result = self.run_validation()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn("specification validation passed", result.stdout)
+
+    def test_rejects_missing_root_membership_metadata(self) -> None:
+        self.documents["GVE-LEVEL-2"]["document"].pop("members")
+        self.assert_rejected(
+            "decomposed specification-set root must declare document.members"
+        )
+
+    def test_rejects_unresolved_declared_member(self) -> None:
+        self.documents["GVE-LEVEL-2"]["document"]["members"].append(
+            "GVE-LEVEL-2-MISSING"
+        )
+        self.assert_rejected(
+            "unresolved specification-set member GVE-LEVEL-2-MISSING"
+        )
+
+    def test_rejects_undeclared_discovered_member(self) -> None:
+        self.documents["GVE-LEVEL-2"]["document"]["members"].remove(
+            "GVE-LEVEL-2-BETA"
+        )
+        self.assert_rejected(
+            "specification-set membership mismatch; missing=[], "
+            "unexpected=['GVE-LEVEL-2-BETA']"
+        )
+
+    def test_rejects_root_omitted_from_declared_members(self) -> None:
+        self.documents["GVE-LEVEL-2"]["document"]["members"].remove(
+            "GVE-LEVEL-2"
+        )
+        self.assert_rejected(
+            "specification-set membership mismatch; missing=[], "
+            "unexpected=['GVE-LEVEL-2']"
+        )
+
+    def test_rejects_member_from_another_specification_set(self) -> None:
+        self.documents["GVE-LEVEL-2"]["document"]["members"].append(
+            "GVE-LEVEL-1"
+        )
+        self.assert_rejected(
+            "declared specification-set member GVE-LEVEL-1 "
+            "is another specification-set root"
+        )
+
+    def test_membership_diagnostic_ignores_declaration_order(self) -> None:
+        members = self.documents["GVE-LEVEL-2"]["document"]["members"]
+        members.remove("GVE-LEVEL-2-BETA")
+        first = self.run_validation()
+        self.assertNotEqual(first.returncode, 0, first.stdout)
+
+        members.reverse()
+        second = self.run_validation()
+        self.assertNotEqual(second.returncode, 0, second.stdout)
+        self.assertEqual(first.stderr, second.stderr)
 
     def test_rejects_zero_roots(self) -> None:
         self.documents["GVE-LEVEL-2"]["document"]["role"] = "subordinate"

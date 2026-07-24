@@ -95,6 +95,15 @@
             "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
           },
           "uniqueItems": true
+        },
+        "members": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
+          },
+          "uniqueItems": true
         }
       }
     },
