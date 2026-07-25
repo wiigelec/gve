@@ -2,34 +2,30 @@
 
 from __future__ import annotations
 
-import hashlib
-import json
 from typing import Any, Mapping, Sequence
+
+from .canonical_json import (
+    CANONICALIZATION,
+    DIGEST_ALGORITHM,
+    IDENTITY_FORMAT,
+    CanonicalJsonError,
+    canonical_json,
+    sha256_identity,
+)
 
 
 class SpecificationRevisionError(ValueError):
     """Raised when a normative specification revision cannot be constructed."""
 
 
-def _canonical_json(value: Any) -> bytes:
+def document_content_identity(document: Mapping[str, Any]) -> str:
+    """Return the deterministic SHA-256 identity of one normative JSON document."""
     try:
-        text = json.dumps(
-            value,
-            ensure_ascii=False,
-            allow_nan=False,
-            sort_keys=True,
-            separators=(",", ":"),
-        )
-    except (TypeError, ValueError) as exc:
+        return sha256_identity(document)
+    except CanonicalJsonError as exc:
         raise SpecificationRevisionError(
             f"specification revision input is not canonicalizable: {exc}"
         ) from exc
-    return text.encode("utf-8")
-
-
-def document_content_identity(document: Mapping[str, Any]) -> str:
-    """Return the deterministic SHA-256 identity of one normative JSON document."""
-    return hashlib.sha256(_canonical_json(document)).hexdigest()
 
 
 def build_specification_revision(
@@ -84,8 +80,10 @@ def build_specification_revision(
         "members": members,
     }
     return {
-        "algorithm": "sha256",
-        "identity": hashlib.sha256(_canonical_json(manifest)).hexdigest(),
+        "canonicalization": CANONICALIZATION,
+        "algorithm": DIGEST_ALGORITHM,
+        "identity_format": IDENTITY_FORMAT,
+        "identity": sha256_identity(manifest),
         "manifest": manifest,
     }
 
@@ -96,12 +94,24 @@ def validate_specification_revision(
 ) -> None:
     """Fail closed unless a supplied revision exactly matches the normative graph."""
     expected = build_specification_revision(documents)
+    if revision.get("canonicalization") != expected["canonicalization"]:
+        raise SpecificationRevisionError(
+            "specification revision canonicalization is missing or unsupported"
+        )
     if revision.get("algorithm") != expected["algorithm"]:
         raise SpecificationRevisionError(
             "specification revision algorithm is missing or unsupported"
         )
+    if revision.get("identity_format") != expected["identity_format"]:
+        raise SpecificationRevisionError(
+            "specification revision identity format is missing or unsupported"
+        )
     identity = revision.get("identity")
-    if not isinstance(identity, str) or len(identity) != 64:
+    if (
+        not isinstance(identity, str)
+        or len(identity) != 64
+        or any(character not in "0123456789abcdef" for character in identity)
+    ):
         raise SpecificationRevisionError(
             "specification revision identity is missing or malformed"
         )
@@ -165,9 +175,7 @@ def validate_specification_revision(
             for identifier in sorted(supplied_by_id)
         ],
     }
-    calculated_identity = hashlib.sha256(
-        _canonical_json(canonical_supplied)
-    ).hexdigest()
+    calculated_identity = sha256_identity(canonical_supplied)
     if identity != calculated_identity:
         raise SpecificationRevisionError(
             "specification revision identity conflicts with its manifest"

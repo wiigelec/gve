@@ -57,6 +57,10 @@ The normative separation between document imports, which grant specification ide
 
 The deterministic identity of one complete authoritative normative JSON document after canonical serialization of its full machine-readable content. A declared semantic version does not replace or establish this content identity.
 
+### GVE canonical JSON version 1 (`L2-DA-CANONICAL-JSON`)
+
+The canonical byte serialization identified as gve-canonical-json-v1. It accepts JSON null, booleans, integers, strings, arrays, and objects with string member names; emits UTF-8 without a byte-order mark or Unicode normalization; orders object member names by ascending Unicode code point sequence; preserves array order; emits no insignificant whitespace; escapes quotation mark, reverse solidus, and control characters deterministically; represents integers in minimal base-10 form; and rejects floating-point values, surrogate code points, non-string object member names, and non-JSON values.
+
 ### Specification-revision member binding (`L2-DA-REVISION-MEMBER-BINDING`)
 
 The exact binding of one normative specification document identity to its declared version and normative content identity within one canonical specification-set revision manifest.
@@ -68,6 +72,10 @@ The closed machine-readable collection containing every accepted normative speci
 ### Governing specification-set revision (`L2-DA-SPECIFICATION-REVISION`)
 
 The deterministic aggregate identity of one exact canonical specification-revision manifest. It identifies the complete governed normative instruction graph independently of document discovery order, filesystem order, validator iteration order, and repository commit identity.
+
+### Specification-revision identity format (`L2-DA-REVISION-IDENTITY-FORMAT`)
+
+The explicit revision identity representation gve-canonical-json-v1+sha256:lowercase-hex, consisting of SHA-256 applied to gve-canonical-json-v1 bytes and encoded as exactly sixty-four lowercase hexadecimal characters.
 
 ### Historical specification-revision attribution (`L2-DA-HISTORICAL-ATTRIBUTION`)
 
@@ -161,9 +169,9 @@ References: `L2-DA-NORMATIVE-CONTENT-IDENTITY`, `L2-DA-REVISION-MEMBER-BINDING`
 
 ### L2-DA-REQ-015
 
-Canonical revision construction must use deterministic canonical serialization and canonical ordering by stable specification identity. The same normative graph must produce the same revision independently of declaration order, discovery order, filesystem order, and validator iteration order.
+Normative document content identities and the aggregate specification-revision identity must use gve-canonical-json-v1. Revision-manifest members must be ordered by ascending stable specification identity before manifest serialization. The same normative graph must produce identical canonical bytes and identities independently of JSON object declaration order, document discovery order, filesystem order, and validator iteration order.
 
-References: `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-DETERMINISTIC-RESOLUTION`
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-DETERMINISTIC-RESOLUTION`
 
 ### L2-DA-REQ-016
 
@@ -189,6 +197,30 @@ Historical contracts, plans, evidence dispositions, execution records, and resul
 
 References: `L2-DA-HISTORICAL-ATTRIBUTION`, `L2-DA-SPECIFICATION-REVISION`
 
+### L2-DA-REQ-020
+
+gve-canonical-json-v1 must serialize null as null, booleans as true or false, integers in minimal base-10 form, strings as UTF-8 without Unicode normalization, arrays in declared order, and objects with string member names ordered by ascending Unicode code point sequence. It must emit no byte-order mark or insignificant whitespace.
+
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
+
+### L2-DA-REQ-021
+
+gve-canonical-json-v1 must escape quotation mark and reverse solidus with a preceding reverse solidus; must use the short escapes backspace, tab, line feed, form feed, and carriage return for those five control characters; must encode every other U+0000 through U+001F control character as a lowercase four-hex-digit Unicode escape; and must otherwise emit the original Unicode scalar value without normalization.
+
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
+
+### L2-DA-REQ-022
+
+Floating-point values, non-finite numeric values, surrogate code points, non-string object member names, and values outside the JSON data model are not canonicalizable and must fail closed before a normative document content identity or specification-revision identity is claimed.
+
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-CONFLICT`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
+
+### L2-DA-REQ-023
+
+Every governing specification-set revision must declare canonicalization gve-canonical-json-v1, digest algorithm sha256, and identity format gve-canonical-json-v1+sha256:lowercase-hex. Its identity must be exactly sixty-four lowercase hexadecimal characters. Missing, unknown, conflicting, or malformed identifiers or representations must fail closed.
+
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-IDENTITY-FORMAT`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-CONFLICT`
+
 ## Relationships
 
 - `L2-DA-REL-001`: `LEVEL-2-DOCUMENT-AUTHORITY` **is-governed-by** `LEVEL-2-ROOT`
@@ -203,6 +235,9 @@ References: `L2-DA-HISTORICAL-ATTRIBUTION`, `L2-DA-SPECIFICATION-REVISION`
 - `L2-DA-REL-010`: `L2-DA-REVISION-MEMBER-BINDING` **participates-in** `L2-DA-REVISION-MANIFEST`
 - `L2-DA-REL-011`: `L2-DA-REVISION-MANIFEST` **determines** `L2-DA-SPECIFICATION-REVISION`
 - `L2-DA-REL-012`: `L2-DA-HISTORICAL-ATTRIBUTION` **retains** `L2-DA-SPECIFICATION-REVISION`
+- `L2-DA-REL-013`: `L2-DA-CANONICAL-JSON` **determines** `L2-DA-NORMATIVE-CONTENT-IDENTITY`
+- `L2-DA-REL-014`: `L2-DA-CANONICAL-JSON` **constrains** `L2-DA-REVISION-MANIFEST`
+- `L2-DA-REL-015`: `L2-DA-REVISION-IDENTITY-FORMAT` **identifies** `L2-DA-SPECIFICATION-REVISION`
 
 ## Scope
 
@@ -218,9 +253,11 @@ References: `L2-DA-HISTORICAL-ATTRIBUTION`, `L2-DA-SPECIFICATION-REVISION`
 - Fail-closed unresolved and conflicting document behavior
 - The distinction between specification imports and runtime dependencies or handoffs
 - Canonical normative JSON content identities
+- Exact gve-canonical-json-v1 byte serialization and rejection rules
 - Closed exact specification-revision manifests
 - Deterministic order-independent governing specification-set revision identity
 - Current-freshness revision bindings
+- Explicit SHA-256 lowercase-hex revision identity format
 - Historical specification-revision attribution
 
 ### Excludes
