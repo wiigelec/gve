@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 from .render import render_markdown
+from .revision import SpecificationRevisionError, build_specification_revision
 from .semantics import SemanticValidationError, validate_hierarchy
 from .strict_json import StrictJSONError, load_strict
 
@@ -64,7 +65,7 @@ def discover_specifications(specs_root: Path) -> list[Path]:
     return paths
 
 
-def validate_specification_set(specs_root: Path) -> None:
+def validate_specification_set(specs_root: Path) -> dict[str, Any]:
     specs_root = specs_root.resolve()
     levels_root = specs_root / "levels"
     schema_path = specs_root / "schemas" / "GVE-LEVEL.schema.json"
@@ -88,6 +89,7 @@ def validate_specification_set(specs_root: Path) -> None:
             )
         records.append((document_path, document))
     validate_hierarchy(records, levels_root=levels_root)
+    return build_specification_revision([document for _path, document in records])
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -108,6 +110,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         RuntimeError,
         SchemaValidationError,
         SemanticValidationError,
+        SpecificationRevisionError,
         StrictJSONError,
     ) as exc:
         print(f"specification validation failed: {exc}", file=sys.stderr)
