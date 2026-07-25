@@ -212,24 +212,6 @@ Level 1 must define architectural responsibilities, hierarchy, cardinalities, va
 
 References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `WORKFLOW-PLAN`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`, `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`
 
-### L1-REQ-017
-
-Every governed operation and workflow execution record must represent each exact effect using the inherited independent request, authorization, execution, observation, and verification dimensions; workflow lifecycle status, plan acceptance, contract validation, plugin return status, and operation terminality must not substitute for any effect-state assertion.
-
-References: `GOVERNED-OPERATION`, `GOVERNED-WORKFLOW`, `GVE-LIFECYCLE`, `WORKFLOW-PLAN`, `VALIDATED-OPERATION-CONTRACT`
-
-### L1-REQ-018
-
-The GVE core must preserve the governing actor, governing authority, admitted evidence identities, uncertainty, correction, and supersession facts for every effect-state assertion while aggregating operation evidence and assembling the authoritative workflow result.
-
-References: `GVE-CORE`, `GOVERNED-OPERATION`, `GOVERNED-WORKFLOW`
-
-### L1-REQ-019
-
-Application plugins may assert only plugin-owned operation execution, observation, or verification facts permitted by their validated operation contracts; the core must independently own common request and authorization records and must not reinterpret plugin-owned evidence into stronger effect-state values.
-
-References: `APPLICATION-PLUGIN`, `VALIDATED-OPERATION-CONTRACT`, `GVE-CORE`, `GOVERNED-OPERATION`
-
 ## Relationships
 
 - `L1-REL-001`: `COMMON-PAYLOAD-ENVELOPE` **represents** `GOVERNED-WORKFLOW`
@@ -269,8 +251,6 @@ References: `APPLICATION-PLUGIN`, `VALIDATED-OPERATION-CONTRACT`, `GVE-CORE`, `G
 - Plugin-owned operation formats, instruction semantics, validation, execution behavior, evidence, and result data
 - Plugin-produced, core-readable validated operation contracts with explicit operation, plugin, authority, readiness, evidence, failure, and result-assembly boundaries
 - Operation-level and workflow-level preservation of Level 0 authority, effect, evidence, fail-closed, and authoritative-result semantics
-- Independent effect-state representation across operations and workflows
-- Effect-state assertion authority, evidence, uncertainty, correction, and supersession preservation
 
 ### Excludes
 

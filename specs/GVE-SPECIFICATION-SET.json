@@ -9,13 +9,13 @@
       "path": "levels/level-0/GVE-LEVEL-0.json",
       "role": "root",
       "id": "GVE-LEVEL-0",
-      "content_sha256": "c74451d50f96dc3af83d70e023d496b8279c428fa80c376a7d871e37908bb57a"
+      "content_sha256": "972800a6a51bd05cfc119afc91febe5a64f739e8ac434342c3085c2ae62d3d67"
     },
     {
       "path": "levels/level-1/GVE-LEVEL-1.json",
       "role": "root",
       "id": "GVE-LEVEL-1",
-      "content_sha256": "3038c08c459694bc66e5245a7023401e9b4ede4a662245de996ef454c4e4eafa"
+      "content_sha256": "8a7061f7fb0f066fef1a309d7ae5c6abcfaf79adbd67e7816168c6d9725c6e4c"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2.json",
@@ -63,7 +63,7 @@
       "path": "levels/level-3/GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION.json",
       "role": "subordinate",
       "id": "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
-      "content_sha256": "8cadca311371aab5fe4d85a84fa9b384fd7aedae0b4ca0fcfc7dd56fbda6f5a2"
+      "content_sha256": "748eb64d55eef28d55cf558c3e4cb7a41dcfc7dcc62761a245ae3a7cd1aa0ab3"
     },
     {
       "path": "levels/level-3/GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS.json",
