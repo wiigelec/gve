@@ -26,6 +26,46 @@ class LevelTwoAcceptanceAuditTests(unittest.TestCase):
         self.assertEqual(result["document_count"], 6)
         self.assertEqual(set(result["documents"]), EXPECTED_LEVEL_TWO_DOCUMENTS)
 
+
+    def test_document_authority_defines_exact_identifier_policy(self) -> None:
+        path = (
+            ACCEPTED_SPECS
+            / "levels"
+            / "level-2"
+            / "GVE-LEVEL-2-DOCUMENT-AUTHORITY.json"
+        )
+        document = load_strict(path)
+        definitions = {item["id"]: item["text"] for item in document["definitions"]}
+        requirements = {item["id"]: item["text"] for item in document["requirements"]}
+
+        policy = definitions["L2-DA-TEXTUAL-IDENTIFIER-POLICY"]
+        self.assertIn("exact code-point-sequence equality", policy)
+        self.assertIn("Unicode normalization", policy)
+        self.assertIn("intentionally absent", policy)
+
+        equality = requirements["L2-DA-REQ-024"]
+        self.assertIn("nonempty Unicode scalar-value sequence", equality)
+        self.assertIn("Visually similar or canonically equivalent", equality)
+        self.assertIn("distinct identifiers", equality)
+
+        failures = requirements["L2-DA-REQ-025"]
+        self.assertIn("must fail closed", failures)
+        self.assertIn("separately governed migration", failures)
+
+    def test_document_authority_defines_signed_64_bit_canonical_integers(self) -> None:
+        path = (
+            ACCEPTED_SPECS
+            / "levels"
+            / "level-2"
+            / "GVE-LEVEL-2-DOCUMENT-AUTHORITY.json"
+        )
+        document = load_strict(path)
+        requirements = {item["id"]: item["text"] for item in document["requirements"]}
+        text = requirements["L2-DA-REQ-020"]
+        self.assertIn("-9223372036854775808", text)
+        self.assertIn("9223372036854775807", text)
+        self.assertIn("minimal base-10 form", text)
+
     def _copy_specs(self) -> Path:
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

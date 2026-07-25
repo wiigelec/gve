@@ -10,13 +10,13 @@
 
 ## Summary
 
-GVE Level 1 extends the Level 0 governed-execution model with a workflow, operation, and application-plugin architecture. One instruction payload represents one governed workflow containing one or more governed operations. Every operation in a workflow accepted for execution is bound deterministically and uniquely to exactly one application plugin, while a workflow may use one or more plugins and the same plugin may serve multiple operations. Before workflow execution begins, the GVE core validates the complete workflow, every operation, every plugin assignment, every plugin-owned instruction, all dependencies, and all data-handoff declarations. Actual data handoffs are validated at runtime before their dependent operations begin. The core controls orchestration, lifecycle, failure handling, evidence aggregation, and authoritative result assembly. All Level 0 authority, effect-state, fail-closed, evidence, and result-truthfulness rules remain applicable.
+GVE Level 1 extends the Level 0 governed-execution model with a workflow, operation, and application-plugin architecture. One instruction payload represents one governed workflow containing one or more governed operations. Every operation in a workflow accepted for execution is bound deterministically and uniquely to exactly one application plugin, while a workflow may use one or more plugins and the same plugin may serve multiple operations. Before workflow execution begins, the GVE core constructs an immutable pre-contract planning representation, obtains fresh validated operation contracts, and accepts a complete workflow plan only after validating every operation, plugin assignment, plugin-owned instruction, all dependencies, all data-handoff declarations, and required authority. Actual data handoffs are validated at runtime before their dependent operations begin. The core controls orchestration, lifecycle, failure handling, evidence aggregation, and authoritative result assembly. All Level 0 authority, effect-state, fail-closed, evidence, and result-truthfulness rules remain applicable.
 
 ## Definitions
 
 ### GVE core (`GVE-CORE`)
 
-The application-independent component that interprets the common payload envelope, identifies the governed workflow and its operations, constructs and validates the workflow plan, resolves one application plugin for each operation, controls workflow execution, validates declared handoff contracts before execution and actual data handoffs before dependent operations, enforces dependencies, applies common failure handling, aggregates evidence, and assembles the authoritative result.
+The application-independent component that interprets the common payload envelope, identifies the governed workflow and its operations, constructs the pre-contract planning representation and validates the accepted workflow plan, resolves one application plugin for each operation, controls workflow execution, validates declared handoff contracts before execution and actual data handoffs before dependent operations, enforces dependencies, applies common failure handling, aggregates evidence, and assembles the authoritative result.
 
 ### Common payload envelope (`COMMON-PAYLOAD-ENVELOPE`)
 
@@ -62,9 +62,9 @@ An operation-specific instruction whose meaning was established by the plugin as
 
 The plugin-produced, core-readable pre-execution contract created only when instruction interpretation succeeds. It is bound unambiguously to exactly one governed operation and exactly one selected plugin and exposes only application-independent information the GVE core requires to validate and orchestrate that operation: contract identity and freshness, operation and plugin identity, governing authority, lifecycle readiness, declared dependencies or handoffs, evidence obligations, failure behavior, and result-assembly obligations. Plugin-specific meaning remains owned by the selected plugin and is neither duplicated nor reinterpreted by the core.
 
-### Workflow plan (`WORKFLOW-PLAN`)
+### Workflow planning representation (`WORKFLOW-PLAN`)
 
-The complete pre-execution representation of a governed workflow, including its operations, operation-plugin assignments, ordering constraints, dependencies, data-handoff declarations, required authority, and failure behavior.
+The application-independent planning representation of a governed workflow. An immutable pre-contract plan candidate contains the workflow and operation facts required for contract production but is not yet accepted for execution. An accepted workflow plan is the complete post-contract representation whose operations, operation-plugin assignments, validated operation contracts, ordering constraints, dependencies, data-handoff declarations, required authority, and failure behavior have all passed fail-closed acceptance. References in this level to workflow-plan acceptance mean accepted-plan status, not candidate construction.
 
 ### Workflow validation (`WORKFLOW-VALIDATION`)
 
@@ -118,7 +118,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `OPERATION-PLUGIN-ASSIGNM
 
 ### L1-REQ-005
 
-The GVE core must own common payload-envelope interpretation, workflow and operation identification, workflow-plan construction, plugin discovery and operation assignment, complete workflow validation, operation sequencing, dependency enforcement, pre-execution validation of data-handoff declarations, runtime validation of actual data handoffs before dependent operations, lifecycle control, common failure handling, evidence aggregation, and authoritative result assembly.
+The GVE core must own common payload-envelope interpretation, workflow and operation identification, pre-contract plan-candidate construction and accepted workflow-plan validation, plugin discovery and operation assignment, complete workflow validation, operation sequencing, dependency enforcement, pre-execution validation of data-handoff declarations, runtime validation of actual data handoffs before dependent operations, lifecycle control, common failure handling, evidence aggregation, and authoritative result assembly.
 
 References: `GVE-CORE`, `COMMON-PAYLOAD-ENVELOPE`, `WORKFLOW-PLAN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNMENT`, `WORKFLOW-VALIDATION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`, `DATA-HANDOFF`, `GVE-LIFECYCLE`
 
@@ -136,13 +136,13 @@ References: `APPLICATION-PLUGIN`, `PLUGIN-DISCOVERY`, `OPERATION-PLUGIN-ASSIGNME
 
 ### L1-REQ-008
 
-Before any governed operation begins execution, the GVE core must validate the complete workflow plan, every operation, the availability and stable identity of every required plugin, exactly one plugin assignment for every operation, every operation-specific instruction under its assigned plugin, all declared dependencies, every data-handoff declaration, and the authority required for all requested effects.
+Before any governed operation begins execution, the GVE core must validate the complete workflow plan and accept it after immutable candidate construction and contract production, every operation, the availability and stable identity of every required plugin, exactly one plugin assignment for every operation, every operation-specific instruction under its assigned plugin, all declared dependencies, every data-handoff declaration, and the authority required for all requested effects.
 
 References: `GVE-CORE`, `WORKFLOW-PLAN`, `WORKFLOW-VALIDATION`, `GOVERNED-OPERATION`, `PLUGIN-IDENTITY`, `OPERATION-PLUGIN-ASSIGNMENT`, `INTERPRETED-INSTRUCTION`, `OPERATION-DEPENDENCY`, `DATA-HANDOFF-DECLARATION`
 
 ### L1-REQ-008A
 
-Successful instruction interpretation by the selected plugin must produce exactly one validated operation contract for that governed operation before the operation may be accepted into the workflow plan. The contract must identify and bind exactly one governed operation, exactly one selected plugin, and the governed instruction set under which interpretation succeeded.
+Successful instruction interpretation by the selected plugin must begin from one already existing immutable pre-contract plan candidate and must produce exactly one validated operation contract for that governed operation before the operation may participate in an accepted workflow plan. The contract must identify and bind exactly one plan candidate, exactly one governed operation, exactly one selected plugin, and the governed instruction set under which interpretation succeeded.
 
 References: `INSTRUCTION-INTERPRETATION`, `INTERPRETED-INSTRUCTION`, `VALIDATED-OPERATION-CONTRACT`, `GOVERNED-OPERATION`, `SELECTED-PLUGIN`, `WORKFLOW-PLAN`
 
@@ -166,7 +166,7 @@ References: `GOVERNED-WORKFLOW`, `GOVERNED-OPERATION`, `APPLICATION-PLUGIN`, `OP
 
 ### L1-REQ-010
 
-Successful workflow validation and workflow-plan acceptance establish no attempted, completed, observed, or verified workflow or operation effect by themselves.
+Plan-candidate construction, successful contract production, workflow validation, and accepted workflow-plan acceptance establish no attempted, completed, observed, or verified workflow or operation effect by themselves.
 
 References: `WORKFLOW-VALIDATION`, `WORKFLOW-PLAN`, `GOVERNED-OPERATION`
 

@@ -216,6 +216,33 @@ class LevelThreePluginActionContractsTests(unittest.TestCase):
         ):
             self.assertIn(phrase, exclusion)
 
+
+    def test_contract_production_ordinal_allocator_is_explicit(self) -> None:
+        definition = self.definitions[
+            "L3-PAC-CONTRACT-PRODUCTION-ORDINAL-ALLOCATOR"
+        ]
+        authority = self.requirements["L3-PAC-REQ-021"]
+        behavior = self.requirements["L3-PAC-REQ-022"]
+        failures = self.requirements["L3-PAC-REQ-023"]
+
+        self.assertIn("selected action", definition)
+        self.assertIn("sole authority", definition)
+        self.assertIn("plan-candidate-and-operation production lineage", definition)
+        self.assertIn("least unused ordinal", definition)
+
+        self.assertIn("sole contract-production ordinal allocator", authority)
+        self.assertIn("plan-candidate identity and operation identity", authority)
+        self.assertIn("nonnegative signed-64-bit ordinal", authority)
+
+        self.assertIn("first contract production must receive ordinal zero", behavior)
+        self.assertIn("Exact replay must retain the prior ordinal", behavior)
+        self.assertIn("Regeneration must receive the least nonnegative ordinal", behavior)
+
+        self.assertIn("must not yield the same new ordinal", failures)
+        self.assertIn("reused-as-new ordinal", failures)
+        self.assertIn("exhausted domain", failures)
+        self.assertIn("must fail closed", failures)
+
     def test_namespace_is_stable_and_distinct(self) -> None:
         definition_ids = set(self.definitions)
         requirement_ids = set(self.requirements)
