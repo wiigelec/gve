@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and acyclic partial-order constraints, selected-plugin binding, validated-operation-contract participation, and complete workflow-plan acceptance before execution. It preserves inherited Level 1 ownership of plugin-specific meaning and permits the GVE core to consume only application-independent contract facts.
+GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and acyclic partial-order constraints, selected-plugin binding, validated-operation-contract participation, composite workflow-governance authority binding, and complete workflow-plan acceptance before execution. It preserves the closed core specification revision and inherited Level 1 ownership of plugin-specific meaning while permitting the GVE core to consume only application-independent identity, completeness, freshness, and contract facts.
 
 ## Definitions
 
@@ -60,6 +60,30 @@ The fail-closed pre-execution determination that one complete workflow plan is i
 ### Plugin meaning boundary (`L2-WC-PLUGIN-MEANING-BOUNDARY`)
 
 The authority boundary under which only the selected plugin interprets operation-specific content, while the core consumes only core-readable contract facts and never derives, duplicates, compares, or reinterprets plugin-specific meaning.
+
+### Core specification authority (`L2-WC-CORE-SPECIFICATION-AUTHORITY`)
+
+The application-independent authority component identified by the current GVE governing specification-set revision. It contains exactly the accepted closed normative GVE specification graph and does not contain plugin-owned instruction meaning or any other external authority component.
+
+### Plugin instruction-set authority (`L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY`)
+
+The independently governed, stable, content-sensitive identity of one selected plugin's complete instruction set when that instruction set governs operation interpretation, validation, execution, evidence, or result semantics. A plugin display name, package name, interface version, or registry position does not replace this governed identity.
+
+### Workflow-governance authority component (`L2-WC-GOVERNANCE-AUTHORITY-COMPONENT`)
+
+One uniquely identified authority component in a workflow-governance binding, consisting of an application-independent authority kind, stable authority identity, and exact content-sensitive revision identity. The core specification authority and each selected plugin instruction-set authority are distinct components.
+
+### Composite workflow-governance binding (`L2-WC-COMPOSITE-GOVERNANCE-BINDING`)
+
+The complete deterministic application-independent binding containing exactly one core specification authority component and every distinct selected plugin instruction-set authority component required for the exact governed meaning of one workflow. Components are canonicalized independently of discovery order and do not import plugin-specific meaning into the core specification revision.
+
+### Composite authority freshness (`L2-WC-COMPOSITE-AUTHORITY-FRESHNESS`)
+
+The property that every required authority component in a composite workflow-governance binding resolves uniquely to its current exact revision. Freshness is component-wise: one current component cannot make another missing, unknown, conflicting, partial, or stale component current.
+
+### Historical composite governance attribution (`L2-WC-HISTORICAL-GOVERNANCE-ATTRIBUTION`)
+
+The immutable retention by a contract, accepted workflow plan, evidence disposition, execution record, or result realization of the exact composite workflow-governance binding under which it was produced, even after any authority component has a successor.
 
 ## Normative requirements
 
@@ -153,6 +177,54 @@ This specification must not define runtime dependency enforcement, data-handoff 
 
 References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 
+### L2-WC-REQ-016
+
+The GVE governing specification-set revision used as the core specification authority component must identify exactly the accepted closed normative GVE specification graph. Plugin-owned instruction sets and other external workflow-governing authorities must not be inserted into or treated as members of that closed core revision manifest.
+
+References: `L2-WC-CORE-SPECIFICATION-AUTHORITY`, `L2-DA-SPECIFICATION-REVISION`, `L2-WC-PLUGIN-MEANING-BOUNDARY`
+
+### L2-WC-REQ-017
+
+Every selected plugin whose governed instruction set participates in interpretation, validation, execution, evidence, or result semantics must contribute exactly one plugin instruction-set authority component with a stable authority identity and exact content-sensitive revision identity.
+
+References: `L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY`, `L2-WC-GOVERNANCE-AUTHORITY-COMPONENT`, `L2-WC-PLUGIN-BINDING`
+
+### L2-WC-REQ-018
+
+Every workflow plan accepted as current must retain one complete composite workflow-governance binding containing exactly one core specification authority component and every required selected-plugin instruction-set authority component exactly once.
+
+References: `L2-WC-COMPOSITE-GOVERNANCE-BINDING`, `L2-WC-CORE-SPECIFICATION-AUTHORITY`, `L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY`, `L2-WC-COMPLETE-PLAN`
+
+### L2-WC-REQ-019
+
+Composite workflow-governance binding construction and identity must be deterministic and independent of component declaration order, plugin discovery order, filesystem order, registry iteration order, and validator implementation order. Distinct plugin authority components must be ordered canonically by stable authority identity.
+
+References: `L2-WC-COMPOSITE-GOVERNANCE-BINDING`, `L2-WC-GOVERNANCE-AUTHORITY-COMPONENT`, `L2-DA-DETERMINISTIC-RESOLUTION`
+
+### L2-WC-REQ-020
+
+Current workflow-governance freshness must be evaluated independently for every required authority component. A current core revision must not make a stale plugin instruction-set authority current, and a current plugin instruction-set authority must not make a stale core revision current.
+
+References: `L2-WC-COMPOSITE-AUTHORITY-FRESHNESS`, `L2-WC-COMPOSITE-GOVERNANCE-BINDING`, `L2-WC-CONTRACT-FRESHNESS`
+
+### L2-WC-REQ-021
+
+A missing, duplicate, ambiguous, unknown, malformed, conflicting, partial, stale, or non-uniquely attributable authority component or composite workflow-governance binding must fail workflow-plan acceptance before any operation is attempted.
+
+References: `L2-WC-GOVERNANCE-AUTHORITY-COMPONENT`, `L2-WC-COMPOSITE-GOVERNANCE-BINDING`, `L2-WC-COMPOSITE-AUTHORITY-FRESHNESS`, `L2-WC-PLAN-ACCEPTANCE`
+
+### L2-WC-REQ-022
+
+Contracts, accepted workflow plans, evidence dispositions, execution records, and result realizations must retain their original complete composite workflow-governance binding after successor core or plugin authority revisions exist. Historical composite attribution must not be rewritten or represented as current freshness.
+
+References: `L2-WC-HISTORICAL-GOVERNANCE-ATTRIBUTION`, `L2-WC-COMPOSITE-GOVERNANCE-BINDING`, `L2-DA-HISTORICAL-ATTRIBUTION`
+
+### L2-WC-REQ-023
+
+The GVE core may validate application-independent authority kinds, identities, exact revision representations, component completeness, uniqueness, canonical ordering, and freshness facts, but must not interpret, derive, compare, normalize, or import the plugin-specific meaning governed by a plugin instruction-set authority.
+
+References: `L2-WC-CORE-CONTRACT-FACTS`, `L2-WC-PLUGIN-MEANING-BOUNDARY`, `L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY`, `L2-WC-COMPOSITE-GOVERNANCE-BINDING`
+
 ## Relationships
 
 - `L2-WC-REL-001`: `LEVEL-2-WORKFLOW-COMPOSITION` **is-governed-by** `LEVEL-2-ROOT`
@@ -164,6 +236,11 @@ References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2
 - `L2-WC-REL-007`: `L2-WC-CORE-CONTRACT-FACTS` **respects** `L2-WC-PLUGIN-MEANING-BOUNDARY`
 - `L2-WC-REL-008`: `L2-WC-COMPLETE-PLAN` **is-evaluated-by** `L2-WC-PLAN-ACCEPTANCE`
 - `L2-WC-REL-009`: `L2-WC-ORDERING-CONSTRAINT` **contributes-to** `L2-WC-COMPLETE-PLAN`
+- `L2-WC-REL-010`: `L2-WC-CORE-SPECIFICATION-AUTHORITY` **uses** `L2-DA-SPECIFICATION-REVISION`
+- `L2-WC-REL-011`: `L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY` **participates-in** `L2-WC-COMPOSITE-GOVERNANCE-BINDING`
+- `L2-WC-REL-012`: `L2-WC-GOVERNANCE-AUTHORITY-COMPONENT` **participates-in** `L2-WC-COMPOSITE-GOVERNANCE-BINDING`
+- `L2-WC-REL-013`: `L2-WC-COMPOSITE-AUTHORITY-FRESHNESS` **constrains** `L2-WC-COMPOSITE-GOVERNANCE-BINDING`
+- `L2-WC-REL-014`: `L2-WC-HISTORICAL-GOVERNANCE-ATTRIBUTION` **retains** `L2-WC-COMPOSITE-GOVERNANCE-BINDING`
 
 ## Scope
 
@@ -179,6 +256,11 @@ References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2
 - Application-independent core-readable contract facts
 - Complete fail-closed workflow-plan acceptance before execution
 - The core boundary against plugin-specific meaning
+- Closed core specification authority distinct from plugin-owned authority
+- Stable content-sensitive selected-plugin instruction-set authority identities
+- Deterministic complete composite workflow-governance bindings
+- Component-wise current authority freshness
+- Immutable historical composite governance attribution
 
 ### Excludes
 
@@ -192,3 +274,5 @@ References: `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2
 - GitHub and other remote-service plugin behavior
 - Sibling Level 2 semantic responsibilities
 - Maintained implementation and Level 3 design
+- Concrete plugin authority package, registry, storage, transport, or loading formats
+- Cryptographic signing, credentials, and trust-root semantics
