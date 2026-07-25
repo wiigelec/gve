@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 2 Document Authority defines the normative cross-document authority graph for the Level 2 specification set. It establishes explicit same-level imports, transitive visibility, deterministic identifier resolution, relationship-endpoint visibility, import acyclicity, global identifier uniqueness, and fail-closed conflict behavior. It preserves the Level 2 root decomposition and distinguishes specification-document visibility from workflow dependencies and runtime data handoffs.
+GVE Level 2 Document Authority defines the normative cross-document authority graph and canonical revision identity for the complete governed specification set. It establishes explicit same-level imports, transitive visibility, deterministic identifier resolution, relationship-endpoint visibility, import acyclicity, global identifier uniqueness, exact normative-member participation, content-sensitive canonical revision construction, historical authority attribution, and fail-closed conflict behavior. It preserves the Level 2 root decomposition and distinguishes specification-document authority from workflow dependencies, runtime data handoffs, repository commit identity, and derived Markdown projections.
 
 ## Definitions
 
@@ -52,6 +52,26 @@ The requirement that each relationship source and target resolve to a visible de
 ### Import and runtime dependency distinction (`L2-DA-RUNTIME-DEPENDENCY-DISTINCTION`)
 
 The normative separation between document imports, which grant specification identifier visibility, and workflow dependencies or runtime handoffs, which govern execution or data transfer and are outside this document's authority.
+
+### Normative document content identity (`L2-DA-NORMATIVE-CONTENT-IDENTITY`)
+
+The deterministic identity of one complete authoritative normative JSON document after canonical serialization of its full machine-readable content. A declared semantic version does not replace or establish this content identity.
+
+### Specification-revision member binding (`L2-DA-REVISION-MEMBER-BINDING`)
+
+The exact binding of one normative specification document identity to its declared version and normative content identity within one canonical specification-set revision manifest.
+
+### Canonical specification-revision manifest (`L2-DA-REVISION-MANIFEST`)
+
+The closed machine-readable collection containing every accepted normative specification document exactly once as a revision-member binding, ordered canonically by stable specification identity and excluding derived Markdown as independent authority.
+
+### Governing specification-set revision (`L2-DA-SPECIFICATION-REVISION`)
+
+The deterministic aggregate identity of one exact canonical specification-revision manifest. It identifies the complete governed normative instruction graph independently of document discovery order, filesystem order, validator iteration order, and repository commit identity.
+
+### Historical specification-revision attribution (`L2-DA-HISTORICAL-ATTRIBUTION`)
+
+The retained binding from a contract, plan, evidence disposition, execution record, or result realization to the exact governing specification-set revision under which that artifact was produced, even after a successor revision becomes current.
 
 ## Normative requirements
 
@@ -127,6 +147,48 @@ Validation of the complete governed specification set must evaluate the full doc
 
 References: `L2-DA-DOCUMENT-GRAPH`, `L2-DA-DETERMINISTIC-RESOLUTION`
 
+### L2-DA-REQ-013
+
+The complete governed specification set must produce exactly one canonical machine-readable governing specification-set revision whose manifest contains every accepted normative JSON specification document exactly once.
+
+References: `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`
+
+### L2-DA-REQ-014
+
+Each canonical revision-manifest member must bind one stable specification identity, its declared version, and its normative document content identity. A semantic-version string, filename, path, repository commit, or derived Markdown projection alone must not establish normative content identity.
+
+References: `L2-DA-NORMATIVE-CONTENT-IDENTITY`, `L2-DA-REVISION-MEMBER-BINDING`
+
+### L2-DA-REQ-015
+
+Canonical revision construction must use deterministic canonical serialization and canonical ordering by stable specification identity. The same normative graph must produce the same revision independently of declaration order, discovery order, filesystem order, and validator iteration order.
+
+References: `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-DETERMINISTIC-RESOLUTION`
+
+### L2-DA-REQ-016
+
+Any change to authoritative normative JSON content must change that document's content identity and therefore the governing specification-set revision, even when specification identity and declared version remain unchanged.
+
+References: `L2-DA-NORMATIVE-CONTENT-IDENTITY`, `L2-DA-SPECIFICATION-REVISION`
+
+### L2-DA-REQ-017
+
+A missing, partial, duplicate, conflicting, ambiguous, malformed, unresolved, or non-normative revision member or a revision identity inconsistent with its manifest must fail closed.
+
+References: `L2-DA-REVISION-MEMBER-BINDING`, `L2-DA-REVISION-MANIFEST`, `L2-DA-CONFLICT`
+
+### L2-DA-REQ-018
+
+Any contract, accepted workflow plan, evidence disposition, authoritative execution record, or result-realization attempt that requires current freshness must retain and resolve the exact current governing specification-set revision. An unnamed, incomplete, unknown, conflicting, or prior revision must not satisfy current freshness.
+
+References: `L2-DA-SPECIFICATION-REVISION`, `L2-DA-HISTORICAL-ATTRIBUTION`
+
+### L2-DA-REQ-019
+
+Historical contracts, plans, evidence dispositions, execution records, and result realizations must retain their original governing specification-set revision attribution after successor revisions exist. Historical attribution must not be rewritten as current freshness.
+
+References: `L2-DA-HISTORICAL-ATTRIBUTION`, `L2-DA-SPECIFICATION-REVISION`
+
 ## Relationships
 
 - `L2-DA-REL-001`: `LEVEL-2-DOCUMENT-AUTHORITY` **is-governed-by** `LEVEL-2-ROOT`
@@ -137,6 +199,10 @@ References: `L2-DA-DOCUMENT-GRAPH`, `L2-DA-DETERMINISTIC-RESOLUTION`
 - `L2-DA-REL-006`: `L2-DA-CONFLICT` **invalidates** `L2-DA-DETERMINISTIC-RESOLUTION`
 - `L2-DA-REL-007`: `L2-DA-RELATIONSHIP-VISIBILITY` **constrains** `L2-DA-VISIBLE-IDENTIFIER`
 - `L2-DA-REL-008`: `L2-DA-RUNTIME-DEPENDENCY-DISTINCTION` **distinguishes** `L2-DA-IMPORT`
+- `L2-DA-REL-009`: `L2-DA-NORMATIVE-CONTENT-IDENTITY` **participates-in** `L2-DA-REVISION-MEMBER-BINDING`
+- `L2-DA-REL-010`: `L2-DA-REVISION-MEMBER-BINDING` **participates-in** `L2-DA-REVISION-MANIFEST`
+- `L2-DA-REL-011`: `L2-DA-REVISION-MANIFEST` **determines** `L2-DA-SPECIFICATION-REVISION`
+- `L2-DA-REL-012`: `L2-DA-HISTORICAL-ATTRIBUTION` **retains** `L2-DA-SPECIFICATION-REVISION`
 
 ## Scope
 
@@ -151,6 +217,11 @@ References: `L2-DA-DOCUMENT-GRAPH`, `L2-DA-DETERMINISTIC-RESOLUTION`
 - Relationship-endpoint visibility
 - Fail-closed unresolved and conflicting document behavior
 - The distinction between specification imports and runtime dependencies or handoffs
+- Canonical normative JSON content identities
+- Closed exact specification-revision manifests
+- Deterministic order-independent governing specification-set revision identity
+- Current-freshness revision bindings
+- Historical specification-revision attribution
 
 ### Excludes
 
@@ -162,3 +233,7 @@ References: `L2-DA-DOCUMENT-GRAPH`, `L2-DA-DETERMINISTIC-RESOLUTION`
 - Precedence, shadowing, fallback resolution, and implicit imports
 - Sibling Level 2 semantic responsibilities
 - Level 3 design
+- Cryptographic signing and trust-root design
+- Revision storage, transport, persistence, caching, and migration implementation
+- Repository commit identity as sole normative revision authority
+- Derived Markdown as independent revision input
