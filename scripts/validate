@@ -14,5 +14,7 @@ else
 fi
 
 "$PYTHON" -m unittest discover -s specs/tests
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+    "$PYTHON" -m unittest discover -s src/scf_governed_executor/tests
 "$PYTHON" -m specs.tooling.validate --specs-root specs
 git diff --check

@@ -288,15 +288,19 @@ new successor operation for subsequent work.
 
 ## Validation and tests
 
-Run the restored reference test suite with:
+Run the complete repository-supported validation gate with:
 
 ```sh
-PYTHONPATH=src python3 -m unittest discover   -s src/scf_governed_executor/tests
+./scripts/validate
 ```
 
-At the time this bootstrap documentation was added, the restored suite contained
-86 passing tests. Treat that number as historical evidence, not a permanent
-requirement; new implementation work may add tests.
+This entrypoint runs the specification tests under `specs/tests`, the restored
+bootstrap-executor tests under `src/scf_governed_executor/tests`, normative
+specification validation, and `git diff --check`. Do not substitute a command
+that discovers only one supported test tree.
+
+Historical test counts are evidence for a particular revision, not permanent
+requirements; new implementation work may add tests.
 
 ## Development sequence
 
