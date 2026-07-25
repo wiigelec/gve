@@ -112,6 +112,9 @@
       "minLength": 1,
       "maxLength": 4000
     },
+    "effect_state_model": {
+      "$ref": "#/$defs/effectStateModel"
+    },
     "definitions": {
       "type": "array",
       "items": {
@@ -233,6 +236,267 @@
         },
         "target": {
           "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "effectStateValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "evidence_requirement",
+        "uncertainty_required"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "evidence_requirement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "uncertainty_required": {
+          "type": "boolean"
+        }
+      }
+    },
+    "effectStateReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dimension",
+        "value"
+      ],
+      "properties": {
+        "dimension": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+        }
+      }
+    },
+    "effectStateModel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "effect_identity_required",
+        "dimensions",
+        "implications",
+        "non_implications",
+        "prohibited_combinations",
+        "assertion_record",
+        "lineage",
+        "result_constraints"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "integer",
+          "const": 1
+        },
+        "effect_identity_required": {
+          "type": "boolean",
+          "const": true
+        },
+        "dimensions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "assertion_authority",
+              "values"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              },
+              "assertion_authority": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 400
+              },
+              "values": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/effectStateValue"
+                }
+              }
+            }
+          }
+        },
+        "implications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "target",
+              "same_effect",
+              "same_evidence_context"
+            ],
+            "properties": {
+              "source": {
+                "$ref": "#/$defs/effectStateReference"
+              },
+              "target": {
+                "$ref": "#/$defs/effectStateReference"
+              },
+              "same_effect": {
+                "type": "boolean"
+              },
+              "same_evidence_context": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "non_implications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source",
+              "target"
+            ],
+            "properties": {
+              "source": {
+                "$ref": "#/$defs/effectStateReference"
+              },
+              "target": {
+                "$ref": "#/$defs/effectStateReference"
+              }
+            }
+          }
+        },
+        "prohibited_combinations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "states",
+              "reason"
+            ],
+            "properties": {
+              "states": {
+                "type": "array",
+                "minItems": 2,
+                "items": {
+                  "$ref": "#/$defs/effectStateReference"
+                }
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            }
+          }
+        },
+        "assertion_record": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "required_fields",
+            "one_current_head_per_effect_dimension",
+            "immutable_history",
+            "verification_claim_identity_required",
+            "verification_evidence_identity_required"
+          ],
+          "properties": {
+            "required_fields": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+              },
+              "uniqueItems": true
+            },
+            "one_current_head_per_effect_dimension": {
+              "type": "boolean"
+            },
+            "immutable_history": {
+              "type": "boolean"
+            },
+            "verification_claim_identity_required": {
+              "type": "boolean"
+            },
+            "verification_evidence_identity_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "lineage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "statuses",
+            "correction_disposition",
+            "supersession_same_effect_required",
+            "supersession_same_dimension_required",
+            "correction_reason_required",
+            "new_evidence_basis_required"
+          ],
+          "properties": {
+            "statuses": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+              },
+              "uniqueItems": true
+            },
+            "correction_disposition": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+            },
+            "supersession_same_effect_required": {
+              "type": "boolean"
+            },
+            "supersession_same_dimension_required": {
+              "type": "boolean"
+            },
+            "correction_reason_required": {
+              "type": "boolean"
+            },
+            "new_evidence_basis_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "result_constraints": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "admitted_evidence_bound",
+            "preserve_adverse_facts",
+            "conflict_or_incompleteness_fails_closed"
+          ],
+          "properties": {
+            "admitted_evidence_bound": {
+              "type": "boolean"
+            },
+            "preserve_adverse_facts": {
+              "type": "boolean"
+            },
+            "conflict_or_incompleteness_fails_closed": {
+              "type": "boolean"
+            }
+          }
         }
       }
     }

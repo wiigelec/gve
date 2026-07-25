@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any, Mapping
 
 
@@ -49,10 +50,21 @@ def render_markdown(document: Mapping[str, Any]) -> str:
             "",
             document["summary"],
             "",
-            "## Definitions",
-            "",
         ]
     )
+    effect_state_model = document.get("effect_state_model")
+    if effect_state_model is not None:
+        lines.extend(
+            [
+                "## Governed effect-state model",
+                "",
+                "```json",
+                json.dumps(effect_state_model, indent=2, ensure_ascii=False),
+                "```",
+                "",
+            ]
+        )
+    lines.extend(["## Definitions", ""])
     for item in document["definitions"]:
         lines.extend(
             [

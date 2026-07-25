@@ -19,6 +19,284 @@
     ]
   },
   "summary": "GVE Level 3 Evidence and Result Realization defines evidence identity, attribution, provenance, freshness, integrity, an explicit independent governed effect-state model, uncertainty, sufficiency, contradiction handling, authoritative execution-record realization, operation-result realization, fail-closed workflow-result finalization, immutable result versions, explicit supersession, preserved history, and one current lineage head without defining maintained runtime, lifecycle, storage, or plugin-specific evidence implementation.",
+  "effect_state_model": {
+    "schema_version": 1,
+    "effect_identity_required": true,
+    "dimensions": [
+      {
+        "id": "request",
+        "assertion_authority": "accepted-instruction-payload-record",
+        "values": [
+          {
+            "id": "requested",
+            "evidence_requirement": "An accepted instruction-payload record identifies the exact requested effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "not-requested",
+            "evidence_requirement": "The complete accepted instruction-payload record establishes that the exact effect was not requested.",
+            "uncertainty_required": false
+          }
+        ]
+      },
+      {
+        "id": "authorization",
+        "assertion_authority": "governed-authority-decision",
+        "values": [
+          {
+            "id": "authorized",
+            "evidence_requirement": "An attributable governed authority decision permits the exact effect under the applicable governing instruction set.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "refused",
+            "evidence_requirement": "An attributable governed authority decision refuses the exact effect and records the refusal basis.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "indeterminate",
+            "evidence_requirement": "The admitted authority evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish authorization or refusal.",
+            "uncertainty_required": true
+          }
+        ]
+      },
+      {
+        "id": "execution",
+        "assertion_authority": "authoritative-governed-execution-record",
+        "values": [
+          {
+            "id": "unattempted",
+            "evidence_requirement": "The complete authoritative execution record contains no attributable start of execution for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "attempted",
+            "evidence_requirement": "The authoritative execution record contains an attributable start of governed execution for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "partial",
+            "evidence_requirement": "The authoritative execution record and admitted evidence establish some but not all required execution for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "completed",
+            "evidence_requirement": "The authoritative execution record and admitted completion evidence satisfy every governed completion requirement for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "failed",
+            "evidence_requirement": "The authoritative execution record contains an attributable failed execution disposition for the exact effect and its failure basis.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "cancelled",
+            "evidence_requirement": "The authoritative execution record contains an attributable cancellation disposition for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "timed-out",
+            "evidence_requirement": "The authoritative execution record contains an attributable timeout disposition for the exact effect under the applicable time boundary.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "indeterminate",
+            "evidence_requirement": "The admitted execution evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish one other execution value.",
+            "uncertainty_required": true
+          }
+        ]
+      },
+      {
+        "id": "observation",
+        "assertion_authority": "admitted-attributable-evidence",
+        "values": [
+          {
+            "id": "unobserved",
+            "evidence_requirement": "The complete admitted evidence set contains no qualifying observation of the exact effect within the required observation context.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "observed",
+            "evidence_requirement": "At least one fresh attributable admitted evidence record directly observes the exact effect in the required observation context.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "contradicted",
+            "evidence_requirement": "The admitted evidence set contains unresolved attributable observations that cannot simultaneously support one observation value for the exact effect.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "indeterminate",
+            "evidence_requirement": "The admitted observation evidence is incomplete, ambiguous, unavailable, stale, or insufficient to establish observed, unobserved, or contradicted.",
+            "uncertainty_required": true
+          }
+        ]
+      },
+      {
+        "id": "verification",
+        "assertion_authority": "governed-verifier",
+        "values": [
+          {
+            "id": "unverified",
+            "evidence_requirement": "No admitted verification record satisfies the applicable verification rule for the exact claim and evidence context.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "verified",
+            "evidence_requirement": "An attributable governed verification record identifies the exact claim, applicable verification rule, and complete admitted evidence set and records a passing determination.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "failed",
+            "evidence_requirement": "An attributable governed verification record identifies the exact claim and admitted evidence set and records a failing determination.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "contradicted",
+            "evidence_requirement": "The admitted verification records or their evidence bases conflict and cannot support one verification value for the exact claim.",
+            "uncertainty_required": false
+          },
+          {
+            "id": "indeterminate",
+            "evidence_requirement": "The admitted verification evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish verified, failed, contradicted, or unverified.",
+            "uncertainty_required": true
+          }
+        ]
+      }
+    ],
+    "implications": [
+      {
+        "source": {
+          "dimension": "verification",
+          "value": "verified"
+        },
+        "target": {
+          "dimension": "observation",
+          "value": "observed"
+        },
+        "same_effect": true,
+        "same_evidence_context": true
+      }
+    ],
+    "non_implications": [
+      {
+        "source": {
+          "dimension": "observation",
+          "value": "observed"
+        },
+        "target": {
+          "dimension": "execution",
+          "value": "completed"
+        }
+      },
+      {
+        "source": {
+          "dimension": "execution",
+          "value": "completed"
+        },
+        "target": {
+          "dimension": "authorization",
+          "value": "authorized"
+        }
+      },
+      {
+        "source": {
+          "dimension": "authorization",
+          "value": "authorized"
+        },
+        "target": {
+          "dimension": "execution",
+          "value": "attempted"
+        }
+      },
+      {
+        "source": {
+          "dimension": "execution",
+          "value": "attempted"
+        },
+        "target": {
+          "dimension": "execution",
+          "value": "completed"
+        }
+      }
+    ],
+    "prohibited_combinations": [
+      {
+        "states": [
+          {
+            "dimension": "verification",
+            "value": "verified"
+          },
+          {
+            "dimension": "observation",
+            "value": "unobserved"
+          }
+        ],
+        "reason": "Verified requires observed for the same exact effect and evidence context."
+      },
+      {
+        "states": [
+          {
+            "dimension": "verification",
+            "value": "verified"
+          },
+          {
+            "dimension": "observation",
+            "value": "contradicted"
+          }
+        ],
+        "reason": "A contradicted observation basis cannot support verified."
+      },
+      {
+        "states": [
+          {
+            "dimension": "verification",
+            "value": "verified"
+          },
+          {
+            "dimension": "observation",
+            "value": "indeterminate"
+          }
+        ],
+        "reason": "An indeterminate observation basis cannot support verified."
+      }
+    ],
+    "assertion_record": {
+      "required_fields": [
+        "assertion_id",
+        "effect_id",
+        "dimension",
+        "value",
+        "governing_actor",
+        "governing_authority",
+        "admitted_evidence_ids",
+        "asserted_at",
+        "uncertainty",
+        "supersedes_assertion_id",
+        "correction_reason"
+      ],
+      "one_current_head_per_effect_dimension": true,
+      "immutable_history": true,
+      "verification_claim_identity_required": true,
+      "verification_evidence_identity_required": true
+    },
+    "lineage": {
+      "statuses": [
+        "current",
+        "superseded"
+      ],
+      "correction_disposition": "corrected",
+      "supersession_same_effect_required": true,
+      "supersession_same_dimension_required": true,
+      "correction_reason_required": true,
+      "new_evidence_basis_required": true
+    },
+    "result_constraints": {
+      "admitted_evidence_bound": true,
+      "preserve_adverse_facts": true,
+      "conflict_or_incompleteness_fails_closed": true
+    }
+  },
   "definitions": [
     {
       "id": "L3-ERR-EVIDENCE-RECORD",
