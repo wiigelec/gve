@@ -13,7 +13,306 @@
 
 ## Summary
 
-GVE Level 3 Evidence and Result Realization defines evidence identity, attribution, provenance, freshness, integrity, effect-claim state separation, uncertainty, sufficiency, contradiction handling, authoritative execution-record realization, operation-result realization, fail-closed workflow-result finalization, immutable result versions, explicit supersession, preserved history, and one current lineage head without defining maintained runtime, lifecycle, storage, or plugin-specific evidence implementation.
+GVE Level 3 Evidence and Result Realization defines evidence identity, attribution, provenance, freshness, integrity, an explicit independent governed effect-state model, uncertainty, sufficiency, contradiction handling, authoritative execution-record realization, operation-result realization, fail-closed workflow-result finalization, immutable result versions, explicit supersession, preserved history, and one current lineage head without defining maintained runtime, lifecycle, storage, or plugin-specific evidence implementation.
+
+## Governed effect-state model
+
+```json
+{
+  "schema_version": 1,
+  "effect_identity_required": true,
+  "dimensions": [
+    {
+      "id": "request",
+      "assertion_authority": "accepted-instruction-payload-record",
+      "values": [
+        {
+          "id": "requested",
+          "evidence_requirement": "An accepted instruction-payload record identifies the exact requested effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "not-requested",
+          "evidence_requirement": "The complete accepted instruction-payload record establishes that the exact effect was not requested.",
+          "uncertainty_required": false
+        }
+      ]
+    },
+    {
+      "id": "authorization",
+      "assertion_authority": "governed-authority-decision",
+      "values": [
+        {
+          "id": "authorized",
+          "evidence_requirement": "An attributable governed authority decision permits the exact effect under the applicable governing instruction set.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "refused",
+          "evidence_requirement": "An attributable governed authority decision refuses the exact effect and records the refusal basis.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "indeterminate",
+          "evidence_requirement": "The admitted authority evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish authorization or refusal.",
+          "uncertainty_required": true
+        }
+      ]
+    },
+    {
+      "id": "execution",
+      "assertion_authority": "authoritative-governed-execution-record",
+      "values": [
+        {
+          "id": "unattempted",
+          "evidence_requirement": "The complete authoritative execution record contains no attributable start of execution for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "attempted",
+          "evidence_requirement": "The authoritative execution record contains an attributable start of governed execution for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "partial",
+          "evidence_requirement": "The authoritative execution record and admitted evidence establish some but not all required execution for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "completed",
+          "evidence_requirement": "The authoritative execution record and admitted completion evidence satisfy every governed completion requirement for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "failed",
+          "evidence_requirement": "The authoritative execution record contains an attributable failed execution disposition for the exact effect and its failure basis.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "cancelled",
+          "evidence_requirement": "The authoritative execution record contains an attributable cancellation disposition for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "timed-out",
+          "evidence_requirement": "The authoritative execution record contains an attributable timeout disposition for the exact effect under the applicable time boundary.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "indeterminate",
+          "evidence_requirement": "The admitted execution evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish one other execution value.",
+          "uncertainty_required": true
+        }
+      ]
+    },
+    {
+      "id": "observation",
+      "assertion_authority": "admitted-attributable-evidence",
+      "values": [
+        {
+          "id": "unobserved",
+          "evidence_requirement": "The complete admitted evidence set contains no qualifying observation of the exact effect within the required observation context.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "observed",
+          "evidence_requirement": "At least one fresh attributable admitted evidence record directly observes the exact effect in the required observation context.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "contradicted",
+          "evidence_requirement": "The admitted evidence set contains unresolved attributable observations that cannot simultaneously support one observation value for the exact effect.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "indeterminate",
+          "evidence_requirement": "The admitted observation evidence is incomplete, ambiguous, unavailable, stale, or insufficient to establish observed, unobserved, or contradicted.",
+          "uncertainty_required": true
+        }
+      ]
+    },
+    {
+      "id": "verification",
+      "assertion_authority": "governed-verifier",
+      "values": [
+        {
+          "id": "unverified",
+          "evidence_requirement": "No admitted verification record satisfies the applicable verification rule for the exact claim and evidence context.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "verified",
+          "evidence_requirement": "An attributable governed verification record identifies the exact claim, applicable verification rule, and complete admitted evidence set and records a passing determination.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "failed",
+          "evidence_requirement": "An attributable governed verification record identifies the exact claim and admitted evidence set and records a failing determination.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "contradicted",
+          "evidence_requirement": "The admitted verification records or their evidence bases conflict and cannot support one verification value for the exact claim.",
+          "uncertainty_required": false
+        },
+        {
+          "id": "indeterminate",
+          "evidence_requirement": "The admitted verification evidence is incomplete, conflicting, ambiguous, unavailable, or insufficient to establish verified, failed, contradicted, or unverified.",
+          "uncertainty_required": true
+        }
+      ]
+    }
+  ],
+  "implications": [
+    {
+      "source": {
+        "dimension": "verification",
+        "value": "verified"
+      },
+      "target": {
+        "dimension": "observation",
+        "value": "observed"
+      },
+      "same_effect": true,
+      "same_evidence_context": true
+    }
+  ],
+  "non_implications": [
+    {
+      "source": {
+        "dimension": "observation",
+        "value": "observed"
+      },
+      "target": {
+        "dimension": "execution",
+        "value": "completed"
+      }
+    },
+    {
+      "source": {
+        "dimension": "execution",
+        "value": "completed"
+      },
+      "target": {
+        "dimension": "authorization",
+        "value": "authorized"
+      }
+    },
+    {
+      "source": {
+        "dimension": "authorization",
+        "value": "authorized"
+      },
+      "target": {
+        "dimension": "execution",
+        "value": "attempted"
+      }
+    },
+    {
+      "source": {
+        "dimension": "execution",
+        "value": "attempted"
+      },
+      "target": {
+        "dimension": "execution",
+        "value": "completed"
+      }
+    }
+  ],
+  "prohibited_combinations": [
+    {
+      "states": [
+        {
+          "dimension": "verification",
+          "value": "verified"
+        },
+        {
+          "dimension": "observation",
+          "value": "unobserved"
+        }
+      ],
+      "reason": "Verified requires observed for the same exact effect and evidence context."
+    },
+    {
+      "states": [
+        {
+          "dimension": "verification",
+          "value": "verified"
+        },
+        {
+          "dimension": "observation",
+          "value": "contradicted"
+        }
+      ],
+      "reason": "A contradicted observation basis cannot support verified."
+    },
+    {
+      "states": [
+        {
+          "dimension": "verification",
+          "value": "verified"
+        },
+        {
+          "dimension": "observation",
+          "value": "indeterminate"
+        }
+      ],
+      "reason": "An indeterminate observation basis cannot support verified."
+    }
+  ],
+  "assertion_record": {
+    "required_fields": [
+      "assertion_id",
+      "effect_id",
+      "dimension",
+      "value",
+      "governing_actor",
+      "governing_authority",
+      "admitted_evidence_ids",
+      "asserted_at",
+      "uncertainty",
+      "supersedes_assertion_id",
+      "correction_reason"
+    ],
+    "one_current_head_per_effect_dimension": true,
+    "immutable_history": true,
+    "verification_claim_identity_required": true,
+    "verification_evidence_identity_required": true
+  },
+  "lineage": {
+    "statuses": [
+      "current",
+      "superseded"
+    ],
+    "correction_disposition": "corrected",
+    "supersession_same_effect_required": true,
+    "supersession_same_dimension_required": true,
+    "correction_reason_required": true,
+    "new_evidence_basis_required": true
+  },
+  "authoritative_result": {
+    "assertion_authority": "authoritative-governed-result-realizer",
+    "required_fields": [
+      "result_id",
+      "effect_id",
+      "claimed_states",
+      "admitted_assertion_ids",
+      "admitted_evidence_ids",
+      "governing_actor",
+      "governing_authority",
+      "realized_at"
+    ],
+    "exact_current_state_coverage_required": true,
+    "exact_current_assertion_binding_required": true,
+    "exact_admitted_evidence_binding_required": true
+  },
+  "result_constraints": {
+    "admitted_evidence_bound": true,
+    "preserve_adverse_facts": true,
+    "conflict_or_incompleteness_fails_closed": true
+  }
+}
+```
 
 ## Definitions
 
@@ -31,7 +330,7 @@ The explicit temporal or version boundary within which one evidence record is va
 
 ### Effect-claim state (`L3-ERR-EFFECT-CLAIM-STATE`)
 
-The application-independent state of one exact effect claim, preserving distinct requested, authorized, attempted, completed, observed, and verified facts.
+The application-independent state model for one exact effect, represented through independent request, authorization, execution, observation, and verification dimensions rather than one implied lifecycle sequence.
 
 ### Uncertainty state (`L3-ERR-UNCERTAINTY-STATE`)
 
@@ -88,6 +387,22 @@ The application-independent lifecycle by which evidence is produced or received,
 ### Evidence disposition (`L3-ERR-EVIDENCE-DISPOSITION`)
 
 The attributable determination by which a recorded evidence item is admitted or rejected with reason and then considered in result realization without erasing adverse, malformed, stale, unauthorized, contradictory, or inapplicable evidence.
+
+### Effect-state dimension (`L3-ERR-EFFECT-STATE-DIMENSION`)
+
+One independent semantic axis of an exact effect claim: request, authorization, execution, observation, or verification. A value in one dimension does not establish a value in another except where this specification states an explicit implication.
+
+### Effect-state assertion (`L3-ERR-EFFECT-STATE-ASSERTION`)
+
+One immutable attributable assertion of one permitted value in exactly one effect-state dimension for one exact effect, binding its governing actor, governing authority, admitted evidence set, assertion time, uncertainty, and correction lineage.
+
+### Current effect-state assertion head (`L3-ERR-EFFECT-STATE-CURRENT-HEAD`)
+
+The unique unsuperseded assertion for one exact effect and one effect-state dimension in one result-realization context. Superseded assertions remain immutable historical facts.
+
+### Effect-state correction (`L3-ERR-EFFECT-STATE-CORRECTION`)
+
+A new effect-state assertion that explicitly supersedes one prior assertion in the same dimension, states a non-empty correction reason, and binds the new evidence basis without mutating or erasing the prior assertion.
 
 ## Normative requirements
 
@@ -259,6 +574,78 @@ Every claim-relevant received evidence item must retain an attributable disposit
 
 References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 
+### L3-ERR-REQ-027
+
+Every exact effect represented in an authoritative execution record, realized operation result, or authoritative workflow result must use five independent dimensions: request, authorization, execution, observation, and verification.
+
+References: `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-EFFECT-STATE-DIMENSION`, `L3-ERR-EXECUTION-RECORD`, `L3-ERR-OPERATION-RESULT`, `L3-ERR-WORKFLOW-RESULT`
+
+### L3-ERR-REQ-028
+
+The request dimension must permit requested and not-requested; the authorization dimension must permit authorized, refused, and indeterminate; the execution dimension must permit unattempted, attempted, partial, completed, failed, cancelled, timed-out, and indeterminate; the observation dimension must permit unobserved, observed, contradicted, and indeterminate; and the verification dimension must permit unverified, verified, failed, contradicted, and indeterminate.
+
+References: `L3-ERR-EFFECT-STATE-DIMENSION`, `L3-ERR-UNCERTAINTY-STATE`
+
+### L3-ERR-REQ-029
+
+Each effect-state assertion must identify exactly one effect, one dimension, one permitted value, one governing actor, one governing authority, the complete admitted evidence set, assertion time, explicit uncertainty when indeterminate, and correction lineage when superseding a prior assertion.
+
+References: `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-RECORD`, `L3-ERR-EVIDENCE-DISPOSITION`, `L3-ERR-UNCERTAINTY-STATE`, `L3-ERR-EFFECT-STATE-CORRECTION`
+
+### L3-ERR-REQ-030
+
+Request-state assertions may be established only from the accepted instruction payload record; authorization-state assertions only by the governed authority decision identified by the accepted plan or governing instruction set; execution-state assertions only by the attributable governed execution record; observation-state assertions only from admitted attributable evidence; and verification-state assertions only by the governed verifier and verification rule identified by the governing instruction set.
+
+References: `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-PROVENANCE`, `L3-ERR-EVIDENCE-DISPOSITION`, `L3-ERR-EXECUTION-RECORD`
+
+### L3-ERR-REQ-031
+
+Every transition to a new current effect-state value must be supported by the evidence required by the governing authority for that destination value. Missing, stale, ambiguous, contradictory, unauthorized, malformed, or insufficient evidence must produce indeterminate or fail-closed disposition rather than an unsupported transition.
+
+References: `L3-ERR-EFFECT-STATE-CURRENT-HEAD`, `L3-ERR-EVIDENCE-SUFFICIENCY`, `L3-ERR-CONTRADICTION`, `L3-ERR-UNCERTAINTY-STATE`
+
+### L3-ERR-REQ-032
+
+Verified implies observed for the same exact effect and admitted evidence context. No other cross-dimension implication is permitted unless stated explicitly by normative GVE authority.
+
+References: `L3-ERR-EFFECT-STATE-DIMENSION`, `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
+### L3-ERR-REQ-033
+
+Observed does not imply completed; completed does not imply authorized; authorized does not imply attempted; and attempted does not imply completed.
+
+References: `L3-ERR-EFFECT-STATE-DIMENSION`, `L3-ERR-EFFECT-CLAIM-STATE`
+
+### L3-ERR-REQ-034
+
+A verified assertion must identify both the exact claim being verified and the exact admitted evidence set against which verification occurred. Verification without either identity must fail closed.
+
+References: `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-RECORD`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
+### L3-ERR-REQ-035
+
+One result-realization context must have at most one current unsuperseded assertion for each exact effect and dimension. Contradictory current values, conflicting governing authorities, incomplete assertion records, or omitted required uncertainty must fail closed.
+
+References: `L3-ERR-EFFECT-STATE-CURRENT-HEAD`, `L3-ERR-CONTRADICTION`, `L3-ERR-UNCERTAINTY-STATE`, `L3-ERR-RESULT-FINALIZATION`
+
+### L3-ERR-REQ-036
+
+Effect-state history is monotonic: correction must create a new immutable attributable assertion that explicitly supersedes the prior assertion, states a correction reason, and identifies its evidence basis. Prior assertions must not be mutated or erased.
+
+References: `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EFFECT-STATE-CORRECTION`, `L3-ERR-EFFECT-STATE-CURRENT-HEAD`
+
+### L3-ERR-REQ-037
+
+Refused authorization, partial execution, failed execution, cancelled execution, timed-out execution, contradicted observation or verification, superseded assertion, corrected assertion, and indeterminate outcome must remain distinguishable and must not be collapsed into generic success or failure.
+
+References: `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-UNCERTAINTY-STATE`, `L3-ERR-EFFECT-STATE-CORRECTION`, `L3-ERR-EXECUTION-RECORD`
+
+### L3-ERR-REQ-038
+
+An authoritative execution record, realized operation result, or authoritative workflow result must not assert an effect-state value stronger than its complete admitted evidence supports and must preserve every adverse, partial, contradictory, superseded, corrected, and indeterminate fact relevant to that effect.
+
+References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-OPERATION-RESULT`, `L3-ERR-WORKFLOW-RESULT`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
 ## Relationships
 
 - `L3-ERR-REL-001`: `L3-ERR-EVIDENCE-PROVENANCE` **attributes** `L3-ERR-EVIDENCE-RECORD`
@@ -274,6 +661,10 @@ References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 - `L3-ERR-REL-011`: `L3-ERR-FINALIZATION-FAILURE` **is-recorded-by** `L3-ERR-EXECUTION-RECORD`
 - `L3-ERR-REL-012`: `L3-ERR-SUPERSESSION` **links** `L3-ERR-RESULT-VERSION`
 - `L3-ERR-REL-013`: `L3-ERR-CURRENT-LINEAGE-HEAD` **designates** `L3-ERR-RESULT-VERSION`
+- `L3-ERR-REL-014`: `L3-ERR-EFFECT-STATE-DIMENSION` **structures** `L3-ERR-EFFECT-CLAIM-STATE`
+- `L3-ERR-REL-015`: `L3-ERR-EFFECT-STATE-ASSERTION` **asserts** `L3-ERR-EFFECT-STATE-DIMENSION`
+- `L3-ERR-REL-016`: `L3-ERR-EFFECT-STATE-CURRENT-HEAD` **designates** `L3-ERR-EFFECT-STATE-ASSERTION`
+- `L3-ERR-REL-017`: `L3-ERR-EFFECT-STATE-CORRECTION` **supersedes** `L3-ERR-EFFECT-STATE-ASSERTION`
 
 ## Scope
 
@@ -294,6 +685,8 @@ References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 - Immutable result versions, explicit acyclic supersession, preserved history, and one current lineage head
 - Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition
 - evidence ingress, attributable disposition, admission boundaries, and preservation of adverse or rejected evidence
+- The complete independent governed effect-state model
+- Effect-state values, assertion authority, admitted evidence, uncertainty, correction, supersession, and current-head uniqueness
 
 ### Excludes
 
