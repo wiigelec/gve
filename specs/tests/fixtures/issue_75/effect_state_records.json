@@ -1,0 +1,559 @@
+{
+  "schema_version": 1,
+  "valid_cases": [
+    {
+      "name": "authorized_effect",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "authorization",
+            "value": "authorized",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-authority-decision",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "attempted_effect",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "attempted",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "completed_but_unobserved_effect",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "unobserved",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-a2"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "observed_but_unverified_effect",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "observed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "verification",
+            "value": "unverified",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-verifier",
+            "admitted_evidence_ids": [
+              "evidence-a2"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "verified_observed_completion",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "observed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-observed"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a3",
+            "effect_id": "effect-1",
+            "dimension": "verification",
+            "value": "verified",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-verifier",
+            "admitted_evidence_ids": [
+              "evidence-verify"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null,
+            "verified_claim_id": "claim-completion",
+            "verification_evidence_ids": [
+              "evidence-verify"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial_execution",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "partial",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "indeterminate_execution",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "indeterminate",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": "Execution outcome could not be established from admitted evidence.",
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "correction",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "failed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-old"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null,
+            "lineage_status": "superseded"
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-new"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": "a1",
+            "correction_reason": "Later attributable evidence corrected the execution outcome."
+          }
+        ]
+      }
+    },
+    {
+      "name": "supersession",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "contradicted",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-old"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null,
+            "lineage_status": "superseded"
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "observed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-new"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": "a1",
+            "correction_reason": "A newer admitted observation superseded the contradicted assertion."
+          }
+        ]
+      }
+    }
+  ],
+  "invalid_cases": [
+    {
+      "name": "authorized_treated_as_attempted",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "authorization",
+            "value": "attempted",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-authority-decision",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "outside dimension authorization"
+    },
+    {
+      "name": "authorized_treated_as_completed",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "authorization",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-authority-decision",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "outside dimension authorization"
+    },
+    {
+      "name": "attempted_treated_as_completed",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "attempted",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a2"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "multiple current heads"
+    },
+    {
+      "name": "completed_treated_as_observed",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "outside dimension observation"
+    },
+    {
+      "name": "completed_treated_as_verified",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "verification",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-verifier",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "outside dimension verification"
+    },
+    {
+      "name": "verification_without_evidence",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "verification",
+            "value": "verified",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-verifier",
+            "admitted_evidence_ids": [
+              "evidence-v"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null,
+            "verified_claim_id": "claim-1",
+            "verification_evidence_ids": []
+          }
+        ]
+      },
+      "expected_error": "verified assertion requires evidence identity"
+    },
+    {
+      "name": "contradictory_terminal_states",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "completed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "failed",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a2"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "multiple current heads"
+    },
+    {
+      "name": "omitted_uncertainty",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "execution",
+            "value": "indeterminate",
+            "governing_actor": "governed-actor",
+            "governing_authority": "authoritative-governed-execution-record",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          }
+        ]
+      },
+      "expected_error": "indeterminate assertion requires uncertainty"
+    },
+    {
+      "name": "authoritative_result_stronger_than_admitted_evidence",
+      "record": {
+        "assertions": [
+          {
+            "assertion_id": "a1",
+            "effect_id": "effect-1",
+            "dimension": "observation",
+            "value": "unobserved",
+            "governing_actor": "governed-actor",
+            "governing_authority": "admitted-attributable-evidence",
+            "admitted_evidence_ids": [
+              "evidence-a1"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null
+          },
+          {
+            "assertion_id": "a2",
+            "effect_id": "effect-1",
+            "dimension": "verification",
+            "value": "verified",
+            "governing_actor": "governed-actor",
+            "governing_authority": "governed-verifier",
+            "admitted_evidence_ids": [
+              "evidence-v"
+            ],
+            "asserted_at": "2026-07-25T22:30:00Z",
+            "uncertainty": null,
+            "supersedes_assertion_id": null,
+            "correction_reason": null,
+            "verified_claim_id": "claim-completion",
+            "verification_evidence_ids": [
+              "evidence-v"
+            ]
+          }
+        ]
+      },
+      "expected_error": "prohibited state combination"
+    }
+  ]
+}
