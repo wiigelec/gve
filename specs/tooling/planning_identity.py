@@ -32,6 +32,14 @@ def _nonempty(value: Any, location: str) -> str:
     return value
 
 
+def _positive_integer(value: Any, location: str) -> int:
+    if not isinstance(value, int) or isinstance(value, bool):
+        raise PlanningIdentityError(f"{location} must be an integer")
+    if value < 1:
+        raise PlanningIdentityError(f"{location} must be positive")
+    return value
+
+
 def _exact(value: Any, fields: set[str], location: str) -> Mapping[str, Any]:
     if not isinstance(value, Mapping):
         raise PlanningIdentityError(f"{location} must be an object")
@@ -58,12 +66,14 @@ def canonical_plan_candidate(
     operations: Sequence[Mapping[str, Any]],
     governance_binding_identity: str,
     plugin_registry_snapshot_identity: str,
+    ordering_identity: str,
     dependency_identity: str,
     handoff_identity: str,
 ) -> dict[str, Any]:
     _nonempty(workflow_identity, "workflow_identity")
     _identity(governance_binding_identity, "governance_binding_identity")
     _identity(plugin_registry_snapshot_identity, "plugin_registry_snapshot_identity")
+    _identity(ordering_identity, "ordering_identity")
     _identity(dependency_identity, "dependency_identity")
     _identity(handoff_identity, "handoff_identity")
 
@@ -112,6 +122,7 @@ def canonical_plan_candidate(
         "operations": canonical_operations,
         "governance_binding_identity": governance_binding_identity,
         "plugin_registry_snapshot_identity": plugin_registry_snapshot_identity,
+        "ordering_identity": ordering_identity,
         "dependency_identity": dependency_identity,
         "handoff_identity": handoff_identity,
     }
@@ -130,6 +141,7 @@ def validate_plan_candidate(candidate: Mapping[str, Any]) -> None:
         plugin_registry_snapshot_identity=candidate.get(
             "plugin_registry_snapshot_identity"
         ),
+        ordering_identity=candidate.get("ordering_identity"),
         dependency_identity=candidate.get("dependency_identity"),
         handoff_identity=candidate.get("handoff_identity"),
     )
@@ -147,10 +159,7 @@ def contract_production_identity(
     _identity(plan_candidate_identity, "plan_candidate_identity")
     _nonempty(operation_identity, "operation_identity")
     _identity(interpreted_inputs_identity, "interpreted_inputs_identity")
-    if not isinstance(production_ordinal, int) or isinstance(production_ordinal, bool):
-        raise PlanningIdentityError("production_ordinal must be an integer")
-    if production_ordinal < 1:
-        raise PlanningIdentityError("production_ordinal must be positive")
+    _positive_integer(production_ordinal, "production_ordinal")
     return _digest(
         {
             "format": CONTRACT_PRODUCTION_FORMAT,
@@ -165,14 +174,19 @@ def contract_production_identity(
 def accepted_plan_identity(
     candidate: Mapping[str, Any], contracts: Sequence[Mapping[str, Any]]
 ) -> str:
+    """Validate complete contract attribution and construct accepted-plan identity."""
     candidate_id = plan_candidate_identity(candidate)
     required = {
         "operation_identity",
         "plan_candidate_identity",
+        "interpreted_inputs_identity",
+        "production_ordinal",
         "contract_identity",
         "contract_production_identity",
     }
     by_operation = {}
+    seen_contract_identities = set()
+    seen_production_identities = set()
     for index, raw in enumerate(contracts):
         item = _exact(raw, required, f"contracts[{index}]")
         operation_identity = _nonempty(
@@ -186,16 +200,41 @@ def accepted_plan_identity(
         )
         if bound_candidate != candidate_id:
             raise PlanningIdentityError("contract binds another plan candidate")
+        interpreted_inputs_identity = _identity(
+            item["interpreted_inputs_identity"],
+            f"contracts[{index}].interpreted_inputs_identity",
+        )
+        production_ordinal = _positive_integer(
+            item["production_ordinal"], f"contracts[{index}].production_ordinal"
+        )
+        contract_identity = _identity(
+            item["contract_identity"], f"contracts[{index}].contract_identity"
+        )
+        if contract_identity in seen_contract_identities:
+            raise PlanningIdentityError("duplicate contract_identity")
+        seen_contract_identities.add(contract_identity)
+        production_identity = _identity(
+            item["contract_production_identity"],
+            f"contracts[{index}].contract_production_identity",
+        )
+        expected_production_identity = contract_production_identity(
+            plan_candidate_identity=candidate_id,
+            operation_identity=operation_identity,
+            interpreted_inputs_identity=interpreted_inputs_identity,
+            production_ordinal=production_ordinal,
+        )
+        if production_identity in seen_production_identities:
+            raise PlanningIdentityError("duplicate contract_production_identity")
+        seen_production_identities.add(production_identity)
+        if production_identity != expected_production_identity:
+            raise PlanningIdentityError("contract production attribution is invalid")
         by_operation[operation_identity] = {
             "operation_identity": operation_identity,
             "plan_candidate_identity": bound_candidate,
-            "contract_identity": _identity(
-                item["contract_identity"], f"contracts[{index}].contract_identity"
-            ),
-            "contract_production_identity": _identity(
-                item["contract_production_identity"],
-                f"contracts[{index}].contract_production_identity",
-            ),
+            "interpreted_inputs_identity": interpreted_inputs_identity,
+            "production_ordinal": production_ordinal,
+            "contract_identity": contract_identity,
+            "contract_production_identity": production_identity,
         }
 
     expected = {item["operation_identity"] for item in candidate["operations"]}
@@ -215,10 +254,7 @@ def execution_attempt_identity(
 ) -> str:
     _identity(accepted_plan_identity, "accepted_plan_identity")
     _nonempty(operation_identity, "operation_identity")
-    if not isinstance(attempt_ordinal, int) or isinstance(attempt_ordinal, bool):
-        raise PlanningIdentityError("attempt_ordinal must be an integer")
-    if attempt_ordinal < 1:
-        raise PlanningIdentityError("attempt_ordinal must be positive")
+    _positive_integer(attempt_ordinal, "attempt_ordinal")
     return _digest(
         {
             "format": EXECUTION_ATTEMPT_FORMAT,
