@@ -81,6 +81,10 @@ The required binding of contract interpretation and production to one already ex
 
 A stable identity for one distinct production of a validated operation contract, bound to one plan candidate, operation, interpreted-input identity, and deterministic production ordinal or equivalent application-independent discriminator.
 
+### Contract-production ordinal allocator (`L3-PAC-CONTRACT-PRODUCTION-ORDINAL-ALLOCATOR`)
+
+The selected action acting through its owning plugin as the sole authority that allocates a nonnegative signed-64-bit production ordinal for each distinct validated-contract production within one plan-candidate-and-operation production lineage. The allocator preserves prior allocations, returns the prior ordinal only for exact replay, assigns the least unused ordinal for regeneration, and fails closed rather than issuing a duplicate or ambiguous allocation.
+
 ### Contract replay (`L3-PAC-CONTRACT-REPLAY`)
 
 Reuse of the exact same previously produced immutable validated contract and contract-production identity for the same unchanged plan candidate, without claiming a new production.
@@ -216,6 +220,24 @@ References: `L3-PAC-CONTRACT-REPLAY`, `L3-PAC-CONTRACT-REGENERATION`, `L3-PAC-CO
 A missing, duplicate, conflicting, reused-as-new, ambiguous, stale, partial, unresolved, or circular plan-candidate or contract-production binding must fail closed and must not be repaired by inference, fallback, lifecycle state, or acceptance outcome.
 
 References: `L3-PAC-PLAN-CANDIDATE-BINDING`, `L3-PAC-CONTRACT-PRODUCTION-IDENTITY`, `L3-PAC-CONTRACT-ATTRIBUTION`
+
+### L3-PAC-REQ-021
+
+The selected action, acting through exactly one owning plugin, is the sole contract-production ordinal allocator for each plan-candidate-and-operation production lineage. The uniqueness domain is the tuple of immutable plan-candidate identity and operation identity; within that domain every distinct production must have exactly one unique nonnegative signed-64-bit ordinal.
+
+References: `L3-PAC-CONTRACT-PRODUCTION-ORDINAL-ALLOCATOR`, `L3-PAC-CONTRACT-PRODUCTION-IDENTITY`, `L3-PAC-PLAN-CANDIDATE-BINDING`
+
+### L3-PAC-REQ-022
+
+For a previously unseen production lineage, the first contract production must receive ordinal zero. Exact replay must retain the prior ordinal and contract-production identity. Regeneration must receive the least nonnegative ordinal not previously allocated in that lineage, even when interpreted meaning and contract content are otherwise unchanged. Allocation state must be evaluated against one immutable lineage snapshot.
+
+References: `L3-PAC-CONTRACT-PRODUCTION-ORDINAL-ALLOCATOR`, `L3-PAC-CONTRACT-REPLAY`, `L3-PAC-CONTRACT-REGENERATION`
+
+### L3-PAC-REQ-023
+
+Concurrent or repeated production requests must not yield the same new ordinal. A duplicate allocation, reused-as-new ordinal, skipped or conflicting prior allocation history, ordinal outside the nonnegative signed-64-bit domain, exhausted domain, ambiguous lineage, or inability to establish one immutable allocation snapshot must fail closed without contract production or acceptance.
+
+References: `L3-PAC-CONTRACT-PRODUCTION-ORDINAL-ALLOCATOR`, `L3-PAC-CONTRACT-PRODUCTION-IDENTITY`, `L3-PAC-CONTRACT-ATTRIBUTION`
 
 ## Relationships
 

@@ -77,6 +77,10 @@ The deterministic aggregate identity of one exact canonical specification-revisi
 
 The explicit revision identity representation gve-canonical-json-v1+sha256:lowercase-hex, consisting of SHA-256 applied to gve-canonical-json-v1 bytes and encoded as exactly sixty-four lowercase hexadecimal characters.
 
+### Textual identifier policy (`L2-DA-TEXTUAL-IDENTIFIER-POLICY`)
+
+The application-independent rule that every governed textual identifier is one nonempty Unicode scalar-value sequence compared exactly as declared. Identifier equality is exact code-point-sequence equality; Unicode normalization, case folding, locale transformation, whitespace trimming, and implementation-native rewriting are intentionally absent unless a more specific imported authority explicitly defines a distinct constrained identifier field.
+
 ### Historical specification-revision attribution (`L2-DA-HISTORICAL-ATTRIBUTION`)
 
 The retained binding from a contract, plan, evidence disposition, execution record, or result realization to the exact governing specification-set revision under which that artifact was produced, even after a successor revision becomes current.
@@ -199,7 +203,7 @@ References: `L2-DA-HISTORICAL-ATTRIBUTION`, `L2-DA-SPECIFICATION-REVISION`
 
 ### L2-DA-REQ-020
 
-gve-canonical-json-v1 must serialize null as null, booleans as true or false, integers in minimal base-10 form, strings as UTF-8 without Unicode normalization, arrays in declared order, and objects with string member names ordered by ascending Unicode code point sequence. It must emit no byte-order mark or insignificant whitespace.
+gve-canonical-json-v1 must serialize null as null, booleans as true or false, integers within the inclusive signed 64-bit range -9223372036854775808 through 9223372036854775807 in minimal base-10 form, strings as UTF-8 without Unicode normalization, arrays in declared order, and objects with string member names ordered by ascending Unicode code point sequence. It must emit no byte-order mark or insignificant whitespace.
 
 References: `L2-DA-CANONICAL-JSON`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
 
@@ -220,6 +224,18 @@ References: `L2-DA-CANONICAL-JSON`, `L2-DA-CONFLICT`, `L2-DA-NORMATIVE-CONTENT-I
 Every governing specification-set revision must declare canonicalization gve-canonical-json-v1, digest algorithm sha256, and identity format gve-canonical-json-v1+sha256:lowercase-hex. Its identity must be exactly sixty-four lowercase hexadecimal characters. Missing, unknown, conflicting, or malformed identifiers or representations must fail closed.
 
 References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-IDENTITY-FORMAT`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-CONFLICT`
+
+### L2-DA-REQ-024
+
+Every application-independent planning, authority, specification, definition, requirement, relationship, workflow, operation, plugin, action, registry-snapshot, contract-production, evidence, execution-record, and result identifier governed by this specification set must be a nonempty Unicode scalar-value sequence and must compare by exact code-point sequence. Unicode normalization, case folding, locale transformation, trimming, and silent rewriting must not be applied. Visually similar or canonically equivalent but code-point-distinct strings are distinct identifiers.
+
+References: `L2-DA-TEXTUAL-IDENTIFIER-POLICY`
+
+### L2-DA-REQ-025
+
+An identifier containing a surrogate code point, an empty identifier where identity is required, an identifier changed by implementation-native normalization or rewriting, or an equality decision not based on the exact declared code-point sequence must fail closed. Existing accepted identifiers must retain their exact values unless a separately governed migration explicitly replaces them.
+
+References: `L2-DA-TEXTUAL-IDENTIFIER-POLICY`
 
 ## Relationships
 

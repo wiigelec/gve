@@ -7,6 +7,8 @@ from specs.tooling.canonical_json import (
     CANONICALIZATION,
     DIGEST_ALGORITHM,
     IDENTITY_FORMAT,
+    MAX_INTEGER,
+    MIN_INTEGER,
     CanonicalJsonError,
     canonical_json,
     sha256_identity,
@@ -63,6 +65,86 @@ class CanonicalJsonTests(unittest.TestCase):
             hashlib.sha256(expected).hexdigest(),
             sha256_identity(value),
         )
+
+
+    def test_fixed_nested_vector(self) -> None:
+        value = {
+            "outer": [{"b": [3, 2, 1], "a": {"false": False, "null": None}}],
+            "empty": {"array": [], "object": {}},
+        }
+        expected = (
+            b'{"empty":{"array":[],"object":{}},'
+            b'"outer":[{"a":{"false":false,"null":null},"b":[3,2,1]}]}'
+        )
+        self.assertEqual(canonical_json(value), expected)
+        self.assertEqual(
+            sha256_identity(value),
+            hashlib.sha256(expected).hexdigest(),
+        )
+
+    def test_fixed_unicode_and_escaping_vector(self) -> None:
+        value = {
+            "composed": "é",
+            "decomposed": "e\u0301",
+            "escapes": "\"\\\b\t\n\f\r\x00\x1f",
+        }
+        expected = (
+            b'{"composed":"\xc3\xa9","decomposed":"e\xcc\x81",'
+            b'"escapes":"\\\"\\\\\\b\\t\\n\\f\\r\\u0000\\u001f"}'
+        )
+        self.assertEqual(canonical_json(value), expected)
+        self.assertEqual(
+            sha256_identity(value),
+            hashlib.sha256(expected).hexdigest(),
+        )
+
+    def test_fixed_manifest_like_vector(self) -> None:
+        value = {
+            "canonicalization": "gve-canonical-json-v1",
+            "manifest": [
+                {
+                    "content_identity": "0" * 64,
+                    "specification": "GVE-ALPHA",
+                    "version": "1.0.0",
+                },
+                {
+                    "content_identity": "f" * 64,
+                    "specification": "GVE-BETA",
+                    "version": "2.0.0",
+                },
+            ],
+            "normative": True,
+        }
+        expected = (
+            b'{"canonicalization":"gve-canonical-json-v1","manifest":['
+            b'{"content_identity":"' + b"0" * 64
+            + b'","specification":"GVE-ALPHA","version":"1.0.0"},'
+            b'{"content_identity":"' + b"f" * 64
+            + b'","specification":"GVE-BETA","version":"2.0.0"}],'
+            b'"normative":true}'
+        )
+        self.assertEqual(canonical_json(value), expected)
+        self.assertEqual(
+            sha256_identity(value),
+            hashlib.sha256(expected).hexdigest(),
+        )
+
+    def test_integer_boundaries_are_explicit(self) -> None:
+        self.assertEqual(MIN_INTEGER, -9223372036854775808)
+        self.assertEqual(MAX_INTEGER, 9223372036854775807)
+        self.assertEqual(
+            canonical_json([MIN_INTEGER, MAX_INTEGER]),
+            b"[-9223372036854775808,9223372036854775807]",
+        )
+
+    def test_integer_outside_canonical_range_fails_closed(self) -> None:
+        for value in (MIN_INTEGER - 1, MAX_INTEGER + 1):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(
+                    CanonicalJsonError,
+                    "signed 64-bit canonical range",
+                ):
+                    canonical_json(value)
 
     def test_floating_point_values_fail_closed(self) -> None:
         for value in (0.0, -0.0, 1.5, float("nan"), float("inf"), -float("inf")):

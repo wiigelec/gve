@@ -10,6 +10,8 @@ from typing import Any
 CANONICALIZATION = "gve-canonical-json-v1"
 DIGEST_ALGORITHM = "sha256"
 IDENTITY_FORMAT = f"{CANONICALIZATION}+{DIGEST_ALGORITHM}:lowercase-hex"
+MIN_INTEGER = -(2**63)
+MAX_INTEGER = 2**63 - 1
 
 
 class CanonicalJsonError(ValueError):
@@ -50,6 +52,10 @@ def _serialize(value: Any) -> str:
     if value is False:
         return "false"
     if isinstance(value, int):
+        if value < MIN_INTEGER or value > MAX_INTEGER:
+            raise CanonicalJsonError(
+                "integers must be within the signed 64-bit canonical range"
+            )
         return str(value)
     if isinstance(value, float):
         raise CanonicalJsonError("floating-point values are not canonicalizable")
@@ -75,7 +81,8 @@ def canonical_json(value: Any) -> bytes:
     Objects are ordered by ascending Unicode code point sequence of their member
     names. Arrays retain declared order. Strings are not Unicode-normalized;
     quotation mark, reverse solidus, and controls are escaped deterministically.
-    Integers use minimal base-10 form. Floating-point and non-JSON values fail
+    Integers use minimal base-10 form within the signed 64-bit range.
+    Floating-point and non-JSON values fail
     closed.
     """
     try:

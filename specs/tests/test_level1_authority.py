@@ -284,6 +284,18 @@ class Level1AuthorityTests(unittest.TestCase):
         ):
             self.assertIn(term, text)
 
+
+    def test_root_terminology_distinguishes_candidate_and_accepted_plan(self) -> None:
+        definition = self.definitions()["WORKFLOW-PLAN"]["text"].lower()
+        self.assertIn("immutable pre-contract plan candidate", definition)
+        self.assertIn("accepted workflow plan", definition)
+        self.assertIn("not yet accepted for execution", definition)
+        self.assertIn("workflow-plan acceptance mean accepted-plan status", definition)
+
+        contract = self.requirements()["L1-REQ-008A"]["text"].lower()
+        self.assertIn("already existing immutable pre-contract plan candidate", contract)
+        self.assertIn("before the operation may participate in an accepted workflow plan", contract)
+
     def test_root_level_1_has_been_removed(self) -> None:
         self.assertFalse((ROOT / "LEVEL_1.md").exists())
 

@@ -93,6 +93,11 @@
       "text": "The explicit revision identity representation gve-canonical-json-v1+sha256:lowercase-hex, consisting of SHA-256 applied to gve-canonical-json-v1 bytes and encoded as exactly sixty-four lowercase hexadecimal characters."
     },
     {
+      "id": "L2-DA-TEXTUAL-IDENTIFIER-POLICY",
+      "term": "Textual identifier policy",
+      "text": "The application-independent rule that every governed textual identifier is one nonempty Unicode scalar-value sequence compared exactly as declared. Identifier equality is exact code-point-sequence equality; Unicode normalization, case folding, locale transformation, whitespace trimming, and implementation-native rewriting are intentionally absent unless a more specific imported authority explicitly defines a distinct constrained identifier field."
+    },
+    {
       "id": "L2-DA-HISTORICAL-ATTRIBUTION",
       "term": "Historical specification-revision attribution",
       "text": "The retained binding from a contract, plan, evidence disposition, execution record, or result realization to the exact governing specification-set revision under which that artifact was produced, even after a successor revision becomes current."
@@ -257,7 +262,7 @@
     },
     {
       "id": "L2-DA-REQ-020",
-      "text": "gve-canonical-json-v1 must serialize null as null, booleans as true or false, integers in minimal base-10 form, strings as UTF-8 without Unicode normalization, arrays in declared order, and objects with string member names ordered by ascending Unicode code point sequence. It must emit no byte-order mark or insignificant whitespace.",
+      "text": "gve-canonical-json-v1 must serialize null as null, booleans as true or false, integers within the inclusive signed 64-bit range -9223372036854775808 through 9223372036854775807 in minimal base-10 form, strings as UTF-8 without Unicode normalization, arrays in declared order, and objects with string member names ordered by ascending Unicode code point sequence. It must emit no byte-order mark or insignificant whitespace.",
       "references": [
         "L2-DA-CANONICAL-JSON",
         "L2-DA-NORMATIVE-CONTENT-IDENTITY"
@@ -288,6 +293,20 @@
         "L2-DA-REVISION-IDENTITY-FORMAT",
         "L2-DA-SPECIFICATION-REVISION",
         "L2-DA-CONFLICT"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-024",
+      "text": "Every application-independent planning, authority, specification, definition, requirement, relationship, workflow, operation, plugin, action, registry-snapshot, contract-production, evidence, execution-record, and result identifier governed by this specification set must be a nonempty Unicode scalar-value sequence and must compare by exact code-point sequence. Unicode normalization, case folding, locale transformation, trimming, and silent rewriting must not be applied. Visually similar or canonically equivalent but code-point-distinct strings are distinct identifiers.",
+      "references": [
+        "L2-DA-TEXTUAL-IDENTIFIER-POLICY"
+      ]
+    },
+    {
+      "id": "L2-DA-REQ-025",
+      "text": "An identifier containing a surrogate code point, an empty identifier where identity is required, an identifier changed by implementation-native normalization or rewriting, or an equality decision not based on the exact declared code-point sequence must fail closed. Existing accepted identifiers must retain their exact values unless a separately governed migration explicitly replaces them.",
+      "references": [
+        "L2-DA-TEXTUAL-IDENTIFIER-POLICY"
       ]
     }
   ],
