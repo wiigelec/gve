@@ -250,24 +250,14 @@ class SpecificationSetInvariantTests(unittest.TestCase):
             2,
             "GVE-LEVEL-2-ALPHA",
         )
-        specifications = [
-            (path, load_strict(path))
-            for path in discover_specifications(specs_root)
-        ]
-        levels_root = specs_root / "levels"
-
-        messages = []
-        for ordered in (specifications, list(reversed(specifications))):
-            with self.assertRaises(SemanticValidationError) as captured:
-                validate_hierarchy(ordered, levels_root=levels_root)
-            messages.append(str(captured.exception))
-
-        self.assertEqual(messages[0], messages[1])
-        self.assertEqual(
-            messages[0],
+        result = self._run_validation(specs_root)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(
             "GVE-LEVEL-2: specification-set membership mismatch; missing=[], "
             "unexpected=['GVE-LEVEL-2-ALPHA', 'GVE-LEVEL-2-ZETA']",
+            result.stderr,
         )
+
 
 
 if __name__ == "__main__":

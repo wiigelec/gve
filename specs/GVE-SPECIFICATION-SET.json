@@ -1,0 +1,87 @@
+{
+  "$schema": "schemas/GVE-SPECIFICATION-SET.schema.json",
+  "schema_version": 1,
+  "canonicalization": "gve-canonical-json-v1",
+  "digest_algorithm": "sha256",
+  "identity_format": "gve-canonical-json-v1+sha256:lowercase-hex",
+  "members": [
+    {
+      "path": "levels/level-0/GVE-LEVEL-0.json",
+      "role": "root",
+      "id": "GVE-LEVEL-0",
+      "content_sha256": "972800a6a51bd05cfc119afc91febe5a64f739e8ac434342c3085c2ae62d3d67"
+    },
+    {
+      "path": "levels/level-1/GVE-LEVEL-1.json",
+      "role": "root",
+      "id": "GVE-LEVEL-1",
+      "content_sha256": "8a7061f7fb0f066fef1a309d7ae5c6abcfaf79adbd67e7816168c6d9725c6e4c"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2.json",
+      "role": "root",
+      "id": "GVE-LEVEL-2",
+      "content_sha256": "8673e6e90173bc759ac22d3799f1749cd80ca52f4441ec7d0d817ba68b019f8e"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-DEPENDENCIES-HANDOFFS.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
+      "content_sha256": "d3d34878e61f0e241ba3edb8d571d6682c4a3727bdf949f4e48af8d6a35783d8"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-DOCUMENT-AUTHORITY.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+      "content_sha256": "08dc0db6f888c377bc79696fc5012c3199181155d2d344a2a8042c9c228645ae"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
+      "content_sha256": "f8e86e41c7920f18059515d3eea94dd7cba937532115b7129a686d2679e66219"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-RESULT-ASSEMBLY.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-RESULT-ASSEMBLY",
+      "content_sha256": "4294496705edac5b8b5da504febcc65073464039af1e1040889b153261f1287b"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-WORKFLOW-COMPOSITION.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
+      "content_sha256": "406036ed8fb71b1476ba2a91985b38829e74062226f9a46933a2d89ef27e99d9"
+    },
+    {
+      "path": "levels/level-3/GVE-LEVEL-3.json",
+      "role": "root",
+      "id": "GVE-LEVEL-3",
+      "content_sha256": "0652ad4fc0d330a659cf5e54e61e507ce01a05eb0838270104eda9b83278680d"
+    },
+    {
+      "path": "levels/level-3/GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-3-EVIDENCE-RESULT-REALIZATION",
+      "content_sha256": "1bc7cb36798c2d36a948275d90b97146770d7f4d169b08aec5216fec892fbc86"
+    },
+    {
+      "path": "levels/level-3/GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-3-PLUGIN-ACTION-CONTRACTS",
+      "content_sha256": "38ceaab757cdfd2fda0571d08f3531da70170de96c87e2746870bb2d9f863416"
+    },
+    {
+      "path": "levels/level-3/GVE-LEVEL-3-RUNTIME-OWNERSHIP.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-3-RUNTIME-OWNERSHIP",
+      "content_sha256": "a531d7831f35fee9f97d1f5aa5c7066be8c915c7752eeaa74e9c843a7c7ef1b3"
+    },
+    {
+      "path": "levels/level-3/GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
+      "content_sha256": "0e0edc7e0c65f54cd7bdc3698ced2ed9334117ea605583a73a3a4726188a6c00"
+    }
+  ]
+}
