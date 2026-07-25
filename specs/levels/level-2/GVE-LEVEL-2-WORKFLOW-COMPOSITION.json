@@ -16,7 +16,7 @@
       "GVE-LEVEL-2-DOCUMENT-AUTHORITY"
     ]
   },
-  "summary": "GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, operation membership and acyclic partial-order constraints, selected-plugin binding, validated-operation-contract participation, composite workflow-governance authority binding, and complete workflow-plan acceptance before execution. It preserves the closed core specification revision and inherited Level 1 ownership of plugin-specific meaning while permitting the GVE core to consume only application-independent identity, completeness, freshness, and contract facts.",
+  "summary": "GVE Level 2 Workflow Composition defines deterministic workflow and operation composition, immutable pre-contract plan candidates, validated-operation-contract participation, non-circular accepted-plan identity, composite workflow-governance authority binding, and complete fail-closed plan acceptance before execution. It preserves the closed core specification revision and inherited Level 1 ownership of plugin-specific meaning while permitting the GVE core to consume only application-independent identity, completeness, freshness, and contract facts.",
   "definitions": [
     {
       "id": "L2-WC-WORKFLOW-IDENTITY",
@@ -31,7 +31,7 @@
     {
       "id": "L2-WC-COMPOSITION-MEMBERSHIP",
       "term": "Composition membership",
-      "text": "The explicit association of each governed operation with exactly one governed workflow. Membership is complete, unique, and fixed for one workflow-plan acceptance attempt."
+      "text": "The explicit association of each governed operation with exactly one governed workflow. Membership is complete, unique, and immutable within one plan candidate."
     },
     {
       "id": "L2-WC-ORDERING-CONSTRAINT",
@@ -41,17 +41,17 @@
     {
       "id": "L2-WC-PLUGIN-BINDING",
       "term": "Composition plugin binding",
-      "text": "The unique association of one operation identity with exactly one selected plugin identity for one workflow-plan acceptance attempt."
+      "text": "The unique immutable association of one operation identity with exactly one selected plugin identity within one plan candidate."
     },
     {
       "id": "L2-WC-CONTRACT-ATTRIBUTION",
       "term": "Validated-contract attribution",
-      "text": "The deterministic binding of exactly one validated operation contract to one operation identity, one selected plugin identity, one governing instruction set, and one workflow-plan acceptance attempt."
+      "text": "The deterministic binding of exactly one validated operation contract to one immutable plan-candidate identity, one operation identity, one selected plugin identity, one governing instruction set, and one distinct contract-production identity."
     },
     {
       "id": "L2-WC-CONTRACT-FRESHNESS",
       "term": "Contract freshness",
-      "text": "The property that a validated operation contract was produced for the current operation content, selected plugin, governing instruction set, authority context, and workflow-plan acceptance attempt and has not been superseded or invalidated by any relevant change."
+      "text": "The property that a validated operation contract was produced for the exact immutable plan candidate, operation content, selected plugin, governing instruction set, authority context, and contract-production identity to which it is bound and has not been superseded or invalidated by any relevant change."
     },
     {
       "id": "L2-WC-CORE-CONTRACT-FACTS",
@@ -60,13 +60,13 @@
     },
     {
       "id": "L2-WC-COMPLETE-PLAN",
-      "term": "Complete workflow plan",
-      "text": "The pre-execution composition containing the single workflow identity, the full operation membership, unique operation identities, selected-plugin bindings, exactly one attributable fresh validated contract for every operation, and the complete deterministic acyclic partial-order relation required by all composition ordering constraints."
+      "term": "Complete accepted workflow plan",
+      "text": "The immutable accepted pre-execution composition identified from one unchanged plan candidate plus exactly one attributable fresh validated contract for every candidate operation. It retains the candidate identity, complete candidate facts, complete contract set, and deterministic acceptance result without redefining or mutating the candidate."
     },
     {
       "id": "L2-WC-PLAN-ACCEPTANCE",
       "term": "Workflow-plan acceptance",
-      "text": "The fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, and ready for later lifecycle processing. Determinism concerns accepted membership, identities, constraints, and predecessor/successor meaning, not a unique topological serialization. Acceptance establishes no attempted or completed effect."
+      "text": "The fail-closed pre-execution determination over one immutable plan candidate and its complete validated-contract set. Acceptance identifies one immutable accepted workflow plan without mutating candidate facts or requiring a contract to bind to the future success of acceptance. Acceptance establishes no attempted or completed effect."
     },
     {
       "id": "L2-WC-PLUGIN-MEANING-BOUNDARY",
@@ -102,6 +102,21 @@
       "id": "L2-WC-HISTORICAL-GOVERNANCE-ATTRIBUTION",
       "term": "Historical composite governance attribution",
       "text": "The immutable retention by a contract, accepted workflow plan, evidence disposition, execution record, or result realization of the exact composite workflow-governance binding under which it was produced, even after any authority component has a successor."
+    },
+    {
+      "id": "L2-WC-PLAN-CANDIDATE",
+      "term": "Immutable plan candidate",
+      "text": "The stable application-independent pre-contract snapshot containing every workflow, operation, content, selected-plugin, selected-action, governance-authority, registry, ordering, dependency, handoff, and other composition fact required to produce and evaluate operation contracts. Its identity exists before contract production and excludes validated-operation-contract identities and acceptance outcome."
+    },
+    {
+      "id": "L2-WC-ACCEPTED-PLAN-IDENTITY",
+      "term": "Accepted workflow-plan identity",
+      "text": "The deterministic identity of one successful acceptance result derived from exactly one unchanged plan-candidate identity and the canonically ordered complete set of fresh validated-operation-contract identities and contract-production identities. It is distinct from the candidate identity and remains immutable."
+    },
+    {
+      "id": "L2-WC-RELEVANT-CANDIDATE-CHANGE",
+      "term": "Relevant plan-candidate change",
+      "text": "Any change to a fact included in plan-candidate identity, including operation content, membership, plugin or action selection, governance binding, registry snapshot, ordering, dependency, or handoff facts. Such change invalidates reuse of the prior candidate for current contract freshness and requires a new candidate identity."
     }
   ],
   "requirements": [
@@ -139,18 +154,20 @@
     },
     {
       "id": "L2-WC-REQ-005",
-      "text": "Every operation in an accepted workflow plan must have exactly one validated operation contract attributable to that operation, its selected plugin, its governing instruction set, and the current workflow-plan acceptance attempt.",
+      "text": "Every operation in an accepted workflow plan must have exactly one validated operation contract attributable to that operation, its selected plugin, its governing instruction set, the immutable plan candidate, and one distinct contract-production identity.",
       "references": [
         "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-PLAN-CANDIDATE",
         "L2-WC-COMPLETE-PLAN"
       ]
     },
     {
       "id": "L2-WC-REQ-006",
-      "text": "Every validated operation contract used for plan acceptance must be fresh for the current operation content, selected plugin, governing instruction set, authority context, and acceptance attempt.",
+      "text": "Every validated operation contract used for plan acceptance must be fresh for the exact immutable plan candidate and all operation, plugin, authority, registry, and production facts to which it is bound.",
       "references": [
         "L2-WC-CONTRACT-FRESHNESS",
-        "L2-WC-CONTRACT-ATTRIBUTION"
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-PLAN-CANDIDATE"
       ]
     },
     {
@@ -179,8 +196,9 @@
     },
     {
       "id": "L2-WC-REQ-010",
-      "text": "Workflow-plan acceptance must evaluate the complete operation membership, all operation identities, every selected-plugin binding, every validated operation contract, contract freshness and attribution, and the complete partial-order constraints as one complete pre-execution decision.",
+      "text": "Workflow-plan acceptance must evaluate exactly one unchanged immutable plan candidate and exactly one fresh uniquely attributable validated contract for every candidate operation as one complete pre-execution decision.",
       "references": [
+        "L2-WC-PLAN-CANDIDATE",
         "L2-WC-COMPLETE-PLAN",
         "L2-WC-PLAN-ACCEPTANCE"
       ]
@@ -205,8 +223,10 @@
     },
     {
       "id": "L2-WC-REQ-013",
-      "text": "Workflow-plan acceptance and accepted partial-order identity must be deterministic and independent of declaration order, filesystem order, plugin discovery order, validator iteration order, any chosen topological serialization, or any implicit precedence.",
+      "text": "Plan-candidate identity, workflow-plan acceptance, accepted-plan identity, and accepted partial-order identity must be deterministic and independent of declaration order, filesystem order, plugin discovery order, contract enumeration order, validator iteration order, any chosen topological serialization, or any implicit precedence.",
       "references": [
+        "L2-WC-PLAN-CANDIDATE",
+        "L2-WC-ACCEPTED-PLAN-IDENTITY",
         "L2-WC-PLAN-ACCEPTANCE",
         "L2-DA-DETERMINISTIC-RESOLUTION"
       ]
@@ -302,6 +322,51 @@
         "L2-WC-PLUGIN-INSTRUCTION-SET-AUTHORITY",
         "L2-WC-COMPOSITE-GOVERNANCE-BINDING"
       ]
+    },
+    {
+      "id": "L2-WC-REQ-024",
+      "text": "A plan candidate must have one stable immutable identity before any validated operation contract is produced. That identity must be determined only by complete application-independent pre-contract composition facts and must not depend on validated-contract identities, contract-production outcomes, acceptance success, lifecycle status, or execution attempts.",
+      "references": [
+        "L2-WC-PLAN-CANDIDATE",
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-025",
+      "text": "Every validated operation contract must bind the exact existing plan-candidate identity for which it was produced. A contract that binds only a future accepted-plan identity, successful acceptance outcome, mutable planning session, unresolved candidate, or circular identity dependency must fail closed.",
+      "references": [
+        "L2-WC-PLAN-CANDIDATE",
+        "L2-WC-CONTRACT-ATTRIBUTION",
+        "L2-WC-CONTRACT-FRESHNESS"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-026",
+      "text": "Successful acceptance must identify exactly one immutable accepted workflow plan from the unchanged candidate identity and the canonically ordered complete contract set. Acceptance must not mutate, repair, complete, or reinterpret candidate facts, and failure or retry of acceptance must not alter candidate identity.",
+      "references": [
+        "L2-WC-ACCEPTED-PLAN-IDENTITY",
+        "L2-WC-PLAN-ACCEPTANCE",
+        "L2-WC-COMPLETE-PLAN"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-027",
+      "text": "Any relevant plan-candidate change must require a new candidate identity and fresh contract production for every affected operation. Reuse of a prior candidate or contract after changed operation content, membership, plugin or action selection, governance authority, registry snapshot, ordering, dependency, or handoff facts must fail closed.",
+      "references": [
+        "L2-WC-RELEVANT-CANDIDATE-CHANGE",
+        "L2-WC-PLAN-CANDIDATE",
+        "L2-WC-CONTRACT-FRESHNESS"
+      ]
+    },
+    {
+      "id": "L2-WC-REQ-028",
+      "text": "A missing, duplicate, ambiguous, conflicting, partial, stale, mutable, reused, noncanonical, unresolved, or circular candidate, contract-production, or accepted-plan identity fact must fail plan acceptance before any operation attempt.",
+      "references": [
+        "L2-WC-PLAN-CANDIDATE",
+        "L2-WC-ACCEPTED-PLAN-IDENTITY",
+        "L2-WC-PLAN-ACCEPTANCE"
+      ]
     }
   ],
   "relationships": [
@@ -388,6 +453,30 @@
       "source": "L2-WC-HISTORICAL-GOVERNANCE-ATTRIBUTION",
       "relation": "retains",
       "target": "L2-WC-COMPOSITE-GOVERNANCE-BINDING"
+    },
+    {
+      "id": "L2-WC-REL-015",
+      "source": "L2-WC-PLAN-CANDIDATE",
+      "relation": "precedes",
+      "target": "L2-WC-CONTRACT-ATTRIBUTION"
+    },
+    {
+      "id": "L2-WC-REL-016",
+      "source": "L2-WC-PLAN-CANDIDATE",
+      "relation": "participates-in",
+      "target": "L2-WC-PLAN-ACCEPTANCE"
+    },
+    {
+      "id": "L2-WC-REL-017",
+      "source": "L2-WC-PLAN-ACCEPTANCE",
+      "relation": "produces",
+      "target": "L2-WC-ACCEPTED-PLAN-IDENTITY"
+    },
+    {
+      "id": "L2-WC-REL-018",
+      "source": "L2-WC-RELEVANT-CANDIDATE-CHANGE",
+      "relation": "invalidates",
+      "target": "L2-WC-PLAN-CANDIDATE"
     }
   ],
   "scope": {
@@ -406,7 +495,11 @@
       "Stable content-sensitive selected-plugin instruction-set authority identities",
       "Deterministic complete composite workflow-governance bindings",
       "Component-wise current authority freshness",
-      "Immutable historical composite governance attribution"
+      "Immutable historical composite governance attribution",
+      "Immutable pre-contract plan-candidate identity",
+      "Non-circular contract-to-candidate attribution",
+      "Deterministic accepted-plan identity from unchanged candidate and complete contracts",
+      "Relevant-change invalidation of candidate and contract reuse"
     ],
     "excludes": [
       "Concrete plugin-owned operation payload schemas",

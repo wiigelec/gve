@@ -16,7 +16,7 @@
       "GVE-LEVEL-3-RUNTIME-OWNERSHIP"
     ]
   },
-  "summary": "GVE Level 3 Plugin and Action Contracts defines the application-independent contracts and registry rules through which the core resolves plugins, selected plugins resolve their own actions, actions declare and interpret their inputs, and exactly one fresh uniquely attributable validated operation contract is produced for each accepted operation. It assigns plugin registration to the core-owned plugin registry, action registration to plugin-owned action registries, requires deterministic validated and sealed registry snapshots, and preserves plugin and action ownership of application-specific meaning.",
+  "summary": "GVE Level 3 Plugin and Action Contracts defines application-independent plugin and action contracts, deterministic sealed registry snapshots, operation interpretation, immutable plan-candidate binding, and exactly one fresh uniquely attributable contract production for each governed operation. It distinguishes replay from regeneration and preserves plugin and action ownership of application-specific meaning.",
   "definitions": [
     {
       "id": "L3-PAC-COMMON-PLUGIN-CONTRACT",
@@ -66,12 +66,12 @@
     {
       "id": "L3-PAC-VALIDATED-OPERATION-CONTRACT",
       "term": "Validated operation contract",
-      "text": "The single fresh immutable contract produced for one successfully interpreted operation and uniquely attributable to the workflow, operation, selected plugin, selected action, interface versions, registry snapshots, governing authority, and complete interpreted inputs that produced it."
+      "text": "The single fresh immutable contract output produced for one successfully interpreted operation and uniquely attributable to the immutable plan candidate, workflow, operation, selected plugin and action, interface versions, registry snapshots, governing authority, complete interpreted inputs, and contract-production identity that produced it."
     },
     {
       "id": "L3-PAC-CONTRACT-FRESHNESS",
       "term": "Validated-contract freshness",
-      "text": "The property that a validated operation contract was produced from the current operation content, complete interpreted inputs, selected plugin and action, compatible interface versions, sealed registry snapshots, and governing authority and has not been invalidated or superseded."
+      "text": "The property that a validated operation contract is bound to the exact current immutable plan candidate and every operation, interpreted-input, plugin, action, interface, registry, authority, and production fact from which it was produced and has not been invalidated or superseded."
     },
     {
       "id": "L3-PAC-REGISTRY-VALIDATION",
@@ -86,7 +86,27 @@
     {
       "id": "L3-PAC-CONTRACT-ATTRIBUTION",
       "term": "Validated-contract attribution",
-      "text": "The deterministic binding of exactly one validated operation contract to all identities, versions, snapshots, authority, and interpreted inputs that govern one operation."
+      "text": "The deterministic binding of exactly one validated operation contract to one immutable plan candidate and all identities, versions, snapshots, authority, interpreted inputs, and contract-production facts governing one operation."
+    },
+    {
+      "id": "L3-PAC-PLAN-CANDIDATE-BINDING",
+      "term": "Plan-candidate contract binding",
+      "text": "The required binding of contract interpretation and production to one already existing immutable plan-candidate identity whose pre-contract facts include the operation, selected plugin and action, governing authority, and sealed registry snapshots."
+    },
+    {
+      "id": "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
+      "term": "Contract-production identity",
+      "text": "A stable identity for one distinct production of a validated operation contract, bound to one plan candidate, operation, interpreted-input identity, and deterministic production ordinal or equivalent application-independent discriminator."
+    },
+    {
+      "id": "L3-PAC-CONTRACT-REPLAY",
+      "term": "Contract replay",
+      "text": "Reuse of the exact same previously produced immutable validated contract and contract-production identity for the same unchanged plan candidate, without claiming a new production."
+    },
+    {
+      "id": "L3-PAC-CONTRACT-REGENERATION",
+      "term": "Contract regeneration",
+      "text": "A new contract-production event for the same or successor plan candidate. Regeneration has a fresh contract-production identity and must not be represented as replay of a prior production."
     }
   ],
   "requirements": [
@@ -157,28 +177,30 @@
     },
     {
       "id": "L3-PAC-REQ-008",
-      "text": "One successfully resolved and interpreted operation must produce exactly one fresh, valid, immutable, and uniquely attributable validated operation contract; zero contracts, multiple contracts, reused contracts, or non-unique attribution must fail closed.",
+      "text": "One successfully resolved and interpreted operation must produce exactly one fresh, valid, immutable, and uniquely attributable validated operation contract with one distinct contract-production identity; zero contracts, multiple contracts, reused contracts without explicit replay attribution, ambiguous productions, or non-unique attribution must fail closed.",
       "references": [
         "L3-PAC-VALIDATED-OPERATION-CONTRACT",
+        "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
         "L3-PAC-CONTRACT-FRESHNESS",
         "L3-PAC-CONTRACT-ATTRIBUTION"
       ]
     },
     {
       "id": "L3-PAC-REQ-009",
-      "text": "Every validated operation contract must bind the current workflow identity, operation identity, plugin identity, action identity, plugin-interface version, action-interface version, plugin-registry snapshot identity, action-registry snapshot identity, governing authority, and complete interpreted inputs.",
+      "text": "Every validated operation contract must bind the current immutable plan-candidate identity, workflow identity, operation identity, plugin identity, action identity, plugin-interface version, action-interface version, plugin-registry snapshot identity, action-registry snapshot identity, governing authority, complete interpreted inputs, and contract-production identity.",
       "references": [
+        "L3-PAC-PLAN-CANDIDATE-BINDING",
+        "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
         "L3-PAC-VALIDATED-OPERATION-CONTRACT",
         "L3-PAC-CONTRACT-ATTRIBUTION",
-        "L3-PAC-SEALED-REGISTRY-SNAPSHOT",
-        "L3-RO-WORKFLOW-REPRESENTATION",
-        "L3-RO-OPERATION-REPRESENTATION"
+        "L3-PAC-SEALED-REGISTRY-SNAPSHOT"
       ]
     },
     {
       "id": "L3-PAC-REQ-010",
-      "text": "A validated operation contract must be fresh for every fact to which it is bound; any change to operation content, interpreted inputs, selected plugin or action, interface version, registry snapshot, or governing authority must invalidate the prior contract and require fresh production.",
+      "text": "A validated operation contract must be fresh for every fact to which it is bound; any change to the plan-candidate identity, operation content, interpreted inputs, selected plugin or action, interface version, registry snapshot, or governing authority must invalidate the prior contract for current acceptance and require fresh production.",
       "references": [
+        "L3-PAC-PLAN-CANDIDATE-BINDING",
         "L3-PAC-CONTRACT-FRESHNESS",
         "L3-PAC-CONTRACT-ATTRIBUTION"
       ]
@@ -249,8 +271,38 @@
     },
     {
       "id": "L3-PAC-REQ-FRESHNESS-BINDING-IDENTITIES",
-      "text": "Contract and evidence freshness must bind to stable governed identities sufficient to detect relevant change, including operation content, selected plugin identity, governed instruction set revision, governing authority context, workflow-plan attempt, result-realization attempt, observation context, and freshness boundary. Freshness must not be established by an unbound Boolean assertion, and this requirement does not prescribe a specific digest, cryptographic algorithm, storage mechanism, or transport.",
-      "references": []
+      "text": "Contract freshness must bind to stable governed identities sufficient to detect relevant change, including immutable plan-candidate identity, operation content, selected plugin identity, selected action identity, governed instruction set revision, governing authority context, workflow-plan attempt, result-realization attempt, observation context, freshness boundary, sealed registry snapshots, interpreted inputs, and contract-production identity. Freshness must not depend on future acceptance success. Freshness must not be established by an unbound Boolean assertion.",
+      "references": [
+        "L3-PAC-PLAN-CANDIDATE-BINDING",
+        "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
+        "L3-PAC-CONTRACT-FRESHNESS"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-018",
+      "text": "Contract interpretation and production must begin only after one complete immutable plan-candidate identity exists. A contract must not bind to a future successful acceptance outcome, an accepted-plan identity not yet established, a mutable planning session, or an identity whose value depends on that contract.",
+      "references": [
+        "L3-PAC-PLAN-CANDIDATE-BINDING",
+        "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-019",
+      "text": "Replay must retain the exact prior contract identity and contract-production identity and is valid only for the exact unchanged plan candidate and all bound freshness facts. Regeneration must create a fresh contract-production identity even when interpreted meaning is unchanged.",
+      "references": [
+        "L3-PAC-CONTRACT-REPLAY",
+        "L3-PAC-CONTRACT-REGENERATION",
+        "L3-PAC-CONTRACT-PRODUCTION-IDENTITY"
+      ]
+    },
+    {
+      "id": "L3-PAC-REQ-020",
+      "text": "A missing, duplicate, conflicting, reused-as-new, ambiguous, stale, partial, unresolved, or circular plan-candidate or contract-production binding must fail closed and must not be repaired by inference, fallback, lifecycle state, or acceptance outcome.",
+      "references": [
+        "L3-PAC-PLAN-CANDIDATE-BINDING",
+        "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
+        "L3-PAC-CONTRACT-ATTRIBUTION"
+      ]
     }
   ],
   "relationships": [
@@ -307,6 +359,36 @@
       "source": "L3-PAC-CONTRACT-ATTRIBUTION",
       "relation": "binds",
       "target": "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+    },
+    {
+      "id": "L3-PAC-REL-010",
+      "source": "L3-PAC-PLAN-CANDIDATE-BINDING",
+      "relation": "constrains",
+      "target": "L3-PAC-ACTION-INTERPRETATION"
+    },
+    {
+      "id": "L3-PAC-REL-011",
+      "source": "L3-PAC-ACTION-INTERPRETATION",
+      "relation": "participates-in",
+      "target": "L3-PAC-CONTRACT-PRODUCTION-IDENTITY"
+    },
+    {
+      "id": "L3-PAC-REL-012",
+      "source": "L3-PAC-CONTRACT-PRODUCTION-IDENTITY",
+      "relation": "identifies",
+      "target": "L3-PAC-VALIDATED-OPERATION-CONTRACT"
+    },
+    {
+      "id": "L3-PAC-REL-013",
+      "source": "L3-PAC-CONTRACT-REPLAY",
+      "relation": "retains",
+      "target": "L3-PAC-CONTRACT-PRODUCTION-IDENTITY"
+    },
+    {
+      "id": "L3-PAC-REL-014",
+      "source": "L3-PAC-CONTRACT-REGENERATION",
+      "relation": "produces",
+      "target": "L3-PAC-CONTRACT-PRODUCTION-IDENTITY"
     }
   ],
   "scope": {
@@ -322,7 +404,10 @@
       "Registry completeness, validation, deterministic sealing, snapshot identity, and immutability",
       "Fail-closed duplicate, late, missing, ambiguous, unauthorized, stale, incompatible, conflicting, and non-unique facts",
       "Action-local source modules and explicit registration entries",
-      "stable governed identity bindings for contract and evidence freshness"
+      "stable governed identity bindings for contract and evidence freshness",
+      "Immutable plan-candidate binding before contract production",
+      "Distinct contract-production identity",
+      "Replay and regeneration identity boundaries"
     ],
     "excludes": [
       "Maintained runtime, plugin, action, registry, or executor implementation",
