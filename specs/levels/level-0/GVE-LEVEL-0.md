@@ -48,27 +48,59 @@ An effect requested by the instruction payload.
 
 ### Authorized effect (`AUTHORIZED-EFFECT`)
 
-A requested effect that the governed instruction set permits GVE to attempt.
+An effect for which the authorization dimension records authorized under one identified governing authority; authorization does not imply that execution was attempted or completed.
 
 ### Attempted effect (`ATTEMPTED-EFFECT`)
 
-An authorized effect for which GVE began execution.
+An effect for which the execution dimension records that execution began; attempted does not imply authorized, completed, observed, or verified.
 
 ### Completed effect (`COMPLETED-EFFECT`)
 
-An attempted effect for which GVE has sufficient execution evidence to claim completion.
+An effect for which the execution dimension records completed under the execution authority and admitted execution evidence; completed does not imply authorized, observed, or verified.
 
 ### Observed effect (`OBSERVED-EFFECT`)
 
-An effect directly observed through execution evidence available to GVE.
+An effect for which the observation dimension records an attributable observation supported by admitted observation evidence; observed does not imply requested, authorized, attempted, or completed.
 
 ### Verified effect (`VERIFIED-EFFECT`)
 
-An observed effect that satisfies the governed instruction set's verification requirements.
+An effect for which the verification dimension records a verification of one identified claim against one identified admitted evidence set; verified implies observed but does not otherwise collapse independent dimensions.
 
 ### Fail closed (`FAIL-CLOSED`)
 
 Refuse execution or refuse a stronger claim whenever support, validity, meaning, completeness, consistency, authorization, or unique interpretation is not established.
+
+### Governed effect-state model (`EFFECT-STATE-MODEL`)
+
+The normative machine-readable representation of one exact effect across independent request, authorization, execution, observation, and verification dimensions, together with assertion authority, admitted evidence, uncertainty, correction, and supersession facts.
+
+### Request state (`REQUEST-STATE`)
+
+The independent dimension recording whether an exact effect was requested or not-requested by the instruction payload.
+
+### Authorization state (`AUTHORIZATION-STATE`)
+
+The independent dimension recording authorized, refused, or indeterminate under one identified governing authority.
+
+### Execution state (`EXECUTION-STATE`)
+
+The independent dimension recording unattempted, attempted, partial, completed, failed, cancelled, timed-out, or indeterminate under the execution authority.
+
+### Observation state (`OBSERVATION-STATE`)
+
+The independent dimension recording unobserved, observed, contradicted, or indeterminate from attributable admitted observation evidence.
+
+### Verification state (`VERIFICATION-STATE`)
+
+The independent dimension recording unverified, verified, failed, contradicted, or indeterminate for one identified claim evaluated against one identified admitted evidence set.
+
+### Effect-state assertion (`EFFECT-STATE-ASSERTION`)
+
+One attributable assertion in exactly one effect-state dimension, identifying the exact effect, asserted value, governing actor, governing authority, admitted evidence, assertion time, and uncertainty when the strongest supportable value is indeterminate.
+
+### Effect-state correction (`EFFECT-STATE-CORRECTION`)
+
+A new attributable assertion that explicitly corrects and supersedes one prior assertion with a non-empty reason and new evidence basis while preserving the prior assertion unchanged.
 
 ## Normative requirements
 
@@ -150,6 +182,78 @@ Level 0 must remain independent of later-level architecture, concrete operation 
 
 References: `GVE`
 
+### L0-REQ-014
+
+Every authoritative execution record and authoritative result that represents an effect must use one explicit effect-state model with independent request, authorization, execution, observation, and verification dimensions.
+
+References: `EFFECT-STATE-MODEL`, `REQUEST-STATE`, `AUTHORIZATION-STATE`, `EXECUTION-STATE`, `OBSERVATION-STATE`, `VERIFICATION-STATE`
+
+### L0-REQ-015
+
+The request dimension must permit requested and not-requested; the authorization dimension must permit authorized, refused, and indeterminate; the execution dimension must permit unattempted, attempted, partial, completed, failed, cancelled, timed-out, and indeterminate; the observation dimension must permit unobserved, observed, contradicted, and indeterminate; and the verification dimension must permit unverified, verified, failed, contradicted, and indeterminate.
+
+References: `REQUEST-STATE`, `AUTHORIZATION-STATE`, `EXECUTION-STATE`, `OBSERVATION-STATE`, `VERIFICATION-STATE`
+
+### L0-REQ-016
+
+Each effect-state assertion must belong to exactly one dimension and must identify exactly one governing actor and authority permitted to assert that dimension, the exact effect and value asserted, the admitted evidence basis, assertion time, and explicit uncertainty when the evidence does not support a determinate value.
+
+References: `EFFECT-STATE-ASSERTION`, `EXECUTION-EVIDENCE`
+
+### L0-REQ-017
+
+Verification state verified must imply observation state observed for the same exact effect and admitted evidence context; no other cross-dimension implication exists unless a normative requirement states it explicitly.
+
+References: `VERIFICATION-STATE`, `OBSERVATION-STATE`, `VERIFIED-EFFECT`, `OBSERVED-EFFECT`
+
+### L0-REQ-018
+
+Observation state observed must not imply execution state completed; execution state completed must not imply authorization state authorized; authorization state authorized must not imply execution state attempted; and execution state attempted must not imply execution state completed.
+
+References: `AUTHORIZATION-STATE`, `EXECUTION-STATE`, `OBSERVATION-STATE`
+
+### L0-REQ-019
+
+Refused authorization, failed execution, cancelled execution, timed-out execution, partial execution, superseded assertion, corrected assertion, and indeterminate outcome must remain distinguishable and must not be normalized into one generic unsuccessful state.
+
+References: `AUTHORIZATION-STATE`, `EXECUTION-STATE`, `EFFECT-STATE-CORRECTION`
+
+### L0-REQ-020
+
+An assertion of verified must identify both the exact claim being verified and the exact admitted evidence set against which verification occurred; verification without either identity must fail closed.
+
+References: `VERIFICATION-STATE`, `EFFECT-STATE-ASSERTION`, `EXECUTION-EVIDENCE`, `FAIL-CLOSED`
+
+### L0-REQ-021
+
+Contradictory values asserted as current within one effect-state dimension, unresolved conflicts between admitted evidence and an asserted value, or omission of required indeterminate uncertainty must fail closed and prohibit a stronger authoritative claim.
+
+References: `EFFECT-STATE-MODEL`, `EFFECT-STATE-ASSERTION`, `FAIL-CLOSED`
+
+### L0-REQ-022
+
+Effect-state assertions are monotonic as historical facts: a later correction must create a new attributable assertion that explicitly supersedes the prior assertion, states a correction reason, and identifies its new evidence basis; it must not mutate or erase prior history.
+
+References: `EFFECT-STATE-ASSERTION`, `EFFECT-STATE-CORRECTION`, `EXECUTION-EVIDENCE`
+
+### L0-REQ-023
+
+An authoritative result must not claim any effect-state value stronger than the complete admitted evidence supports and must preserve partial, refused, failed, cancelled, timed-out, contradicted, superseded, corrected, and indeterminate facts relevant to that effect.
+
+References: `AUTHORITATIVE-RESULT`, `EFFECT-STATE-MODEL`, `EXECUTION-EVIDENCE`
+
+### L0-REQ-024
+
+Request-state authority belongs to the accepted instruction payload record; authorization-state authority belongs to the governed authority evaluator; execution-state authority belongs to the governed executor record; observation-state authority belongs to the attributable evidence producer and admission decision; and verification-state authority belongs to the governed verifier identified by the governed instruction set.
+
+References: `INSTRUCTION-PAYLOAD`, `GOVERNED-INSTRUCTION-SET`, `GOVERNED-EXECUTION`, `EXECUTION-EVIDENCE`, `EFFECT-STATE-ASSERTION`
+
+### L0-REQ-025
+
+A state transition may be asserted only when the governing actor admits the evidence required by the governed instruction set for the destination value; absence, ambiguity, contradiction, staleness, or insufficiency of required evidence must produce indeterminate or fail-closed disposition rather than an unsupported transition.
+
+References: `GOVERNED-INSTRUCTION-SET`, `EFFECT-STATE-ASSERTION`, `EXECUTION-EVIDENCE`, `FAIL-CLOSED`
+
 ## Relationships
 
 - `L0-REL-001`: `INSTRUCTION-PAYLOAD` **requests** `REQUESTED-EFFECT`
@@ -159,6 +263,12 @@ References: `GVE`
 - `L0-REL-005`: `OBSERVED-EFFECT` **is-distinct-from** `COMPLETED-EFFECT`
 - `L0-REL-006`: `GOVERNED-INSTRUCTION-SET` **interprets** `EXECUTION-EVIDENCE`
 - `L0-REL-007`: `FINALIZED-RESULT` **specializes** `AUTHORITATIVE-RESULT`
+- `L0-REL-008`: `EFFECT-STATE-MODEL` **contains-independent-dimension** `REQUEST-STATE`
+- `L0-REL-009`: `EFFECT-STATE-MODEL` **contains-independent-dimension** `AUTHORIZATION-STATE`
+- `L0-REL-010`: `EFFECT-STATE-MODEL` **contains-independent-dimension** `EXECUTION-STATE`
+- `L0-REL-011`: `EFFECT-STATE-MODEL` **contains-independent-dimension** `OBSERVATION-STATE`
+- `L0-REL-012`: `EFFECT-STATE-MODEL` **contains-independent-dimension** `VERIFICATION-STATE`
+- `L0-REL-013`: `EFFECT-STATE-CORRECTION` **supersedes** `EFFECT-STATE-ASSERTION`
 
 ## Scope
 
@@ -171,6 +281,9 @@ References: `GVE`
 - Truthful authoritative reporting when stronger result finalization is unavailable
 - Execution evidence and its governed interpretation
 - Distinct execution-effect states
+- Independent request, authorization, execution, observation, and verification dimensions
+- Explicit assertion authority and transition evidence
+- Correction, supersession, uncertainty, and prohibited combinations
 
 ### Excludes
 

@@ -31,7 +31,7 @@ The explicit temporal or version boundary within which one evidence record is va
 
 ### Effect-claim state (`L3-ERR-EFFECT-CLAIM-STATE`)
 
-The application-independent state of one exact effect claim, preserving distinct requested, authorized, attempted, completed, observed, and verified facts.
+The application-independent realization of one exact effect through separate request, authorization, execution, observation, and verification assertions, each with its own value, authority, evidence, uncertainty, and lineage facts.
 
 ### Uncertainty state (`L3-ERR-UNCERTAINTY-STATE`)
 
@@ -88,6 +88,14 @@ The application-independent lifecycle by which evidence is produced or received,
 ### Evidence disposition (`L3-ERR-EVIDENCE-DISPOSITION`)
 
 The attributable determination by which a recorded evidence item is admitted or rejected with reason and then considered in result realization without erasing adverse, malformed, stale, unauthorized, contradictory, or inapplicable evidence.
+
+### Realized effect-state assertion (`L3-ERR-EFFECT-STATE-ASSERTION`)
+
+The immutable result-visible realization of one assertion in exactly one effect-state dimension, binding the exact effect, value, governing actor and authority, admitted evidence identities, assertion time, uncertainty, and correction lineage.
+
+### Current effect-state assertion head (`L3-ERR-EFFECT-STATE-CURRENT-HEAD`)
+
+The unique unsuperseded assertion for one exact effect and one dimension in one realization context; all superseded assertions remain preserved as immutable history.
 
 ## Normative requirements
 
@@ -259,6 +267,30 @@ Every claim-relevant received evidence item must retain an attributable disposit
 
 References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 
+### L3-ERR-REQ-027
+
+Every realized effect claim must contain separate request, authorization, execution, observation, and verification assertions and must preserve the exact permitted value, governing actor, governing authority, admitted evidence identities, assertion time, uncertainty, and correction lineage for each dimension.
+
+References: `L3-ERR-EFFECT-CLAIM-STATE`, `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-RECORD`
+
+### L3-ERR-REQ-028
+
+A verified assertion must identify the exact verified claim and admitted evidence set and must resolve to an observed assertion for the same exact effect and evidence context; observed must not imply completed, completed must not imply authorized, authorized must not imply attempted, and attempted must not imply completed.
+
+References: `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
+### L3-ERR-REQ-029
+
+One realization context must have at most one current unsuperseded assertion per exact effect and dimension; contradictory current values, missing correction lineage, verification without evidence, or a result claim stronger than admitted evidence supports must fail closed.
+
+References: `L3-ERR-EFFECT-STATE-CURRENT-HEAD`, `L3-ERR-EFFECT-STATE-ASSERTION`, `L3-ERR-CONTRADICTION`, `L3-ERR-EVIDENCE-SUFFICIENCY`
+
+### L3-ERR-REQ-030
+
+Partial, refused, failed, cancelled, timed-out, contradicted, superseded, corrected, and indeterminate facts must remain explicitly distinguishable in execution records, operation results, and workflow results and must not be collapsed into generic success or failure dispositions.
+
+References: `L3-ERR-EXECUTION-RECORD`, `L3-ERR-OPERATION-RESULT`, `L3-ERR-WORKFLOW-RESULT`, `L3-ERR-UNCERTAINTY-STATE`
+
 ## Relationships
 
 - `L3-ERR-REL-001`: `L3-ERR-EVIDENCE-PROVENANCE` **attributes** `L3-ERR-EVIDENCE-RECORD`
@@ -274,6 +306,8 @@ References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 - `L3-ERR-REL-011`: `L3-ERR-FINALIZATION-FAILURE` **is-recorded-by** `L3-ERR-EXECUTION-RECORD`
 - `L3-ERR-REL-012`: `L3-ERR-SUPERSESSION` **links** `L3-ERR-RESULT-VERSION`
 - `L3-ERR-REL-013`: `L3-ERR-CURRENT-LINEAGE-HEAD` **designates** `L3-ERR-RESULT-VERSION`
+- `L3-ERR-REL-014`: `L3-ERR-EFFECT-STATE-ASSERTION` **realizes** `L3-ERR-EFFECT-CLAIM-STATE`
+- `L3-ERR-REL-015`: `L3-ERR-EFFECT-STATE-CURRENT-HEAD` **designates** `L3-ERR-EFFECT-STATE-ASSERTION`
 
 ## Scope
 
@@ -294,6 +328,8 @@ References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 - Immutable result versions, explicit acyclic supersession, preserved history, and one current lineage head
 - Unsupported success, completion, observation, verification, publication, and durable-state claim prohibition
 - evidence ingress, attributable disposition, admission boundaries, and preservation of adverse or rejected evidence
+- Independent effect-state assertion realization
+- Effect-state assertion authority, evidence, uncertainty, correction lineage, and current-head uniqueness
 
 ### Excludes
 
@@ -304,4 +340,3 @@ References: `L3-ERR-EVIDENCE-INGRESS`, `L3-ERR-EVIDENCE-DISPOSITION`
 - Exhaustive plugin-specific filesystem, command-execution, local-Git, GitHub, remote-service, credential, and publication evidence schemas
 - Deployment, persistence, retention, archival, replication, caching, performance, and distributed-consensus choices
 - Bootstrap executor operation and result formats
-- Modification of accepted Levels 0 through 2
