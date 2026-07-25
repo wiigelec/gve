@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import subprocess
 import sys
@@ -17,6 +18,7 @@ SPECS = ROOT / "specs"
 LEVEL_0 = SPECS / "levels" / "level-0" / "GVE-LEVEL-0.json"
 LEVEL_1 = SPECS / "levels" / "level-1" / "GVE-LEVEL-1.json"
 SCHEMA = SPECS / "schemas" / "GVE-LEVEL.schema.json"
+MANIFEST_SCHEMA = SPECS / "schemas" / "GVE-SPECIFICATION-SET.schema.json"
 
 
 class LevelTwoSpecificationSetTests(unittest.TestCase):
@@ -25,6 +27,9 @@ class LevelTwoSpecificationSetTests(unittest.TestCase):
         self.specs_root = Path(self.temporary.name) / "specs"
         (self.specs_root / "schemas").mkdir(parents=True)
         (self.specs_root / "schemas" / SCHEMA.name).write_bytes(SCHEMA.read_bytes())
+        (self.specs_root / "schemas" / MANIFEST_SCHEMA.name).write_bytes(
+            MANIFEST_SCHEMA.read_bytes()
+        )
         self.documents = {
             "GVE-LEVEL-0": load_strict(LEVEL_0),
             "GVE-LEVEL-1": load_strict(LEVEL_1),
@@ -160,6 +165,31 @@ class LevelTwoSpecificationSetTests(unittest.TestCase):
                 render_markdown(document),
                 encoding="utf-8",
             )
+
+        members = []
+        for path in sorted(levels.glob("level-*/GVE-LEVEL-*.json")):
+            document = load_strict(path)
+            members.append(
+                {
+                    "path": path.relative_to(self.specs_root).as_posix(),
+                    "role": document.get("document", {}).get("role", "root"),
+                    "id": document["specification"]["id"],
+                    "content_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                }
+            )
+        members.sort(key=lambda member: member["id"])
+        manifest = {
+            "$schema": "schemas/GVE-SPECIFICATION-SET.schema.json",
+            "schema_version": 1,
+            "canonicalization": "gve-canonical-json-v1",
+            "digest_algorithm": "sha256",
+            "identity_format": "gve-canonical-json-v1+sha256:lowercase-hex",
+            "members": members,
+        }
+        (self.specs_root / "GVE-SPECIFICATION-SET.json").write_text(
+            json.dumps(manifest, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
     def run_validation(self) -> subprocess.CompletedProcess[str]:
         self.write_all()

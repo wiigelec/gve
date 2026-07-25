@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import subprocess
 import sys
@@ -17,6 +18,9 @@ ACCEPTED_SPECS = ROOT / "specs"
 LEVEL_0 = ACCEPTED_SPECS / "levels" / "level-0" / "GVE-LEVEL-0.json"
 LEVEL_1 = ACCEPTED_SPECS / "levels" / "level-1" / "GVE-LEVEL-1.json"
 SCHEMA = ACCEPTED_SPECS / "schemas" / "GVE-LEVEL.schema.json"
+MANIFEST_SCHEMA = (
+    ACCEPTED_SPECS / "schemas" / "GVE-SPECIFICATION-SET.schema.json"
+)
 
 
 class SemanticValidationTests(unittest.TestCase):
@@ -25,6 +29,9 @@ class SemanticValidationTests(unittest.TestCase):
         self.specs_root = Path(self.temporary.name) / "specs"
         (self.specs_root / "schemas").mkdir(parents=True)
         (self.specs_root / "schemas" / SCHEMA.name).write_bytes(SCHEMA.read_bytes())
+        (self.specs_root / "schemas" / MANIFEST_SCHEMA.name).write_bytes(
+            MANIFEST_SCHEMA.read_bytes()
+        )
         self.documents = {
             0: load_strict(LEVEL_0),
             1: load_strict(LEVEL_1),
@@ -35,6 +42,7 @@ class SemanticValidationTests(unittest.TestCase):
         self.temporary.cleanup()
 
     def write_all(self) -> None:
+        members = []
         for level, document in self.documents.items():
             directory = self.specs_root / "levels" / f"level-{level}"
             directory.mkdir(parents=True, exist_ok=True)
@@ -47,6 +55,30 @@ class SemanticValidationTests(unittest.TestCase):
                 render_markdown(document),
                 encoding="utf-8",
             )
+            members.append(
+                {
+                    "path": json_path.relative_to(self.specs_root).as_posix(),
+                    "role": document.get("document", {}).get("role", "root"),
+                    "id": document["specification"]["id"],
+                    "content_sha256": hashlib.sha256(
+                        json_path.read_bytes()
+                    ).hexdigest(),
+                }
+            )
+        manifest = {
+            "$schema": "schemas/GVE-SPECIFICATION-SET.schema.json",
+            "schema_version": 1,
+            "canonicalization": "gve-canonical-json-v1",
+            "digest_algorithm": "sha256",
+            "identity_format": (
+                "gve-canonical-json-v1+sha256:lowercase-hex"
+            ),
+            "members": sorted(members, key=lambda member: member["id"]),
+        }
+        (self.specs_root / "GVE-SPECIFICATION-SET.json").write_text(
+            json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
 
     def run_validation(self) -> subprocess.CompletedProcess[str]:
         return subprocess.run(

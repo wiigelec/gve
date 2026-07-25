@@ -164,6 +164,12 @@ def audit_level_two(specs_root: Path) -> dict[str, Any]:
     level_two_paths = [
         path for path in paths if path.parent.name == "level-2"
     ]
+    missing_paths = [path for path in level_two_paths if not path.is_file()]
+    if missing_paths:
+        missing = sorted(path.stem for path in missing_paths)
+        raise LevelTwoAuditError(
+            f"Level 2 discovery mismatch; missing={missing}, unexpected=[]"
+        )
     documents = {
         document["specification"]["id"]: (path, document)
         for path in level_two_paths
