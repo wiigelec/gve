@@ -13,21 +13,21 @@
 
 ## Summary
 
-GVE Level 3 Workflow Planning and Lifecycle defines complete workflow-plan construction and fail-closed acceptance, immutable accepted-plan binding, deterministic acyclic partial-order semantics, dependency and handoff validation, operation eligibility, attempt identity and ordering constraints, lifecycle-state distinctions, cancellation and timeout observation, retry requirements, partial-progress accounting, and workflow terminality without defining maintained scheduling implementation or evidence and result realization.
+GVE Level 3 Workflow Planning and Lifecycle defines bounded planning sessions, immutable plan candidates, fail-closed acceptance into immutable accepted plans, execution-attempt binding, deterministic acyclic partial-order semantics, dependencies, handoffs, eligibility, lifecycle distinctions, retry, partial progress, and workflow terminality without defining maintained scheduling implementation or evidence and result realization.
 
 ## Definitions
 
-### Complete workflow plan (`L3-WPL-COMPLETE-WORKFLOW-PLAN`)
+### Complete plan candidate (`L3-WPL-COMPLETE-WORKFLOW-PLAN`)
 
-The pre-execution plan containing the single workflow identity, complete operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract for every operation, the complete deterministic acyclic partial-order relation, dependency edges, handoff declarations, governing authority, and immutable registry and runtime snapshot identities.
+The immutable pre-contract candidate containing the single workflow identity, complete operation membership and content identities, selected plugin and action bindings, complete partial-order relation, dependency edges, handoff declarations, governing authority, and immutable registry and runtime snapshot identities. Validated operation contracts and acceptance outcome are excluded from candidate identity.
 
 ### Workflow-plan acceptance (`L3-WPL-PLAN-ACCEPTANCE`)
 
-The single fail-closed pre-execution determination that one complete workflow plan is internally consistent, deterministic, fully contracted, partial-order-valid, dependency- and handoff-valid, and eligible for lifecycle processing. Determinism does not require a unique topological serialization.
+The single fail-closed pre-execution determination over one unchanged immutable plan candidate and exactly one fresh validated operation contract for every candidate operation. Successful acceptance identifies one immutable accepted plan; determinism does not require a unique topological serialization.
 
 ### Accepted-plan snapshot (`L3-WPL-ACCEPTED-PLAN-SNAPSHOT`)
 
-The uniquely identifiable immutable set of accepted plan, contract, registry, runtime, and authority facts governing one lifecycle attempt.
+The uniquely identifiable immutable snapshot produced by successful acceptance from one unchanged plan-candidate identity and its complete canonically ordered contract set, registry, runtime, and authority facts. It is distinct from the candidate and from every execution attempt.
 
 ### Dependency graph (`L3-WPL-DEPENDENCY-GRAPH`)
 
@@ -41,9 +41,9 @@ The accepted-plan declaration binding one producing operation, one consuming ope
 
 The fail-closed lifecycle determination that one operation may begin an attempt under the accepted plan because authority, required predecessor relations, dependencies, handoffs, contract freshness, and current lifecycle conditions are all satisfied.
 
-### Operation-attempt identity (`L3-WPL-ATTEMPT-IDENTITY`)
+### Execution-attempt identity (`L3-WPL-ATTEMPT-IDENTITY`)
 
-A stable identifier unique within the workflow lifecycle and bound to exactly one operation identity, one accepted-plan snapshot, and one attempt ordinal.
+A stable identifier unique within the workflow lifecycle and bound to exactly one operation identity, one already accepted-plan snapshot identity, and one deterministic attempt ordinal.
 
 ### Attempt ordering constraints (`L3-WPL-ATTEMPT-ORDER`)
 
@@ -73,23 +73,39 @@ The complete representation of all operations and attempts that are terminal, no
 
 The fail-closed determination that every operation and every created attempt has complete, consistent, uniquely attributable terminal lifecycle accounting.
 
+### Planning session (`L3-WPL-PLANNING-SESSION`)
+
+One bounded process that may construct, evaluate, retry, or supersede plan candidates. Session identity organizes planning activity but is mutable process context and must not substitute for candidate, accepted-plan, contract-production, or execution-attempt identity.
+
+### Plan-candidate identity (`L3-WPL-PLAN-CANDIDATE-IDENTITY`)
+
+The stable deterministic identity of one immutable complete plan candidate established before contract production from all required pre-contract planning facts and independent of contract identities, acceptance outcome, or execution attempts.
+
+### Plan-candidate supersession (`L3-WPL-CANDIDATE-SUPERSESSION`)
+
+The explicit replacement of a prior immutable candidate by a new candidate identity after any relevant candidate fact changes. Supersession does not mutate or rewrite the prior candidate.
+
+### Planning retry (`L3-WPL-PLANNING-RETRY`)
+
+A repeated evaluation or contract-production process that either reuses the exact unchanged candidate with explicit replay or regeneration identities, or constructs a successor candidate when relevant facts changed. Retry status alone establishes no identity freshness or effect claim.
+
 ## Normative requirements
 
 ### L3-WPL-REQ-001
 
-One workflow-plan acceptance attempt must evaluate exactly one complete workflow plan containing the full operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract per operation, all ordering constraints expressed as the complete partial-order relation, all dependency edges, all handoff declarations, governing authority, and immutable registry and runtime snapshots.
+One plan-acceptance evaluation must examine exactly one immutable complete plan candidate containing the full operation membership, unique operation identities, selected plugin and action bindings, exactly one fresh validated operation contract per operation bound to that candidate, all ordering constraints, all dependency edges, all handoff declarations, governing authority, and immutable registry and runtime snapshots.
 
-References: `L3-WPL-COMPLETE-WORKFLOW-PLAN`, `L3-WPL-PLAN-ACCEPTANCE`, `L3-PAC-VALIDATED-OPERATION-CONTRACT`
+References: `L3-WPL-COMPLETE-WORKFLOW-PLAN`, `L3-WPL-PLAN-CANDIDATE-IDENTITY`, `L3-WPL-PLAN-ACCEPTANCE`, `L3-PAC-VALIDATED-OPERATION-CONTRACT`
 
 ### L3-WPL-REQ-002
 
-Workflow-plan acceptance must be one deterministic fail-closed pre-execution decision over the complete plan; missing, duplicate, conflicting, ambiguous, stale, unauthorized, incomplete, or non-uniquely attributable plan facts must reject acceptance before any operation is attempted.
+Workflow-plan acceptance must be one deterministic fail-closed pre-execution decision over the unchanged candidate and complete contract set; missing, duplicate, conflicting, ambiguous, stale, unauthorized, incomplete, circular, or non-uniquely attributable facts must reject acceptance before any operation is attempted.
 
 References: `L3-WPL-PLAN-ACCEPTANCE`, `L3-WPL-COMPLETE-WORKFLOW-PLAN`
 
 ### L3-WPL-REQ-003
 
-An accepted plan must have one stable accepted-plan snapshot identity, and its operation, contract, authority, registry, and runtime facts must remain immutable for the governed lifecycle attempt.
+An accepted plan must have one stable accepted-plan snapshot identity deterministically derived from the unchanged candidate identity and complete contract set, and its operation, contract, authority, registry, and runtime facts must remain immutable for every bound lifecycle attempt.
 
 References: `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`, `L3-RO-IMMUTABLE-RUNTIME-SNAPSHOT`, `L3-PAC-SEALED-REGISTRY-SNAPSHOT`
 
@@ -125,7 +141,7 @@ References: `L3-WPL-OPERATION-ELIGIBILITY`, `L3-WPL-ATTEMPT-IDENTITY`
 
 ### L3-WPL-REQ-009
 
-Every created attempt must have one fresh unique attempt identity bound to exactly one operation identity, one accepted-plan snapshot identity, and one deterministic attempt ordinal; identity reuse or ambiguous attribution must fail closed.
+Every created execution attempt must have one fresh unique attempt identity bound to exactly one operation identity, one accepted-plan snapshot identity that already exists, and one deterministic attempt ordinal. Binding to an unaccepted candidate must fail closed, and identity reuse or ambiguous attribution must fail closed.
 
 References: `L3-WPL-ATTEMPT-IDENTITY`, `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`
 
@@ -155,7 +171,7 @@ References: `L3-WPL-TIMEOUT-OBSERVATION`, `L3-WPL-LIFECYCLE-STATE`
 
 ### L3-WPL-REQ-014
 
-Retry eligibility must require explicit governing authority, a fresh unique attempt identity, a new deterministic attempt ordinal, and re-evaluation of all relevant plan, contract, registry, runtime, dependency, handoff, and lifecycle freshness conditions.
+Execution retry eligibility must require explicit governing authority, a fresh unique attempt identity for the execution attempt, a new deterministic attempt ordinal, and re-evaluation of all relevant accepted-plan, contract, registry, runtime, dependency, handoff, and lifecycle freshness conditions.
 
 References: `L3-WPL-RETRY-ELIGIBILITY`, `L3-WPL-ATTEMPT-IDENTITY`, `L3-WPL-OPERATION-ELIGIBILITY`
 
@@ -189,6 +205,42 @@ This specification must not define maintained runtime, scheduler, executor, queu
 
 References: `L3-WPL-COMPLETE-WORKFLOW-PLAN`, `LEVEL-3-IMPLEMENTATION-ARCHITECTURE`
 
+### L3-WPL-REQ-020
+
+A planning session may construct or evaluate multiple candidates, but each candidate must become complete, stable, uniquely identified, and immutable before any bound contract is produced. Session identity or status must not substitute for candidate identity.
+
+References: `L3-WPL-PLANNING-SESSION`, `L3-WPL-PLAN-CANDIDATE-IDENTITY`, `L3-WPL-COMPLETE-WORKFLOW-PLAN`
+
+### L3-WPL-REQ-021
+
+Successful plan acceptance must identify one accepted-plan snapshot from the unchanged candidate identity and complete fresh contract set without mutating the candidate. Acceptance failure, reevaluation, or planning retry must not alter candidate identity.
+
+References: `L3-WPL-PLAN-CANDIDATE-IDENTITY`, `L3-WPL-PLAN-ACCEPTANCE`, `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`, `L3-WPL-PLANNING-RETRY`
+
+### L3-WPL-REQ-022
+
+Any relevant change to operation content, selected plugin or action, governance authority, registry snapshot, ordering, dependency, handoff, or other candidate fact must supersede rather than mutate the prior candidate and require a new plan-candidate identity and fresh affected contracts.
+
+References: `L3-WPL-CANDIDATE-SUPERSESSION`, `L3-WPL-PLAN-CANDIDATE-IDENTITY`, `L3-PAC-CONTRACT-FRESHNESS`
+
+### L3-WPL-REQ-023
+
+Planning retry must distinguish exact candidate reuse, contract replay, contract regeneration, and successor-candidate construction. A retry label, counter, or lifecycle state must not by itself establish freshness, identity, acceptance, eligibility, or any effect claim.
+
+References: `L3-WPL-PLANNING-RETRY`, `L3-WPL-CANDIDATE-SUPERSESSION`, `L3-PAC-CONTRACT-REPLAY`, `L3-PAC-CONTRACT-REGENERATION`
+
+### L3-WPL-REQ-024
+
+No execution-attempt identity may be created from a planning session or unaccepted candidate. Every execution attempt, including retries, must bind exactly one immutable accepted-plan snapshot and remain distinct from planning attempts, candidate evaluation, contract production, and acceptance.
+
+References: `L3-WPL-ATTEMPT-IDENTITY`, `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`, `L3-WPL-PLANNING-SESSION`
+
+### L3-WPL-REQ-025
+
+Missing, ambiguous, conflicting, stale, partial, reused, mutable, unresolved, or circular planning-session, candidate, accepted-plan, contract-production, or execution-attempt identity facts must fail closed at the earliest applicable boundary.
+
+References: `L3-WPL-PLANNING-SESSION`, `L3-WPL-PLAN-CANDIDATE-IDENTITY`, `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`, `L3-WPL-ATTEMPT-IDENTITY`
+
 ## Relationships
 
 - `L3-WPL-REL-001`: `L3-WPL-COMPLETE-WORKFLOW-PLAN` **is-accepted-by** `L3-WPL-PLAN-ACCEPTANCE`
@@ -201,6 +253,11 @@ References: `L3-WPL-COMPLETE-WORKFLOW-PLAN`, `LEVEL-3-IMPLEMENTATION-ARCHITECTUR
 - `L3-WPL-REL-008`: `L3-WPL-TIMEOUT-OBSERVATION` **contributes-to** `L3-WPL-LIFECYCLE-STATE`
 - `L3-WPL-REL-009`: `L3-WPL-RETRY-ELIGIBILITY` **permits** `L3-WPL-ATTEMPT-IDENTITY`
 - `L3-WPL-REL-010`: `L3-WPL-PARTIAL-PROGRESS` **constrains** `L3-WPL-WORKFLOW-TERMINALITY`
+- `L3-WPL-REL-011`: `L3-WPL-PLANNING-SESSION` **produces** `L3-WPL-PLAN-CANDIDATE-IDENTITY`
+- `L3-WPL-REL-012`: `L3-WPL-PLAN-CANDIDATE-IDENTITY` **participates-in** `L3-WPL-PLAN-ACCEPTANCE`
+- `L3-WPL-REL-013`: `L3-WPL-PLAN-ACCEPTANCE` **produces** `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`
+- `L3-WPL-REL-014`: `L3-WPL-CANDIDATE-SUPERSESSION` **replaces** `L3-WPL-PLAN-CANDIDATE-IDENTITY`
+- `L3-WPL-REL-015`: `L3-WPL-ATTEMPT-IDENTITY` **binds** `L3-WPL-ACCEPTED-PLAN-SNAPSHOT`
 
 ## Scope
 
@@ -220,6 +277,11 @@ References: `L3-WPL-COMPLETE-WORKFLOW-PLAN`, `LEVEL-3-IMPLEMENTATION-ARCHITECTUR
 - Complete partial-progress accounting
 - Fail-closed workflow terminality
 - Lifecycle and effect-claim separation
+- Bounded planning-session identity boundary
+- Immutable pre-contract plan-candidate identity
+- Candidate supersession without mutation
+- Planning retry, contract replay, and regeneration distinctions
+- Execution attempts bound only to accepted plans
 
 ### Excludes
 
