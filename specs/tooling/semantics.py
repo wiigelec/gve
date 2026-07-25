@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -69,6 +70,17 @@ _REQUIRED_ASSERTION_FIELDS = {
     "uncertainty",
     "supersedes_assertion_id",
     "correction_reason",
+}
+
+_REQUIRED_RESULT_FIELDS = {
+    "result_id",
+    "effect_id",
+    "claimed_states",
+    "admitted_assertion_ids",
+    "admitted_evidence_ids",
+    "governing_actor",
+    "governing_authority",
+    "realized_at",
 }
 
 
@@ -242,6 +254,19 @@ def validate_effect_state_model(
         if lineage[flag] is not True:
             _fail(specification_id, f"lineage must enable {flag}")
 
+    authoritative_result = model["authoritative_result"]
+    if authoritative_result["assertion_authority"] != "authoritative-governed-result-realizer":
+        _fail(specification_id, "authoritative_result has invalid assertion authority")
+    if set(authoritative_result["required_fields"]) != _REQUIRED_RESULT_FIELDS:
+        _fail(specification_id, "authoritative_result required_fields are incomplete")
+    for flag in (
+        "exact_current_state_coverage_required",
+        "exact_current_assertion_binding_required",
+        "exact_admitted_evidence_binding_required",
+    ):
+        if authoritative_result[flag] is not True:
+            _fail(specification_id, f"authoritative_result must enable {flag}")
+
     for flag in (
         "admitted_evidence_bound",
         "preserve_adverse_facts",
@@ -262,8 +287,10 @@ def validate_effect_state_record(
         _fail(specification_id, "record must contain at least one assertion")
 
     by_id: dict[str, Mapping[str, Any]] = {}
-    current_heads: set[tuple[str, str]] = set()
+    current_candidates: dict[tuple[str, str], list[str]] = defaultdict(list)
     current_states: dict[str, dict[str, str]] = defaultdict(dict)
+    current_assertions: dict[str, dict[str, str]] = defaultdict(dict)
+    successors: dict[str, list[str]] = defaultdict(list)
     for assertion in assertions:
         missing = sorted(_REQUIRED_ASSERTION_FIELDS - set(assertion))
         if missing:
@@ -275,6 +302,18 @@ def validate_effect_state_record(
         effect_id = assertion["effect_id"]
         if not isinstance(effect_id, str) or not effect_id:
             _fail(specification_id, "assertion has invalid effect identity")
+        governing_actor = assertion["governing_actor"]
+        if not isinstance(governing_actor, str) or not governing_actor.strip():
+            _fail(specification_id, "assertion requires an attributable governing actor")
+        asserted_at = assertion["asserted_at"]
+        if not isinstance(asserted_at, str) or not asserted_at.strip():
+            _fail(specification_id, "assertion requires an assertion timestamp")
+        try:
+            parsed_asserted_at = datetime.fromisoformat(asserted_at.replace("Z", "+00:00"))
+        except ValueError:
+            _fail(specification_id, "assertion timestamp must be valid ISO-8601")
+        if parsed_asserted_at.tzinfo is None or parsed_asserted_at.utcoffset() is None:
+            _fail(specification_id, "assertion timestamp must include a timezone")
         dimension_id = assertion["dimension"]
         if dimension_id not in dimensions:
             _fail(specification_id, f"assertion uses unknown dimension {dimension_id}")
@@ -309,6 +348,8 @@ def validate_effect_state_record(
             if correction_reason is not None:
                 _fail(specification_id, "non-correction assertion has correction reason")
         else:
+            if supersedes == assertion_id:
+                _fail(specification_id, "supersession lineage contains a cycle")
             prior = by_id.get(supersedes)
             if prior is None:
                 _fail(specification_id, "correction references missing prior assertion")
@@ -318,6 +359,7 @@ def validate_effect_state_record(
                 _fail(specification_id, "correction requires a reason")
             if set(evidence) == set(prior["admitted_evidence_ids"]):
                 _fail(specification_id, "correction requires a new evidence basis")
+            successors[supersedes].append(assertion_id)
         if dimension_id == "verification" and value_id == "verified":
             claim_id = assertion.get("verified_claim_id")
             verification_evidence = assertion.get("verification_evidence_ids")
@@ -331,11 +373,113 @@ def validate_effect_state_record(
                     "verification evidence must be admitted by the assertion",
                 )
         if status == "current":
-            head = (effect_id, dimension_id)
-            if head in current_heads:
-                _fail(specification_id, "multiple current heads for effect dimension")
-            current_heads.add(head)
-            current_states[effect_id][dimension_id] = value_id
+            current_candidates[(effect_id, dimension_id)].append(assertion_id)
+
+    for assertion_id, assertion in by_id.items():
+        status = assertion.get("lineage_status", "current")
+        child_ids = successors.get(assertion_id, [])
+        if status == "superseded":
+            if not child_ids:
+                _fail(specification_id, "superseded assertion requires a successor")
+            if len(child_ids) != 1:
+                _fail(specification_id, "superseded assertion must have exactly one successor")
+        elif child_ids:
+            _fail(specification_id, "nonterminal assertion cannot remain current")
+
+    for start_id in by_id:
+        seen: set[str] = set()
+        current_id: str | None = start_id
+        while current_id is not None:
+            if current_id in seen:
+                _fail(specification_id, "supersession lineage contains a cycle")
+            seen.add(current_id)
+            children = successors.get(current_id, [])
+            current_id = children[0] if children else None
+
+    for (effect_id, dimension_id), assertion_ids in current_candidates.items():
+        if len(assertion_ids) != 1:
+            _fail(specification_id, "multiple current heads for effect dimension")
+        assertion_id = assertion_ids[0]
+        assertion = by_id[assertion_id]
+        current_states[effect_id][dimension_id] = assertion["value"]
+        current_assertions[effect_id][dimension_id] = assertion_id
+
+    result = record.get("authoritative_result")
+    if result is not None:
+        if not isinstance(result, Mapping):
+            _fail(specification_id, "authoritative_result must be an object")
+        required_result_fields = set(model["authoritative_result"]["required_fields"])
+        missing_result_fields = sorted(required_result_fields - set(result))
+        if missing_result_fields:
+            _fail(
+                specification_id,
+                f"authoritative_result omits required fields {missing_result_fields}",
+            )
+        result_id = result["result_id"]
+        if not isinstance(result_id, str) or not result_id.strip():
+            _fail(specification_id, "authoritative_result requires a result identity")
+        result_effect_id = result["effect_id"]
+        if not isinstance(result_effect_id, str) or not result_effect_id:
+            _fail(specification_id, "authoritative_result has invalid effect identity")
+        result_actor = result["governing_actor"]
+        if not isinstance(result_actor, str) or not result_actor.strip():
+            _fail(specification_id, "authoritative_result requires an attributable actor")
+        realized_at = result["realized_at"]
+        if not isinstance(realized_at, str) or not realized_at.strip():
+            _fail(specification_id, "authoritative_result requires a realization timestamp")
+        try:
+            parsed_realized_at = datetime.fromisoformat(realized_at.replace("Z", "+00:00"))
+        except ValueError:
+            _fail(specification_id, "realization timestamp must be valid ISO-8601")
+        if parsed_realized_at.tzinfo is None or parsed_realized_at.utcoffset() is None:
+            _fail(specification_id, "realization timestamp must include a timezone")
+        if result["governing_authority"] != model["authoritative_result"]["assertion_authority"]:
+            _fail(specification_id, "authoritative_result authority conflicts")
+        claimed_states = result["claimed_states"]
+        if not isinstance(claimed_states, dict) or not claimed_states:
+            _fail(specification_id, "authoritative_result requires claimed states")
+        for dimension_id, value_id in claimed_states.items():
+            if dimension_id not in dimensions:
+                _fail(specification_id, f"authoritative_result uses unknown dimension {dimension_id}")
+            permitted = {value["id"] for value in dimensions[dimension_id]["values"]}
+            if value_id not in permitted:
+                _fail(
+                    specification_id,
+                    f"authoritative_result uses value {value_id} outside dimension {dimension_id}",
+                )
+        if claimed_states != current_states.get(result_effect_id, {}):
+            _fail(
+                specification_id,
+                "authoritative_result claimed states do not exactly match current assertions",
+            )
+        admitted_assertion_ids = result["admitted_assertion_ids"]
+        if (
+            not isinstance(admitted_assertion_ids, list)
+            or not admitted_assertion_ids
+            or len(admitted_assertion_ids) != len(set(admitted_assertion_ids))
+        ):
+            _fail(specification_id, "authoritative_result requires distinct admitted assertions")
+        expected_assertion_ids = set(current_assertions.get(result_effect_id, {}).values())
+        if set(admitted_assertion_ids) != expected_assertion_ids:
+            _fail(
+                specification_id,
+                "authoritative_result does not exactly bind current assertions",
+            )
+        admitted_evidence_ids = result["admitted_evidence_ids"]
+        if (
+            not isinstance(admitted_evidence_ids, list)
+            or not admitted_evidence_ids
+            or len(admitted_evidence_ids) != len(set(admitted_evidence_ids))
+        ):
+            _fail(specification_id, "authoritative_result requires distinct admitted evidence")
+        expected_evidence_ids: set[str] = set()
+        for assertion_id in expected_assertion_ids:
+            expected_evidence_ids.update(by_id[assertion_id]["admitted_evidence_ids"])
+        if set(admitted_evidence_ids) != expected_evidence_ids:
+            _fail(
+                specification_id,
+                "authoritative_result does not exactly bind admitted evidence",
+            )
 
     prohibited = [
         {(state["dimension"], state["value"]) for state in combination["states"]}

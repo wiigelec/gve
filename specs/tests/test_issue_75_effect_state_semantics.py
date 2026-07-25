@@ -97,6 +97,39 @@ class Issue75EffectStateSemanticValidationTests(unittest.TestCase):
             },
         )
 
+
+    def test_record_rejects_empty_governing_actor(self) -> None:
+        assertion = self.assertion("execution", "execution", "attempted")
+        assertion["governing_actor"] = "  "
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "requires an attributable governing actor",
+        )
+
+    def test_record_rejects_missing_assertion_timestamp(self) -> None:
+        assertion = self.assertion("execution", "execution", "attempted")
+        assertion["asserted_at"] = None
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "requires an assertion timestamp",
+        )
+
+    def test_record_rejects_malformed_assertion_timestamp(self) -> None:
+        assertion = self.assertion("execution", "execution", "attempted")
+        assertion["asserted_at"] = "not-a-timestamp"
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "timestamp must be valid ISO-8601",
+        )
+
+    def test_record_rejects_timezone_less_assertion_timestamp(self) -> None:
+        assertion = self.assertion("execution", "execution", "attempted")
+        assertion["asserted_at"] = "2026-07-25T00:00:00"
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "timestamp must include a timezone",
+        )
+
     def test_record_rejects_value_outside_dimension(self) -> None:
         assertion = self.assertion("execution", "execution", "attempted")
         assertion["value"] = "verified"
@@ -140,6 +173,101 @@ class Issue75EffectStateSemanticValidationTests(unittest.TestCase):
             },
             "multiple current heads",
         )
+
+    def test_record_rejects_orphaned_superseded_assertion(self) -> None:
+        assertion = self.assertion("execution-1", "execution", "attempted")
+        assertion["lineage_status"] = "superseded"
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "superseded assertion requires a successor",
+        )
+
+    def test_record_rejects_forked_supersession(self) -> None:
+        prior = self.assertion("execution-1", "execution", "attempted")
+        prior["lineage_status"] = "superseded"
+        successor_1 = self.assertion("execution-2", "execution", "partial")
+        successor_1["supersedes_assertion_id"] = "execution-1"
+        successor_1["correction_reason"] = "first correction"
+        successor_1["admitted_evidence_ids"] = ["evidence-2"]
+        successor_1["lineage_status"] = "superseded"
+        successor_2 = self.assertion("execution-3", "execution", "completed")
+        successor_2["supersedes_assertion_id"] = "execution-1"
+        successor_2["correction_reason"] = "second correction"
+        successor_2["admitted_evidence_ids"] = ["evidence-3"]
+        self.assert_record_rejected(
+            {"assertions": [prior, successor_1, successor_2]},
+            "exactly one successor",
+        )
+
+    def test_record_rejects_self_cycle(self) -> None:
+        assertion = self.assertion("execution-1", "execution", "attempted")
+        assertion["lineage_status"] = "superseded"
+        assertion["supersedes_assertion_id"] = "execution-1"
+        assertion["correction_reason"] = "invalid cycle"
+        self.assert_record_rejected(
+            {"assertions": [assertion]},
+            "lineage contains a cycle",
+        )
+
+    def test_record_rejects_nonterminal_current_assertion(self) -> None:
+        prior = self.assertion("execution-1", "execution", "attempted")
+        successor = self.assertion("execution-2", "execution", "completed")
+        successor["supersedes_assertion_id"] = "execution-1"
+        successor["correction_reason"] = "completion evidence arrived"
+        successor["admitted_evidence_ids"] = ["evidence-2"]
+        self.assert_record_rejected(
+            {"assertions": [prior, successor]},
+            "nonterminal assertion cannot remain current",
+        )
+
+    def test_authoritative_result_accepts_exact_current_state_and_evidence(self) -> None:
+        assertion = self.assertion(
+            "assertion-1",
+            "authorization",
+            "authorized",
+            evidence=["evidence-1"],
+        )
+        record = {
+            "assertions": [assertion],
+            "authoritative_result": {
+                "result_id": "result-1",
+                "effect_id": "effect-1",
+                "claimed_states": {"authorization": "authorized"},
+                "admitted_assertion_ids": ["assertion-1"],
+                "admitted_evidence_ids": ["evidence-1"],
+                "governing_actor": "result-realizer",
+                "governing_authority": "authoritative-governed-result-realizer",
+                "realized_at": "2026-07-25T22:31:00Z",
+            },
+        }
+        validate_effect_state_record(self.model, record)
+
+    def test_authoritative_result_rejects_stronger_claim(self) -> None:
+        assertion = self.assertion(
+            "assertion-1",
+            "authorization",
+            "authorized",
+            evidence=["evidence-1"],
+        )
+        record = {
+            "assertions": [assertion],
+            "authoritative_result": {
+                "result_id": "result-1",
+                "effect_id": "effect-1",
+                "claimed_states": {"authorization": "refused"},
+                "admitted_assertion_ids": ["assertion-1"],
+                "admitted_evidence_ids": ["evidence-1"],
+                "governing_actor": "result-realizer",
+                "governing_authority": "authoritative-governed-result-realizer",
+                "realized_at": "2026-07-25T22:31:00Z",
+            },
+        }
+        with self.assertRaisesRegex(
+            SemanticValidationError,
+            "claimed states do not exactly match current assertions",
+        ):
+            validate_effect_state_record(self.model, record)
+
 
 
 if __name__ == "__main__":

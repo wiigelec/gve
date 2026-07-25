@@ -520,10 +520,10 @@
           {
             "assertion_id": "a1",
             "effect_id": "effect-1",
-            "dimension": "observation",
-            "value": "unobserved",
+            "dimension": "execution",
+            "value": "attempted",
             "governing_actor": "governed-actor",
-            "governing_authority": "admitted-attributable-evidence",
+            "governing_authority": "authoritative-governed-execution-record",
             "admitted_evidence_ids": [
               "evidence-a1"
             ],
@@ -531,29 +531,26 @@
             "uncertainty": null,
             "supersedes_assertion_id": null,
             "correction_reason": null
-          },
-          {
-            "assertion_id": "a2",
-            "effect_id": "effect-1",
-            "dimension": "verification",
-            "value": "verified",
-            "governing_actor": "governed-actor",
-            "governing_authority": "governed-verifier",
-            "admitted_evidence_ids": [
-              "evidence-v"
-            ],
-            "asserted_at": "2026-07-25T22:30:00Z",
-            "uncertainty": null,
-            "supersedes_assertion_id": null,
-            "correction_reason": null,
-            "verified_claim_id": "claim-completion",
-            "verification_evidence_ids": [
-              "evidence-v"
-            ]
           }
-        ]
+        ],
+        "authoritative_result": {
+          "result_id": "result-1",
+          "effect_id": "effect-1",
+          "claimed_states": {
+            "execution": "completed"
+          },
+          "admitted_assertion_ids": [
+            "a1"
+          ],
+          "admitted_evidence_ids": [
+            "evidence-a1"
+          ],
+          "governing_actor": "result-realizer",
+          "governing_authority": "authoritative-governed-result-realizer",
+          "realized_at": "2026-07-25T22:31:00Z"
+        }
       },
-      "expected_error": "prohibited state combination"
+      "expected_error": "claimed states do not exactly match current assertions"
     }
   ]
 }

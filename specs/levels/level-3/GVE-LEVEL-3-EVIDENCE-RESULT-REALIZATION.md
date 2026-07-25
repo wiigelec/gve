@@ -290,6 +290,22 @@ GVE Level 3 Evidence and Result Realization defines evidence identity, attributi
     "correction_reason_required": true,
     "new_evidence_basis_required": true
   },
+  "authoritative_result": {
+    "assertion_authority": "authoritative-governed-result-realizer",
+    "required_fields": [
+      "result_id",
+      "effect_id",
+      "claimed_states",
+      "admitted_assertion_ids",
+      "admitted_evidence_ids",
+      "governing_actor",
+      "governing_authority",
+      "realized_at"
+    ],
+    "exact_current_state_coverage_required": true,
+    "exact_current_assertion_binding_required": true,
+    "exact_admitted_evidence_binding_required": true
+  },
   "result_constraints": {
     "admitted_evidence_bound": true,
     "preserve_adverse_facts": true,
