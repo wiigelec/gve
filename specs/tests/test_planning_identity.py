@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unittest
+from collections.abc import Mapping
 
 from specs.tooling.planning_identity import (
     PlanningIdentityError,
@@ -21,6 +22,35 @@ ZERO = "0" * 64
 ONE = "1" * 64
 
 
+class SingleReadMapping(Mapping):
+    def __init__(self, values):
+        self._values = dict(values)
+        self._reads = {key: 0 for key in self._values}
+
+    def __iter__(self):
+        return iter(reversed(tuple(self._values)))
+
+    def __len__(self):
+        return len(self._values)
+
+    def __getitem__(self, key):
+        self._reads[key] += 1
+        if self._reads[key] > 1:
+            raise RuntimeError(f"second read of {key}")
+        return self._values[key]
+
+
+class UnsnapshotableMapping(Mapping):
+    def __iter__(self):
+        return iter(("format",))
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, key):
+        raise RuntimeError("changed during read")
+
+
 def operation(identity: str, content: str, plugin: str = "plugin-a") -> dict[str, str]:
     return {
         "operation_identity": identity,
@@ -35,7 +65,11 @@ class PlanningIdentityTests(unittest.TestCase):
     def candidate(self, operations=None, ordering_identity=ZERO):
         return canonical_plan_candidate(
             workflow_identity="workflow-a",
-            operations=operations or [operation("op-a", A), operation("op-b", B)],
+            operations=(
+                [operation("op-a", A), operation("op-b", B)]
+                if operations is None
+                else operations
+            ),
             governance_binding_identity=C,
             plugin_registry_snapshot_identity=D,
             ordering_identity=ordering_identity,
@@ -74,6 +108,47 @@ class PlanningIdentityTests(unittest.TestCase):
             self.contract(candidate_id, "op-a"),
             self.contract(candidate_id, "op-b"),
         ]
+
+
+    def test_explicit_empty_operations_fail(self):
+        with self.assertRaisesRegex(PlanningIdentityError, "operations must not be empty"):
+            self.candidate([])
+
+    def test_nonmapping_candidate_uses_governed_exception(self):
+        with self.assertRaisesRegex(PlanningIdentityError, "plan candidate must be an object"):
+            plan_candidate_identity([])
+
+    def test_nonmapping_operation_uses_governed_exception(self):
+        with self.assertRaisesRegex(PlanningIdentityError, r"operations\[0\] must be an object"):
+            self.candidate(["not-an-operation"])
+
+    def test_candidate_mapping_is_snapshotted_once(self):
+        candidate = self.candidate()
+        self.assertEqual(
+            plan_candidate_identity(SingleReadMapping(candidate)),
+            plan_candidate_identity(candidate),
+        )
+
+    def test_operation_mapping_is_snapshotted_once(self):
+        ordinary = self.candidate([operation("op-a", A)])
+        snapshotted = self.candidate([SingleReadMapping(operation("op-a", A))])
+        self.assertEqual(snapshotted, ordinary)
+
+    def test_contract_mapping_is_snapshotted_once(self):
+        candidate = self.candidate()
+        contracts = self.accepted_contracts(candidate)
+        self.assertEqual(
+            accepted_plan_identity(
+                candidate, [SingleReadMapping(item) for item in contracts]
+            ),
+            accepted_plan_identity(candidate, contracts),
+        )
+
+    def test_mapping_snapshot_failure_is_deterministic(self):
+        with self.assertRaisesRegex(
+            PlanningIdentityError, "plan candidate could not be snapshotted"
+        ):
+            plan_candidate_identity(UnsnapshotableMapping())
 
     def test_candidate_identity_is_discovery_order_independent(self):
         first = self.candidate([operation("op-b", B), operation("op-a", A)])

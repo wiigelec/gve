@@ -40,10 +40,18 @@ def _positive_integer(value: Any, location: str) -> int:
     return value
 
 
-def _exact(value: Any, fields: set[str], location: str) -> Mapping[str, Any]:
+def _mapping_snapshot(value: Any, location: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
         raise PlanningIdentityError(f"{location} must be an object")
-    actual = set(value)
+    try:
+        return dict(value)
+    except Exception as exc:
+        raise PlanningIdentityError(f"{location} could not be snapshotted") from exc
+
+
+def _exact(value: Any, fields: set[str], location: str) -> dict[str, Any]:
+    snapshot = _mapping_snapshot(value, location)
+    actual = set(snapshot)
     if actual != fields:
         missing = sorted(fields - actual)
         unknown = sorted(actual - fields)
@@ -53,7 +61,16 @@ def _exact(value: Any, fields: set[str], location: str) -> Mapping[str, Any]:
         if unknown:
             detail.append("unknown " + ", ".join(unknown))
         raise PlanningIdentityError(f"{location} fields invalid: {'; '.join(detail)}")
-    return value
+    return snapshot
+
+
+def _sequence_snapshot(value: Any, location: str) -> tuple[Any, ...]:
+    if isinstance(value, (str, bytes, bytearray, Mapping)):
+        raise PlanningIdentityError(f"{location} must be an array")
+    try:
+        return tuple(value)
+    except (TypeError, RuntimeError) as exc:
+        raise PlanningIdentityError(f"{location} must be an array") from exc
 
 
 def _digest(value: Mapping[str, Any]) -> str:
@@ -86,7 +103,7 @@ def canonical_plan_candidate(
     }
     canonical_operations = []
     seen = set()
-    for index, raw in enumerate(operations):
+    for index, raw in enumerate(_sequence_snapshot(operations, "operations")):
         item = _exact(raw, required, f"operations[{index}]")
         operation_identity = _nonempty(
             item["operation_identity"], f"operations[{index}].operation_identity"
@@ -128,25 +145,38 @@ def canonical_plan_candidate(
     }
 
 
+def _canonical_candidate_snapshot(candidate: Mapping[str, Any]) -> dict[str, Any]:
+    fields = {
+        "format",
+        "workflow_identity",
+        "operations",
+        "governance_binding_identity",
+        "plugin_registry_snapshot_identity",
+        "ordering_identity",
+        "dependency_identity",
+        "handoff_identity",
+    }
+    snapshot = _exact(candidate, fields, "plan candidate")
+    rebuilt = canonical_plan_candidate(
+        workflow_identity=snapshot["workflow_identity"],
+        operations=snapshot["operations"],
+        governance_binding_identity=snapshot["governance_binding_identity"],
+        plugin_registry_snapshot_identity=snapshot["plugin_registry_snapshot_identity"],
+        ordering_identity=snapshot["ordering_identity"],
+        dependency_identity=snapshot["dependency_identity"],
+        handoff_identity=snapshot["handoff_identity"],
+    )
+    if snapshot != rebuilt:
+        raise PlanningIdentityError("plan candidate is noncanonical")
+    return rebuilt
+
+
 def plan_candidate_identity(candidate: Mapping[str, Any]) -> str:
-    validate_plan_candidate(candidate)
-    return _digest(candidate)
+    return _digest(_canonical_candidate_snapshot(candidate))
 
 
 def validate_plan_candidate(candidate: Mapping[str, Any]) -> None:
-    rebuilt = canonical_plan_candidate(
-        workflow_identity=candidate.get("workflow_identity"),
-        operations=candidate.get("operations", ()),
-        governance_binding_identity=candidate.get("governance_binding_identity"),
-        plugin_registry_snapshot_identity=candidate.get(
-            "plugin_registry_snapshot_identity"
-        ),
-        ordering_identity=candidate.get("ordering_identity"),
-        dependency_identity=candidate.get("dependency_identity"),
-        handoff_identity=candidate.get("handoff_identity"),
-    )
-    if dict(candidate) != rebuilt:
-        raise PlanningIdentityError("plan candidate is noncanonical")
+    _canonical_candidate_snapshot(candidate)
 
 
 def contract_production_identity(
@@ -175,7 +205,8 @@ def accepted_plan_identity(
     candidate: Mapping[str, Any], contracts: Sequence[Mapping[str, Any]]
 ) -> str:
     """Validate complete contract attribution and construct accepted-plan identity."""
-    candidate_id = plan_candidate_identity(candidate)
+    canonical_candidate = _canonical_candidate_snapshot(candidate)
+    candidate_id = _digest(canonical_candidate)
     required = {
         "operation_identity",
         "plan_candidate_identity",
@@ -187,7 +218,7 @@ def accepted_plan_identity(
     by_operation = {}
     seen_contract_identities = set()
     seen_production_identities = set()
-    for index, raw in enumerate(contracts):
+    for index, raw in enumerate(_sequence_snapshot(contracts, "contracts")):
         item = _exact(raw, required, f"contracts[{index}]")
         operation_identity = _nonempty(
             item["operation_identity"], f"contracts[{index}].operation_identity"
@@ -237,7 +268,9 @@ def accepted_plan_identity(
             "contract_production_identity": production_identity,
         }
 
-    expected = {item["operation_identity"] for item in candidate["operations"]}
+    expected = {
+        item["operation_identity"] for item in canonical_candidate["operations"]
+    }
     if set(by_operation) != expected:
         raise PlanningIdentityError("contracts do not exactly cover candidate operations")
     return _digest(
