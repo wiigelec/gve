@@ -2,353 +2,200 @@
 
 ## Purpose
 
-This document defines the implementation plan for Stage 2 of the maintained GVE product.
+This document defines the Stage 2 product development milestone for the maintained GVE implementation.
 
-Stage 2 establishes the complete baseline payload-processing pipeline while intentionally performing no external effects. The objective is to prove that the maintained application can receive an instruction payload, process it deterministically, and emit an authoritative result before any plugin execution or external mutation is introduced.
+Its purpose is to identify the capabilities that exist when Stage 2 is complete and to establish the intended implementation boundary between Stage 2 and later development stages.
 
-This document is an implementation plan. It does not modify or replace the normative specification set.
+This document is **not** a normative specification.
 
----
+This document does not define:
 
-# Objectives
+- Protocol behavior.
+- Payload semantics.
+- Result semantics.
+- Algorithms.
+- Validation rules.
+- Identity derivation.
+- Serialization.
+- Conformance requirements.
 
-Stage 2 shall establish the complete lifecycle:
-
-```text
-request
-    ↓
-parse
-    ↓
-validate
-    ↓
-evaluate
-    ↓
-result
-```
-
-Upon completion of Stage 2, the maintained product shall be capable of:
-
-- Reading an instruction payload.
-- Parsing the payload.
-- Performing structural validation.
-- Performing schema validation.
-- Deriving stable identities.
-- Evaluating a baseline core-owned request.
-- Producing an authoritative result.
-- Producing deterministic diagnostics.
-- Returning well-defined exit statuses.
-
-No external effects shall occur.
-
-No plugins shall execute.
+Those behaviors are defined exclusively by the applicable GVE normative specifications.
 
 ---
 
-# Stage 1 Foundation
+# Milestone Goal
 
-Stage 2 builds directly upon the completed Stage 1 product.
+The goal of Stage 2 is to establish the complete basic maintained core.
 
-The following Stage 1 behavior shall remain unchanged:
+When Stage 2 is complete, the maintained product can receive a properly formed normative payload, process every application-independent capability assigned to the maintained core by the normative specifications, intentionally perform no workflow execution when requested by the applicable lifecycle mode, and emit a properly formed authoritative result.
 
-- Product installation.
-- Runtime initialization.
-- Stable CLI.
-- Version reporting.
-- Deterministic diagnostics.
-- Defined process exit codes.
-
-Stage 2 shall not weaken or redesign any accepted Stage 1 behavior.
+Stage 2 intentionally ends before application-plugin architecture or workflow execution is introduced.
 
 ---
 
-# Scope
+# Included Capabilities
 
-Stage 2 includes implementation of:
+Completion of Stage 2 includes implementation of the normative capabilities assigned to the maintained core for:
 
 - Payload ingestion.
 - UTF-8 input handling.
-- JSON parsing.
-- Structural validation.
-- Schema validation.
-- Stable identity derivation.
-- Baseline evaluation.
-- Result generation.
+- Payload parsing.
+- Payload validation.
+- Deterministic identity derivation.
+- Common payload processing.
+- Lifecycle processing.
+- Authoritative result generation.
 - Diagnostic generation.
 - Deterministic serialization.
-- Process exit handling.
+- Process termination.
 
-The stage is intentionally limited to core processing.
+The exact behavior of these capabilities is defined by the applicable normative specifications.
 
 ---
 
-# Out of Scope
+# Implementation Scope
 
-Stage 2 shall not implement:
+Stage 2 includes the maintained-core capabilities required to process the normative Stage 2 payload lifecycle defined by the applicable specifications.
+
+The maintained product implements every processing step assigned to the maintained core by those specifications.
+
+The maintained product does not implement behavior assigned to application plugins or later implementation stages.
+
+---
+
+# Explicitly Deferred Capabilities
+
+Completion of Stage 2 does not include implementation of:
 
 - Plugin discovery.
 - Plugin loading.
 - Plugin registration.
-- Plugin execution.
+- Plugin resolution.
+- Plugin assignment.
 - Plugin contracts.
+- Plugin-owned instruction interpretation.
+- Workflow-plan construction for execution.
+- Workflow execution.
+- Authorization processing.
 - Filesystem mutation.
 - Command execution.
 - Git operations.
 - Network access.
-- Remote services.
-- Workflow execution.
+- Remote service interaction.
 - Publication.
 - Replay.
 - Recovery.
-- External observations.
-- Verification of external state.
+- External observation.
+- External verification.
 
-These capabilities belong to later implementation stages.
-
----
-
-# Baseline Evaluation
-
-Stage 2 introduces a single core-owned baseline evaluation.
-
-Its purpose is to validate the maintained processing pipeline.
-
-The baseline evaluation shall:
-
-- Require no plugins.
-- Produce no external effects.
-- Produce deterministic results.
-- Produce deterministic diagnostics.
-- Exercise the complete request-to-result lifecycle.
-
-The baseline evaluation shall not become a permanent plugin or establish precedent for future plugin behavior.
+These capabilities belong to later development stages.
 
 ---
 
-# Payload Processing
+# Processing Boundary
 
-The processing sequence shall be:
+Stage 2 processes every application-independent portion of the normative payload assigned to the maintained core.
 
-```text
-Read payload
-    ↓
-Decode UTF-8
-    ↓
-Parse JSON
-    ↓
-Structural validation
-    ↓
-Schema validation
-    ↓
-Identity derivation
-    ↓
-Baseline evaluation
-    ↓
-Authoritative result generation
-    ↓
-Serialize result
-    ↓
-Exit
-```
+The maintained product stops processing at the implementation boundary defined by the applicable specifications.
 
-Every transition shall be deterministic.
+When the normative payload requests the no-op lifecycle mode defined by those specifications, the maintained product completes all required maintained-core processing while intentionally performing no workflow execution.
 
-Failures terminate processing immediately using fail-closed behavior.
+The implementation boundary is established by the normative specifications rather than this document.
 
 ---
 
-# Validation
+# Completion Outcomes
 
-Stage 2 shall distinguish at least the following categories:
+When Stage 2 is complete, the maintained product:
 
-1. Input acquisition
-2. UTF-8 decoding
-3. JSON parsing
-4. Structural validation
-5. Schema validation
-6. Baseline semantic validation
+- Accepts valid Stage 2 normative payloads.
+- Rejects invalid payloads.
+- Correctly processes the common payload envelope.
+- Correctly processes the normative no-op lifecycle mode.
+- Produces deterministic authoritative results.
+- Produces deterministic diagnostics.
+- Produces deterministic identities.
+- Produces deterministic serialized output.
+- Produces well-defined process exit behavior.
 
-Each validation stage shall produce diagnostics that identify the failing stage without requiring later stages to execute.
+Successful Stage 2 processing does not imply:
 
----
-
-# Identity
-
-Accepted payloads shall receive stable identities.
-
-Identity derivation shall:
-
-- Be deterministic.
-- Produce identical identities for identical payloads.
-- Avoid environmental information.
-- Avoid timestamps.
-- Avoid random values.
-- Avoid filesystem metadata.
-- Avoid process identifiers.
-
-Identity derivation shall be reproducible.
-
----
-
-# Evaluation
-
-Evaluation shall operate only on validated payloads.
-
-Evaluation shall not:
-
-- Invoke plugins.
-- Perform filesystem operations.
-- Spawn processes.
-- Access the network.
-- Modify repositories.
-- Produce observable side effects.
-
-Evaluation shall determine only the authoritative processing outcome of the baseline request.
-
----
-
-# Result Generation
-
-Every accepted payload shall produce exactly one authoritative result.
-
-The result shall distinguish:
-
-- Request acceptance.
-- Successful parsing.
-- Successful validation.
-- Successful evaluation.
-- Successful result generation.
-
-Successful ingestion shall not imply successful execution.
-
-The authoritative result shall represent only what the maintained product actually processed.
-
----
-
-# Diagnostics
-
-Diagnostics shall be:
-
-- Deterministic.
-- Stable.
-- Machine-readable.
-- Human-readable.
-- Ordered consistently.
-
-Diagnostics shall never depend upon:
-
-- Memory layout.
-- Thread scheduling.
-- Object addresses.
-- Random values.
-- Process identifiers.
-
----
-
-# Exit Status
-
-Every invocation shall terminate with a defined exit status.
-
-Distinct exit codes shall exist for:
-
-- Success.
-- Invalid arguments.
-- Input acquisition failure.
-- Parse failure.
-- Validation failure.
-- Evaluation failure.
-- Internal failure.
-
-No undefined exit behavior shall exist.
+- Workflow execution.
+- Plugin execution.
+- Plugin interpretation.
+- External effects.
+- External state changes.
 
 ---
 
 # Internal Architecture
 
-Stage 2 should establish reusable core components for later stages.
+The internal architecture of the maintained product remains an implementation decision.
 
-Recommended module responsibilities include:
+One possible decomposition may include responsibilities such as:
 
-- CLI
-- Payload reader
-- Parser
-- Validator
-- Identity
-- Evaluator
-- Result builder
-- Diagnostics
-- Exit status
-
-Each module should own one responsibility.
-
-Plugin interfaces shall not yet be implemented.
-
----
-
-# Testing
-
-Tests shall include:
-
-## Successful Processing
-
-- Valid payload accepted.
-- Stable identity.
-- Stable result.
-- Stable diagnostics.
-
-## Parsing Failures
-
-- Invalid UTF-8.
-- Invalid JSON.
-- Empty input.
-- Truncated input.
-
-## Validation Failures
-
-- Missing required members.
-- Unknown members.
-- Invalid member types.
-- Invalid semantic values.
-
-## Determinism
-
-Repeated execution of identical input shall produce identical:
-
-- Results.
-- Diagnostics.
-- Exit status.
+- CLI.
+- Payload reader.
+- Parser.
+- Validator.
 - Identity.
+- Core processor.
+- Result builder.
+- Diagnostics.
+- Serialization.
+- Exit handling.
+
+This document does not require any particular internal architecture.
 
 ---
 
-# Acceptance Criteria
+# Testing Expectations
 
-Stage 2 is complete when the maintained product:
+Completion of Stage 2 includes testing sufficient to demonstrate:
 
-- Accepts valid baseline payloads.
-- Rejects invalid payloads.
-- Produces deterministic authoritative results.
-- Produces deterministic diagnostics.
-- Produces deterministic identities.
-- Distinguishes successful ingestion from successful evaluation.
-- Performs no plugin execution.
-- Performs no external mutations.
-- Passes all Stage 2 tests.
-- Preserves all accepted Stage 1 behavior.
+- Successful processing of valid Stage 2 payloads.
+- Correct rejection of invalid payloads.
+- Deterministic identities.
+- Deterministic authoritative results.
+- Deterministic diagnostics.
+- Deterministic serialization.
+- Stable process termination behavior.
+
+The required conformance fixtures and expected behavior are defined by the applicable normative specifications.
 
 ---
 
-# Deferred Work
+# Required Specification Readiness
 
-The following work begins in Stage 3:
+Stage 2 depends upon normative specifications sufficient to define the maintained-core behavior required for this milestone.
 
-- Plugin discovery.
-- Plugin resolution.
-- Plugin contracts.
-- Action validation.
-- Authorization processing.
-- Filesystem plugin.
-- Read-only plugin execution.
-- Observations produced by plugin execution.
-- Plugin result integration.
+Those specifications must define, at minimum:
 
-Stage 2 intentionally ends before any maintained plugin architecture is exercised.
+- Payload structure.
+- Lifecycle controls.
+- Validation behavior.
+- Identity derivation.
+- Authoritative result structure.
+- Diagnostic model.
+- Serialization rules.
+- Conformance fixtures.
+
+Implementation of Stage 2 must not require invention of normative behavior not already defined by those specifications.
+
+---
+
+# Milestone Acceptance
+
+Stage 2 is complete when:
+
+- The maintained product implements every maintained-core capability assigned to Stage 2 by the applicable normative specifications.
+- The maintained product passes the Stage 2 conformance tests defined by those specifications.
+- The maintained product requires no implementation-defined behavior within the intended Stage 2 scope.
+
+---
+
+# Next Stage
+
+Completion of Stage 2 establishes the maintained basic core.
+
+Stage 3 builds upon that foundation by introducing the application-plugin architecture and the workflow execution capabilities defined by the applicable normative specifications.
