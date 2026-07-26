@@ -19,7 +19,8 @@
     "framework_invariants",
     "identity_families",
     "fixed_vectors",
-    "repository_integration"
+    "repository_integration",
+    "identity_verification_context"
   ],
   "properties": {
     "identity_families": {
@@ -27,6 +28,75 @@
       "minItems": 1,
       "items": {
         "$ref": "#/$defs/identityFamily"
+      }
+    },
+    "identity_verification_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "representation",
+        "record_fields",
+        "identity_field",
+        "family_field",
+        "acceptance_field",
+        "accepted_value",
+        "external_to_canonical_preimage",
+        "missing_context_policy",
+        "missing_identity_policy",
+        "unknown_family_policy",
+        "family_conflict_policy",
+        "unaccepted_identity_policy",
+        "duplicate_identity_policy"
+      ],
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "representation": {
+          "const": "caller-supplied sequence of identity records"
+        },
+        "record_fields": {
+          "const": [
+            "identity",
+            "family_id",
+            "accepted"
+          ]
+        },
+        "identity_field": {
+          "const": "identity"
+        },
+        "family_field": {
+          "const": "family_id"
+        },
+        "acceptance_field": {
+          "const": "accepted"
+        },
+        "accepted_value": {
+          "const": true
+        },
+        "external_to_canonical_preimage": {
+          "const": true
+        },
+        "missing_context_policy": {
+          "const": "reject"
+        },
+        "missing_identity_policy": {
+          "const": "reject"
+        },
+        "unknown_family_policy": {
+          "const": "reject"
+        },
+        "family_conflict_policy": {
+          "const": "reject"
+        },
+        "unaccepted_identity_policy": {
+          "const": "reject"
+        },
+        "duplicate_identity_policy": {
+          "const": "reject"
+        }
       }
     }
   },
@@ -68,8 +138,7 @@
           "enum": [
             "object",
             "ordered-aggregate",
-            "unordered-aggregate",
-            "transitive-closure"
+            "unordered-aggregate"
           ]
         },
         "aggregate": {
@@ -94,7 +163,8 @@
         "reference_encoding",
         "allowed_reference_family_ids",
         "aggregate_encoding",
-        "version_bindings"
+        "version_bindings",
+        "identity_verification"
       ],
       "properties": {
         "value_source": {
@@ -144,12 +214,58 @@
           ],
           "properties": {
             "canonicalization": {
-              "type": "boolean"
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "required",
+                "source"
+              ],
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "const": "family-definition"
+                }
+              }
             },
             "governing_specification_revision": {
-              "type": "boolean"
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "required",
+                "source",
+                "family_id",
+                "comparison"
+              ],
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "enum": [
+                    "verification-context",
+                    "not-applicable"
+                  ]
+                },
+                "family_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "comparison": {
+                  "enum": [
+                    "exact",
+                    "not-applicable"
+                  ]
+                }
+              }
             }
           }
+        },
+        "identity_verification": {
+          "$ref": "#/$defs/identityVerification"
         }
       }
     },
@@ -167,7 +283,8 @@
         "cycle_policy",
         "membership_path",
         "member_identity_path",
-        "member_value_path"
+        "member_value_path",
+        "identity_verification"
       ],
       "properties": {
         "member_family_ids": {
@@ -186,8 +303,7 @@
         },
         "closure_boundary": {
           "enum": [
-            "direct",
-            "transitive"
+            "direct"
           ]
         },
         "member_reference_mode": {
@@ -227,6 +343,44 @@
         },
         "cycle_policy": {
           "const": "reject"
+        },
+        "identity_verification": {
+          "$ref": "#/$defs/identityVerification"
+        }
+      }
+    },
+    "identityVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "required",
+        "context_source",
+        "context_binding"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "not-applicable",
+            "verified-identity-set",
+            "embedded-value-recomputation"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "context_source": {
+          "enum": [
+            "none",
+            "caller-supplied",
+            "embedded-value"
+          ]
+        },
+        "context_binding": {
+          "enum": [
+            "not-applicable",
+            "external-to-canonical-preimage"
+          ]
         }
       }
     }

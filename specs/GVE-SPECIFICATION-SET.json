@@ -11,10 +11,10 @@
     "schema_path": "schemas/GVE-IDENTITY-FRAMEWORK.schema.json",
     "projection_path": "identity/GVE-IDENTITY-FRAMEWORK.md",
     "vectors_path": "tests/fixtures/issue_76/identity_vectors.json",
-    "content_sha256": "9549b5d66bc478466460d83d01abe4d8c838247dbde753be1da89771a572ae93",
-    "schema_sha256": "c67a6df6521d807f11d62d2a90b7e84cbdec7f58fd5e559593d3bdc5c5c25d1d",
-    "projection_sha256": "a6985b10bcd1d91d5b0cc13ff3b226f9636306ea4dce9fb9b955a8eeebf11519",
-    "vectors_sha256": "03876718e25092eaece600de21b21e56f5a40db4f3732948c1a86ff23e17dc88"
+    "content_sha256": "fb41270fce085bfba33a3ca23c0be8042edd2aadef8e06c1e192b813cdd11063",
+    "schema_sha256": "7423f3eb70eb85a98dff0a80945c406f3e8aea94f75c65831dd0cf63c01c32b2",
+    "projection_sha256": "38f474bc1afdfa22fab8e31a0910e4ff6490677edb17fd81b7a3726695626b46",
+    "vectors_sha256": "4cc37e6fcc5a62e81092419342ba306b3034d72407bdcaa61d0a7d980721ce03"
   },
   "members": [
     {

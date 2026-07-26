@@ -32,7 +32,8 @@ class AggregateMemberEnforcementTests(unittest.TestCase):
         changed["members"].reverse()
         self.assertEqual(revision["expected_identity"],
             compute_identity(FRAMEWORK,revision["family_id"],changed,
-                member_identities=list(reversed(revision["member_identities"]))))
+                member_identities=list(reversed(revision["member_identities"])),
+                identity_context=revision["identity_context"]))
 
     def test_ordered_is_order_sensitive(self):
         composition=vector("ordered-governance-composition")
@@ -46,6 +47,7 @@ class AggregateMemberEnforcementTests(unittest.TestCase):
         revision=vector("unordered-spec-revision")
         with self.assertRaisesRegex(IdentityFrameworkError,"aggregate membership is incomplete or inconsistent"):
             compute_identity(FRAMEWORK,revision["family_id"],revision["value"],
-                member_identities=revision["member_identities"][:-1])
+                member_identities=revision["member_identities"][:-1],
+                identity_context=revision["identity_context"])
 
 if __name__=="__main__": unittest.main()

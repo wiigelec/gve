@@ -195,12 +195,14 @@ class Issue76IdentityFrameworkCoreTests(unittest.TestCase):
             vector["family_id"],
             vector["value"],
             member_identities=vector["member_identities"],
+            identity_context=vector.get("identity_context"),
         )
         second = compute_identity(
             self.framework,
             vector["family_id"],
             vector["value"],
             member_identities=list(reversed(vector["member_identities"])),
+            identity_context=vector.get("identity_context"),
         )
         self.assertEqual(first, second)
 
@@ -215,12 +217,14 @@ class Issue76IdentityFrameworkCoreTests(unittest.TestCase):
             vector["family_id"],
             vector["value"],
             member_identities=vector["member_identities"],
+            identity_context=vector.get("identity_context"),
         )
         second = compute_identity(
             self.framework,
             vector["family_id"],
             vector["value"],
             member_identities=list(reversed(vector["member_identities"])),
+            identity_context=vector.get("identity_context"),
         )
         self.assertNotEqual(first, second)
 

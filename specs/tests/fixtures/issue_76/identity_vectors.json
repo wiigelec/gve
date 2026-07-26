@@ -77,7 +77,14 @@
       "member_identities": [
         "gve-spec-document-sha256:53ba3b73f7e342924158a954a492e6838a1dbaf8e43bf7d95ad3d492bd3b60cd"
       ],
-      "expected_identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46"
+      "expected_identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "identity_context": [
+        {
+          "identity": "gve-spec-document-sha256:53ba3b73f7e342924158a954a492e6838a1dbaf8e43bf7d95ad3d492bd3b60cd",
+          "family_id": "gve-spec-document",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "reference-by-value",
@@ -108,7 +115,14 @@
           }
         ]
       },
-      "expected_identity": "gve-effect-sha256:b3024913a0bd5356781fad09cdf3939d40bee6955473f1a771384ccb50e08042"
+      "expected_identity": "gve-effect-sha256:b3024913a0bd5356781fad09cdf3939d40bee6955473f1a771384ccb50e08042",
+      "identity_context": [
+        {
+          "identity": "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c",
+          "family_id": "gve-contract",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "reference-identity-plus-value",
@@ -146,9 +160,17 @@
         ]
       },
       "version_bindings": {
-        "governing_specification_revision": "gve-spec-revision-sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46"
       },
-      "expected_identity": "gve-finalization-sha256:dd13038e4d93f93bb826ad8d33b30375c138681ae990aeeb4485fce453158368"
+      "expected_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "identity_context": [
+        {
+          "identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "unordered-spec-revision",
@@ -168,7 +190,19 @@
         "gve-spec-document-sha256:2222222222222222222222222222222222222222222222222222222222222222",
         "gve-spec-document-sha256:3333333333333333333333333333333333333333333333333333333333333333"
       ],
-      "expected_identity": "gve-spec-revision-sha256:141ee495ebccb069884893f38c0f8872b1a0777b76f557f620f29824fbcbbfc0"
+      "expected_identity": "gve-spec-revision-sha256:141ee495ebccb069884893f38c0f8872b1a0777b76f557f620f29824fbcbbfc0",
+      "identity_context": [
+        {
+          "identity": "gve-spec-document-sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "family_id": "gve-spec-document",
+          "accepted": true
+        },
+        {
+          "identity": "gve-spec-document-sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          "family_id": "gve-spec-document",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "ordered-governance-composition",
@@ -321,7 +355,14 @@
         ]
       },
       "expected_error": "reference identity family does not match",
-      "category": "mismatched-family"
+      "category": "mismatched-family",
+      "identity_context": [
+        {
+          "identity": "gve-effect-sha256:04fc3e8b5507274b1d827b05b2f311e41b800e1a38533e0f8ce4b4631d5d1d10",
+          "family_id": "gve-contract",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "ambiguous-reference",
@@ -418,7 +459,14 @@
         "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c"
       ],
       "expected_error": "aggregate member identity family does not match",
-      "category": "mismatched-family"
+      "category": "mismatched-family",
+      "identity_context": [
+        {
+          "identity": "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c",
+          "family_id": "gve-contract",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "aggregate-incomplete-membership",
@@ -434,7 +482,14 @@
       },
       "member_identities": [],
       "expected_error": "aggregate membership is incomplete or inconsistent",
-      "category": "incomplete-membership"
+      "category": "incomplete-membership",
+      "identity_context": [
+        {
+          "identity": "gve-spec-document-sha256:53ba3b73f7e342924158a954a492e6838a1dbaf8e43bf7d95ad3d492bd3b60cd",
+          "family_id": "gve-spec-document",
+          "accepted": true
+        }
+      ]
     },
     {
       "id": "aggregate-pair-mismatch",
@@ -500,28 +555,213 @@
       "expected_error": "stale canonicalization binding"
     },
     {
-      "id": "self-reference-cycle",
-      "category": "cycle",
-      "scenario": "self-reference",
-      "family_id": "gve-effect",
-      "claimed_identity": "gve-effect-sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "id": "generic-self-graph-cycle",
+      "category": "generic-in-memory-graph-cycle",
+      "scenario": "generic-self-graph-cycle",
+      "family_id": "gve-plan",
+      "claimed_identity": "gve-plan-sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "expected_error": "circular object identity construction"
     },
     {
-      "id": "mutual-reference-cycle",
-      "category": "cycle",
-      "scenario": "mutual-reference",
-      "family_id": "gve-effect",
-      "claimed_identity": "gve-effect-sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "id": "generic-mutual-graph-cycle",
+      "category": "generic-in-memory-graph-cycle",
+      "scenario": "generic-mutual-graph-cycle",
+      "family_id": "gve-plan",
+      "claimed_identity": "gve-plan-sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "expected_error": "circular object identity construction"
     },
     {
-      "id": "circular-aggregate-construction",
-      "category": "cycle",
-      "scenario": "circular-aggregate",
+      "id": "direct-aggregate-cycle",
+      "category": "direct-aggregate-cycle",
+      "scenario": "direct-aggregate-cycle",
       "family_id": "gve-governance-composition",
       "claimed_identity": "gve-governance-composition-sha256:0000000000000000000000000000000000000000000000000000000000000000",
       "expected_error": "circular object identity construction"
+    },
+    {
+      "id": "governing-revision-missing-binding",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {},
+      "identity_context": [
+        {
+          "identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        }
+      ],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "binding is required",
+      "category": "stale-version-binding"
+    },
+    {
+      "id": "governing-revision-malformed-short-digest",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {
+        "governing_specification_revision": "gve-spec-revision-sha256:abcd"
+      },
+      "identity_context": [
+        {
+          "identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        }
+      ],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "stale governing specification revision binding",
+      "category": "stale-version-binding"
+    },
+    {
+      "id": "governing-revision-fabricated-digest",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {
+        "governing_specification_revision": "gve-spec-revision-sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "identity_context": [
+        {
+          "identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        }
+      ],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "stale governing specification revision binding",
+      "category": "stale-version-binding"
+    },
+    {
+      "id": "governing-revision-verified-but-stale",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {
+        "governing_specification_revision": "gve-spec-revision-sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "identity_context": [
+        {
+          "identity": "gve-spec-revision-sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        },
+        {
+          "identity": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+          "family_id": "gve-spec-revision",
+          "accepted": true
+        }
+      ],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "stale governing specification revision binding",
+      "category": "stale-version-binding"
+    },
+    {
+      "id": "governing-revision-authority-absent-from-context",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {
+        "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46"
+      },
+      "identity_context": [],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "absent from authoritative verification context",
+      "category": "unverifiable-identity"
+    },
+    {
+      "id": "governing-revision-wrong-family",
+      "family_id": "gve-finalization",
+      "value": {
+        "identity": "ignored",
+        "status": "final",
+        "references": [
+          {
+            "identity": "gve-authoritative-result-sha256:7686fbe851515c439de1858adb9ebd6ed93bb31a292234c75d4bb1e846f8674d",
+            "value": {
+              "result_identity": "ignored",
+              "result": "ok"
+            }
+          }
+        ]
+      },
+      "version_bindings": {
+        "governing_specification_revision": "gve-contract-sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      "identity_context": [],
+      "governing_specification_revision": "gve-spec-revision-sha256:f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
+      "claimed_identity": "gve-finalization-sha256:6585deb5d84e9c67c54bccc2820db2666e67c74c568e40f0acf76d46647383e5",
+      "expected_error": "wrong identity family",
+      "category": "mismatched-identity-family"
+    },
+    {
+      "id": "identity-self-reference",
+      "category": "identity-self-reference",
+      "scenario": "identity-self-reference",
+      "family_id": "gve-effect",
+      "claimed_identity": "gve-effect-sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "expected_error": "self-referential identity"
     }
   ]
 }

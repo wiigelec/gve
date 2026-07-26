@@ -49,6 +49,28 @@ def validate_identity_framework(framework):
     if any(v is not True for v in inv.values()): _fail('every framework invariant must be enabled')
     if framework['embedded_identity_rules']['implicit_handling_prohibited'] is not True: _fail('implicit embedded identity handling must be prohibited')
     if framework['reference_semantics']['ambiguous_reference_prohibited'] is not True: _fail('ambiguous reference semantics must be prohibited')
+    kinds=framework.get('object_kinds')
+    if not isinstance(kinds,Mapping) or kinds.get('permitted_kinds')!=['object','ordered-aggregate','unordered-aggregate']: _fail('v1 object kinds must exclude transitive closure')
+    if kinds.get('v1_aggregate_closure_boundary')!='direct': _fail('v1 aggregate closure boundary must be direct')
+    ctx=framework.get('identity_verification_context')
+    if not isinstance(ctx,Mapping): _fail('identity verification context authority is required')
+    expected_ctx={
+        'representation':'caller-supplied sequence of identity records',
+        'record_fields':['identity','family_id','accepted'],
+        'identity_field':'identity',
+        'family_field':'family_id',
+        'acceptance_field':'accepted',
+        'accepted_value':True,
+        'external_to_canonical_preimage':True,
+        'missing_context_policy':'reject',
+        'missing_identity_policy':'reject',
+        'unknown_family_policy':'reject',
+        'family_conflict_policy':'reject',
+        'unaccepted_identity_policy':'reject',
+        'duplicate_identity_policy':'reject',
+    }
+    for key,expected in expected_ctx.items():
+        if ctx.get(key)!=expected: _fail(f'identity verification context has invalid {key}')
     req={'membership','ordering_significance','duplicate_policy','closure_boundary','member_reference_mode','empty_aggregate_rule','cycle_policy','membership_path','member_identity_path','member_value_path'}
     if set(framework['aggregate_semantics']['required_for_aggregate_kinds'])!=req: _fail('aggregate semantic inventory is incomplete')
     if framework['aggregate_semantics']['cycle_policy']!='reject': _fail('aggregate cycles must be rejected')
@@ -79,16 +101,50 @@ def validate_identity_family_registry(framework):
         if any(not isinstance(x,str) or not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*',x) for x in own): _fail(f'identity family {fid} has unknown own-identity paths')
         if not isinstance(refs,list) or len(set(refs))!=len(refs): _fail(f'identity family {fid} has ambiguous reference paths')
         if p.get('reference_encoding') not in {'by-value','by-identity','identity-plus-value'}: _fail(f'identity family {fid} has ambiguous reference semantics')
+        verification=p.get('identity_verification')
+        if not isinstance(verification,Mapping): _fail(f'identity family {fid} requires identity verification semantics')
+        expected_verification={
+            'by-value':('not-applicable',False,'none','not-applicable'),
+            'by-identity':('verified-identity-set',True,'caller-supplied','external-to-canonical-preimage'),
+            'identity-plus-value':('embedded-value-recomputation',True,'embedded-value','not-applicable'),
+        }[p['reference_encoding']]
+        actual_verification=(verification.get('mode'),verification.get('required'),verification.get('context_source'),verification.get('context_binding'))
+        if actual_verification!=expected_verification: _fail(f'identity family {fid} has inconsistent identity verification semantics')
         vb=p.get('version_bindings')
-        if not isinstance(vb,Mapping) or set(vb)!={'canonicalization','governing_specification_revision'} or any(not isinstance(v,bool) for v in vb.values()): _fail(f'identity family {fid} has incomplete version bindings')
+        if not isinstance(vb,Mapping) or set(vb)!={'canonicalization','governing_specification_revision'}: _fail(f'identity family {fid} has incomplete version bindings')
+        canonical_binding=vb.get('canonicalization')
+        revision_binding=vb.get('governing_specification_revision')
+        if not isinstance(canonical_binding,Mapping) or set(canonical_binding)!={'required','source'}: _fail(f'identity family {fid} has incomplete canonicalization binding')
+        if canonical_binding.get('source')!='family-definition' or not isinstance(canonical_binding.get('required'),bool): _fail(f'identity family {fid} has invalid canonicalization binding')
+        if not isinstance(revision_binding,Mapping) or set(revision_binding)!={'required','source','family_id','comparison'}: _fail(f'identity family {fid} has incomplete governing revision binding')
+        required_revision=revision_binding.get('required')
+        if not isinstance(required_revision,bool): _fail(f'identity family {fid} has invalid governing revision binding')
+        expected_revision_binding=(
+            ('verification-context','gve-spec-revision','exact')
+            if required_revision else
+            ('not-applicable',None,'not-applicable')
+        )
+        actual_revision_binding=(revision_binding.get('source'),revision_binding.get('family_id'),revision_binding.get('comparison'))
+        if actual_revision_binding!=expected_revision_binding: _fail(f'identity family {fid} has invalid governing revision binding')
         kind=family['object_kind']; agg=family['aggregate']
+        if kind=='transitive-closure': _fail(f'identity family {fid} selects unsupported transitive closure')
         if kind=='object':
             if agg is not None: _fail(f'object identity family {fid} must not define aggregate rules')
             if p.get('aggregate_encoding') is not None: _fail(f'object identity family {fid} must not define aggregate encoding')
             adjacency[fid]=[]
         else:
             if not isinstance(agg,Mapping): _fail(f'aggregate identity family {fid} requires aggregate rules')
+            if agg.get('closure_boundary')!='direct': _fail(f'identity family {fid} must use direct aggregate closure')
             if p.get('aggregate_encoding')!='member-references': _fail(f'aggregate identity family {fid} requires member-references encoding')
+            aggregate_verification=agg.get('identity_verification')
+            if not isinstance(aggregate_verification,Mapping): _fail(f'aggregate identity family {fid} requires identity verification semantics')
+            expected_aggregate_verification={
+                'by-value':('not-applicable',False,'none','not-applicable'),
+                'by-identity':('verified-identity-set',True,'caller-supplied','external-to-canonical-preimage'),
+                'identity-plus-value':('embedded-value-recomputation',True,'embedded-value','not-applicable'),
+            }[agg['member_reference_mode']]
+            actual_aggregate_verification=(aggregate_verification.get('mode'),aggregate_verification.get('required'),aggregate_verification.get('context_source'),aggregate_verification.get('context_binding'))
+            if actual_aggregate_verification!=expected_aggregate_verification: _fail(f'aggregate identity family {fid} has inconsistent identity verification semantics')
             members=agg['member_family_ids']
             if not members: _fail(f'aggregate identity family {fid} requires members')
             for mid in members:
@@ -103,6 +159,44 @@ def validate_identity_family_registry(framework):
         for mid in adjacency.get(fid,[]): visit(mid)
         visiting.remove(fid); visited.add(fid)
     for fid in ids: visit(fid)
+
+def validate_identity_context(framework,identity_context):
+    """Return a fail-closed identity-to-family map for authoritative records."""
+    families=framework.get('identity_families')
+    if not isinstance(families,list):
+        _fail('identity family registry is required')
+    known={family.get('id') for family in families if isinstance(family,Mapping)}
+    if identity_context is None:
+        _fail('identity verification context is required')
+    if not isinstance(identity_context,Sequence) or isinstance(identity_context,(str,bytes,bytearray)):
+        _fail('identity verification context must be a sequence of records')
+    verified={}
+    for index,record in enumerate(identity_context):
+        if not isinstance(record,Mapping):
+            _fail(f'identity verification context record {index} is malformed')
+        if set(record)!={'identity','family_id','accepted'}:
+            _fail(f'identity verification context record {index} is malformed')
+        identity=record['identity']; family_id=record['family_id']; accepted=record['accepted']
+        parsed_family=_identity_family(identity)
+        if family_id not in known:
+            _fail('identity verification context contains unknown family')
+        if parsed_family!=family_id:
+            _fail('identity verification context family conflicts with identity')
+        if accepted is not True:
+            _fail('identity verification context contains unaccepted identity')
+        if identity in verified:
+            _fail('identity verification context contains duplicate identity')
+        verified[identity]=family_id
+    return verified
+
+def _require_verified_identity(framework,identity,expected_family,identity_context):
+    verified=validate_identity_context(framework,identity_context)
+    actual=verified.get(identity)
+    if actual is None:
+        _fail('identity is absent from authoritative verification context')
+    if actual!=expected_family:
+        _fail('identity verification context family does not match')
+    return identity
 
 def canonical_json_bytes(value):
     def norm(item):
@@ -158,7 +252,7 @@ def _enter_construction(value,stack):
     if marker in stack: _fail('circular object identity construction')
     return stack+(marker,)
 
-def _encode_references(framework,family,value,stack,claimed_identity=None):
+def _encode_references(framework,family,value,stack,claimed_identity=None,identity_context=None):
     pre=family['preimage']; paths=pre['reference_paths']; mode=pre['reference_encoding']; allowed=set(pre['allowed_reference_family_ids'])
     prepared=value
     encoded={}
@@ -177,15 +271,16 @@ def _encode_references(framework,family,value,stack,claimed_identity=None):
             elif mode=='by-identity':
                 if set(ref)!={'identity'}: _fail('by-identity reference representation is missing or ambiguous')
                 ident=ref['identity']; rf=_identity_family(ident)
-                if allowed and rf not in allowed: _fail('reference identity family does not match')
                 if claimed_identity is not None and ident==claimed_identity: _fail('self-referential identity')
+                if allowed and rf not in allowed: _fail('reference identity family does not match')
+                _require_verified_identity(framework,ident,rf,identity_context)
                 out.append({'identity':ident})
             else:
                 if set(ref)!={'identity','value'}: _fail('identity-plus-value reference representation is missing or ambiguous')
                 ident=ref['identity']; rf=_identity_family(ident)
-                if allowed and rf not in allowed: _fail('reference identity family does not match')
                 if claimed_identity is not None and ident==claimed_identity: _fail('self-referential identity')
-                verify_identity(framework,rf,ident,ref['value'],_construction_stack=stack)
+                if allowed and rf not in allowed: _fail('reference identity family does not match')
+                verify_identity(framework,rf,ident,ref['value'],identity_context=identity_context,_construction_stack=stack)
                 out.append({'identity':ident,'value':ref['value']})
         encoded[path]=out
         prepared=dict(prepared); prepared.pop(path,None)
@@ -209,7 +304,7 @@ def _replace_path(value,path,replacement):
     cursor[parts[-1]]=replacement
     return result
 
-def _direct_aggregate_members(framework,family,value,stack):
+def _direct_aggregate_members(framework,family,value,stack,identity_context=None):
     agg=family['aggregate']
     raw=_path_value(value,agg['membership_path'],'aggregate membership')
     if not isinstance(raw,list): _fail('aggregate membership must be a list')
@@ -232,44 +327,25 @@ def _direct_aggregate_members(framework,family,value,stack):
         if member_family not in _family_map(framework): _fail('aggregate member identity family is unknown')
         identities.append(identity)
         if mode=='by-identity':
+            _require_verified_identity(framework,identity,member_family,identity_context)
             encoded.append({'identity':identity})
         else:
             if agg['member_value_path'] is None:
                 _fail('identity-plus-value aggregate member value path is missing')
             value_part=_path_value(member,agg['member_value_path'],f'aggregate member {index}')
-            verify_identity(framework,member_family,identity,value_part,_construction_stack=stack)
+            verify_identity(framework,member_family,identity,value_part,identity_context=identity_context,_construction_stack=stack)
             encoded.append({'identity':identity,'value':value_part})
     return raw,encoded,identities
 
-def _transitive_aggregate_members(framework,family,value,stack):
-    agg=family['aggregate']
-    if agg['member_reference_mode']!='identity-plus-value':
-        _fail('transitive closure requires identity-plus-value members')
-    collected=[]; identities=[]; seen=set()
-    def visit(container,current_stack):
-        raw,encoded,direct_ids=_direct_aggregate_members(framework,family,container,current_stack)
-        for source,item,identity in zip(raw,encoded,direct_ids):
-            if identity in seen: _fail('transitive closure contains duplicate or cyclic members')
-            seen.add(identity); collected.append(item); identities.append(identity)
-            child=_path_value(source,agg['member_value_path'],'transitive aggregate member')
-            if isinstance(child,Mapping) and agg['membership_path'] in child:
-                child_stack=_enter_construction(child,current_stack)
-                visit(child,child_stack)
-    visit(value,stack)
-    return collected,identities
-
-def _aggregate_members(framework,family,value,member_identities,stack):
+def _aggregate_members(framework,family,value,member_identities,stack,identity_context=None):
     agg=family['aggregate']
     if member_identities is None: _fail('aggregate identity requires complete member identities')
     supplied=list(member_identities)
     if len(supplied)!=len(set(supplied)) and agg['duplicate_policy']=='reject':
         _fail('aggregate identity contains duplicate members')
-    if agg['closure_boundary']=='transitive':
-        encoded,identities=_transitive_aggregate_members(framework,family,value,stack)
-        raw_count=len(encoded)
-    else:
-        raw,encoded,identities=_direct_aggregate_members(framework,family,value,stack)
-        raw_count=len(raw)
+    if agg['closure_boundary']!='direct': _fail('v1 aggregate closure boundary must be direct')
+    raw,encoded,identities=_direct_aggregate_members(framework,family,value,stack,identity_context)
+    raw_count=len(raw)
     mode=agg['member_reference_mode']
     if mode=='by-value':
         if supplied: _fail('by-value aggregate does not accept member identities')
@@ -287,26 +363,46 @@ def _aggregate_members(framework,family,value,member_identities,stack):
         encoded.sort(key=lambda item: canonical_json_bytes(item))
     return encoded
 
-def _canonical_family_value(framework,family,value,member_identities=None,version_bindings=None,construction_stack=(),claimed_identity=None):
+def _canonical_family_value(framework,family,value,member_identities=None,version_bindings=None,construction_stack=(),claimed_identity=None,identity_context=None,governing_specification_revision=None):
     _assert_acyclic(value,construction_stack)
     stack=_enter_construction(value,construction_stack)
     prepared=value
     for path in family['preimage']['own_identity_paths']: prepared=_delete_path(prepared,path)
-    prepared,refs=_encode_references(framework,family,prepared,stack,claimed_identity)
+    prepared,refs=_encode_references(framework,family,prepared,stack,claimed_identity,identity_context)
     vb=family['preimage']['version_bindings']; supplied=dict(version_bindings or {})
     if 'canonicalization' in supplied and supplied['canonicalization']!=family['canonicalization_version']: _fail('stale canonicalization binding')
     bindings={}
-    if vb['canonicalization']: bindings['canonicalization']=family['canonicalization_version']
-    if vb['governing_specification_revision']:
+    if vb['canonicalization']['required']: bindings['canonicalization']=family['canonicalization_version']
+    if vb['governing_specification_revision']['required']:
         revision=supplied.get('governing_specification_revision')
-        if not isinstance(revision,str) or not revision.startswith('gve-spec-revision-sha256:'): _fail('stale governing specification revision binding')
+        if not isinstance(revision,str):
+            _fail('governing specification revision binding is required')
+        try:
+            revision_family=_identity_family(revision)
+        except IdentityFrameworkError:
+            _fail('stale governing specification revision binding')
+        if revision_family!='gve-spec-revision':
+            _fail('governing specification revision binding has wrong identity family')
+        if governing_specification_revision is None:
+            _fail('authoritative governing specification revision is required')
+        authoritative_family=_identity_family(governing_specification_revision)
+        if authoritative_family!='gve-spec-revision':
+            _fail('authoritative governing specification revision has wrong identity family')
+        if revision!=governing_specification_revision:
+            _fail('stale governing specification revision binding')
+        _require_verified_identity(
+            framework,
+            governing_specification_revision,
+            'gve-spec-revision',
+            identity_context,
+        )
         bindings['governing_specification_revision']=revision
     kind=family['object_kind']
     if kind=='object':
         if member_identities is not None: _fail('object identity does not accept aggregate member identities')
         if not refs and not bindings.get('governing_specification_revision'): return prepared
         return {'value':prepared,'references':refs,'version_bindings':bindings}
-    members=_aggregate_members(framework,family,prepared,member_identities,stack)
+    members=_aggregate_members(framework,family,prepared,member_identities,stack,identity_context)
     agg=family['aggregate']
     if agg['member_reference_mode']=='by-identity':
         identities=[member['identity'] for member in members]
@@ -324,61 +420,52 @@ def _canonical_family_value(framework,family,value,member_identities=None,versio
     if bindings.get('governing_specification_revision'): result['version_bindings']=bindings
     return result
 
-def compute_identity(framework,family_id,value,*,member_identities=None,version_bindings=None,_construction_stack=(),_claimed_identity=None):
+def compute_identity(framework,family_id,value,*,member_identities=None,version_bindings=None,identity_context=None,governing_specification_revision=None,_construction_stack=(),_claimed_identity=None):
     families=_family_map(framework); family=families.get(family_id)
     if family is None: _fail(f'unknown identity family {family_id}')
-    canonical=_canonical_family_value(framework,family,value,member_identities,version_bindings,_construction_stack,_claimed_identity)
+    canonical=_canonical_family_value(framework,family,value,member_identities,version_bindings,_construction_stack,_claimed_identity,identity_context,governing_specification_revision)
     algorithm=family['digest_algorithm']
     if algorithm!='sha256': _fail(f'unsupported digest algorithm {algorithm}')
     digest=hashlib.sha256(family['domain_separation_prefix'].encode()+canonical_json_bytes(canonical)).hexdigest()
     return f'{family_id}-{algorithm}:{digest}'
 
-def verify_identity(framework,family_id,claimed_identity,value,*,member_identities=None,version_bindings=None,_construction_stack=()):
+def verify_identity(framework,family_id,claimed_identity,value,*,member_identities=None,version_bindings=None,identity_context=None,governing_specification_revision=None,_construction_stack=()):
     family=_family_map(framework).get(family_id)
     if family is None: _fail(f'unknown identity family {family_id}')
     expected_prefix=f"{family_id}-{family['digest_algorithm']}:"
     if not isinstance(claimed_identity,str) or not claimed_identity.startswith(expected_prefix): _fail('claimed identity family does not match the required family')
-    expected=compute_identity(framework,family_id,value,member_identities=member_identities,version_bindings=version_bindings,_construction_stack=_construction_stack,_claimed_identity=claimed_identity)
+    expected=compute_identity(framework,family_id,value,member_identities=member_identities,version_bindings=version_bindings,identity_context=identity_context,governing_specification_revision=governing_specification_revision,_construction_stack=_construction_stack,_claimed_identity=claimed_identity)
     if claimed_identity!=expected: _fail('claimed identity does not match its canonical preimage')
 
 def _negative_vector_scenario(vector):
     scenario=vector.get('scenario')
     if scenario is None:
         return vector.get('value'), vector.get('member_identities')
-    if scenario=='self-reference':
+    if scenario=='generic-self-graph-cycle':
         value={'identity':'ignored','references':[]}
-        value['references'].append({'identity':'gve-effect-sha256:'+'0'*64,'value':value})
+        value['references'].append({'value':value})
         return value,None
-    if scenario=='mutual-reference':
+    if scenario=='generic-mutual-graph-cycle':
         first={'identity':'ignored','references':[]}
         second={'identity':'ignored','references':[]}
-        first['references'].append({'identity':'gve-effect-sha256:'+'1'*64,'value':second})
-        second['references'].append({'identity':'gve-effect-sha256:'+'2'*64,'value':first})
+        first['references'].append({'value':second})
+        second['references'].append({'value':first})
         return first,None
-    if scenario=='circular-aggregate':
+    if scenario=='identity-self-reference':
+        claimed=vector['claimed_identity']
+        value={
+            'identity':'ignored',
+            'references':[{'identity':claimed}],
+        }
+        return value,None
+    if scenario=='direct-aggregate-cycle':
+        member_identity='gve-contract-sha256:'+'0'*64
         value={'identity':'ignored','composition':'cycle','members':[]}
-        value['members'].append(value)
-        return value,None
-    _fail(f"unknown negative vector scenario {scenario}")
-
-def _negative_vector_scenario(vector):
-    scenario=vector.get('scenario')
-    if scenario is None:
-        return vector.get('value'), vector.get('member_identities')
-    if scenario=='self-reference':
-        value={'identity':'ignored','references':[]}
-        value['references'].append({'identity':'gve-effect-sha256:'+'0'*64,'value':value})
-        return value,None
-    if scenario=='mutual-reference':
-        first={'identity':'ignored','references':[]}
-        second={'identity':'ignored','references':[]}
-        first['references'].append({'identity':'gve-effect-sha256:'+'1'*64,'value':second})
-        second['references'].append({'identity':'gve-effect-sha256:'+'2'*64,'value':first})
-        return first,None
-    if scenario=='circular-aggregate':
-        value={'identity':'ignored','composition':'cycle','members':[]}
-        value['members'].append(value)
-        return value,None
+        value['members'].append({
+            'identity':member_identity,
+            'value':value,
+        })
+        return value,[member_identity]
     _fail(f"unknown negative vector scenario {scenario}")
 
 def validate_fixed_identity_vectors(framework,vectors):
@@ -391,7 +478,7 @@ def validate_fixed_identity_vectors(framework,vectors):
     if covered!=families:
         missing=sorted(families-covered); extra=sorted(covered-families)
         _fail(f"fixed positive vector family coverage is incomplete; missing={missing}, extra={extra}")
-    required_categories={'omitted-prefix','stale-version','mismatched-family','ambiguous-reference','incomplete-membership','cycle'}
+    required_categories={'omitted-prefix','stale-version','mismatched-family','ambiguous-reference','incomplete-membership','generic-in-memory-graph-cycle','identity-self-reference','direct-aggregate-cycle'}
     categories={vector.get('category') for vector in neg}
     if not required_categories.issubset(categories):
         _fail('required negative vector category coverage is incomplete')
@@ -399,23 +486,26 @@ def validate_fixed_identity_vectors(framework,vectors):
     for vector in pos:
         if vector['id'] in seen: _fail(f"duplicate identity vector id {vector['id']}")
         seen.add(vector['id'])
-        actual=compute_identity(framework,vector['family_id'],vector['value'],member_identities=vector.get('member_identities'),version_bindings=vector.get('version_bindings'))
+        actual=compute_identity(framework,vector['family_id'],vector['value'],member_identities=vector.get('member_identities'),version_bindings=vector.get('version_bindings'),identity_context=vector.get('identity_context'),governing_specification_revision=vector.get('governing_specification_revision'))
         if actual!=vector['expected_identity']: _fail(f"fixed identity vector {vector['id']} does not match")
     for vector in neg:
         if vector['id'] in seen: _fail(f"duplicate identity vector id {vector['id']}")
         seen.add(vector['id'])
         value,members=_negative_vector_scenario(vector)
         try:
-            verify_identity(framework,vector['family_id'],vector['claimed_identity'],value,member_identities=members,version_bindings=vector.get('version_bindings'))
+            verify_identity(framework,vector['family_id'],vector['claimed_identity'],value,member_identities=members,version_bindings=vector.get('version_bindings'),identity_context=vector.get('identity_context'),governing_specification_revision=vector.get('governing_specification_revision'))
         except IdentityFrameworkError as exc:
             if vector['expected_error'] not in str(exc): _fail(f"negative identity vector {vector['id']} failed for the wrong reason")
         else: _fail(f"negative identity vector {vector['id']} was accepted")
 
 def render_identity_framework_markdown(framework):
     validate_identity_framework(framework)
-    lines=['# GVE Unified Domain-Separated Identity Framework','', '> This Markdown is a deterministic projection of `GVE-IDENTITY-FRAMEWORK.json`. The JSON is normative.','','## Authority','',f"- Governing specification: `{framework['authority']['governing_specification']}`",f"- Integration state: `{framework['authority']['integration_state']}`",'','## Representation','',f"- Syntax: `{framework['representation']['syntax']}`",f"- Digest encoding: `{framework['representation']['digest_encoding']}`",'','## Identity Families','']
+    context=framework['identity_verification_context']
+    lines=['# GVE Unified Domain-Separated Identity Framework','', '> This Markdown is a deterministic projection of `GVE-IDENTITY-FRAMEWORK.json`. The JSON is normative.','','## Authority','',f"- Governing specification: `{framework['authority']['governing_specification']}`",f"- Integration state: `{framework['authority']['integration_state']}`",'','## Representation','',f"- Syntax: `{framework['representation']['syntax']}`",f"- Digest encoding: `{framework['representation']['digest_encoding']}`",'','## Identity Verification Context','',f"- Representation: `{context['representation']}`",f"- External to canonical preimage: `{str(context['external_to_canonical_preimage']).lower()}`",f"- Missing context policy: `{context['missing_context_policy']}`",f"- Missing identity policy: `{context['missing_identity_policy']}`",f"- Family conflict policy: `{context['family_conflict_policy']}`",f"- Unaccepted identity policy: `{context['unaccepted_identity_policy']}`",f"- Duplicate identity policy: `{context['duplicate_identity_policy']}`",'','## V1 Aggregate Boundary','',f"- Permitted object kinds: `{', '.join(framework['object_kinds']['permitted_kinds'])}`",f"- Aggregate closure boundary: `{framework['object_kinds']['v1_aggregate_closure_boundary']}`","- Transitive closure: `deferred to a successor issue`",'','## Identity Families','']
     for family in framework['identity_families']:
         pre=family['preimage']
-        lines += [f"### `{family['id']}`",'',f"- Semantic domain: `{family['semantic_domain']}`",f"- Domain prefix: `{family['domain_separation_prefix'][:-1]}\\0`",f"- Canonicalization: `{family['canonicalization_version']}`",f"- Digest: `{family['digest_algorithm']}`",f"- Reference encoding: `{pre['reference_encoding']}`",f"- Own identity paths: `{', '.join(pre['own_identity_paths'])}`",f"- Reference paths: `{', '.join(pre['reference_paths']) or '(none)'}`",f"- Object kind: `{family['object_kind']}`",'']
+        verification=pre['identity_verification']
+        revision_binding=pre['version_bindings']['governing_specification_revision']
+        lines += [f"### `{family['id']}`",'',f"- Semantic domain: `{family['semantic_domain']}`",f"- Domain prefix: `{family['domain_separation_prefix'][:-1]}\\0`",f"- Canonicalization: `{family['canonicalization_version']}`",f"- Digest: `{family['digest_algorithm']}`",f"- Reference encoding: `{pre['reference_encoding']}`",f"- Identity verification: `{verification['mode']}`",f"- Verification context source: `{verification['context_source']}`",f"- Governing revision required: `{str(revision_binding['required']).lower()}`",f"- Governing revision source: `{revision_binding['source']}`",f"- Governing revision comparison: `{revision_binding['comparison']}`",f"- Own identity paths: `{', '.join(pre['own_identity_paths'])}`",f"- Reference paths: `{', '.join(pre['reference_paths']) or '(none)'}`",f"- Object kind: `{family['object_kind']}`",'']
     lines += ['## Fail-Closed Conditions','']+[f'- `{c}`' for c in framework['fail_closed_conditions']]+['','## Canonical Normative JSON','','```json',json.dumps(framework,ensure_ascii=False,sort_keys=True,indent=2),'```','']
     return '\n'.join(lines)

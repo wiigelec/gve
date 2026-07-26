@@ -77,9 +77,9 @@
     "permitted_kinds": [
       "object",
       "ordered-aggregate",
-      "unordered-aggregate",
-      "transitive-closure"
-    ]
+      "unordered-aggregate"
+    ],
+    "v1_aggregate_closure_boundary": "direct"
   },
   "aggregate_semantics": {
     "required_for_aggregate_kinds": [
@@ -144,8 +144,22 @@
         "allowed_reference_family_ids": [],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "not-applicable",
+          "required": false,
+          "context_source": "none",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -167,8 +181,22 @@
         "allowed_reference_family_ids": [],
         "aggregate_encoding": "member-references",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "unordered-aggregate",
@@ -185,7 +213,13 @@
         "cycle_policy": "reject",
         "membership_path": "members",
         "member_identity_path": "document_identity",
-        "member_value_path": null
+        "member_value_path": null,
+        "identity_verification": {
+          "mode": "verified-identity-set",
+          "required": true,
+          "context_source": "caller-supplied",
+          "context_binding": "external-to-canonical-preimage"
+        }
       }
     },
     {
@@ -208,8 +242,22 @@
         ],
         "aggregate_encoding": "member-references",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "ordered-aggregate",
@@ -226,7 +274,13 @@
         "cycle_policy": "reject",
         "membership_path": "members",
         "member_identity_path": "identity",
-        "member_value_path": "value"
+        "member_value_path": "value",
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
       }
     },
     {
@@ -249,8 +303,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "verified-identity-set",
+          "required": true,
+          "context_source": "caller-supplied",
+          "context_binding": "external-to-canonical-preimage"
         }
       },
       "object_kind": "object",
@@ -274,8 +342,22 @@
         "allowed_reference_family_ids": [],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "not-applicable",
+          "required": false,
+          "context_source": "none",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -301,8 +383,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -328,8 +424,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -355,8 +465,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -382,8 +506,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -409,8 +547,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -436,8 +588,22 @@
         ],
         "aggregate_encoding": null,
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": true
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": true,
+            "source": "verification-context",
+            "family_id": "gve-spec-revision",
+            "comparison": "exact"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
         }
       },
       "object_kind": "object",
@@ -458,5 +624,25 @@
     "normal_validation_required": true,
     "fixed_vector_validation_required": true,
     "identity_migration_deferred": true
+  },
+  "identity_verification_context": {
+    "purpose": "authoritative verification of by-identity references and aggregate members",
+    "representation": "caller-supplied sequence of identity records",
+    "record_fields": [
+      "identity",
+      "family_id",
+      "accepted"
+    ],
+    "identity_field": "identity",
+    "family_field": "family_id",
+    "acceptance_field": "accepted",
+    "accepted_value": true,
+    "external_to_canonical_preimage": true,
+    "missing_context_policy": "reject",
+    "missing_identity_policy": "reject",
+    "unknown_family_policy": "reject",
+    "family_conflict_policy": "reject",
+    "unaccepted_identity_policy": "reject",
+    "duplicate_identity_policy": "reject"
   }
 }

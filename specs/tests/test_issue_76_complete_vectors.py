@@ -40,7 +40,9 @@ class Issue76CompleteVectorSurfaceTests(unittest.TestCase):
             "mismatched-family",
             "ambiguous-reference",
             "incomplete-membership",
-            "cycle",
+            "generic-in-memory-graph-cycle",
+            "identity-self-reference",
+            "direct-aggregate-cycle",
         }
         covered = {
             vector.get("category") for vector in VECTORS["negative"]
@@ -51,13 +53,18 @@ class Issue76CompleteVectorSurfaceTests(unittest.TestCase):
         scenarios = {
             vector.get("scenario")
             for vector in VECTORS["negative"]
-            if vector.get("category") == "cycle"
+            if vector.get("category") in {
+                "generic-in-memory-graph-cycle",
+                "identity-self-reference",
+                "direct-aggregate-cycle",
+            }
         }
         self.assertEqual(
             {
-                "self-reference",
-                "mutual-reference",
-                "circular-aggregate",
+                "generic-self-graph-cycle",
+                "generic-mutual-graph-cycle",
+                "identity-self-reference",
+                "direct-aggregate-cycle",
             },
             scenarios,
         )

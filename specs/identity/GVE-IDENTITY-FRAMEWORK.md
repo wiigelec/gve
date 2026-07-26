@@ -12,6 +12,22 @@
 - Syntax: `<family>-<algorithm>:<digest>`
 - Digest encoding: `lowercase-hex`
 
+## Identity Verification Context
+
+- Representation: `caller-supplied sequence of identity records`
+- External to canonical preimage: `true`
+- Missing context policy: `reject`
+- Missing identity policy: `reject`
+- Family conflict policy: `reject`
+- Unaccepted identity policy: `reject`
+- Duplicate identity policy: `reject`
+
+## V1 Aggregate Boundary
+
+- Permitted object kinds: `object, ordered-aggregate, unordered-aggregate`
+- Aggregate closure boundary: `direct`
+- Transitive closure: `deferred to a successor issue`
+
 ## Identity Families
 
 ### `gve-spec-document`
@@ -21,6 +37,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `by-value`
+- Identity verification: `not-applicable`
+- Verification context source: `none`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -32,6 +53,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `(none)`
 - Object kind: `unordered-aggregate`
@@ -43,6 +69,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `ordered-aggregate`
@@ -54,6 +85,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `by-identity`
+- Identity verification: `verified-identity-set`
+- Verification context source: `caller-supplied`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -65,6 +101,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `by-value`
+- Identity verification: `not-applicable`
+- Verification context source: `none`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -76,6 +117,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -87,6 +133,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -98,6 +149,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -109,6 +165,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -120,6 +181,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `false`
+- Governing revision source: `not-applicable`
+- Governing revision comparison: `not-applicable`
 - Own identity paths: `result_identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -131,6 +197,11 @@
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
 - Reference encoding: `identity-plus-value`
+- Identity verification: `embedded-value-recomputation`
+- Verification context source: `embedded-value`
+- Governing revision required: `true`
+- Governing revision source: `verification-context`
+- Governing revision comparison: `exact`
 - Own identity paths: `identity`
 - Reference paths: `references`
 - Object kind: `object`
@@ -276,6 +347,12 @@
       "preimage": {
         "aggregate_encoding": null,
         "allowed_reference_family_ids": [],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "none",
+          "mode": "not-applicable",
+          "required": false
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -285,8 +362,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "normative-specification-document"
@@ -297,6 +382,12 @@
         "cycle_policy": "reject",
         "duplicate_policy": "reject",
         "empty_aggregate_rule": "reject",
+        "identity_verification": {
+          "context_binding": "external-to-canonical-preimage",
+          "context_source": "caller-supplied",
+          "mode": "verified-identity-set",
+          "required": true
+        },
         "member_family_ids": [
           "gve-spec-document"
         ],
@@ -315,6 +406,12 @@
       "preimage": {
         "aggregate_encoding": "member-references",
         "allowed_reference_family_ids": [],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -322,8 +419,16 @@
         "reference_paths": [],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "governing-specification-set-revision"
@@ -334,6 +439,12 @@
         "cycle_policy": "reject",
         "duplicate_policy": "reject",
         "empty_aggregate_rule": "reject",
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "member_family_ids": [
           "gve-contract"
         ],
@@ -354,6 +465,12 @@
         "allowed_reference_family_ids": [
           "gve-contract"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -363,8 +480,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "governed-authority-composition"
@@ -381,6 +506,12 @@
         "allowed_reference_family_ids": [
           "gve-contract"
         ],
+        "identity_verification": {
+          "context_binding": "external-to-canonical-preimage",
+          "context_source": "caller-supplied",
+          "mode": "verified-identity-set",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -390,8 +521,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "exact-governed-effect"
@@ -406,6 +545,12 @@
       "preimage": {
         "aggregate_encoding": null,
         "allowed_reference_family_ids": [],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "none",
+          "mode": "not-applicable",
+          "required": false
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -415,8 +560,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "accepted-governed-plan"
@@ -433,6 +586,12 @@
         "allowed_reference_family_ids": [
           "gve-effect"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -442,8 +601,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "governed-contract"
@@ -460,6 +627,12 @@
         "allowed_reference_family_ids": [
           "gve-contract"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -469,8 +642,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "governed-production"
@@ -487,6 +668,12 @@
         "allowed_reference_family_ids": [
           "gve-production"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -496,8 +683,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "admitted-evidence-record"
@@ -514,6 +709,12 @@
         "allowed_reference_family_ids": [
           "gve-evidence"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -523,8 +724,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "authoritative-governed-execution-record"
@@ -541,6 +750,12 @@
         "allowed_reference_family_ids": [
           "gve-execution-record"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "result_identity"
         ],
@@ -550,8 +765,16 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": false
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "not-applicable",
+            "family_id": null,
+            "required": false,
+            "source": "not-applicable"
+          }
         }
       },
       "semantic_domain": "authoritative-governed-result"
@@ -568,6 +791,12 @@
         "allowed_reference_family_ids": [
           "gve-authoritative-result"
         ],
+        "identity_verification": {
+          "context_binding": "not-applicable",
+          "context_source": "embedded-value",
+          "mode": "embedded-value-recomputation",
+          "required": true
+        },
         "own_identity_paths": [
           "identity"
         ],
@@ -577,21 +806,49 @@
         ],
         "value_source": "complete-object",
         "version_bindings": {
-          "canonicalization": true,
-          "governing_specification_revision": true
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "comparison": "exact",
+            "family_id": "gve-spec-revision",
+            "required": true,
+            "source": "verification-context"
+          }
         }
       },
       "semantic_domain": "governed-result-finalization"
     }
   ],
+  "identity_verification_context": {
+    "acceptance_field": "accepted",
+    "accepted_value": true,
+    "duplicate_identity_policy": "reject",
+    "external_to_canonical_preimage": true,
+    "family_conflict_policy": "reject",
+    "family_field": "family_id",
+    "identity_field": "identity",
+    "missing_context_policy": "reject",
+    "missing_identity_policy": "reject",
+    "purpose": "authoritative verification of by-identity references and aggregate members",
+    "record_fields": [
+      "identity",
+      "family_id",
+      "accepted"
+    ],
+    "representation": "caller-supplied sequence of identity records",
+    "unaccepted_identity_policy": "reject",
+    "unknown_family_policy": "reject"
+  },
   "object_kinds": {
     "per_family_declaration_required": true,
     "permitted_kinds": [
       "object",
       "ordered-aggregate",
-      "unordered-aggregate",
-      "transitive-closure"
-    ]
+      "unordered-aggregate"
+    ],
+    "v1_aggregate_closure_boundary": "direct"
   },
   "reference_semantics": {
     "ambiguous_reference_prohibited": true,

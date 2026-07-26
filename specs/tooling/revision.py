@@ -129,12 +129,21 @@ def build_specification_revision(
         "members": members,
     }
     member_identities = [member["document_identity"] for member in members]
+    identity_context = [
+        {
+            "identity": member["document_identity"],
+            "family_id": DOCUMENT_FAMILY,
+            "accepted": True,
+        }
+        for member in members
+    ]
     try:
         revision_identity = compute_identity(
             _identity_framework(),
             REVISION_FAMILY,
             manifest,
             member_identities=member_identities,
+            identity_context=identity_context,
         )
     except IdentityFrameworkError as exc:
         raise SpecificationRevisionError(
@@ -241,6 +250,14 @@ def validate_specification_revision(
         supplied_by_id[identifier]["document_identity"]
         for identifier in sorted(supplied_by_id)
     ]
+    identity_context = [
+        {
+            "identity": identity,
+            "family_id": DOCUMENT_FAMILY,
+            "accepted": True,
+        }
+        for identity in member_identities
+    ]
     try:
         verify_identity(
             _identity_framework(),
@@ -248,6 +265,7 @@ def validate_specification_revision(
             identity,
             canonical_supplied,
             member_identities=member_identities,
+            identity_context=identity_context,
         )
     except IdentityFrameworkError as exc:
         raise SpecificationRevisionError(
