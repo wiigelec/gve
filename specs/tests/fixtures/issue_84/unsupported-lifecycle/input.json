@@ -1,0 +1,1 @@
+{"lifecycle":"execute","schema_version":2,"workflow":{"operations":[{"content":{"message":"opaque plugin-owned content","nested":{"unknown_to_core":true}},"operation_id":"operation-1","plugin":{"action":"record","plugin_id":"example.echo"}}],"workflow_id":"canonical-stage-2-no-op"}}
