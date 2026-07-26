@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "result_id": "result-processing-failure-1",
+  "request_id": "request-1",
+  "lifecycle": "no-op",
+  "processing": {
+    "status": "failed",
+    "failure_stage": "plugin-execution"
+  },
+  "workflow": {
+    "workflow_id": "workflow-1",
+    "status": "failed",
+    "effects": {
+      "request": "not-requested",
+      "authorization": "indeterminate",
+      "execution": "unattempted",
+      "observation": "unobserved",
+      "verification": "unverified"
+    },
+    "operations": [
+      {
+        "operation_id": "operation-1",
+        "status": "failed",
+        "effects": {
+          "request": "not-requested",
+          "authorization": "indeterminate",
+          "execution": "unattempted",
+          "observation": "unobserved",
+          "verification": "unverified"
+        }
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "diagnostic_id": "diagnostic-1",
+      "code": "GVE-S2-PROCESSING-FAILURE",
+      "stage": "no-op-disposition",
+      "scope": "workflow",
+      "request_id": "request-1",
+      "workflow_id": "workflow-1",
+      "message": "No-op disposition failed after authoritative identities were established."
+    }
+  ],
+  "process": {
+    "exit_code": 3,
+    "stdout": "authoritative-result",
+    "stderr": "empty"
+  }
+}

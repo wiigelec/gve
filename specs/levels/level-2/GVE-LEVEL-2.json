@@ -18,6 +18,7 @@
       "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
       "GVE-LEVEL-2-DEPENDENCIES-HANDOFFS",
       "GVE-LEVEL-2-RESULT-ASSEMBLY",
+      "GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT",
       "GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
     ]
   },
@@ -59,6 +60,11 @@
       "text": "The subordinate Level 2 specification GVE-LEVEL-2-RESULT-ASSEMBLY, which owns normative operation-evidence aggregation and authoritative workflow-result assembly while preserving inherited effect-state distinctions."
     },
     {
+      "id": "LEVEL-2-STAGE-2-RESULT-CONTRACT",
+      "term": "Level 2 Stage 2 result-contract specification",
+      "text": "The subordinate Level 2 specialization GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT, which defines the exact Stage 2 authoritative no-op result and fatal pre-result failure wire contracts without replacing Result Assembly authority."
+    },
+    {
       "id": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES",
       "term": "Level 2 local-plugin-boundaries specification",
       "text": "The subordinate Level 2 specification GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES, which owns composition-facing responsibility boundaries for local filesystem modification, command execution, and local Git operation domains without defining concrete payload catalogs or maintained implementations."
@@ -83,13 +89,14 @@
     },
     {
       "id": "L2-ROOT-REQ-003",
-      "text": "The normative Level 2 subordinate-document set must consist of GVE-LEVEL-2-DOCUMENT-AUTHORITY, GVE-LEVEL-2-WORKFLOW-COMPOSITION, GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, GVE-LEVEL-2-RESULT-ASSEMBLY, and GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES. Each subordinate document must own only the semantic responsibility assigned by this root.",
+      "text": "The normative Level 2 subordinate-document set must consist of GVE-LEVEL-2-DOCUMENT-AUTHORITY, GVE-LEVEL-2-WORKFLOW-COMPOSITION, GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, GVE-LEVEL-2-RESULT-ASSEMBLY, GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT, and GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES. Each subordinate document must own only the semantic responsibility assigned by this root.",
       "references": [
         "LEVEL-2-SPECIFICATION-SET",
         "LEVEL-2-DOCUMENT-AUTHORITY",
         "LEVEL-2-WORKFLOW-COMPOSITION",
         "LEVEL-2-DEPENDENCIES-HANDOFFS",
         "LEVEL-2-RESULT-ASSEMBLY",
+        "LEVEL-2-STAGE-2-RESULT-CONTRACT",
         "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
       ]
     },
@@ -177,6 +184,12 @@
       "source": "LEVEL-2-SPECIFICATION-SET",
       "relation": "contains-responsibility",
       "target": "LEVEL-2-LOCAL-PLUGIN-BOUNDARIES"
+    },
+    {
+      "id": "L2-ROOT-REL-008",
+      "source": "LEVEL-2-SPECIFICATION-SET",
+      "relation": "contains-specialization",
+      "target": "LEVEL-2-STAGE-2-RESULT-CONTRACT"
     }
   ],
   "scope": {
@@ -184,7 +197,8 @@
       "Level 0 and Level 1 semantic inheritance",
       "The sole normative Level 2 root identity, status, and Level 1 parentage",
       "The Level 2 application-plugin composition-layer purpose and authority boundary",
-      "The final five-document subordinate decomposition by non-overlapping semantic responsibility",
+      "The final six-document subordinate decomposition by non-overlapping semantic responsibility",
+      "The exact Stage 2 result-contract specialization under Result Assembly authority",
       "Stable root and subordinate identifier namespace expectations",
       "Core independence from plugin-specific operation meaning",
       "Composition-facing local filesystem, command-execution, and local-Git domain boundaries delegated to a subordinate specification"

@@ -10,7 +10,7 @@
 <br>**Document role:** root<br>
 **Specification-set root:** `GVE-LEVEL-2`<br>
 **Imports:** None<br>
-**Specification-set members:** `GVE-LEVEL-2`, `GVE-LEVEL-2-DOCUMENT-AUTHORITY`, `GVE-LEVEL-2-WORKFLOW-COMPOSITION`, `GVE-LEVEL-2-DEPENDENCIES-HANDOFFS`, `GVE-LEVEL-2-RESULT-ASSEMBLY`, `GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
+**Specification-set members:** `GVE-LEVEL-2`, `GVE-LEVEL-2-DOCUMENT-AUTHORITY`, `GVE-LEVEL-2-WORKFLOW-COMPOSITION`, `GVE-LEVEL-2-DEPENDENCIES-HANDOFFS`, `GVE-LEVEL-2-RESULT-ASSEMBLY`, `GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT`, `GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 
 ## Summary
 
@@ -46,6 +46,10 @@ The subordinate Level 2 specification GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, which o
 
 The subordinate Level 2 specification GVE-LEVEL-2-RESULT-ASSEMBLY, which owns normative operation-evidence aggregation and authoritative workflow-result assembly while preserving inherited effect-state distinctions.
 
+### Level 2 Stage 2 result-contract specification (`LEVEL-2-STAGE-2-RESULT-CONTRACT`)
+
+The subordinate Level 2 specialization GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT, which defines the exact Stage 2 authoritative no-op result and fatal pre-result failure wire contracts without replacing Result Assembly authority.
+
 ### Level 2 local-plugin-boundaries specification (`LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`)
 
 The subordinate Level 2 specification GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES, which owns composition-facing responsibility boundaries for local filesystem modification, command execution, and local Git operation domains without defining concrete payload catalogs or maintained implementations.
@@ -66,9 +70,9 @@ References: `LEVEL-2-SPECIFICATION-SET`, `LEVEL-2-ROOT`
 
 ### L2-ROOT-REQ-003
 
-The normative Level 2 subordinate-document set must consist of GVE-LEVEL-2-DOCUMENT-AUTHORITY, GVE-LEVEL-2-WORKFLOW-COMPOSITION, GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, GVE-LEVEL-2-RESULT-ASSEMBLY, and GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES. Each subordinate document must own only the semantic responsibility assigned by this root.
+The normative Level 2 subordinate-document set must consist of GVE-LEVEL-2-DOCUMENT-AUTHORITY, GVE-LEVEL-2-WORKFLOW-COMPOSITION, GVE-LEVEL-2-DEPENDENCIES-HANDOFFS, GVE-LEVEL-2-RESULT-ASSEMBLY, GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT, and GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES. Each subordinate document must own only the semantic responsibility assigned by this root.
 
-References: `LEVEL-2-SPECIFICATION-SET`, `LEVEL-2-DOCUMENT-AUTHORITY`, `LEVEL-2-WORKFLOW-COMPOSITION`, `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
+References: `LEVEL-2-SPECIFICATION-SET`, `LEVEL-2-DOCUMENT-AUTHORITY`, `LEVEL-2-WORKFLOW-COMPOSITION`, `LEVEL-2-DEPENDENCIES-HANDOFFS`, `LEVEL-2-RESULT-ASSEMBLY`, `LEVEL-2-STAGE-2-RESULT-CONTRACT`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 
 ### L2-ROOT-REQ-004
 
@@ -109,6 +113,7 @@ References: `LEVEL-2-COMPOSITION-LAYER`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 - `L2-ROOT-REL-005`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-DEPENDENCIES-HANDOFFS`
 - `L2-ROOT-REL-006`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-RESULT-ASSEMBLY`
 - `L2-ROOT-REL-007`: `LEVEL-2-SPECIFICATION-SET` **contains-responsibility** `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
+- `L2-ROOT-REL-008`: `LEVEL-2-SPECIFICATION-SET` **contains-specialization** `LEVEL-2-STAGE-2-RESULT-CONTRACT`
 
 ## Scope
 
@@ -117,7 +122,8 @@ References: `LEVEL-2-COMPOSITION-LAYER`, `LEVEL-2-LOCAL-PLUGIN-BOUNDARIES`
 - Level 0 and Level 1 semantic inheritance
 - The sole normative Level 2 root identity, status, and Level 1 parentage
 - The Level 2 application-plugin composition-layer purpose and authority boundary
-- The final five-document subordinate decomposition by non-overlapping semantic responsibility
+- The final six-document subordinate decomposition by non-overlapping semantic responsibility
+- The exact Stage 2 result-contract specialization under Result Assembly authority
 - Stable root and subordinate identifier namespace expectations
 - Core independence from plugin-specific operation meaning
 - Composition-facing local filesystem, command-execution, and local-Git domain boundaries delegated to a subordinate specification
