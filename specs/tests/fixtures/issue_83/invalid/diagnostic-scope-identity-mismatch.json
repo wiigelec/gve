@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "result_id": "result-invalid-input-1",
+  "request_id": "request-1",
+  "lifecycle": "no-op",
+  "processing": {
+    "status": "rejected",
+    "failure_stage": "payload-validation"
+  },
+  "workflow": {
+    "workflow_id": "workflow-1",
+    "status": "rejected",
+    "effects": {
+      "request": "not-requested",
+      "authorization": "indeterminate",
+      "execution": "unattempted",
+      "observation": "unobserved",
+      "verification": "unverified"
+    },
+    "operations": [
+      {
+        "operation_id": "operation-1",
+        "status": "unattempted",
+        "effects": {
+          "request": "not-requested",
+          "authorization": "indeterminate",
+          "execution": "unattempted",
+          "observation": "unobserved",
+          "verification": "unverified"
+        }
+      }
+    ]
+  },
+  "diagnostics": [
+    {
+      "diagnostic_id": "diagnostic-1",
+      "code": "GVE-S2-INVALID-PAYLOAD",
+      "stage": "payload-validation",
+      "scope": "operation",
+      "request_id": "request-1",
+      "message": "The Stage 2 payload does not conform to the accepted common envelope.",
+      "workflow_id": "workflow-1"
+    }
+  ],
+  "process": {
+    "exit_code": 2,
+    "stdout": "authoritative-result",
+    "stderr": "empty"
+  }
+}
