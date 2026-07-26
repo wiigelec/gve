@@ -179,11 +179,81 @@ class Issue84Stage2VectorTests(unittest.TestCase):
                 self.assertNotEqual(errors, [])
                 self.assertEqual(probe["expected"], "schema-rejected")
 
-    def test_identity_derivation_manifest_matches_reference_domains(self) -> None:
+    def test_identity_derivation_manifest_is_complete(self) -> None:
         derivation = self.manifest["identity_derivation"]
+        self.assertEqual(derivation["algorithm"], "sha256")
         self.assertEqual(derivation["separator"], "00")
-        self.assertEqual(derivation["request_preimage"][0], "ascii:request")
-        self.assertEqual(derivation["result_preimage"][0], "ascii:result")
+        self.assertEqual(
+            set(derivation["families"]),
+            {
+                "request",
+                "result-success",
+                "result-invalid-input",
+                "result-invalid-identity",
+                "diagnostic-payload-validation",
+                "diagnostic-duplicate-operation-identity",
+                "fatal-failure",
+            },
+        )
+
+    def test_every_manifest_identity_reproduces_from_normative_preimages(self) -> None:
+        for vector in self.manifest["vectors"]:
+            with self.subTest(vector=vector["id"]):
+                input_bytes = (FIXTURES / vector["input"]["path"]).read_bytes()
+                identities = vector["identities"]
+
+                if identities["request_id"] is not None:
+                    request_id = derived_identity("request", input_bytes)
+                    self.assertEqual(request_id, identities["request_id"])
+                else:
+                    request_id = None
+
+                if identities.get("failure_id") is not None:
+                    stage = vector["fatal_failure"]["stage"]
+                    self.assertEqual(
+                        derived_identity("failure", input_bytes, stage.encode("ascii")),
+                        identities["failure_id"],
+                    )
+
+                if identities["result_id"] is not None:
+                    self.assertIsNotNone(request_id)
+                    if vector["acceptance"] in {"accepted", "accepted-no-op"}:
+                        discriminator = b"success"
+                    elif vector["acceptance"] == "identity-mismatch-result":
+                        discriminator = b"invalid-identity"
+                    else:
+                        discriminator = b"invalid-input"
+                    self.assertEqual(
+                        derived_identity(
+                            "result",
+                            request_id.encode("ascii"),
+                            discriminator,
+                        ),
+                        identities["result_id"],
+                    )
+
+                expected_diagnostic_ids = []
+                for diagnostic in vector["diagnostics"]:
+                    self.assertIsNotNone(request_id)
+                    if diagnostic["code"] == "GVE-S2-DUPLICATE-IDENTITY":
+                        diagnostic_id = derived_identity(
+                            "diagnostic",
+                            request_id.encode("ascii"),
+                            b"identity-validation",
+                            b"duplicate-operation-id",
+                        )
+                    else:
+                        diagnostic_id = derived_identity(
+                            "diagnostic",
+                            request_id.encode("ascii"),
+                            b"payload-validation",
+                        )
+                    self.assertEqual(diagnostic_id, diagnostic["diagnostic_id"])
+                    expected_diagnostic_ids.append(diagnostic_id)
+                self.assertEqual(
+                    expected_diagnostic_ids,
+                    identities["diagnostic_ids"],
+                )
 
 if __name__ == "__main__":
     unittest.main()

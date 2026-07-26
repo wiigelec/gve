@@ -13,18 +13,72 @@
   "identity_derivation": {
     "algorithm": "sha256",
     "separator": "00",
-    "request_preimage": [
-      "ascii:request",
-      "00",
-      "input-bytes"
-    ],
-    "result_preimage": [
-      "ascii:result",
-      "00",
-      "ascii:request-id",
-      "00",
-      "ascii:success"
-    ]
+    "output": "gve-{family}-sha256:{lowercase-hex-digest}",
+    "families": {
+      "request": {
+        "preimage": [
+          "ascii:request",
+          "00",
+          "input-bytes"
+        ]
+      },
+      "result-success": {
+        "preimage": [
+          "ascii:result",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:success"
+        ]
+      },
+      "result-invalid-input": {
+        "preimage": [
+          "ascii:result",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:invalid-input"
+        ]
+      },
+      "result-invalid-identity": {
+        "preimage": [
+          "ascii:result",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:invalid-identity"
+        ]
+      },
+      "diagnostic-payload-validation": {
+        "preimage": [
+          "ascii:diagnostic",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:payload-validation"
+        ]
+      },
+      "diagnostic-duplicate-operation-identity": {
+        "preimage": [
+          "ascii:diagnostic",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:identity-validation",
+          "00",
+          "ascii:duplicate-operation-id"
+        ]
+      },
+      "fatal-failure": {
+        "preimage": [
+          "ascii:failure",
+          "00",
+          "input-bytes",
+          "00",
+          "ascii:failure-stage"
+        ]
+      }
+    }
   },
   "vectors": [
     {
