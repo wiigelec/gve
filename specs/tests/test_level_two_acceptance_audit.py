@@ -23,7 +23,7 @@ class LevelTwoAcceptanceAuditTests(unittest.TestCase):
     def test_accepted_repository_level_two_audit_passes(self) -> None:
         result = audit_level_two(ACCEPTED_SPECS)
         self.assertEqual(result["status"], "passed")
-        self.assertEqual(result["document_count"], 6)
+        self.assertEqual(result["document_count"], 7)
         self.assertEqual(set(result["documents"]), EXPECTED_LEVEL_TWO_DOCUMENTS)
 
 

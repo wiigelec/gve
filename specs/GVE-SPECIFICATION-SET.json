@@ -33,7 +33,7 @@
       "path": "levels/level-2/GVE-LEVEL-2.json",
       "role": "root",
       "id": "GVE-LEVEL-2",
-      "content_sha256": "8673e6e90173bc759ac22d3799f1749cd80ca52f4441ec7d0d817ba68b019f8e"
+      "content_sha256": "5077792d01593ed15b66c555d4de177862e14a80a891604441cd0bb33d6de73b"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2-DEPENDENCIES-HANDOFFS.json",
@@ -58,6 +58,12 @@
       "role": "subordinate",
       "id": "GVE-LEVEL-2-RESULT-ASSEMBLY",
       "content_sha256": "4294496705edac5b8b5da504febcc65073464039af1e1040889b153261f1287b"
+    },
+    {
+      "path": "levels/level-2/GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT.json",
+      "role": "subordinate",
+      "id": "GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT",
+      "content_sha256": "1cb3cb52c2094fd05f419d46e88553b54c0586c3caf50e2fbdc92e289291e0cf"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2-WORKFLOW-COMPOSITION.json",

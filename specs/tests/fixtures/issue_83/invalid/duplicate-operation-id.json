@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "result_id": "result-success-1",
+  "request_id": "request-1",
+  "lifecycle": "no-op",
+  "processing": {
+    "status": "succeeded",
+    "failure_stage": null
+  },
+  "workflow": {
+    "workflow_id": "workflow-1",
+    "status": "no-op-completed",
+    "effects": {
+      "request": "not-requested",
+      "authorization": "indeterminate",
+      "execution": "unattempted",
+      "observation": "unobserved",
+      "verification": "unverified"
+    },
+    "operations": [
+      {
+        "operation_id": "operation-1",
+        "status": "no-op",
+        "effects": {
+          "request": "not-requested",
+          "authorization": "indeterminate",
+          "execution": "unattempted",
+          "observation": "unobserved",
+          "verification": "unverified"
+        }
+      },
+      {
+        "operation_id": "operation-1",
+        "status": "no-op",
+        "effects": {
+          "request": "not-requested",
+          "authorization": "indeterminate",
+          "execution": "unattempted",
+          "observation": "unobserved",
+          "verification": "unverified"
+        }
+      }
+    ]
+  },
+  "diagnostics": [],
+  "process": {
+    "exit_code": 0,
+    "stdout": "authoritative-result",
+    "stderr": "empty"
+  }
+}

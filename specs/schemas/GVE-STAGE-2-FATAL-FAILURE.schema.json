@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "GVE-STAGE-2-FATAL-FAILURE.schema.json",
+  "title": "GVE Stage 2 Fatal Pre-result Failure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "failure_id",
+    "code",
+    "stage",
+    "message",
+    "process"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "failure_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "code": {
+      "enum": [
+        "GVE-S2-INVALID-UTF8",
+        "GVE-S2-INVALID-JSON",
+        "GVE-S2-RESULT-CONSTRUCTION-FAILURE"
+      ]
+    },
+    "stage": {
+      "enum": [
+        "utf8-decoding",
+        "json-parsing",
+        "result-construction"
+      ]
+    },
+    "message": {
+      "type": "string",
+      "minLength": 1
+    },
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exit_code",
+        "stdout",
+        "stderr"
+      ],
+      "properties": {
+        "exit_code": {
+          "const": 4
+        },
+        "stdout": {
+          "const": "empty"
+        },
+        "stderr": {
+          "const": "fatal-failure"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "failure_id": "fatal-failure-1",
+  "code": "GVE-S2-INVALID-JSON",
+  "stage": "json-parsing",
+  "message": "Input bytes could not be parsed as one JSON value, so no authoritative result identity could be constructed.",
+  "process": {
+    "exit_code": 4,
+    "stdout": "empty",
+    "stderr": "fatal-failure"
+  }
+}

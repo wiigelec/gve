@@ -1,0 +1,265 @@
+{
+  "$schema": "../../schemas/GVE-LEVEL.schema.json",
+  "specification": {
+    "id": "GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT",
+    "level": 2,
+    "title": "GVE Level 2 Stage 2 Authoritative Result Contract",
+    "version": "1.0.0",
+    "status": "normative",
+    "parent": "GVE-LEVEL-2"
+  },
+  "document": {
+    "role": "subordinate",
+    "root": "GVE-LEVEL-2",
+    "imports": [
+      "GVE-LEVEL-2",
+      "GVE-LEVEL-2-RESULT-ASSEMBLY",
+      "GVE-LEVEL-2-WORKFLOW-COMPOSITION"
+    ]
+  },
+  "summary": "This Stage 2 specialization defines the exact authoritative no-op result envelope, fatal pre-result failure envelope, status vocabularies, identity relationships, diagnostic shape and stable codes, failure stages, effect-state representation, terminal classes, process exit codes, and stdout/stderr behavior. It consumes the accepted Stage 2 common payload contract without redefining it.",
+  "definitions": [
+    {
+      "id": "L2-S2RC-AUTHORITATIVE-RESULT",
+      "term": "Stage 2 authoritative result",
+      "text": "The single closed JSON result envelope emitted after the core can establish a request identity, workflow identity, result identity, and the complete set of operation identities required to represent the terminal condition truthfully."
+    },
+    {
+      "id": "L2-S2RC-FATAL-PRE-RESULT-FAILURE",
+      "term": "Stage 2 fatal pre-result failure",
+      "text": "The closed JSON failure envelope emitted only when UTF-8 decoding, JSON parsing, or result construction prevents the core from constructing a truthful authoritative result identity and envelope."
+    },
+    {
+      "id": "L2-S2RC-TERMINAL-CLASS",
+      "term": "Stage 2 terminal class",
+      "text": "One of exactly four deterministic process outcomes: success, invalid-input-result, processing-failure-result, or fatal-no-result."
+    },
+    {
+      "id": "L2-S2RC-DIAGNOSTIC",
+      "term": "Stage 2 diagnostic",
+      "text": "A closed machine-consumable diagnostic object identified by diagnostic_id and stable code, with an exact failure stage, scope, optional identity references, and explanatory message text that is never the sole discriminator."
+    },
+    {
+      "id": "L2-S2RC-FAILURE-STAGE",
+      "term": "Stage 2 failure stage",
+      "text": "One exact stage from utf8-decoding, json-parsing, payload-validation, identity-validation, no-op-disposition, or result-construction."
+    },
+    {
+      "id": "L2-S2RC-NO-OP-DISPOSITION",
+      "term": "Stage 2 no-op disposition",
+      "text": "The successful Stage 2 lifecycle outcome in which processing succeeds, workflow status is no-op-completed, every operation status is no-op, no effect is requested, and execution remains unattempted."
+    },
+    {
+      "id": "L2-S2RC-EFFECT-STATE",
+      "term": "Stage 2 effect-state object",
+      "text": "The closed object containing request, authorization, execution, observation, and verification dimensions using the exact values inherited from GVE Level 3 Evidence and Result Realization."
+    },
+    {
+      "id": "L2-S2RC-PROCESS-BOUNDARY",
+      "term": "Stage 2 process boundary",
+      "text": "The deterministic mapping from terminal class to authoritative-result availability, exit code, stdout content class, and stderr content class."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "L2-S2RC-REQ-001",
+      "text": "The authoritative-result schema is specs/schemas/GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json. The fatal pre-result failure schema is specs/schemas/GVE-STAGE-2-FATAL-FAILURE.schema.json. Both schemas are normative, closed to unknown members, and override explanatory prose where a conflict exists.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT",
+        "L2-S2RC-FATAL-PRE-RESULT-FAILURE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-002",
+      "text": "Every authoritative result requires schema_version, result_id, request_id, lifecycle, processing, workflow, diagnostics, and process exactly as governed by the authoritative-result schema.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-003",
+      "text": "processing.status has exactly the values succeeded, rejected, or failed. workflow.status has exactly the values no-op-completed, rejected, or failed. operation.status has exactly the values no-op, unattempted, or failed. These fields describe distinct scopes and must not substitute for one another or for effect-state claims.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-004",
+      "text": "A successful no-op result has processing.status succeeded, processing.failure_stage null, workflow.status no-op-completed, every operation.status no-op, an empty diagnostics array, and process exit code 0.",
+      "references": [
+        "L2-S2RC-NO-OP-DISPOSITION",
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-005",
+      "text": "Every workflow and operation effect-state object contains request, authorization, execution, observation, and verification. The allowed values are exactly those declared by the authoritative-result schema and inherited from GVE Level 3 Evidence and Result Realization.",
+      "references": [
+        "L2-S2RC-EFFECT-STATE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-006",
+      "text": "For the accepted no-op lifecycle, request is not-requested, execution is unattempted, observation is unobserved, and verification is unverified at workflow and operation scope. No-op status establishes no requested, authorized, attempted, completed, observed, or verified effect.",
+      "references": [
+        "L2-S2RC-NO-OP-DISPOSITION",
+        "L2-S2RC-EFFECT-STATE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-007",
+      "text": "An effect with request not-requested must not be authorized or have any execution value other than unattempted. An execution value completed requires authorization authorized. Verification verified requires observation observed. No other positive effect claim may be inferred solely from another dimension.",
+      "references": [
+        "L2-S2RC-EFFECT-STATE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-008",
+      "text": "request_id is stable for one accepted request-processing attempt; workflow_id is stable for the workflow represented by that request; operation_id is unique within that workflow and appears exactly once in workflow.operations; result_id uniquely identifies one immutable authoritative result; diagnostic_id is unique within diagnostics.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT",
+        "L2-S2RC-DIAGNOSTIC"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-009",
+      "text": "A diagnostic identity reference, when present, must resolve to the enclosing result request_id, workflow.workflow_id, or one operation_id in workflow.operations according to the diagnostic scope. Diagnostics must not invent or ambiguously reference identities.",
+      "references": [
+        "L2-S2RC-DIAGNOSTIC"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-010",
+      "text": "Stable diagnostic codes are GVE-S2-INVALID-JSON, GVE-S2-INVALID-PAYLOAD, GVE-S2-DUPLICATE-IDENTITY, GVE-S2-PROCESSING-FAILURE, and GVE-S2-RESULT-CONSTRUCTION-FAILURE for authoritative-result diagnostics, with GVE-S2-INVALID-UTF8, GVE-S2-INVALID-JSON, and GVE-S2-RESULT-CONSTRUCTION-FAILURE permitted by the fatal failure envelope.",
+      "references": [
+        "L2-S2RC-DIAGNOSTIC",
+        "L2-S2RC-FATAL-PRE-RESULT-FAILURE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-011",
+      "text": "Human-readable diagnostic and fatal-failure messages are explanatory only. Conformance decisions use stable code, stage, scope, identities, status fields, and schema structure rather than message wording.",
+      "references": [
+        "L2-S2RC-DIAGNOSTIC",
+        "L2-S2RC-FATAL-PRE-RESULT-FAILURE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-012",
+      "text": "The exact failure-stage vocabulary is utf8-decoding, json-parsing, payload-validation, identity-validation, no-op-disposition, and result-construction. Authoritative result processing.failure_stage is null for success and otherwise one of payload-validation, identity-validation, no-op-disposition, or result-construction.",
+      "references": [
+        "L2-S2RC-FAILURE-STAGE"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-013",
+      "text": "Invalid payload structure or identity errors produce an authoritative result whenever request, workflow, result, and complete operation identities can be constructed truthfully. Such a result uses processing.status rejected, workflow.status rejected, at least one diagnostic, exit code 2, authoritative-result on stdout, and empty stderr.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT",
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-014",
+      "text": "A processing failure after authoritative identities are established produces an authoritative result with processing.status failed, workflow.status failed, at least one diagnostic, exit code 3, authoritative-result on stdout, and empty stderr.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT",
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-015",
+      "text": "Only invalid UTF-8, JSON parsing failure before authoritative identities can be constructed, or result-construction failure that prevents truthful envelope construction may produce fatal-no-result. Fatal-no-result uses exit code 4, empty stdout, and exactly one fatal failure envelope on stderr.",
+      "references": [
+        "L2-S2RC-FATAL-PRE-RESULT-FAILURE",
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-016",
+      "text": "The four terminal classes map exactly as follows: success to authoritative result, exit 0, stdout authoritative-result, stderr empty; invalid-input-result to authoritative result, exit 2, stdout authoritative-result, stderr empty; processing-failure-result to authoritative result, exit 3, stdout authoritative-result, stderr empty; fatal-no-result to no authoritative result, exit 4, stdout empty, stderr fatal-failure.",
+      "references": [
+        "L2-S2RC-TERMINAL-CLASS",
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-017",
+      "text": "Incidental human-readable progress is forbidden on stdout and stderr for all normative terminal classes. Stdout and stderr carry only the content classes defined by the process boundary.",
+      "references": [
+        "L2-S2RC-PROCESS-BOUNDARY"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-018",
+      "text": "Canonical fixtures under specs/tests/fixtures/issue_83 and conformance tests in specs/tests/test_issue_83_authoritative_result.py are normative examples and executable evidence for schema, semantic invariant, terminal-class, identity, diagnostic, stream, and exit-code behavior.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT",
+        "L2-S2RC-FATAL-PRE-RESULT-FAILURE",
+        "L2-S2RC-TERMINAL-CLASS"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-019",
+      "text": "This contract consumes the Stage 2 common payload and no-op lifecycle contract accepted by Issue 82 and must not redefine its input members, lifecycle value, plugin-owned content boundary, or unknown-member behavior.",
+      "references": [
+        "L2-S2RC-NO-OP-DISPOSITION"
+      ]
+    },
+    {
+      "id": "L2-S2RC-REQ-020",
+      "text": "This contract defines no plugin-specific result meaning, non-no-op lifecycle semantics, effect implementation, authority acquisition, dependency resolution, handoff execution, logging system, telemetry, metrics, or user-interface presentation.",
+      "references": [
+        "L2-S2RC-AUTHORITATIVE-RESULT"
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "L2-S2RC-REL-001",
+      "source": "LEVEL-2-STAGE-2-RESULT-CONTRACT",
+      "relation": "specializes",
+      "target": "LEVEL-2-RESULT-ASSEMBLY"
+    },
+    {
+      "id": "L2-S2RC-REL-002",
+      "source": "L2-S2RC-AUTHORITATIVE-RESULT",
+      "relation": "realizes",
+      "target": "L2-RA-WORKFLOW-EXECUTION-RECORD"
+    },
+    {
+      "id": "L2-S2RC-REL-004",
+      "source": "L2-S2RC-DIAGNOSTIC",
+      "relation": "is-included-in",
+      "target": "L2-S2RC-AUTHORITATIVE-RESULT"
+    },
+    {
+      "id": "L2-S2RC-REL-005",
+      "source": "L2-S2RC-TERMINAL-CLASS",
+      "relation": "determines",
+      "target": "L2-S2RC-PROCESS-BOUNDARY"
+    }
+  ],
+  "scope": {
+    "includes": [
+      "Exact Stage 2 authoritative-result and fatal-failure envelopes",
+      "Distinct processing, workflow, and operation statuses",
+      "No-op lifecycle disposition",
+      "Exact effect-state values and semantic invariants",
+      "Request, workflow, operation, result, and diagnostic identities",
+      "Stable diagnostic codes and failure stages",
+      "Result-producing error versus fatal no-result boundary",
+      "Exit-code and stdout/stderr mapping",
+      "Canonical and invalid conformance fixtures"
+    ],
+    "excludes": [
+      "Changes to the accepted Stage 2 common payload contract",
+      "Non-no-op lifecycle semantics",
+      "Plugin-specific result meaning",
+      "Effect implementation",
+      "Authority acquisition, dependency resolution, and handoff execution",
+      "Logging-system, telemetry, metrics, and UI design",
+      "End-to-end byte vectors reserved for Issue 84"
+    ]
+  }
+}

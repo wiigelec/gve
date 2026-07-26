@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "terminal_classes": [
+    {
+      "id": "success",
+      "authoritative_result": true,
+      "processing_status": "succeeded",
+      "exit_code": 0,
+      "stdout": "authoritative-result",
+      "stderr": "empty"
+    },
+    {
+      "id": "invalid-input-result",
+      "authoritative_result": true,
+      "processing_status": "rejected",
+      "exit_code": 2,
+      "stdout": "authoritative-result",
+      "stderr": "empty"
+    },
+    {
+      "id": "processing-failure-result",
+      "authoritative_result": true,
+      "processing_status": "failed",
+      "exit_code": 3,
+      "stdout": "authoritative-result",
+      "stderr": "empty"
+    },
+    {
+      "id": "fatal-no-result",
+      "authoritative_result": false,
+      "processing_status": null,
+      "exit_code": 4,
+      "stdout": "empty",
+      "stderr": "fatal-failure"
+    }
+  ]
+}
