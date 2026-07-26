@@ -1,0 +1,8 @@
+{
+  "schema_version": 2,
+  "lifecycle": "no-op",
+  "workflow": {
+    "workflow_id": "canonical-stage-2-no-op",
+    "operations": []
+  }
+}

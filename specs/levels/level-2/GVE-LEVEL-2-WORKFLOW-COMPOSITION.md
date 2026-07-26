@@ -97,6 +97,22 @@ The deterministic identity of one successful acceptance result derived from exac
 
 Any change to a fact included in plan-candidate identity, including operation content, membership, plugin or action selection, governance binding, registry snapshot, ordering, dependency, or handoff facts. Such change invalidates reuse of the prior candidate for current contract freshness and requires a new candidate identity.
 
+### Stage 2 common payload envelope (`L2-WC-STAGE-2-COMMON-PAYLOAD`)
+
+The closed application-independent JSON object accepted by the maintained Stage 2 core. It contains exactly schema_version, lifecycle, and workflow; represents exactly one governed workflow; and delegates operation-specific meaning only through each operation's opaque content object.
+
+### Stage 2 no-op lifecycle profile (`L2-WC-NO-OP-LIFECYCLE-PROFILE`)
+
+The canonical Stage 2 lifecycle profile identified by the exact string no-op. It enters common payload intake and validation but intentionally performs no plugin interpretation, contract production, authority processing, dependency or handoff processing, workflow-plan acceptance, operation attempt, external effect, or workflow execution.
+
+### Opaque operation content boundary (`L2-WC-OPAQUE-OPERATION-CONTENT`)
+
+The operation.content JSON object whose member names, values, nesting, and plugin-specific semantics are not interpreted or constrained by the core beyond requiring a JSON object. Unknown members are permitted inside this boundary and forbidden at every enclosing common-envelope boundary.
+
+### No-op processing phases (`L2-WC-NO-OP-PROCESSING-PHASES`)
+
+The exact Stage 2 phase disposition: entered phases are input acquisition, UTF-8 decoding, JSON parsing, common-envelope schema validation, workflow and operation identity validation, routing-envelope validation, opaque-content boundary validation, and no-op lifecycle disposition; all plugin, contract, authority, dependency, handoff, planning, execution, effect, evidence-aggregation, and authoritative-result-assembly phases are skipped.
+
 ## Normative requirements
 
 ### L2-WC-REQ-001
@@ -267,6 +283,48 @@ A missing, duplicate, ambiguous, conflicting, partial, stale, mutable, reused, n
 
 References: `L2-WC-PLAN-CANDIDATE`, `L2-WC-ACCEPTED-PLAN-IDENTITY`, `L2-WC-PLAN-ACCEPTANCE`
 
+### L2-WC-REQ-029
+
+A Stage 2 common payload must be a JSON object containing exactly three top-level members: schema_version with the integer value 2, lifecycle with the exact string value no-op, and workflow with exactly one workflow envelope. Missing, duplicate, additional, differently typed, or differently valued top-level members must fail closed.
+
+References: `L2-WC-STAGE-2-COMMON-PAYLOAD`, `L2-WC-NO-OP-LIFECYCLE-PROFILE`
+
+### L2-WC-REQ-030
+
+The workflow envelope must contain exactly workflow_id and operations. workflow_id must be a nonempty string. operations must be an array containing one or more operation envelopes. No workflow member is optional, and every unknown workflow member must fail closed.
+
+References: `L2-WC-STAGE-2-COMMON-PAYLOAD`, `L2-WC-OPERATION-IDENTITY`
+
+### L2-WC-REQ-031
+
+Each operation envelope must contain exactly operation_id, plugin, and content. operation_id must be a nonempty string unique within the workflow. plugin must contain exactly plugin_id and action, each a nonempty string used only as application-independent routing information. content must be a JSON object. No operation or plugin-routing member is optional, and every unknown member at those boundaries must fail closed.
+
+References: `L2-WC-STAGE-2-COMMON-PAYLOAD`, `L2-WC-OPERATION-IDENTITY`, `L2-WC-PLUGIN-BINDING`, `L2-WC-OPAQUE-OPERATION-CONTENT`
+
+### L2-WC-REQ-032
+
+The core must treat operation.content as opaque plugin-owned content. The core may validate only that content is a JSON object and must not reject, normalize, compare, derive, or interpret any member inside that object. Unknown members are permitted recursively inside content and nowhere else in the Stage 2 common payload.
+
+References: `L2-WC-OPAQUE-OPERATION-CONTENT`, `L2-WC-PLUGIN-MEANING-BOUNDARY`
+
+### L2-WC-REQ-033
+
+In the no-op lifecycle profile, effects, authority, dependencies, and handoffs are forbidden as payload members at every common-envelope boundary. The core must not infer them from plugin-owned content and must not acquire, resolve, validate, execute, attempt, complete, observe, or verify any such behavior. Their absence is the only valid Stage 2 no-op representation.
+
+References: `L2-WC-NO-OP-LIFECYCLE-PROFILE`, `L2-WC-OPAQUE-OPERATION-CONTENT`
+
+### L2-WC-REQ-034
+
+For a structurally valid no-op payload, the core must enter exactly input acquisition, UTF-8 decoding, JSON parsing, common-envelope schema validation, workflow and operation identity validation, routing-envelope validation, opaque-content boundary validation, and no-op lifecycle disposition. It must explicitly skip plugin discovery, loading, assignment, or interpretation; validated-contract production; authority processing; dependency and handoff processing; workflow-plan acceptance; operation execution; external effects; evidence aggregation; and authoritative-result assembly. This requirement defines phase disposition only and does not define the result contract reserved for separately governed work.
+
+References: `L2-WC-NO-OP-LIFECYCLE-PROFILE`, `L2-WC-NO-OP-PROCESSING-PHASES`
+
+### L2-WC-REQ-035
+
+The canonical valid Stage 2 payload is the repository fixture specs/tests/fixtures/issue_82/valid/canonical-no-op-payload.json. That fixture must validate against specs/schemas/GVE-STAGE-2-COMMON-PAYLOAD.schema.json without undocumented inference and must remain representative of this exact normative contract.
+
+References: `L2-WC-STAGE-2-COMMON-PAYLOAD`, `L2-WC-NO-OP-LIFECYCLE-PROFILE`, `L2-WC-OPAQUE-OPERATION-CONTENT`
+
 ## Relationships
 
 - `L2-WC-REL-001`: `LEVEL-2-WORKFLOW-COMPOSITION` **is-governed-by** `LEVEL-2-ROOT`
@@ -287,6 +345,9 @@ References: `L2-WC-PLAN-CANDIDATE`, `L2-WC-ACCEPTED-PLAN-IDENTITY`, `L2-WC-PLAN-
 - `L2-WC-REL-016`: `L2-WC-PLAN-CANDIDATE` **participates-in** `L2-WC-PLAN-ACCEPTANCE`
 - `L2-WC-REL-017`: `L2-WC-PLAN-ACCEPTANCE` **produces** `L2-WC-ACCEPTED-PLAN-IDENTITY`
 - `L2-WC-REL-018`: `L2-WC-RELEVANT-CANDIDATE-CHANGE` **invalidates** `L2-WC-PLAN-CANDIDATE`
+- `L2-WC-REL-021`: `L2-WC-STAGE-2-COMMON-PAYLOAD` **selects** `L2-WC-NO-OP-LIFECYCLE-PROFILE`
+- `L2-WC-REL-022`: `L2-WC-STAGE-2-COMMON-PAYLOAD` **contains-boundary** `L2-WC-OPAQUE-OPERATION-CONTENT`
+- `L2-WC-REL-023`: `L2-WC-NO-OP-LIFECYCLE-PROFILE` **determines** `L2-WC-NO-OP-PROCESSING-PHASES`
 
 ## Scope
 
@@ -311,6 +372,9 @@ References: `L2-WC-PLAN-CANDIDATE`, `L2-WC-ACCEPTED-PLAN-IDENTITY`, `L2-WC-PLAN-
 - Non-circular contract-to-candidate attribution
 - Deterministic accepted-plan identity from unchanged candidate and complete contracts
 - Relevant-change invalidation of candidate and contract reuse
+- The exact maintained Stage 2 common payload top-level, workflow, operation, routing, and opaque-content boundaries
+- The canonical no-op lifecycle value and exact entered-versus-skipped processing phases
+- Explicit no-op prohibition of effects, authority, dependencies, and handoffs in the payload
 
 ### Excludes
 
@@ -326,3 +390,6 @@ References: `L2-WC-PLAN-CANDIDATE`, `L2-WC-ACCEPTED-PLAN-IDENTITY`, `L2-WC-PLAN-
 - Maintained implementation and Level 3 design
 - Concrete plugin authority package, registry, storage, transport, or loading formats
 - Cryptographic signing, credentials, and trust-root semantics
+- Authoritative result-envelope, diagnostic, stream, and exit-code semantics reserved for Issue 83
+- End-to-end maintained-product vectors reserved for Issue 84
+- Non-no-op lifecycle profiles and plugin-specific content semantics

@@ -63,7 +63,7 @@
       "path": "levels/level-2/GVE-LEVEL-2-WORKFLOW-COMPOSITION.json",
       "role": "subordinate",
       "id": "GVE-LEVEL-2-WORKFLOW-COMPOSITION",
-      "content_sha256": "406036ed8fb71b1476ba2a91985b38829e74062226f9a46933a2d89ef27e99d9"
+      "content_sha256": "7a54f709401e11dd24422c464323cf9a2875219a2f2b4d50d279a349c2778cb4"
     },
     {
       "path": "levels/level-3/GVE-LEVEL-3.json",
