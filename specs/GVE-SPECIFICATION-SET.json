@@ -4,6 +4,18 @@
   "canonicalization": "gve-canonical-json-v1",
   "digest_algorithm": "sha256",
   "identity_format": "gve-canonical-json-v1+sha256:lowercase-hex",
+  "identity_framework": {
+    "id": "GVE-IDENTITY-FRAMEWORK",
+    "version": "1.0.0",
+    "path": "identity/GVE-IDENTITY-FRAMEWORK.json",
+    "schema_path": "schemas/GVE-IDENTITY-FRAMEWORK.schema.json",
+    "projection_path": "identity/GVE-IDENTITY-FRAMEWORK.md",
+    "vectors_path": "tests/fixtures/issue_76/identity_vectors.json",
+    "content_sha256": "76f4501c1decb8f17aff6f66d396118efefc861f3544dd5cae72cf9ba119e32b",
+    "schema_sha256": "a08c076c16141f771770134c52d806a4ce7c3d3c8b74946bbec808b82d6ad292",
+    "projection_sha256": "eab1b41f7db028c37a38f70c2faeff30df61a1e7769736f479002507737b0f64",
+    "vectors_sha256": "8d3e1b222c305c9891ff588d6042c653853519d736ab793fda241b9cf70310d4"
+  },
   "members": [
     {
       "path": "levels/level-0/GVE-LEVEL-0.json",

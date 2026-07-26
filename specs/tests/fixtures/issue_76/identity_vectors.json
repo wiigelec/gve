@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "positive": [
+    {
+      "id": "effect-object",
+      "family_id": "gve-effect",
+      "value": {
+        "identity": "ignored-placeholder",
+        "operation": "write",
+        "target": "specs/example.json"
+      },
+      "expected_identity": "gve-effect-sha256:04fc3e8b5507274b1d827b05b2f311e41b800e1a38533e0f8ce4b4631d5d1d10"
+    },
+    {
+      "id": "evidence-object",
+      "family_id": "gve-evidence",
+      "value": {
+        "identity": "ignored-placeholder",
+        "kind": "command-record",
+        "exit_code": 0
+      },
+      "expected_identity": "gve-evidence-sha256:f539ad3390bca6eedd2c16924602cc72f9bb83b5cec86217ccb656f34e04337a"
+    },
+    {
+      "id": "plan-object",
+      "family_id": "gve-plan",
+      "value": {
+        "identity": "ignored-placeholder",
+        "plan_id": "plan-alpha",
+        "steps": [
+          "prepare",
+          "execute",
+          "verify"
+        ]
+      },
+      "expected_identity": "gve-plan-sha256:2e930b2ae54194b237da1485b4f6755f675e6af13b8145e8c1c870654ba554fe"
+    },
+    {
+      "id": "contract-object",
+      "family_id": "gve-contract",
+      "value": {
+        "identity": "ignored-placeholder",
+        "contract_id": "contract-alpha",
+        "effects": [
+          "effect-alpha"
+        ]
+      },
+      "expected_identity": "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c"
+    },
+    {
+      "id": "unordered-spec-revision",
+      "family_id": "gve-spec-revision",
+      "value": {
+        "revision": "alpha"
+      },
+      "member_identities": [
+        "gve-spec-document-sha256:98df6991a5fd26f12b4ca15d236fda87327a261f0b9ece518dfeafabf598f563",
+        "gve-spec-document-sha256:323d4b5a93223696076de4e9f3dce4acfd9e8fcb712d81af7c40ecd6b52ae66a"
+      ],
+      "expected_identity": "gve-spec-revision-sha256:b1c9fbdad1b9c0e5affcf0277471606f958e95ff08adc97afa84a0478a959420"
+    },
+    {
+      "id": "ordered-governance-composition",
+      "family_id": "gve-governance-composition",
+      "value": {
+        "composition": "alpha"
+      },
+      "member_identities": [
+        "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c",
+        "gve-plan-sha256:2e930b2ae54194b237da1485b4f6755f675e6af13b8145e8c1c870654ba554fe"
+      ],
+      "expected_identity": "gve-governance-composition-sha256:6ae40e2c2aeccd59ac365750732c55da4e6a854ea0d9549ab9b9f6959a16e06b"
+    }
+  ],
+  "negative": [
+    {
+      "id": "cross-domain-substitution",
+      "family_id": "gve-evidence",
+      "claimed_identity": "gve-effect-sha256:04fc3e8b5507274b1d827b05b2f311e41b800e1a38533e0f8ce4b4631d5d1d10",
+      "value": {
+        "identity": "ignored-placeholder",
+        "operation": "write",
+        "target": "specs/example.json"
+      },
+      "expected_error": "claimed identity family does not match"
+    },
+    {
+      "id": "mismatched-value",
+      "family_id": "gve-effect",
+      "claimed_identity": "gve-effect-sha256:04fc3e8b5507274b1d827b05b2f311e41b800e1a38533e0f8ce4b4631d5d1d10",
+      "value": {
+        "identity": "ignored-placeholder",
+        "operation": "delete",
+        "target": "specs/example.json"
+      },
+      "expected_error": "does not match its canonical preimage"
+    },
+    {
+      "id": "ordered-aggregate-reordered",
+      "family_id": "gve-governance-composition",
+      "claimed_identity": "gve-governance-composition-sha256:6ae40e2c2aeccd59ac365750732c55da4e6a854ea0d9549ab9b9f6959a16e06b",
+      "value": {
+        "composition": "alpha"
+      },
+      "member_identities": [
+        "gve-plan-sha256:2e930b2ae54194b237da1485b4f6755f675e6af13b8145e8c1c870654ba554fe",
+        "gve-contract-sha256:f6ad6cdf8d832ce0c739f6180988dd91b6fc97c1aca9ecece5e2b8553a71f46c"
+      ],
+      "expected_error": "does not match its canonical preimage"
+    }
+  ]
+}
