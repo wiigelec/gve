@@ -63,7 +63,7 @@ class SpecificationRevisionBindingTests(unittest.TestCase):
 
     def test_unknown_current_revision_fails_closed(self) -> None:
         unknown = copy.deepcopy(self.revision)
-        unknown["identity"] = "0" * 64
+        unknown["identity"] = "gve-spec-revision-sha256:" + "0" * 64
         with self.assertRaisesRegex(
             SpecificationRevisionBindingError,
             "identity conflicts with its manifest",
@@ -90,7 +90,7 @@ class SpecificationRevisionBindingTests(unittest.TestCase):
         changed["summary"] = "Successor beta authority."
         with self.assertRaisesRegex(
             SpecificationRevisionBindingError,
-            "conflicting specification revision content_sha256",
+            "conflicting specification revision document_identity",
         ):
             validate_current_revision_binding(
                 [self.alpha, changed],
@@ -130,6 +130,17 @@ class SpecificationRevisionBindingTests(unittest.TestCase):
         ):
             validate_historical_revision_binding(
                 {"specification_revision": duplicate}
+            )
+
+    def test_legacy_historical_revision_digest_fails_closed(self) -> None:
+        legacy = copy.deepcopy(self.revision)
+        legacy["identity"] = "0" * 64
+        with self.assertRaisesRegex(
+            SpecificationRevisionBindingError,
+            "must use the gve-spec-revision identity family",
+        ):
+            validate_historical_revision_binding(
+                {"specification_revision": legacy}
             )
 
 

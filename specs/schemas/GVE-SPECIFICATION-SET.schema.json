@@ -26,7 +26,11 @@
       "const": "sha256"
     },
     "identity_format": {
-      "const": "gve-canonical-json-v1+sha256:lowercase-hex"
+      "type": "string",
+      "enum": [
+        "gve-canonical-json-v1+sha256:lowercase-hex",
+        "gve-spec-revision-sha256:<digest>"
+      ]
     },
     "identity_framework": {
       "$ref": "#/$defs/identityFramework"

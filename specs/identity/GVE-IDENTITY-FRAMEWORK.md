@@ -17,112 +17,123 @@
 ### `gve-spec-document`
 
 - Semantic domain: `normative-specification-document`
-- Domain prefix: `gve/spec-document/v1\\0`
+- Domain prefix: `gve/spec-document/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `by-value`
+- Reference encoding: `by-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-spec-revision`
 
 - Semantic domain: `governing-specification-set-revision`
-- Domain prefix: `gve/spec-revision/v1\\0`
+- Domain prefix: `gve/spec-revision/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `(none)`
 - Object kind: `unordered-aggregate`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-governance-composition`
 
 - Semantic domain: `governed-authority-composition`
-- Domain prefix: `gve/governance-composition/v1\\0`
+- Domain prefix: `gve/governance-composition/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `ordered-aggregate`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-effect`
 
 - Semantic domain: `exact-governed-effect`
-- Domain prefix: `gve/effect/v1\\0`
+- Domain prefix: `gve/effect/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `by-identity`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-plan`
 
 - Semantic domain: `accepted-governed-plan`
-- Domain prefix: `gve/plan/v1\\0`
+- Domain prefix: `gve/plan/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `by-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-contract`
 
 - Semantic domain: `governed-contract`
-- Domain prefix: `gve/contract/v1\\0`
+- Domain prefix: `gve/contract/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-production`
 
 - Semantic domain: `governed-production`
-- Domain prefix: `gve/production/v1\\0`
+- Domain prefix: `gve/production/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-evidence`
 
 - Semantic domain: `admitted-evidence-record`
-- Domain prefix: `gve/evidence/v1\\0`
+- Domain prefix: `gve/evidence/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-execution-record`
 
 - Semantic domain: `authoritative-governed-execution-record`
-- Domain prefix: `gve/execution-record/v1\\0`
+- Domain prefix: `gve/execution-record/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-authoritative-result`
 
 - Semantic domain: `authoritative-governed-result`
-- Domain prefix: `gve/authoritative-result/v1\\0`
+- Domain prefix: `gve/authoritative-result/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `result_identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ### `gve-finalization`
 
 - Semantic domain: `governed-result-finalization`
-- Domain prefix: `gve/finalization/v1\\0`
+- Domain prefix: `gve/finalization/v1\0`
 - Canonicalization: `gve-canonical-json-v1`
 - Digest: `sha256`
-- Reference mode: `identity-plus-value`
+- Reference encoding: `identity-plus-value`
+- Own identity paths: `identity`
+- Reference paths: `references`
 - Object kind: `object`
-- Embedded identity mode: `omit-own-identity`
 
 ## Fail-Closed Conditions
 
@@ -157,7 +168,10 @@
       "closure_boundary",
       "member_reference_mode",
       "empty_aggregate_rule",
-      "cycle_policy"
+      "cycle_policy",
+      "membership_path",
+      "member_identity_path",
+      "member_value_path"
     ]
   },
   "authority": {
@@ -254,156 +268,319 @@
   "identity_families": [
     {
       "aggregate": null,
-      "canonical_value": "complete normative JSON document with its own identity field omitted",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/spec-document/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-spec-document",
       "object_kind": "object",
-      "reference_mode": "by-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "by-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "normative-specification-document"
     },
     {
       "aggregate": {
-        "closure_boundary": "direct accepted normative specification documents only",
+        "closure_boundary": "direct",
         "cycle_policy": "reject",
         "duplicate_policy": "reject",
         "empty_aggregate_rule": "reject",
         "member_family_ids": [
           "gve-spec-document"
         ],
-        "member_reference_mode": "identity-plus-value",
+        "member_identity_path": "document_identity",
+        "member_reference_mode": "by-identity",
+        "member_value_path": null,
         "membership": "every accepted normative specification document exactly once",
-        "ordering_significance": "non-semantic-canonical-sort-by-member-identity"
+        "membership_path": "members",
+        "ordering_significance": "unordered"
       },
-      "canonical_value": "complete canonical specification-revision manifest",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/spec-revision/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-spec-revision",
       "object_kind": "unordered-aggregate",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": "member-references",
+        "allowed_reference_family_ids": [],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "governing-specification-set-revision"
     },
     {
       "aggregate": {
-        "closure_boundary": "direct composition members only",
+        "closure_boundary": "direct",
         "cycle_policy": "reject",
         "duplicate_policy": "reject",
         "empty_aggregate_rule": "reject",
         "member_family_ids": [
           "gve-contract"
         ],
+        "member_identity_path": "identity",
         "member_reference_mode": "identity-plus-value",
+        "member_value_path": "value",
         "membership": "every directly composed governed contract in declared order",
-        "ordering_significance": "semantic"
+        "membership_path": "members",
+        "ordering_significance": "ordered"
       },
-      "canonical_value": "accepted ordered governance-composition value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/governance-composition/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-governance-composition",
       "object_kind": "ordered-aggregate",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": "member-references",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "governed-authority-composition"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical exact-effect value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/effect/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-effect",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "by-identity",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "exact-governed-effect"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete accepted canonical plan value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/plan/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-plan",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "by-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "accepted-governed-plan"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical governed contract value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/contract/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-contract",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-effect"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "governed-contract"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical governed production value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/production/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-production",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "governed-production"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical evidence record",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/evidence/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-evidence",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-production"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "admitted-evidence-record"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical authoritative execution record",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/execution-record/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-execution-record",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-evidence"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "authoritative-governed-execution-record"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical authoritative result",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/authoritative-result/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-authoritative-result",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-execution-record"
+        ],
+        "own_identity_paths": [
+          "result_identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "semantic_domain": "authoritative-governed-result"
     },
     {
       "aggregate": null,
-      "canonical_value": "complete canonical finalization value",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
       "domain_separation_prefix": "gve/finalization/v1\u0000",
-      "embedded_identity_mode": "omit-own-identity",
       "id": "gve-finalization",
       "object_kind": "object",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "aggregate_encoding": null,
+        "allowed_reference_family_ids": [
+          "gve-authoritative-result"
+        ],
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "reference_paths": [
+          "references"
+        ],
+        "value_source": "complete-object",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": true
+        }
+      },
       "semantic_domain": "governed-result-finalization"
     }
   ],

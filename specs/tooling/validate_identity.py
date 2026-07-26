@@ -6,7 +6,7 @@ import hashlib
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from jsonschema import Draft202012Validator
 
@@ -15,6 +15,12 @@ from .identity import (
     render_identity_framework_markdown,
     validate_fixed_identity_vectors,
     validate_identity_framework,
+)
+from .revision import (
+    DOCUMENT_IDENTITY_FORMAT,
+    REVISION_IDENTITY_FORMAT,
+    build_specification_revision,
+    document_content_identity,
 )
 
 
@@ -34,6 +40,82 @@ def _load(path: Path) -> dict[str, Any]:
 
 def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _positive_vector(
+    vectors: Mapping[str, Any],
+    vector_id: str,
+) -> Mapping[str, Any]:
+    positive = vectors.get("positive")
+    if not isinstance(positive, list):
+        raise IdentityIntegrationError("positive identity vectors are missing")
+    matches = [
+        vector
+        for vector in positive
+        if isinstance(vector, Mapping) and vector.get("id") == vector_id
+    ]
+    if len(matches) != 1:
+        raise IdentityIntegrationError(
+            f"identity vector {vector_id} must exist exactly once"
+        )
+    return matches[0]
+
+
+def validate_revision_tooling_binding(
+    manifest: Mapping[str, Any],
+    vectors: Mapping[str, Any],
+) -> None:
+    """Require manifest metadata, fixed vectors, and revision tooling to agree."""
+    if manifest.get("canonicalization") != "gve-canonical-json-v1":
+        raise IdentityIntegrationError(
+            "specification manifest canonicalization conflicts with revision tooling"
+        )
+    if manifest.get("digest_algorithm") != "sha256":
+        raise IdentityIntegrationError(
+            "specification manifest digest algorithm conflicts with revision tooling"
+        )
+    if manifest.get("identity_format") != REVISION_IDENTITY_FORMAT:
+        raise IdentityIntegrationError(
+            "specification manifest identity format conflicts with revision tooling"
+        )
+    if DOCUMENT_IDENTITY_FORMAT != "gve-spec-document-sha256:<digest>":
+        raise IdentityIntegrationError(
+            "specification document identity format is not domain-separated"
+        )
+
+    document_vector = _positive_vector(
+        vectors,
+        "spec-document-tooling-vector",
+    )
+    revision_vector = _positive_vector(
+        vectors,
+        "spec-revision-tooling-vector",
+    )
+    document = document_vector.get("value")
+    if not isinstance(document, Mapping):
+        raise IdentityIntegrationError(
+            "specification document tooling vector value is malformed"
+        )
+    actual_document_identity = document_content_identity(document)
+    if actual_document_identity != document_vector.get("expected_identity"):
+        raise IdentityIntegrationError(
+            "specification document tooling conflicts with fixed vector"
+        )
+
+    revision = build_specification_revision([document])
+    if revision["identity"] != revision_vector.get("expected_identity"):
+        raise IdentityIntegrationError(
+            "specification revision tooling conflicts with fixed vector"
+        )
+    if revision["manifest"] != revision_vector.get("value"):
+        raise IdentityIntegrationError(
+            "specification revision manifest conflicts with fixed vector"
+        )
+    member_identities = revision_vector.get("member_identities")
+    if member_identities != [actual_document_identity]:
+        raise IdentityIntegrationError(
+            "specification revision member binding conflicts with fixed vector"
+        )
 
 
 def validate_repository_identity(specs_root: Path) -> None:
@@ -76,6 +158,7 @@ def validate_repository_identity(specs_root: Path) -> None:
 
     validate_identity_framework(framework)
     validate_fixed_identity_vectors(framework, vectors)
+    validate_revision_tooling_binding(manifest, vectors)
     expected_markdown = render_identity_framework_markdown(framework)
     actual_markdown = paths["projection_sha256"].read_text(encoding="utf-8")
     if actual_markdown != expected_markdown:

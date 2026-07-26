@@ -3,7 +3,7 @@
   "schema_version": 1,
   "canonicalization": "gve-canonical-json-v1",
   "digest_algorithm": "sha256",
-  "identity_format": "gve-canonical-json-v1+sha256:lowercase-hex",
+  "identity_format": "gve-spec-revision-sha256:<digest>",
   "identity_framework": {
     "id": "GVE-IDENTITY-FRAMEWORK",
     "version": "1.0.0",
@@ -11,10 +11,10 @@
     "schema_path": "schemas/GVE-IDENTITY-FRAMEWORK.schema.json",
     "projection_path": "identity/GVE-IDENTITY-FRAMEWORK.md",
     "vectors_path": "tests/fixtures/issue_76/identity_vectors.json",
-    "content_sha256": "76f4501c1decb8f17aff6f66d396118efefc861f3544dd5cae72cf9ba119e32b",
-    "schema_sha256": "a08c076c16141f771770134c52d806a4ce7c3d3c8b74946bbec808b82d6ad292",
-    "projection_sha256": "eab1b41f7db028c37a38f70c2faeff30df61a1e7769736f479002507737b0f64",
-    "vectors_sha256": "8d3e1b222c305c9891ff588d6042c653853519d736ab793fda241b9cf70310d4"
+    "content_sha256": "9549b5d66bc478466460d83d01abe4d8c838247dbde753be1da89771a572ae93",
+    "schema_sha256": "c67a6df6521d807f11d62d2a90b7e84cbdec7f58fd5e559593d3bdc5c5c25d1d",
+    "projection_sha256": "a6985b10bcd1d91d5b0cc13ff3b226f9636306ea4dce9fb9b955a8eeebf11519",
+    "vectors_sha256": "03876718e25092eaece600de21b21e56f5a40db4f3732948c1a86ff23e17dc88"
   },
   "members": [
     {
@@ -45,7 +45,7 @@
       "path": "levels/level-2/GVE-LEVEL-2-DOCUMENT-AUTHORITY.json",
       "role": "subordinate",
       "id": "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
-      "content_sha256": "08dc0db6f888c377bc79696fc5012c3199181155d2d344a2a8042c9c228645ae"
+      "content_sha256": "f436ac2463515d815052b583aa2d076fe3d34416fd84bc36e20656115a1cc76c"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES.json",

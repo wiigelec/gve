@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy
 import unittest
 
-from specs.tooling.canonical_json import canonical_json, sha256_identity
+from specs.tooling.canonical_json import canonical_json
 from specs.tooling.revision import (
     SpecificationRevisionError,
     build_specification_revision,
@@ -35,26 +35,25 @@ class SpecificationRevisionCanonicalizationTests(unittest.TestCase):
         self.assertEqual(revision["algorithm"], "sha256")
         self.assertEqual(
             revision["identity_format"],
-            "gve-canonical-json-v1+sha256:lowercase-hex",
+            "gve-spec-revision-sha256:<digest>",
         )
 
-    def test_document_identity_matches_fixed_canonical_bytes(self) -> None:
+    def test_document_identity_matches_fixed_domain_vector(self) -> None:
         document = {"z": 2, "a": "é"}
         expected_bytes = b'{"a":"\xc3\xa9","z":2}'
         self.assertEqual(canonical_json(document), expected_bytes)
-        self.assertEqual(document_content_identity(document), sha256_identity(document))
         self.assertEqual(
             document_content_identity(document),
-            "e8d6670b3c4e0636657d7b2dc771a552342df4c66f507ea504a2d5901ce6891f",
+            "gve-spec-document-sha256:"
+            "2c54188d9647239feb9954cd4f44018c8e8573b0809d6b20cac763aed2185188",
         )
 
-    def test_revision_identity_matches_fixed_manifest_vector(self) -> None:
+    def test_revision_identity_matches_fixed_domain_vector(self) -> None:
         revision = build_specification_revision([self.alpha])
-        manifest = revision["manifest"]
-        self.assertEqual(revision["identity"], sha256_identity(manifest))
         self.assertEqual(
             revision["identity"],
-            "b75f248af07c7ccc6ef0828214e25ca0d7fc166e7789bfb65a686601abe6af09",
+            "gve-spec-revision-sha256:"
+            "f3596e05ce1747905ecb378cd80e3b543ec665de3df5c93a928c12f5833e6f46",
         )
 
     def test_floating_point_normative_content_fails_closed(self) -> None:
@@ -86,7 +85,8 @@ class SpecificationRevisionCanonicalizationTests(unittest.TestCase):
 
     def test_uppercase_digest_fails_closed(self) -> None:
         revision = build_specification_revision([self.alpha])
-        revision["identity"] = revision["identity"].upper()
+        prefix, digest = revision["identity"].split(":", 1)
+        revision["identity"] = prefix + ":" + digest.upper()
         with self.assertRaisesRegex(
             SpecificationRevisionError,
             "identity is missing or malformed",

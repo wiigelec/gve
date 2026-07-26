@@ -29,11 +29,19 @@ class AcceptedSpecificationRevisionTests(unittest.TestCase):
 
         self.assertEqual(first, second)
         self.assertEqual(first["algorithm"], "sha256")
-        self.assertRegex(first["identity"], r"^[0-9a-f]{64}$")
+        self.assertRegex(
+            first["identity"],
+            r"^gve-spec-revision-sha256:[0-9a-f]{64}$",
+        )
         self.assertEqual(
             len(first["manifest"]["members"]),
             len(documents),
         )
+        for member in first["manifest"]["members"]:
+            self.assertRegex(
+                member["document_identity"],
+                r"^gve-spec-document-sha256:[0-9a-f]{64}$",
+            )
 
     def test_normal_validation_returns_accepted_revision(self) -> None:
         documents = _accepted_documents(ACCEPTED_SPECS)

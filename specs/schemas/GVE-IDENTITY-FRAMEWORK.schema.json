@@ -3,7 +3,6 @@
   "$id": "GVE-IDENTITY-FRAMEWORK.schema.json",
   "title": "GVE Unified Identity Framework Core",
   "type": "object",
-  "additionalProperties": false,
   "required": [
     "$schema",
     "schema_version",
@@ -23,372 +22,16 @@
     "repository_integration"
   ],
   "properties": {
-    "$schema": {
-      "const": "../schemas/GVE-IDENTITY-FRAMEWORK.schema.json"
-    },
-    "schema_version": {
-      "const": 1
-    },
-    "authority": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "governing_specification",
-        "status",
-        "integration_state",
-        "governing_requirement_ids"
-      ],
-      "properties": {
-        "governing_specification": {
-          "const": "GVE-LEVEL-2-DOCUMENT-AUTHORITY"
-        },
-        "status": {
-          "const": "normative-framework-core"
-        },
-        "integration_state": {
-          "enum": [
-            "pending-family-registry",
-            "family-registry-defined",
-            "repository-integrated"
-          ]
-        },
-        "governing_requirement_ids": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^L2-DA-REQ-[0-9]{3}$"
-          }
-        }
-      }
-    },
-    "representation": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "syntax",
-        "family_pattern",
-        "algorithm_separator",
-        "digest_separator",
-        "digest_encoding"
-      ],
-      "properties": {
-        "syntax": {
-          "const": "<family>-<algorithm>:<digest>"
-        },
-        "family_pattern": {
-          "type": "string",
-          "minLength": 1
-        },
-        "algorithm_separator": {
-          "const": "-"
-        },
-        "digest_separator": {
-          "const": ":"
-        },
-        "digest_encoding": {
-          "const": "lowercase-hex"
-        }
-      }
-    },
-    "canonicalization_versions": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/canonicalizationVersion"
-      }
-    },
-    "digest_algorithms": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "$ref": "#/$defs/digestAlgorithm"
-      }
-    },
-    "canonical_preimage": {
-      "$ref": "#/$defs/stringMap"
-    },
-    "embedded_identity_rules": {
-      "$ref": "#/$defs/mixedMap"
-    },
-    "reference_semantics": {
-      "$ref": "#/$defs/mixedMap"
-    },
-    "object_kinds": {
-      "$ref": "#/$defs/mixedMap"
-    },
-    "aggregate_semantics": {
-      "$ref": "#/$defs/mixedMap"
-    },
-    "fail_closed_conditions": {
-      "type": "array",
-      "minItems": 1,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "framework_invariants": {
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "type": "boolean"
-      }
-    },
     "identity_families": {
       "type": "array",
       "minItems": 1,
       "items": {
         "$ref": "#/$defs/identityFamily"
       }
-    },
-    "fixed_vectors": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "path",
-        "canonicalization_version",
-        "digest_algorithm",
-        "positive_vectors_required",
-        "negative_vectors_required",
-        "immutable_after_acceptance"
-      ],
-      "properties": {
-        "path": {
-          "const": "tests/fixtures/issue_76/identity_vectors.json"
-        },
-        "canonicalization_version": {
-          "const": "gve-canonical-json-v1"
-        },
-        "digest_algorithm": {
-          "const": "sha256"
-        },
-        "positive_vectors_required": {
-          "const": true
-        },
-        "negative_vectors_required": {
-          "const": true
-        },
-        "immutable_after_acceptance": {
-          "const": true
-        }
-      }
-    },
-    "repository_integration": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "normative_manifest_binding_required",
-        "deterministic_markdown_projection_required",
-        "normal_validation_required",
-        "fixed_vector_validation_required",
-        "identity_migration_deferred"
-      ],
-      "properties": {
-        "normative_manifest_binding_required": {
-          "const": true
-        },
-        "deterministic_markdown_projection_required": {
-          "const": true
-        },
-        "normal_validation_required": {
-          "const": true
-        },
-        "fixed_vector_validation_required": {
-          "const": true
-        },
-        "identity_migration_deferred": {
-          "const": true
-        }
-      }
     }
   },
+  "additionalProperties": true,
   "$defs": {
-    "canonicalizationVersion": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "media_type",
-        "encoding",
-        "unicode_normalization",
-        "object_member_order",
-        "array_order",
-        "insignificant_whitespace",
-        "floating_point",
-        "surrogate_code_points",
-        "non_string_object_keys"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "media_type": {
-          "type": "string",
-          "minLength": 1
-        },
-        "encoding": {
-          "type": "string",
-          "minLength": 1
-        },
-        "unicode_normalization": {
-          "type": "string",
-          "minLength": 1
-        },
-        "object_member_order": {
-          "type": "string",
-          "minLength": 1
-        },
-        "array_order": {
-          "type": "string",
-          "minLength": 1
-        },
-        "insignificant_whitespace": {
-          "type": "string",
-          "minLength": 1
-        },
-        "floating_point": {
-          "type": "string",
-          "minLength": 1
-        },
-        "surrogate_code_points": {
-          "type": "string",
-          "minLength": 1
-        },
-        "non_string_object_keys": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "digestAlgorithm": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "id",
-        "digest_bits",
-        "encoded_length",
-        "encoding"
-      ],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "digest_bits": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "encoded_length": {
-          "type": "integer",
-          "minimum": 1
-        },
-        "encoding": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
-    "stringMap": {
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "oneOf": [
-          {
-            "type": "string",
-            "minLength": 1
-          },
-          {
-            "type": "boolean"
-          }
-        ]
-      }
-    },
-    "mixedMap": {
-      "type": "object",
-      "minProperties": 1,
-      "additionalProperties": {
-        "oneOf": [
-          {
-            "type": "string",
-            "minLength": 1
-          },
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-              "type": "string",
-              "minLength": 1
-            }
-          }
-        ]
-      }
-    },
-    "aggregateDefinition": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "member_family_ids",
-        "membership",
-        "ordering_significance",
-        "duplicate_policy",
-        "closure_boundary",
-        "member_reference_mode",
-        "empty_aggregate_rule",
-        "cycle_policy"
-      ],
-      "properties": {
-        "member_family_ids": {
-          "type": "array",
-          "minItems": 1,
-          "uniqueItems": true,
-          "items": {
-            "type": "string",
-            "pattern": "^gve-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
-          }
-        },
-        "membership": {
-          "type": "string",
-          "minLength": 1
-        },
-        "ordering_significance": {
-          "type": "string",
-          "minLength": 1
-        },
-        "duplicate_policy": {
-          "enum": [
-            "reject",
-            "permit"
-          ]
-        },
-        "closure_boundary": {
-          "type": "string",
-          "minLength": 1
-        },
-        "member_reference_mode": {
-          "enum": [
-            "by-value",
-            "by-identity",
-            "identity-plus-value"
-          ]
-        },
-        "empty_aggregate_rule": {
-          "enum": [
-            "permit",
-            "reject"
-          ]
-        },
-        "cycle_policy": {
-          "const": "reject"
-        }
-      }
-    },
     "identityFamily": {
       "type": "object",
       "additionalProperties": false,
@@ -398,50 +41,28 @@
         "domain_separation_prefix",
         "canonicalization_version",
         "digest_algorithm",
-        "canonical_value",
-        "embedded_identity_mode",
-        "reference_mode",
+        "preimage",
         "object_kind",
         "aggregate"
       ],
       "properties": {
         "id": {
-          "type": "string",
-          "pattern": "^gve-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+          "type": "string"
         },
         "semantic_domain": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "domain_separation_prefix": {
-          "type": "string",
-          "pattern": "^gve/[a-z][a-z0-9]*(?:-[a-z0-9]+)*/v1\\u0000$"
+          "type": "string"
         },
         "canonicalization_version": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
         "digest_algorithm": {
-          "type": "string",
-          "minLength": 1
+          "type": "string"
         },
-        "canonical_value": {
-          "type": "string",
-          "minLength": 1
-        },
-        "embedded_identity_mode": {
-          "enum": [
-            "include",
-            "omit-own-identity",
-            "canonical-reference"
-          ]
-        },
-        "reference_mode": {
-          "enum": [
-            "by-value",
-            "by-identity",
-            "identity-plus-value"
-          ]
+        "preimage": {
+          "$ref": "#/$defs/preimage"
         },
         "object_kind": {
           "enum": [
@@ -460,6 +81,152 @@
               "$ref": "#/$defs/aggregateDefinition"
             }
           ]
+        }
+      }
+    },
+    "preimage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value_source",
+        "own_identity_paths",
+        "reference_paths",
+        "reference_encoding",
+        "allowed_reference_family_ids",
+        "aggregate_encoding",
+        "version_bindings"
+      ],
+      "properties": {
+        "value_source": {
+          "const": "complete-object"
+        },
+        "own_identity_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reference_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reference_encoding": {
+          "enum": [
+            "by-value",
+            "by-identity",
+            "identity-plus-value"
+          ]
+        },
+        "allowed_reference_family_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "aggregate_encoding": {
+          "enum": [
+            "member-references",
+            null
+          ]
+        },
+        "version_bindings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canonicalization",
+            "governing_specification_revision"
+          ],
+          "properties": {
+            "canonicalization": {
+              "type": "boolean"
+            },
+            "governing_specification_revision": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "aggregateDefinition": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "member_family_ids",
+        "membership",
+        "ordering_significance",
+        "duplicate_policy",
+        "closure_boundary",
+        "member_reference_mode",
+        "empty_aggregate_rule",
+        "cycle_policy",
+        "membership_path",
+        "member_identity_path",
+        "member_value_path"
+      ],
+      "properties": {
+        "member_family_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "ordering_significance": {
+          "enum": [
+            "ordered",
+            "unordered"
+          ]
+        },
+        "closure_boundary": {
+          "enum": [
+            "direct",
+            "transitive"
+          ]
+        },
+        "member_reference_mode": {
+          "enum": [
+            "by-value",
+            "by-identity",
+            "identity-plus-value"
+          ]
+        },
+        "membership_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "member_identity_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "member_value_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duplicate_policy": {
+          "enum": [
+            "reject",
+            "permit"
+          ]
+        },
+        "empty_aggregate_rule": {
+          "enum": [
+            "reject",
+            "permit"
+          ]
+        },
+        "cycle_policy": {
+          "const": "reject"
         }
       }
     }

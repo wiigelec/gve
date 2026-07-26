@@ -4,8 +4,11 @@ import copy
 import unittest
 
 from specs.tooling.revision import (
+    DOCUMENT_IDENTITY_FORMAT,
+    REVISION_IDENTITY_FORMAT,
     SpecificationRevisionError,
     build_specification_revision,
+    document_content_identity,
     validate_specification_revision,
 )
 
@@ -39,10 +42,27 @@ class SpecificationRevisionTests(unittest.TestCase):
         self.alpha = _document("GVE-LEVEL-2-ALPHA", "Alpha authority.")
         self.beta = _document("GVE-LEVEL-2-BETA", "Beta authority.")
 
+    def test_document_identity_is_domain_separated(self) -> None:
+        identity = document_content_identity(self.alpha)
+        self.assertTrue(identity.startswith("gve-spec-document-sha256:"))
+        self.assertEqual(DOCUMENT_IDENTITY_FORMAT, "gve-spec-document-sha256:<digest>")
+
     def test_repeated_construction_is_stable(self) -> None:
         first = build_specification_revision([self.alpha, self.beta])
         second = build_specification_revision([self.alpha, self.beta])
         self.assertEqual(first, second)
+
+    def test_revision_identity_is_domain_separated(self) -> None:
+        revision = build_specification_revision([self.alpha, self.beta])
+        self.assertTrue(revision["identity"].startswith("gve-spec-revision-sha256:"))
+        self.assertEqual(revision["identity_format"], REVISION_IDENTITY_FORMAT)
+        for member in revision["manifest"]["members"]:
+            self.assertTrue(
+                member["document_identity"].startswith(
+                    "gve-spec-document-sha256:"
+                )
+            )
+            self.assertNotIn("content_sha256", member)
 
     def test_discovery_order_does_not_change_revision(self) -> None:
         forward = build_specification_revision([self.alpha, self.beta])
@@ -106,7 +126,7 @@ class SpecificationRevisionTests(unittest.TestCase):
             {
                 "id": "GVE-LEVEL-2-GAMMA",
                 "version": "1.0.0",
-                "content_sha256": "0" * 64,
+                "document_identity": "gve-spec-document-sha256:" + "0" * 64,
             }
         )
         with self.assertRaisesRegex(
@@ -126,12 +146,14 @@ class SpecificationRevisionTests(unittest.TestCase):
         ):
             validate_specification_revision([self.alpha, self.beta], revision)
 
-    def test_conflicting_content_identity_fails_closed(self) -> None:
+    def test_conflicting_document_identity_fails_closed(self) -> None:
         revision = build_specification_revision([self.alpha, self.beta])
-        revision["manifest"]["members"][0]["content_sha256"] = "0" * 64
+        revision["manifest"]["members"][0]["document_identity"] = (
+            "gve-spec-document-sha256:" + "0" * 64
+        )
         with self.assertRaisesRegex(
             SpecificationRevisionError,
-            "conflicting specification revision content_sha256",
+            "conflicting specification revision document_identity",
         ):
             validate_specification_revision([self.alpha, self.beta], revision)
 
@@ -141,16 +163,34 @@ class SpecificationRevisionTests(unittest.TestCase):
         changed["summary"] = "Successor beta authority."
         with self.assertRaisesRegex(
             SpecificationRevisionError,
-            "conflicting specification revision content_sha256",
+            "conflicting specification revision document_identity",
         ):
             validate_specification_revision([self.alpha, changed], revision)
 
     def test_manifest_identity_conflict_fails_closed(self) -> None:
         revision = build_specification_revision([self.alpha, self.beta])
-        revision["identity"] = "0" * 64
+        revision["identity"] = "gve-spec-revision-sha256:" + "0" * 64
         with self.assertRaisesRegex(
             SpecificationRevisionError,
             "identity conflicts with its manifest",
+        ):
+            validate_specification_revision([self.alpha, self.beta], revision)
+
+    def test_legacy_bare_revision_digest_fails_closed(self) -> None:
+        revision = build_specification_revision([self.alpha, self.beta])
+        revision["identity"] = "0" * 64
+        with self.assertRaisesRegex(
+            SpecificationRevisionError,
+            "must use the gve-spec-revision identity family",
+        ):
+            validate_specification_revision([self.alpha, self.beta], revision)
+
+    def test_legacy_member_digest_fails_closed(self) -> None:
+        revision = build_specification_revision([self.alpha, self.beta])
+        revision["manifest"]["members"][0]["document_identity"] = "0" * 64
+        with self.assertRaisesRegex(
+            SpecificationRevisionError,
+            "must use the gve-spec-document identity family",
         ):
             validate_specification_revision([self.alpha, self.beta], revision)
 

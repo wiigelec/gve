@@ -89,7 +89,10 @@
       "closure_boundary",
       "member_reference_mode",
       "empty_aggregate_rule",
-      "cycle_policy"
+      "cycle_policy",
+      "membership_path",
+      "member_identity_path",
+      "member_value_path"
     ],
     "cycle_policy": "reject",
     "incomplete_membership_policy": "reject"
@@ -129,9 +132,22 @@
       "domain_separation_prefix": "gve/spec-document/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete normative JSON document with its own identity field omitted",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "by-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -141,21 +157,35 @@
       "domain_separation_prefix": "gve/spec-revision/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical specification-revision manifest",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": "member-references",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "unordered-aggregate",
       "aggregate": {
         "member_family_ids": [
           "gve-spec-document"
         ],
         "membership": "every accepted normative specification document exactly once",
-        "ordering_significance": "non-semantic-canonical-sort-by-member-identity",
+        "ordering_significance": "unordered",
         "duplicate_policy": "reject",
-        "closure_boundary": "direct accepted normative specification documents only",
-        "member_reference_mode": "identity-plus-value",
+        "closure_boundary": "direct",
+        "member_reference_mode": "by-identity",
         "empty_aggregate_rule": "reject",
-        "cycle_policy": "reject"
+        "cycle_policy": "reject",
+        "membership_path": "members",
+        "member_identity_path": "document_identity",
+        "member_value_path": null
       }
     },
     {
@@ -164,21 +194,39 @@
       "domain_separation_prefix": "gve/governance-composition/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "accepted ordered governance-composition value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": "member-references",
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "ordered-aggregate",
       "aggregate": {
         "member_family_ids": [
           "gve-contract"
         ],
         "membership": "every directly composed governed contract in declared order",
-        "ordering_significance": "semantic",
+        "ordering_significance": "ordered",
         "duplicate_policy": "reject",
-        "closure_boundary": "direct composition members only",
+        "closure_boundary": "direct",
         "member_reference_mode": "identity-plus-value",
         "empty_aggregate_rule": "reject",
-        "cycle_policy": "reject"
+        "cycle_policy": "reject",
+        "membership_path": "members",
+        "member_identity_path": "identity",
+        "member_value_path": "value"
       }
     },
     {
@@ -187,9 +235,24 @@
       "domain_separation_prefix": "gve/effect/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical exact-effect value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-identity",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -199,9 +262,22 @@
       "domain_separation_prefix": "gve/plan/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete accepted canonical plan value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -211,9 +287,24 @@
       "domain_separation_prefix": "gve/contract/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical governed contract value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-effect"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -223,9 +314,24 @@
       "domain_separation_prefix": "gve/production/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical governed production value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -235,9 +341,24 @@
       "domain_separation_prefix": "gve/evidence/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical evidence record",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-production"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -247,9 +368,24 @@
       "domain_separation_prefix": "gve/execution-record/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical authoritative execution record",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-evidence"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -259,9 +395,24 @@
       "domain_separation_prefix": "gve/authoritative-result/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical authoritative result",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "result_identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-execution-record"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": false
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     },
@@ -271,9 +422,24 @@
       "domain_separation_prefix": "gve/finalization/v1\u0000",
       "canonicalization_version": "gve-canonical-json-v1",
       "digest_algorithm": "sha256",
-      "canonical_value": "complete canonical finalization value",
-      "embedded_identity_mode": "omit-own-identity",
-      "reference_mode": "identity-plus-value",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-authoritative-result"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": true,
+          "governing_specification_revision": true
+        }
+      },
       "object_kind": "object",
       "aggregate": null
     }

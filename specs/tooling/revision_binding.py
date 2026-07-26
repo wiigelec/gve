@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any, Mapping, Sequence
 
 from .revision import (
+    DOCUMENT_FAMILY,
+    REVISION_FAMILY,
     SpecificationRevisionError,
     validate_specification_revision,
 )
@@ -12,6 +14,27 @@ from .revision import (
 
 class SpecificationRevisionBindingError(ValueError):
     """Raised when an artifact's governing revision binding is invalid."""
+
+
+def _typed_identity(
+    value: Any,
+    *,
+    family: str,
+    label: str,
+) -> str:
+    if not isinstance(value, str):
+        raise SpecificationRevisionBindingError(f"{label} is missing or malformed")
+    prefix = f"{family}-sha256:"
+    if not value.startswith(prefix):
+        raise SpecificationRevisionBindingError(
+            f"{label} must use the {family} identity family"
+        )
+    digest = value[len(prefix):]
+    if len(digest) != 64 or any(
+        character not in "0123456789abcdef" for character in digest
+    ):
+        raise SpecificationRevisionBindingError(f"{label} is missing or malformed")
+    return value
 
 
 def validate_current_revision_binding(
@@ -41,17 +64,24 @@ def validate_historical_revision_binding(
         raise SpecificationRevisionBindingError(
             "historical artifact lacks a specification_revision binding"
         )
-    algorithm = revision.get("algorithm")
-    identity = revision.get("identity")
-    manifest = revision.get("manifest")
-    if algorithm != "sha256":
+    if revision.get("canonicalization") != "gve-canonical-json-v1":
+        raise SpecificationRevisionBindingError(
+            "historical specification revision canonicalization is missing or unsupported"
+        )
+    if revision.get("algorithm") != "sha256":
         raise SpecificationRevisionBindingError(
             "historical specification revision algorithm is missing or unsupported"
         )
-    if not isinstance(identity, str) or len(identity) != 64:
+    if revision.get("identity_format") != "gve-spec-revision-sha256:<digest>":
         raise SpecificationRevisionBindingError(
-            "historical specification revision identity is missing or malformed"
+            "historical specification revision identity format is missing or unsupported"
         )
+    _typed_identity(
+        revision.get("identity"),
+        family=REVISION_FAMILY,
+        label="historical specification revision identity",
+    )
+    manifest = revision.get("manifest")
     if not isinstance(manifest, Mapping):
         raise SpecificationRevisionBindingError(
             "historical specification revision manifest is missing or malformed"
@@ -74,7 +104,6 @@ def validate_historical_revision_binding(
             )
         identifier = member.get("id")
         version = member.get("version")
-        content_identity = member.get("content_sha256")
         if not isinstance(identifier, str) or not identifier:
             raise SpecificationRevisionBindingError(
                 f"historical specification revision member {index} has invalid identity"
@@ -88,10 +117,8 @@ def validate_historical_revision_binding(
             raise SpecificationRevisionBindingError(
                 f"{identifier}: historical specification revision version is invalid"
             )
-        if (
-            not isinstance(content_identity, str)
-            or len(content_identity) != 64
-        ):
-            raise SpecificationRevisionBindingError(
-                f"{identifier}: historical content identity is malformed"
-            )
+        _typed_identity(
+            member.get("document_identity"),
+            family=DOCUMENT_FAMILY,
+            label=f"{identifier}: historical specification document identity",
+        )
