@@ -10,13 +10,19 @@ From the repository root:
 
 ```sh
 python -m specs.tooling.stage2_vector_runner
+python -m specs.tooling.stage2_vector_runner \
+  --implementation-command path/to/stage2-implementation --its-argument
 ./scripts/validate
 ```
 
 The runner is offline and deterministic. Success is silent with exit status
-zero. It compares the reference processor's exit status, stdout bytes, and
-stderr bytes against every manifest entry. Result-producing vectors compare
-stdout byte-for-byte with the referenced authoritative-result fixture.
+zero. With no implementation command it exercises the repository's development
+reference processor. With `--implementation-command`, it executes the supplied
+implementation once per vector, pipes the exact fixture bytes to stdin, and
+compares the process exit status, stdout bytes, and stderr bytes against the
+manifest. The option must be last because all remaining arguments belong to the
+implementation command. Result-producing vectors compare stdout byte-for-byte
+with the referenced authoritative-result fixture.
 
 ## Normative byte rules
 

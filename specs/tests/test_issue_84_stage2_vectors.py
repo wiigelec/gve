@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import hashlib
+import sys
+import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from specs.tooling.stage2_vector_runner import run_manifest
+from specs.tooling.stage2_vector_runner import command_processor, run_manifest
 from specs.tooling.stage2_vectors import (
     canonical_json_bytes,
     canonical_success_result,
@@ -31,6 +34,84 @@ class Issue84Stage2VectorTests(unittest.TestCase):
 
     def test_complete_manifest_runs_byte_exactly(self) -> None:
         self.assertEqual(run_manifest(), [])
+
+    def test_external_implementation_command_receives_exact_bytes(self) -> None:
+        vector = self.manifest["vectors"][0]
+        input_path = FIXTURES / vector["input"]["path"]
+        expected_input = input_path.read_bytes()
+        expected_stdout = (
+            FIXTURES / vector["expected"]["stdout_path"]
+        ).read_bytes()
+
+        with tempfile.TemporaryDirectory() as directory:
+            script = Path(directory) / "implementation.py"
+            script.write_text(
+                textwrap.dedent(
+                    f"""\
+                    import pathlib
+                    import sys
+
+                    received = sys.stdin.buffer.read()
+                    if received != {expected_input!r}:
+                        sys.stderr.buffer.write(b"unexpected input")
+                        raise SystemExit(99)
+                    sys.stdout.buffer.write({expected_stdout!r})
+                    raise SystemExit({vector["expected"]["exit_status"]})
+                    """
+                )
+            )
+            processor = command_processor([sys.executable, str(script)])
+            outcome = processor(expected_input)
+
+        self.assertEqual(outcome.exit_status, vector["expected"]["exit_status"])
+        self.assertEqual(outcome.stdout, expected_stdout)
+        self.assertEqual(outcome.stderr, b"")
+
+    def test_runner_can_compare_an_external_implementation(self) -> None:
+        vector = self.manifest["vectors"][0]
+        with tempfile.TemporaryDirectory() as directory:
+            manifest_path = Path(directory) / "manifest.json"
+            manifest_path.write_text(
+                __import__("json").dumps(
+                    {
+                        **self.manifest,
+                        "vectors": [vector],
+                    }
+                )
+            )
+            fixture_root = manifest_path.parent
+            for relative in (
+                vector["input"]["path"],
+                vector["expected"]["stdout_path"],
+                vector["expected"]["stderr_path"],
+            ):
+                source = FIXTURES / relative
+                target = fixture_root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(source.read_bytes())
+
+            expected_input = (FIXTURES / vector["input"]["path"]).read_bytes()
+            expected_stdout = (
+                FIXTURES / vector["expected"]["stdout_path"]
+            ).read_bytes()
+            script = Path(directory) / "implementation.py"
+            script.write_text(
+                textwrap.dedent(
+                    f"""\
+                    import sys
+
+                    if sys.stdin.buffer.read() != {expected_input!r}:
+                        raise SystemExit(99)
+                    sys.stdout.buffer.write({expected_stdout!r})
+                    """
+                )
+            )
+            errors = run_manifest(
+                manifest_path,
+                processor=command_processor([sys.executable, str(script)]),
+            )
+
+        self.assertEqual(errors, [])
 
     def test_canonical_result_reproduces_from_input_bytes(self) -> None:
         base = FIXTURES / "canonical-success"
