@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "GVE-IDENTITY-FRAMEWORK.schema.json",
+  "title": "GVE Unified Identity Framework Core",
+  "type": "object",
+  "required": [
+    "$schema",
+    "schema_version",
+    "authority",
+    "representation",
+    "canonicalization_versions",
+    "digest_algorithms",
+    "canonical_preimage",
+    "embedded_identity_rules",
+    "reference_semantics",
+    "object_kinds",
+    "aggregate_semantics",
+    "fail_closed_conditions",
+    "framework_invariants",
+    "identity_families",
+    "fixed_vectors",
+    "repository_integration",
+    "identity_verification_context"
+  ],
+  "properties": {
+    "identity_families": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/identityFamily"
+      }
+    },
+    "identity_verification_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purpose",
+        "representation",
+        "record_fields",
+        "identity_field",
+        "family_field",
+        "acceptance_field",
+        "accepted_value",
+        "external_to_canonical_preimage",
+        "missing_context_policy",
+        "missing_identity_policy",
+        "unknown_family_policy",
+        "family_conflict_policy",
+        "unaccepted_identity_policy",
+        "duplicate_identity_policy"
+      ],
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "minLength": 1
+        },
+        "representation": {
+          "const": "caller-supplied sequence of identity records"
+        },
+        "record_fields": {
+          "const": [
+            "identity",
+            "family_id",
+            "accepted"
+          ]
+        },
+        "identity_field": {
+          "const": "identity"
+        },
+        "family_field": {
+          "const": "family_id"
+        },
+        "acceptance_field": {
+          "const": "accepted"
+        },
+        "accepted_value": {
+          "const": true
+        },
+        "external_to_canonical_preimage": {
+          "const": true
+        },
+        "missing_context_policy": {
+          "const": "reject"
+        },
+        "missing_identity_policy": {
+          "const": "reject"
+        },
+        "unknown_family_policy": {
+          "const": "reject"
+        },
+        "family_conflict_policy": {
+          "const": "reject"
+        },
+        "unaccepted_identity_policy": {
+          "const": "reject"
+        },
+        "duplicate_identity_policy": {
+          "const": "reject"
+        }
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "identityFamily": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "semantic_domain",
+        "domain_separation_prefix",
+        "canonicalization_version",
+        "digest_algorithm",
+        "preimage",
+        "object_kind",
+        "aggregate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "semantic_domain": {
+          "type": "string"
+        },
+        "domain_separation_prefix": {
+          "type": "string"
+        },
+        "canonicalization_version": {
+          "type": "string"
+        },
+        "digest_algorithm": {
+          "type": "string"
+        },
+        "preimage": {
+          "$ref": "#/$defs/preimage"
+        },
+        "object_kind": {
+          "enum": [
+            "object",
+            "ordered-aggregate",
+            "unordered-aggregate"
+          ]
+        },
+        "aggregate": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/aggregateDefinition"
+            }
+          ]
+        }
+      }
+    },
+    "preimage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value_source",
+        "own_identity_paths",
+        "reference_paths",
+        "reference_encoding",
+        "allowed_reference_family_ids",
+        "aggregate_encoding",
+        "version_bindings",
+        "identity_verification"
+      ],
+      "properties": {
+        "value_source": {
+          "const": "complete-object"
+        },
+        "own_identity_paths": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reference_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "reference_encoding": {
+          "enum": [
+            "by-value",
+            "by-identity",
+            "identity-plus-value"
+          ]
+        },
+        "allowed_reference_family_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "aggregate_encoding": {
+          "enum": [
+            "member-references",
+            null
+          ]
+        },
+        "version_bindings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canonicalization",
+            "governing_specification_revision"
+          ],
+          "properties": {
+            "canonicalization": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "required",
+                "source"
+              ],
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "const": "family-definition"
+                }
+              }
+            },
+            "governing_specification_revision": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "required",
+                "source",
+                "family_id",
+                "comparison"
+              ],
+              "properties": {
+                "required": {
+                  "type": "boolean"
+                },
+                "source": {
+                  "enum": [
+                    "verification-context",
+                    "not-applicable"
+                  ]
+                },
+                "family_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "comparison": {
+                  "enum": [
+                    "exact",
+                    "not-applicable"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "identity_verification": {
+          "$ref": "#/$defs/identityVerification"
+        }
+      }
+    },
+    "aggregateDefinition": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "member_family_ids",
+        "membership",
+        "ordering_significance",
+        "duplicate_policy",
+        "closure_boundary",
+        "member_reference_mode",
+        "empty_aggregate_rule",
+        "cycle_policy",
+        "membership_path",
+        "member_identity_path",
+        "member_value_path",
+        "identity_verification"
+      ],
+      "properties": {
+        "member_family_ids": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "ordering_significance": {
+          "enum": [
+            "ordered",
+            "unordered"
+          ]
+        },
+        "closure_boundary": {
+          "enum": [
+            "direct"
+          ]
+        },
+        "member_reference_mode": {
+          "enum": [
+            "by-value",
+            "by-identity",
+            "identity-plus-value"
+          ]
+        },
+        "membership_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "member_identity_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "member_value_path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duplicate_policy": {
+          "enum": [
+            "reject",
+            "permit"
+          ]
+        },
+        "empty_aggregate_rule": {
+          "enum": [
+            "reject",
+            "permit"
+          ]
+        },
+        "cycle_policy": {
+          "const": "reject"
+        },
+        "identity_verification": {
+          "$ref": "#/$defs/identityVerification"
+        }
+      }
+    },
+    "identityVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "required",
+        "context_source",
+        "context_binding"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "not-applicable",
+            "verified-identity-set",
+            "embedded-value-recomputation"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "context_source": {
+          "enum": [
+            "none",
+            "caller-supplied",
+            "embedded-value"
+          ]
+        },
+        "context_binding": {
+          "enum": [
+            "not-applicable",
+            "external-to-canonical-preimage"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,648 @@
+{
+  "$schema": "../schemas/GVE-IDENTITY-FRAMEWORK.schema.json",
+  "schema_version": 1,
+  "authority": {
+    "governing_specification": "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
+    "status": "normative-framework-core",
+    "integration_state": "repository-integrated",
+    "governing_requirement_ids": [
+      "L2-DA-REQ-013",
+      "L2-DA-REQ-014",
+      "L2-DA-REQ-015",
+      "L2-DA-REQ-016",
+      "L2-DA-REQ-017",
+      "L2-DA-REQ-020",
+      "L2-DA-REQ-021",
+      "L2-DA-REQ-022",
+      "L2-DA-REQ-023"
+    ]
+  },
+  "representation": {
+    "syntax": "<family>-<algorithm>:<digest>",
+    "family_pattern": "^gve-[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+    "algorithm_separator": "-",
+    "digest_separator": ":",
+    "digest_encoding": "lowercase-hex"
+  },
+  "canonicalization_versions": [
+    {
+      "id": "gve-canonical-json-v1",
+      "media_type": "application/json",
+      "encoding": "utf-8",
+      "unicode_normalization": "none",
+      "object_member_order": "ascending-unicode-code-point-sequence",
+      "array_order": "preserved",
+      "insignificant_whitespace": "omitted",
+      "floating_point": "rejected",
+      "surrogate_code_points": "rejected",
+      "non_string_object_keys": "rejected"
+    }
+  ],
+  "digest_algorithms": [
+    {
+      "id": "sha256",
+      "digest_bits": 256,
+      "encoded_length": 64,
+      "encoding": "lowercase-hex"
+    }
+  ],
+  "canonical_preimage": {
+    "construction": "domain-prefix-bytes || canonical-value-bytes",
+    "domain_prefix_encoding": "utf-8",
+    "domain_prefix_terminator": "nul",
+    "canonicalization_version_required": true,
+    "digest_algorithm_required": true,
+    "family_definition_required": true
+  },
+  "embedded_identity_rules": {
+    "per_family_declaration_required": true,
+    "permitted_modes": [
+      "include",
+      "omit-own-identity",
+      "canonical-reference"
+    ],
+    "implicit_handling_prohibited": true
+  },
+  "reference_semantics": {
+    "per_family_declaration_required": true,
+    "permitted_modes": [
+      "by-value",
+      "by-identity",
+      "identity-plus-value"
+    ],
+    "ambiguous_reference_prohibited": true
+  },
+  "object_kinds": {
+    "per_family_declaration_required": true,
+    "permitted_kinds": [
+      "object",
+      "ordered-aggregate",
+      "unordered-aggregate"
+    ],
+    "v1_aggregate_closure_boundary": "direct"
+  },
+  "aggregate_semantics": {
+    "required_for_aggregate_kinds": [
+      "membership",
+      "ordering_significance",
+      "duplicate_policy",
+      "closure_boundary",
+      "member_reference_mode",
+      "empty_aggregate_rule",
+      "cycle_policy",
+      "membership_path",
+      "member_identity_path",
+      "member_value_path"
+    ],
+    "cycle_policy": "reject",
+    "incomplete_membership_policy": "reject"
+  },
+  "fail_closed_conditions": [
+    "missing-family",
+    "unknown-family",
+    "missing-domain-prefix",
+    "cross-domain-substitution",
+    "missing-canonicalization-version",
+    "unsupported-canonicalization-version",
+    "missing-digest-algorithm",
+    "unsupported-digest-algorithm",
+    "ambiguous-reference-semantics",
+    "implicit-embedded-identity-handling",
+    "incomplete-aggregate-membership",
+    "self-referential-identity",
+    "circular-aggregate-identity",
+    "mismatched-identity-family",
+    "unverifiable-identity"
+  ],
+  "framework_invariants": {
+    "one_semantic_domain_per_family": true,
+    "one_canonical_preimage_per_family": true,
+    "one_domain_prefix_per_family": true,
+    "domain_prefixes_unique": true,
+    "canonicalization_version_explicit": true,
+    "digest_algorithm_explicit": true,
+    "future_families_must_derive_from_framework": true,
+    "cross_domain_substitution_prohibited": true,
+    "circular_construction_prohibited": true
+  },
+  "identity_families": [
+    {
+      "id": "gve-spec-document",
+      "semantic_domain": "normative-specification-document",
+      "domain_separation_prefix": "gve/spec-document/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "not-applicable",
+          "required": false,
+          "context_source": "none",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-spec-revision",
+      "semantic_domain": "governing-specification-set-revision",
+      "domain_separation_prefix": "gve/spec-revision/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": "member-references",
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "unordered-aggregate",
+      "aggregate": {
+        "member_family_ids": [
+          "gve-spec-document"
+        ],
+        "membership": "every accepted normative specification document exactly once",
+        "ordering_significance": "unordered",
+        "duplicate_policy": "reject",
+        "closure_boundary": "direct",
+        "member_reference_mode": "by-identity",
+        "empty_aggregate_rule": "reject",
+        "cycle_policy": "reject",
+        "membership_path": "members",
+        "member_identity_path": "document_identity",
+        "member_value_path": null,
+        "identity_verification": {
+          "mode": "verified-identity-set",
+          "required": true,
+          "context_source": "caller-supplied",
+          "context_binding": "external-to-canonical-preimage"
+        }
+      }
+    },
+    {
+      "id": "gve-governance-composition",
+      "semantic_domain": "governed-authority-composition",
+      "domain_separation_prefix": "gve/governance-composition/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": "member-references",
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "ordered-aggregate",
+      "aggregate": {
+        "member_family_ids": [
+          "gve-contract"
+        ],
+        "membership": "every directly composed governed contract in declared order",
+        "ordering_significance": "ordered",
+        "duplicate_policy": "reject",
+        "closure_boundary": "direct",
+        "member_reference_mode": "identity-plus-value",
+        "empty_aggregate_rule": "reject",
+        "cycle_policy": "reject",
+        "membership_path": "members",
+        "member_identity_path": "identity",
+        "member_value_path": "value",
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      }
+    },
+    {
+      "id": "gve-effect",
+      "semantic_domain": "exact-governed-effect",
+      "domain_separation_prefix": "gve/effect/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-identity",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "verified-identity-set",
+          "required": true,
+          "context_source": "caller-supplied",
+          "context_binding": "external-to-canonical-preimage"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-plan",
+      "semantic_domain": "accepted-governed-plan",
+      "domain_separation_prefix": "gve/plan/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "by-value",
+        "allowed_reference_family_ids": [],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "not-applicable",
+          "required": false,
+          "context_source": "none",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-contract",
+      "semantic_domain": "governed-contract",
+      "domain_separation_prefix": "gve/contract/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-effect"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-production",
+      "semantic_domain": "governed-production",
+      "domain_separation_prefix": "gve/production/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-contract"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-evidence",
+      "semantic_domain": "admitted-evidence-record",
+      "domain_separation_prefix": "gve/evidence/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-production"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-execution-record",
+      "semantic_domain": "authoritative-governed-execution-record",
+      "domain_separation_prefix": "gve/execution-record/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-evidence"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-authoritative-result",
+      "semantic_domain": "authoritative-governed-result",
+      "domain_separation_prefix": "gve/authoritative-result/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "result_identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-execution-record"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": false,
+            "source": "not-applicable",
+            "family_id": null,
+            "comparison": "not-applicable"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    },
+    {
+      "id": "gve-finalization",
+      "semantic_domain": "governed-result-finalization",
+      "domain_separation_prefix": "gve/finalization/v1\u0000",
+      "canonicalization_version": "gve-canonical-json-v1",
+      "digest_algorithm": "sha256",
+      "preimage": {
+        "value_source": "complete-object",
+        "own_identity_paths": [
+          "identity"
+        ],
+        "reference_paths": [
+          "references"
+        ],
+        "reference_encoding": "identity-plus-value",
+        "allowed_reference_family_ids": [
+          "gve-authoritative-result"
+        ],
+        "aggregate_encoding": null,
+        "version_bindings": {
+          "canonicalization": {
+            "required": true,
+            "source": "family-definition"
+          },
+          "governing_specification_revision": {
+            "required": true,
+            "source": "verification-context",
+            "family_id": "gve-spec-revision",
+            "comparison": "exact"
+          }
+        },
+        "identity_verification": {
+          "mode": "embedded-value-recomputation",
+          "required": true,
+          "context_source": "embedded-value",
+          "context_binding": "not-applicable"
+        }
+      },
+      "object_kind": "object",
+      "aggregate": null
+    }
+  ],
+  "fixed_vectors": {
+    "path": "tests/fixtures/issue_76/identity_vectors.json",
+    "canonicalization_version": "gve-canonical-json-v1",
+    "digest_algorithm": "sha256",
+    "positive_vectors_required": true,
+    "negative_vectors_required": true,
+    "immutable_after_acceptance": true
+  },
+  "repository_integration": {
+    "normative_manifest_binding_required": true,
+    "deterministic_markdown_projection_required": true,
+    "normal_validation_required": true,
+    "fixed_vector_validation_required": true,
+    "identity_migration_deferred": true
+  },
+  "identity_verification_context": {
+    "purpose": "authoritative verification of by-identity references and aggregate members",
+    "representation": "caller-supplied sequence of identity records",
+    "record_fields": [
+      "identity",
+      "family_id",
+      "accepted"
+    ],
+    "identity_field": "identity",
+    "family_field": "family_id",
+    "acceptance_field": "accepted",
+    "accepted_value": true,
+    "external_to_canonical_preimage": true,
+    "missing_context_policy": "reject",
+    "missing_identity_policy": "reject",
+    "unknown_family_policy": "reject",
+    "family_conflict_policy": "reject",
+    "unaccepted_identity_policy": "reject",
+    "duplicate_identity_policy": "reject"
+  }
+}

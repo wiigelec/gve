@@ -1,16 +1,16 @@
-"""Deterministic normative specification-set revision identities."""
+"""Deterministic domain-separated normative specification-set identities."""
 
 from __future__ import annotations
 
+import json
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
-from .canonical_json import (
-    CANONICALIZATION,
-    DIGEST_ALGORITHM,
-    IDENTITY_FORMAT,
-    CanonicalJsonError,
-    canonical_json,
-    sha256_identity,
+from .identity import (
+    IdentityFrameworkError,
+    compute_identity,
+    verify_identity,
 )
 
 
@@ -18,20 +18,69 @@ class SpecificationRevisionError(ValueError):
     """Raised when a normative specification revision cannot be constructed."""
 
 
-def document_content_identity(document: Mapping[str, Any]) -> str:
-    """Return the deterministic SHA-256 identity of one normative JSON document."""
+CANONICALIZATION = "gve-canonical-json-v1"
+DIGEST_ALGORITHM = "sha256"
+DOCUMENT_FAMILY = "gve-spec-document"
+REVISION_FAMILY = "gve-spec-revision"
+DOCUMENT_IDENTITY_FORMAT = "gve-spec-document-sha256:<digest>"
+REVISION_IDENTITY_FORMAT = "gve-spec-revision-sha256:<digest>"
+
+
+@lru_cache(maxsize=1)
+def _identity_framework() -> Mapping[str, Any]:
+    path = Path(__file__).resolve().parents[1] / "identity" / "GVE-IDENTITY-FRAMEWORK.json"
     try:
-        return sha256_identity(document)
-    except CanonicalJsonError as exc:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SpecificationRevisionError(
+            f"cannot load normative identity framework: {exc}"
+        ) from exc
+    if not isinstance(value, Mapping):
+        raise SpecificationRevisionError(
+            "normative identity framework must contain one JSON object"
+        )
+    return value
+
+
+def document_content_identity(document: Mapping[str, Any]) -> str:
+    """Return the gve-spec-document identity of one normative JSON document."""
+    try:
+        return compute_identity(
+            _identity_framework(),
+            DOCUMENT_FAMILY,
+            document,
+        )
+    except IdentityFrameworkError as exc:
         raise SpecificationRevisionError(
             f"specification revision input is not canonicalizable: {exc}"
         ) from exc
 
 
+def _validate_typed_identity(
+    identity: Any,
+    *,
+    family: str,
+    label: str,
+) -> str:
+    if not isinstance(identity, str):
+        raise SpecificationRevisionError(f"{label} is missing or malformed")
+    prefix = f"{family}-sha256:"
+    if not identity.startswith(prefix):
+        raise SpecificationRevisionError(
+            f"{label} must use the {family} identity family"
+        )
+    digest = identity[len(prefix):]
+    if len(digest) != 64 or any(
+        character not in "0123456789abcdef" for character in digest
+    ):
+        raise SpecificationRevisionError(f"{label} is missing or malformed")
+    return identity
+
+
 def build_specification_revision(
     documents: Sequence[Mapping[str, Any]],
 ) -> dict[str, Any]:
-    """Build one deterministic identity for an exact normative document graph."""
+    """Build one domain-separated identity for an exact normative document graph."""
     if not documents:
         raise SpecificationRevisionError(
             "specification revision requires at least one normative document"
@@ -70,7 +119,7 @@ def build_specification_revision(
             {
                 "id": identifier,
                 "version": version,
-                "content_sha256": document_content_identity(document),
+                "document_identity": document_content_identity(document),
             }
         )
 
@@ -79,11 +128,32 @@ def build_specification_revision(
         "schema_version": 1,
         "members": members,
     }
+    member_identities = [member["document_identity"] for member in members]
+    identity_context = [
+        {
+            "identity": member["document_identity"],
+            "family_id": DOCUMENT_FAMILY,
+            "accepted": True,
+        }
+        for member in members
+    ]
+    try:
+        revision_identity = compute_identity(
+            _identity_framework(),
+            REVISION_FAMILY,
+            manifest,
+            member_identities=member_identities,
+            identity_context=identity_context,
+        )
+    except IdentityFrameworkError as exc:
+        raise SpecificationRevisionError(
+            f"specification revision cannot be identified: {exc}"
+        ) from exc
     return {
         "canonicalization": CANONICALIZATION,
         "algorithm": DIGEST_ALGORITHM,
-        "identity_format": IDENTITY_FORMAT,
-        "identity": sha256_identity(manifest),
+        "identity_format": REVISION_IDENTITY_FORMAT,
+        "identity": revision_identity,
         "manifest": manifest,
     }
 
@@ -106,15 +176,11 @@ def validate_specification_revision(
         raise SpecificationRevisionError(
             "specification revision identity format is missing or unsupported"
         )
-    identity = revision.get("identity")
-    if (
-        not isinstance(identity, str)
-        or len(identity) != 64
-        or any(character not in "0123456789abcdef" for character in identity)
-    ):
-        raise SpecificationRevisionError(
-            "specification revision identity is missing or malformed"
-        )
+    identity = _validate_typed_identity(
+        revision.get("identity"),
+        family=REVISION_FAMILY,
+        label="specification revision identity",
+    )
     manifest = revision.get("manifest")
     if not isinstance(manifest, Mapping):
         raise SpecificationRevisionError(
@@ -145,6 +211,11 @@ def validate_specification_revision(
             raise SpecificationRevisionError(
                 f"duplicate specification revision member {identifier}"
             )
+        _validate_typed_identity(
+            member.get("document_identity"),
+            family=DOCUMENT_FAMILY,
+            label=f"{identifier}: specification document identity",
+        )
         supplied_by_id[identifier] = member
 
     expected_by_id = {
@@ -162,7 +233,7 @@ def validate_specification_revision(
     for identifier in sorted(expected_by_id):
         supplied = supplied_by_id[identifier]
         expected_member = expected_by_id[identifier]
-        for field in ("version", "content_sha256"):
+        for field in ("version", "document_identity"):
             if supplied.get(field) != expected_member[field]:
                 raise SpecificationRevisionError(
                     f"{identifier}: conflicting specification revision {field}"
@@ -175,11 +246,31 @@ def validate_specification_revision(
             for identifier in sorted(supplied_by_id)
         ],
     }
-    calculated_identity = sha256_identity(canonical_supplied)
-    if identity != calculated_identity:
+    member_identities = [
+        supplied_by_id[identifier]["document_identity"]
+        for identifier in sorted(supplied_by_id)
+    ]
+    identity_context = [
+        {
+            "identity": identity,
+            "family_id": DOCUMENT_FAMILY,
+            "accepted": True,
+        }
+        for identity in member_identities
+    ]
+    try:
+        verify_identity(
+            _identity_framework(),
+            REVISION_FAMILY,
+            identity,
+            canonical_supplied,
+            member_identities=member_identities,
+            identity_context=identity_context,
+        )
+    except IdentityFrameworkError as exc:
         raise SpecificationRevisionError(
             "specification revision identity conflicts with its manifest"
-        )
+        ) from exc
     if identity != expected["identity"]:
         raise SpecificationRevisionError(
             "specification revision is not current for the normative graph"

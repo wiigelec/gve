@@ -26,7 +26,14 @@
       "const": "sha256"
     },
     "identity_format": {
-      "const": "gve-canonical-json-v1+sha256:lowercase-hex"
+      "type": "string",
+      "enum": [
+        "gve-canonical-json-v1+sha256:lowercase-hex",
+        "gve-spec-revision-sha256:<digest>"
+      ]
+    },
+    "identity_framework": {
+      "$ref": "#/$defs/identityFramework"
     },
     "members": {
       "type": "array",
@@ -37,6 +44,58 @@
     }
   },
   "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "identityFramework": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "path",
+        "schema_path",
+        "projection_path",
+        "vectors_path",
+        "content_sha256",
+        "schema_sha256",
+        "projection_sha256",
+        "vectors_sha256"
+      ],
+      "properties": {
+        "id": {
+          "const": "GVE-IDENTITY-FRAMEWORK"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "path": {
+          "const": "identity/GVE-IDENTITY-FRAMEWORK.json"
+        },
+        "schema_path": {
+          "const": "schemas/GVE-IDENTITY-FRAMEWORK.schema.json"
+        },
+        "projection_path": {
+          "const": "identity/GVE-IDENTITY-FRAMEWORK.md"
+        },
+        "vectors_path": {
+          "const": "tests/fixtures/issue_76/identity_vectors.json"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "schema_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "projection_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "vectors_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
     "member": {
       "type": "object",
       "additionalProperties": false,
@@ -63,8 +122,7 @@
           "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
         },
         "content_sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "$ref": "#/$defs/sha256"
         }
       }
     }

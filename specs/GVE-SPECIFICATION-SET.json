@@ -3,7 +3,19 @@
   "schema_version": 1,
   "canonicalization": "gve-canonical-json-v1",
   "digest_algorithm": "sha256",
-  "identity_format": "gve-canonical-json-v1+sha256:lowercase-hex",
+  "identity_format": "gve-spec-revision-sha256:<digest>",
+  "identity_framework": {
+    "id": "GVE-IDENTITY-FRAMEWORK",
+    "version": "1.0.0",
+    "path": "identity/GVE-IDENTITY-FRAMEWORK.json",
+    "schema_path": "schemas/GVE-IDENTITY-FRAMEWORK.schema.json",
+    "projection_path": "identity/GVE-IDENTITY-FRAMEWORK.md",
+    "vectors_path": "tests/fixtures/issue_76/identity_vectors.json",
+    "content_sha256": "fb41270fce085bfba33a3ca23c0be8042edd2aadef8e06c1e192b813cdd11063",
+    "schema_sha256": "7423f3eb70eb85a98dff0a80945c406f3e8aea94f75c65831dd0cf63c01c32b2",
+    "projection_sha256": "38f474bc1afdfa22fab8e31a0910e4ff6490677edb17fd81b7a3726695626b46",
+    "vectors_sha256": "4cc37e6fcc5a62e81092419342ba306b3034d72407bdcaa61d0a7d980721ce03"
+  },
   "members": [
     {
       "path": "levels/level-0/GVE-LEVEL-0.json",
@@ -33,7 +45,7 @@
       "path": "levels/level-2/GVE-LEVEL-2-DOCUMENT-AUTHORITY.json",
       "role": "subordinate",
       "id": "GVE-LEVEL-2-DOCUMENT-AUTHORITY",
-      "content_sha256": "08dc0db6f888c377bc79696fc5012c3199181155d2d344a2a8042c9c228645ae"
+      "content_sha256": "f436ac2463515d815052b583aa2d076fe3d34416fd84bc36e20656115a1cc76c"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2-LOCAL-PLUGIN-BOUNDARIES.json",

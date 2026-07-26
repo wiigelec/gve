@@ -13,7 +13,7 @@
 
 ## Summary
 
-GVE Level 2 Document Authority defines the normative cross-document authority graph and canonical revision identity for the complete governed specification set. It establishes explicit same-level imports, transitive visibility, deterministic identifier resolution, relationship-endpoint visibility, import acyclicity, global identifier uniqueness, exact normative-member participation, content-sensitive canonical revision construction, historical authority attribution, and fail-closed conflict behavior. It preserves the Level 2 root decomposition and distinguishes specification-document authority from workflow dependencies, runtime data handoffs, repository commit identity, and derived Markdown projections.
+GVE Level 2 Document Authority defines the normative cross-document authority graph and domain-separated canonical identities for normative specification documents and the complete governed specification set. It establishes explicit same-level imports, transitive visibility, deterministic identifier resolution, relationship-endpoint visibility, import acyclicity, global identifier uniqueness, exact normative-member participation, content-sensitive canonical revision construction, historical authority attribution, and fail-closed conflict behavior. It preserves the Level 2 root decomposition and distinguishes specification-document authority from workflow dependencies, runtime data handoffs, repository commit identity, bootstrap transport digests, and derived Markdown projections.
 
 ## Definitions
 
@@ -55,7 +55,7 @@ The normative separation between document imports, which grant specification ide
 
 ### Normative document content identity (`L2-DA-NORMATIVE-CONTENT-IDENTITY`)
 
-The deterministic identity of one complete authoritative normative JSON document after canonical serialization of its full machine-readable content. A declared semantic version does not replace or establish this content identity.
+The gve-spec-document identity of one complete authoritative normative JSON document, constructed under GVE-IDENTITY-FRAMEWORK from the gve/spec-document/v1 NUL-terminated domain prefix and gve-canonical-json-v1 bytes of the full machine-readable document with its own identity field omitted. A declared semantic version, repository path, repository commit, bootstrap content digest, or derived projection does not replace or establish this normative identity.
 
 ### GVE canonical JSON version 1 (`L2-DA-CANONICAL-JSON`)
 
@@ -63,19 +63,19 @@ The canonical byte serialization identified as gve-canonical-json-v1. It accepts
 
 ### Specification-revision member binding (`L2-DA-REVISION-MEMBER-BINDING`)
 
-The exact binding of one normative specification document identity to its declared version and normative content identity within one canonical specification-set revision manifest.
+The exact binding of one stable specification identifier to its declared version and gve-spec-document identity within one canonical specification-set revision manifest.
 
 ### Canonical specification-revision manifest (`L2-DA-REVISION-MANIFEST`)
 
-The closed machine-readable collection containing every accepted normative specification document exactly once as a revision-member binding, ordered canonically by stable specification identity and excluding derived Markdown as independent authority.
+The closed machine-readable collection containing every accepted normative specification document exactly once as a revision-member binding, ordered canonically by stable specification identity and excluding derived Markdown and bootstrap transport digests as independent normative authority.
 
 ### Governing specification-set revision (`L2-DA-SPECIFICATION-REVISION`)
 
-The deterministic aggregate identity of one exact canonical specification-revision manifest. It identifies the complete governed normative instruction graph independently of document discovery order, filesystem order, validator iteration order, and repository commit identity.
+The gve-spec-revision aggregate identity of one exact canonical specification-revision manifest, constructed under GVE-IDENTITY-FRAMEWORK. It identifies the complete governed normative instruction graph independently of document discovery order, filesystem order, validator iteration order, repository commit identity, and bootstrap transport evidence.
 
-### Specification-revision identity format (`L2-DA-REVISION-IDENTITY-FORMAT`)
+### Specification identity formats (`L2-DA-REVISION-IDENTITY-FORMAT`)
 
-The explicit revision identity representation gve-canonical-json-v1+sha256:lowercase-hex, consisting of SHA-256 applied to gve-canonical-json-v1 bytes and encoded as exactly sixty-four lowercase hexadecimal characters.
+Normative specification-document identities use the representation gve-spec-document-sha256:<digest>. Governing specification-set revision identities use the representation gve-spec-revision-sha256:<digest>. Each digest is exactly sixty-four lowercase hexadecimal characters, and both families derive from GVE-IDENTITY-FRAMEWORK rather than an independent or untyped digest mechanism.
 
 ### Textual identifier policy (`L2-DA-TEXTUAL-IDENTIFIER-POLICY`)
 
@@ -167,19 +167,19 @@ References: `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`
 
 ### L2-DA-REQ-014
 
-Each canonical revision-manifest member must bind one stable specification identity, its declared version, and its normative document content identity. A semantic-version string, filename, path, repository commit, or derived Markdown projection alone must not establish normative content identity.
+Each canonical revision-manifest member must bind one stable specification identity, its declared version, and its gve-spec-document identity. A semantic-version string, filename, path, repository commit, bootstrap content digest, or derived Markdown projection alone must not establish normative document identity.
 
 References: `L2-DA-NORMATIVE-CONTENT-IDENTITY`, `L2-DA-REVISION-MEMBER-BINDING`
 
 ### L2-DA-REQ-015
 
-Normative document content identities and the aggregate specification-revision identity must use gve-canonical-json-v1. Revision-manifest members must be ordered by ascending stable specification identity before manifest serialization. The same normative graph must produce identical canonical bytes and identities independently of JSON object declaration order, document discovery order, filesystem order, and validator iteration order.
+Normative document identities and the aggregate specification-revision identity must derive from the gve-spec-document and gve-spec-revision families defined by GVE-IDENTITY-FRAMEWORK and must use gve-canonical-json-v1 with sha256. Revision-manifest members must be ordered by ascending stable specification identity before manifest serialization. The same normative graph must produce identical canonical bytes and identities independently of JSON object declaration order, document discovery order, filesystem order, and validator iteration order.
 
-References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-DETERMINISTIC-RESOLUTION`
+References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-IDENTITY-FORMAT`, `L2-DA-REVISION-MANIFEST`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-DETERMINISTIC-RESOLUTION`
 
 ### L2-DA-REQ-016
 
-Any change to authoritative normative JSON content must change that document's content identity and therefore the governing specification-set revision, even when specification identity and declared version remain unchanged.
+Any change to authoritative normative JSON content must change that document's gve-spec-document identity and therefore the governing gve-spec-revision identity, even when specification identity and declared version remain unchanged.
 
 References: `L2-DA-NORMATIVE-CONTENT-IDENTITY`, `L2-DA-SPECIFICATION-REVISION`
 
@@ -215,13 +215,13 @@ References: `L2-DA-CANONICAL-JSON`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
 
 ### L2-DA-REQ-022
 
-Floating-point values, non-finite numeric values, surrogate code points, non-string object member names, and values outside the JSON data model are not canonicalizable and must fail closed before a normative document content identity or specification-revision identity is claimed.
+Floating-point values, non-finite numeric values, surrogate code points, non-string object member names, and values outside the JSON data model are not canonicalizable and must fail closed before a normative document identity or specification-revision identity is claimed.
 
 References: `L2-DA-CANONICAL-JSON`, `L2-DA-CONFLICT`, `L2-DA-NORMATIVE-CONTENT-IDENTITY`
 
 ### L2-DA-REQ-023
 
-Every governing specification-set revision must declare canonicalization gve-canonical-json-v1, digest algorithm sha256, and identity format gve-canonical-json-v1+sha256:lowercase-hex. Its identity must be exactly sixty-four lowercase hexadecimal characters. Missing, unknown, conflicting, or malformed identifiers or representations must fail closed.
+Every normative specification-document identity must use gve-spec-document-sha256:<digest>, and every governing specification-set revision identity must use gve-spec-revision-sha256:<digest>. Each identity must declare or resolve canonicalization gve-canonical-json-v1 and digest algorithm sha256 through GVE-IDENTITY-FRAMEWORK, and each digest must be exactly sixty-four lowercase hexadecimal characters. Missing, unknown, conflicting, untyped, or malformed identities must fail closed.
 
 References: `L2-DA-CANONICAL-JSON`, `L2-DA-REVISION-IDENTITY-FORMAT`, `L2-DA-SPECIFICATION-REVISION`, `L2-DA-CONFLICT`
 
@@ -268,12 +268,12 @@ References: `L2-DA-TEXTUAL-IDENTIFIER-POLICY`
 - Relationship-endpoint visibility
 - Fail-closed unresolved and conflicting document behavior
 - The distinction between specification imports and runtime dependencies or handoffs
-- Canonical normative JSON content identities
+- Domain-separated gve-spec-document normative JSON identities
 - Exact gve-canonical-json-v1 byte serialization and rejection rules
 - Closed exact specification-revision manifests
-- Deterministic order-independent governing specification-set revision identity
+- Domain-separated gve-spec-revision governing specification-set identities
 - Current-freshness revision bindings
-- Explicit SHA-256 lowercase-hex revision identity format
+- Bootstrap digest distinction from normative identity
 - Historical specification-revision attribution
 
 ### Excludes
@@ -289,4 +289,5 @@ References: `L2-DA-TEXTUAL-IDENTIFIER-POLICY`
 - Cryptographic signing and trust-root design
 - Revision storage, transport, persistence, caching, and migration implementation
 - Repository commit identity as sole normative revision authority
+- Bootstrap transport digests as normative product identities
 - Derived Markdown as independent revision input
