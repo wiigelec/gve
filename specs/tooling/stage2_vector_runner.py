@@ -10,6 +10,7 @@ from pathlib import Path
 
 from specs.tooling.stage2_vectors import ProcessOutcome, reference_process
 from specs.tooling.strict_json import load_strict
+from specs.tooling.vector_schema_validation import schema_validator
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,6 +71,40 @@ def run_manifest(
     return errors
 
 
+def run_artifact_validation_cases(
+    manifest_path: Path = DEFAULT_MANIFEST,
+) -> list[str]:
+    manifest = load_strict(manifest_path)
+    base = manifest_path.parent
+    errors: list[str] = []
+    validators: dict[str, object] = {}
+    for case in manifest.get("artifact_validation_cases", []):
+        case_id = case["id"]
+        artifact_path = base / case["artifact"]["path"]
+        artifact_bytes = artifact_path.read_bytes()
+        checks = (
+            ("artifact length", len(artifact_bytes), case["artifact"]["byte_length"]),
+            (
+                "artifact sha256",
+                hashlib.sha256(artifact_bytes).hexdigest(),
+                case["artifact"]["sha256"],
+            ),
+        )
+        for name, actual, wanted in checks:
+            if actual != wanted:
+                errors.append(f"{case_id}: {name} mismatch")
+
+        validator = validators.get(case["schema"])
+        if validator is None:
+            validator = schema_validator(case["schema"])
+            validators[case["schema"]] = validator
+        value = load_strict(artifact_path)
+        rejected = bool(list(validator.iter_errors(value)))
+        if case["expected"] == "schema-rejected" and not rejected:
+            errors.append(f"{case_id}: schema unexpectedly accepted artifact")
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
@@ -89,6 +124,7 @@ def main() -> int:
         else reference_process
     )
     errors = run_manifest(args.manifest, processor=processor)
+    errors.extend(run_artifact_validation_cases(args.manifest))
     for error in errors:
         print(error)
     return 1 if errors else 0

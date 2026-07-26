@@ -627,77 +627,113 @@
       }
     }
   ],
-  "boundary_probes": [
+  "artifact_validation_cases": [
     {
       "id": "unknown-authoritative-result-member",
+      "purpose": "Reject an unknown member at JSON Pointer /.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-authoritative-result-member.json",
+        "byte_length": 874,
+        "sha256": "55a2eb95d097ae3932e83c59e7a29258551717520731d23dfd4699fe885560c5"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "",
-      "member": "unknown_result_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-processing-member",
+      "purpose": "Reject an unknown member at JSON Pointer /processing.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-processing-member.json",
+        "byte_length": 878,
+        "sha256": "d6f767c33b3df0bbfe3ae074977171ec3a3849ce86c10d7fd6a4d72df5615636"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/processing",
-      "member": "unknown_processing_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-result-workflow-member",
+      "purpose": "Reject an unknown member at JSON Pointer /workflow.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-result-workflow-member.json",
+        "byte_length": 876,
+        "sha256": "abcee84ae5e5c30d3b9f90a56ccec4d29b6173e85670f0c8faa020050bb0953e"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/workflow",
-      "member": "unknown_workflow_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-workflow-effects-member",
+      "purpose": "Reject an unknown member at JSON Pointer /workflow/effects.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-workflow-effects-member.json",
+        "byte_length": 874,
+        "sha256": "1a578fa5aea5838ee2dae51827f7fceeea77c01370b4cd73ba40bc0444530c95"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/workflow/effects",
-      "member": "unknown_effect_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-result-operation-member",
+      "purpose": "Reject an unknown member at JSON Pointer /workflow/operations/0.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-result-operation-member.json",
+        "byte_length": 877,
+        "sha256": "71a78913ac81be3e38fcaef345cb9e80402e26355cbfc5e2b98b72e812eaa682"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/workflow/operations/0",
-      "member": "unknown_operation_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-operation-effects-member",
+      "purpose": "Reject an unknown member at JSON Pointer /workflow/operations/0/effects.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-operation-effects-member.json",
+        "byte_length": 874,
+        "sha256": "c8f1bd7a71aafcfe03ac7b5f261fd3c0df9a602b33bee9c6fdf51497d49cb7ff"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/workflow/operations/0/effects",
-      "member": "unknown_effect_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-diagnostic-member",
+      "purpose": "Reject an unknown member at JSON Pointer /diagnostics/0.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-diagnostic-member.json",
+        "byte_length": 1245,
+        "sha256": "3f8bca808604e5b6f6dc64c1b989fc08401766948a89566223bdd5afacbf6a3a"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "missing-lifecycle/result.json",
-      "json_pointer": "/diagnostics/0",
-      "member": "unknown_diagnostic_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-process-member",
+      "purpose": "Reject an unknown member at JSON Pointer /process.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-process-member.json",
+        "byte_length": 875,
+        "sha256": "bbc4c5454dcc9879594949bcb644a141d34a73ce5b3f6e715017c16ab6d50d86"
+      },
       "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
-      "fixture": "canonical-success/result.json",
-      "json_pointer": "/process",
-      "member": "unknown_process_member",
       "expected": "schema-rejected"
     },
     {
       "id": "unknown-fatal-failure-member",
+      "purpose": "Reject an unknown member at JSON Pointer /.",
+      "case_type": "artifact-validation",
+      "artifact": {
+        "path": "artifact-validation/unknown-fatal-failure-member.json",
+        "byte_length": 403,
+        "sha256": "f825740a92b23df64ce10a8f7eb5761a50286e707fe17ec3eb123f22c9946348"
+      },
       "schema": "GVE-STAGE-2-FATAL-FAILURE.schema.json",
-      "fixture": "malformed-json/stderr.bin",
-      "json_pointer": "",
-      "member": "unknown_fatal_member",
       "expected": "schema-rejected"
     }
   ]

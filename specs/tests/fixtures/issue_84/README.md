@@ -56,15 +56,17 @@ The family components are the ASCII strings `request`, `result`, and
 | Unknown operation member | `forbidden-operation-execution-field` |
 | Unknown plugin-routing member | `unknown-plugin-routing-member` |
 | Opaque plugin content remains open | `opaque-content-unknown-members` |
-| Unknown authoritative-result members | `boundary_probes` result entries |
-| Unknown diagnostic member | `unknown-diagnostic-member` probe |
-| Unknown fatal-failure member | `unknown-fatal-failure-member` probe |
+| Unknown authoritative-result members | `artifact_validation_cases` result entries |
+| Unknown diagnostic member | `unknown-diagnostic-member` artifact case |
+| Unknown fatal-failure member | `unknown-fatal-failure-member` artifact case |
 
-The result-boundary probes mutate a valid stored fixture in memory by inserting
-one unknown member at the named JSON Pointer. The accepted Issue 83 schema must
-reject every mutation. They are harness-integrity probes rather than process
-inputs: implementations emit results and fatal failures; they do not consume
-them as Stage 2 request payloads.
+The Issue 83 boundary cases are stored as exact invalid artifact fixtures under
+`artifact-validation/`. Each manifest entry records the artifact bytes, length,
+SHA-256 digest, governing schema, and deterministic rejection outcome. These are
+artifact-validation cases rather than process inputs: implementations emit
+results and fatal failures; they do not consume them as Stage 2 request payloads.
+The runner validates these cases alongside the process vectors without inventing
+stdout, stderr, or exit-status semantics for schema-only output validation.
 
 ## Interpretation rules
 

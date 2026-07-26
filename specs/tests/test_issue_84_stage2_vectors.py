@@ -9,7 +9,11 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
-from specs.tooling.stage2_vector_runner import command_processor, run_manifest
+from specs.tooling.stage2_vector_runner import (
+    command_processor,
+    run_artifact_validation_cases,
+    run_manifest,
+)
 from specs.tooling.stage2_vectors import (
     canonical_json_bytes,
     canonical_success_result,
@@ -240,25 +244,25 @@ class Issue84Stage2VectorTests(unittest.TestCase):
                 result = load_strict(FIXTURES / vector["expected"]["result_path"])
                 self.assertEqual(list(self.result_validator.iter_errors(result)), [])
 
-    def test_unknown_members_are_rejected_at_every_issue_83_boundary(self) -> None:
-        validators = {
-            "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json": self.result_validator,
-            "GVE-STAGE-2-FATAL-FAILURE.schema.json": self.fatal_validator,
-        }
-        for probe in self.manifest["boundary_probes"]:
-            with self.subTest(probe=probe["id"]):
-                value = load_strict(FIXTURES / probe["fixture"])
-                target = value
-                pointer = probe["json_pointer"]
-                if pointer:
-                    for token in pointer.lstrip("/").split("/"):
-                        token = token.replace("~1", "/").replace("~0", "~")
-                        target = target[int(token)] if isinstance(target, list) else target[token]
-                self.assertIsInstance(target, dict)
-                target[probe["member"]] = "must-be-rejected"
-                errors = list(validators[probe["schema"]].iter_errors(value))
-                self.assertNotEqual(errors, [])
-                self.assertEqual(probe["expected"], "schema-rejected")
+    def test_artifact_validation_cases_are_exact_and_rejected(self) -> None:
+        cases = self.manifest["artifact_validation_cases"]
+        self.assertNotEqual(cases, [])
+        for case in cases:
+            with self.subTest(case=case["id"]):
+                artifact = FIXTURES / case["artifact"]["path"]
+                artifact_bytes = artifact.read_bytes()
+                self.assertEqual(
+                    len(artifact_bytes),
+                    case["artifact"]["byte_length"],
+                )
+                self.assertEqual(
+                    hashlib.sha256(artifact_bytes).hexdigest(),
+                    case["artifact"]["sha256"],
+                )
+                self.assertEqual(case["case_type"], "artifact-validation")
+                self.assertEqual(case["expected"], "schema-rejected")
+
+        self.assertEqual(run_artifact_validation_cases(), [])
 
     def test_identity_derivation_manifest_is_complete(self) -> None:
         derivation = self.manifest["identity_derivation"]
