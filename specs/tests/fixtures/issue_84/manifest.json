@@ -1,0 +1,650 @@
+{
+  "schema_version": 1,
+  "serialization": {
+    "encoding": "UTF-8",
+    "object_member_order": "lexicographic-by-Unicode-code-point",
+    "array_order": "preserved",
+    "whitespace": "none-outside-strings",
+    "escaping": "JSON-with-non-ASCII-unescaped",
+    "numbers": "RFC-8259-finite-only",
+    "line_termination": "LF",
+    "trailing_bytes": "forbidden-after-single-LF"
+  },
+  "identity_derivation": {
+    "algorithm": "sha256",
+    "separator": "00",
+    "request_preimage": [
+      "ascii:request",
+      "00",
+      "input-bytes"
+    ],
+    "result_preimage": [
+      "ascii:result",
+      "00",
+      "ascii:request-id",
+      "00",
+      "ascii:success"
+    ]
+  },
+  "vectors": [
+    {
+      "id": "canonical-successful-no-op",
+      "purpose": "Bind the accepted Stage 2 common no-op payload to the accepted authoritative success result.",
+      "input": {
+        "path": "canonical-success/input.json",
+        "byte_length": 282,
+        "sha256": "b777b47c9a1801f0f1abe786f17dff4a153450b61c51cababf7ad8e73475f1b2"
+      },
+      "acceptance": "accepted",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:cb502302159536ac6b18358c32f891dc5f1c93867e853bfab00df5ad9678be4a",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:e522c512983675b56a5d3a862b0b2617eaa5d8be25ebf78eb3021511a69a1dfa",
+        "diagnostic_ids": []
+      },
+      "diagnostics": [],
+      "expected": {
+        "result_path": "canonical-success/result.json",
+        "result_byte_length": 831,
+        "result_sha256": "4e442179311a3b43e09ce6f7845bbaeeb49aecda278cf3d66897c7f852d620e5",
+        "exit_status": 0,
+        "stdout_path": "canonical-success/stdout.bin",
+        "stdout_byte_length": 831,
+        "stdout_sha256": "4e442179311a3b43e09ce6f7845bbaeeb49aecda278cf3d66897c7f852d620e5",
+        "stderr_path": "canonical-success/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "malformed-utf8",
+      "purpose": "Reject genuinely invalid UTF-8 before JSON parsing.",
+      "input": {
+        "path": "malformed-utf8/input.bin",
+        "byte_length": 54,
+        "sha256": "850bccb1a6ba1cde720eb73dc66ad251a4a55b4f602b30127bf052e78485d13e"
+      },
+      "acceptance": "fatal-no-result",
+      "authoritative_result": false,
+      "identities": {
+        "request_id": null,
+        "workflow_id": null,
+        "operation_ids": [],
+        "result_id": null,
+        "diagnostic_ids": [],
+        "failure_id": "gve-failure-sha256:765da4cc28e357bcb288e6d00e3d875f993f533c46406fba0a107e7fda580c51"
+      },
+      "diagnostics": [],
+      "fatal_failure": {
+        "code": "GVE-S2-INVALID-UTF8",
+        "stage": "utf8-decoding",
+        "scope": "input",
+        "ordering": 0,
+        "multiplicity": 1
+      },
+      "expected": {
+        "result_path": null,
+        "result_byte_length": 0,
+        "result_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit_status": 4,
+        "stdout_path": "malformed-utf8/stdout.bin",
+        "stdout_byte_length": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_path": "malformed-utf8/stderr.bin",
+        "stderr_byte_length": 344,
+        "stderr_sha256": "e91d4e914fc45d7c54d52cd74e8ed165355bdcabdd5e837694bcc146de987bac"
+      }
+    },
+    {
+      "id": "malformed-json",
+      "purpose": "Reject valid UTF-8 that is not one complete JSON value.",
+      "input": {
+        "path": "malformed-json/input.bin",
+        "byte_length": 52,
+        "sha256": "6fafdb24c61fd703000bd10f355e8638998b09737f32eb3461859b0a8ef57a87"
+      },
+      "acceptance": "fatal-no-result",
+      "authoritative_result": false,
+      "identities": {
+        "request_id": null,
+        "workflow_id": null,
+        "operation_ids": [],
+        "result_id": null,
+        "diagnostic_ids": [],
+        "failure_id": "gve-failure-sha256:342cf6fc91a9e2803ea44520610f77824cbce6e6dfebb504634c08531b868b39"
+      },
+      "diagnostics": [],
+      "fatal_failure": {
+        "code": "GVE-S2-INVALID-JSON",
+        "stage": "json-parsing",
+        "scope": "input",
+        "ordering": 0,
+        "multiplicity": 1
+      },
+      "expected": {
+        "result_path": null,
+        "result_byte_length": 0,
+        "result_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit_status": 4,
+        "stdout_path": "malformed-json/stdout.bin",
+        "stdout_byte_length": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_path": "malformed-json/stderr.bin",
+        "stderr_byte_length": 361,
+        "stderr_sha256": "8da5d7440a83f1ab0394ee99efa13b48ddacaefc23d71c902a8e569672602f10"
+      }
+    },
+    {
+      "id": "duplicate-object-members",
+      "purpose": "Reject duplicate object members while preserving the original duplicate bytes.",
+      "input": {
+        "path": "duplicate-object-members/input.bin",
+        "byte_length": 302,
+        "sha256": "f4daf81be637f80f10961fed48287043d775a594f38d5244658c80bee370040f"
+      },
+      "acceptance": "fatal-no-result",
+      "authoritative_result": false,
+      "identities": {
+        "request_id": null,
+        "workflow_id": null,
+        "operation_ids": [],
+        "result_id": null,
+        "diagnostic_ids": [],
+        "failure_id": "gve-failure-sha256:587ed6af969094f484ff5ec899f787f0e0a5d1e928f733dfdfb4d63c27577a9e"
+      },
+      "diagnostics": [],
+      "fatal_failure": {
+        "code": "GVE-S2-INVALID-JSON",
+        "stage": "json-parsing",
+        "scope": "input",
+        "ordering": 0,
+        "multiplicity": 1
+      },
+      "expected": {
+        "result_path": null,
+        "result_byte_length": 0,
+        "result_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit_status": 4,
+        "stdout_path": "duplicate-object-members/stdout.bin",
+        "stdout_byte_length": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_path": "duplicate-object-members/stderr.bin",
+        "stderr_byte_length": 357,
+        "stderr_sha256": "d6cee1c166fe51e535e8d5437db8b875ea60eb35a18928e99f4ca5cb1ebe30c6"
+      }
+    },
+    {
+      "id": "missing-lifecycle",
+      "purpose": "Reject a structurally identifiable request that omits the required lifecycle member.",
+      "input": {
+        "path": "missing-lifecycle/input.json",
+        "byte_length": 262,
+        "sha256": "7faab3495769eb1c324c9456dd677230e0f2589b0d5f307105a7932edd566c52"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:0e3ce6f451cd8cd8bc0ae4e538ae8d190e56bf318f74b225f5d8910881e665c0",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:00b0a46d081785d4049886c96a8eaa02e5eec7c4d28078e72ec702c74b677f5c",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:45c084e7ded46c229f463d6d63ee7d75e92238d49f4bedbd15cabd1f44bca94c"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:45c084e7ded46c229f463d6d63ee7d75e92238d49f4bedbd15cabd1f44bca94c",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:0e3ce6f451cd8cd8bc0ae4e538ae8d190e56bf318f74b225f5d8910881e665c0",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "missing-lifecycle/result.json",
+        "result_byte_length": 1198,
+        "result_sha256": "ac5a0203102a2261efbbe45e52d4979111333d344a01597722c66f814aed3950",
+        "exit_status": 2,
+        "stdout_path": "missing-lifecycle/stdout.bin",
+        "stdout_byte_length": 1198,
+        "stdout_sha256": "ac5a0203102a2261efbbe45e52d4979111333d344a01597722c66f814aed3950",
+        "stderr_path": "missing-lifecycle/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "unsupported-lifecycle",
+      "purpose": "Reject a structurally identifiable request that names an unsupported lifecycle.",
+      "input": {
+        "path": "unsupported-lifecycle/input.json",
+        "byte_length": 284,
+        "sha256": "bbe76dfc82fa2c875eb3feedc8028de925b2e9f60c10cb515ac4ae58049e65cb"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:71c4babf9ced4440db3513bf2cc9c10b5591d2885be20fd3ab3994681688003a",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:d8d3a3367117782e6a0c454f45f2fc489947e856c2e7e53f1608ef325fee3e33",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:8018ec4f6c8cf2bef85f112ecb54912781ac13db068a99995c89d821498746b9"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:8018ec4f6c8cf2bef85f112ecb54912781ac13db068a99995c89d821498746b9",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:71c4babf9ced4440db3513bf2cc9c10b5591d2885be20fd3ab3994681688003a",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "unsupported-lifecycle/result.json",
+        "result_byte_length": 1199,
+        "result_sha256": "7c1c2de05459d98393247d052984172c596aab3bfba3b45d6d80273295dade72",
+        "exit_status": 2,
+        "stdout_path": "unsupported-lifecycle/stdout.bin",
+        "stdout_byte_length": 1199,
+        "stdout_sha256": "7c1c2de05459d98393247d052984172c596aab3bfba3b45d6d80273295dade72",
+        "stderr_path": "unsupported-lifecycle/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "malformed-workflow-envelope",
+      "purpose": "Reject a workflow envelope containing a member outside the closed common-payload boundary.",
+      "input": {
+        "path": "malformed-workflow-envelope/input.json",
+        "byte_length": 307,
+        "sha256": "c4b5c445b96fc7548fc65e702023fc7f538d6c7da95a738908b0f7461089cce8"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:5351afa1720f4fd032a7a8fd44c0be534236e7e458118b1b3645dae114a34dee",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:f36755bd954f832c9d6651f89ef36f222143f11818d129a28ee025eee80fb76d",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:532d80efefcd8629f0b6e33cab9f4e0ad6aa6cc23e4e680d957a883abd3567f5"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:532d80efefcd8629f0b6e33cab9f4e0ad6aa6cc23e4e680d957a883abd3567f5",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:5351afa1720f4fd032a7a8fd44c0be534236e7e458118b1b3645dae114a34dee",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "malformed-workflow-envelope/result.json",
+        "result_byte_length": 1208,
+        "result_sha256": "56a14d5bbc66052ef4b85cf484d5cb121324472013d69714ff509408748c0a73",
+        "exit_status": 2,
+        "stdout_path": "malformed-workflow-envelope/stdout.bin",
+        "stdout_byte_length": 1208,
+        "stdout_sha256": "56a14d5bbc66052ef4b85cf484d5cb121324472013d69714ff509408748c0a73",
+        "stderr_path": "malformed-workflow-envelope/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "malformed-operation-envelope",
+      "purpose": "Reject an operation whose plugin routing envelope omits the required action.",
+      "input": {
+        "path": "malformed-operation-envelope/input.json",
+        "byte_length": 264,
+        "sha256": "4eb2656c0c2c857058cad6708cc48c1e0d8766d90a5f4b9533500c81b5f2aee2"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:16591ca5494176f961fb35a51439d90450e0260428b65844d2a397b0dbfc7543",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:4b75c91e8a66351c433b580c5cd8ea10f3815aae97f19ecbe073c31e7af74f72",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:f8cfdd05921749bcb5df7a6bfd4d4c0782b8206d6b9cba87bdf93fb1afc29e23"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:f8cfdd05921749bcb5df7a6bfd4d4c0782b8206d6b9cba87bdf93fb1afc29e23",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:16591ca5494176f961fb35a51439d90450e0260428b65844d2a397b0dbfc7543",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "malformed-operation-envelope/result.json",
+        "result_byte_length": 1213,
+        "result_sha256": "6b545d618420b40218e73b0fc7112d3d0c9a30eb4c08f3575aec49da3f00eb8f",
+        "exit_status": 2,
+        "stdout_path": "malformed-operation-envelope/stdout.bin",
+        "stdout_byte_length": 1213,
+        "stdout_sha256": "6b545d618420b40218e73b0fc7112d3d0c9a30eb4c08f3575aec49da3f00eb8f",
+        "stderr_path": "malformed-operation-envelope/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "unknown-top-level-member",
+      "purpose": "Reject an unknown member at the closed top-level common-payload boundary.",
+      "input": {
+        "path": "unknown-top-level-member/input.json",
+        "byte_length": 307,
+        "sha256": "c5de959430b991a9f6e48d99e59dfedb270dbf98aa536a8fc4ae028ba8d34b25"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:2fc883340c95685c1318a7474baf28f356e73f966d71830433b782518a12dc2d",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:71421073f2ca8b4c697fd74414648fb43f8476571fbf46b3e14dae7bb1d11424",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:ade68b97e549cb57161862e738cf8fb7a31b8b058f9590ac1d1ca2ff0a19bbf7"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:ade68b97e549cb57161862e738cf8fb7a31b8b058f9590ac1d1ca2ff0a19bbf7",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:2fc883340c95685c1318a7474baf28f356e73f966d71830433b782518a12dc2d",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "unknown-top-level-member/result.json",
+        "result_byte_length": 1215,
+        "result_sha256": "8b3e8d443948d0d5e7f1178afe04413e73c99345791555657fad4ca94d72a580",
+        "exit_status": 2,
+        "stdout_path": "unknown-top-level-member/stdout.bin",
+        "stdout_byte_length": 1215,
+        "stdout_sha256": "8b3e8d443948d0d5e7f1178afe04413e73c99345791555657fad4ca94d72a580",
+        "stderr_path": "unknown-top-level-member/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "forbidden-operation-execution-field",
+      "purpose": "Reject execution-shaped data at the closed operation-envelope boundary.",
+      "input": {
+        "path": "forbidden-operation-execution-field/input.json",
+        "byte_length": 302,
+        "sha256": "7cc8fa7835876df814d0b7934c43e18050e8c107ab020645b1047cb2e657e032"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:4f970b900c545df77f747c2cf83f35f5db52050bad70134b92e90c8d6a61fcb1",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:6ef77abc20ced60c9c88d2c7dc2072e853841b8e06668a28234fde600e412a99",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:81d6fb95fa5843990c9416265617d7b8ff7471ae0511b5ff057cbd2427ddf688"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:81d6fb95fa5843990c9416265617d7b8ff7471ae0511b5ff057cbd2427ddf688",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:4f970b900c545df77f747c2cf83f35f5db52050bad70134b92e90c8d6a61fcb1",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "forbidden-operation-execution-field/result.json",
+        "result_byte_length": 1211,
+        "result_sha256": "3114a86fec5ad2c667d165675c82eb45dee011dd71e40df6f37fad89c819dc24",
+        "exit_status": 2,
+        "stdout_path": "forbidden-operation-execution-field/stdout.bin",
+        "stdout_byte_length": 1211,
+        "stdout_sha256": "3114a86fec5ad2c667d165675c82eb45dee011dd71e40df6f37fad89c819dc24",
+        "stderr_path": "forbidden-operation-execution-field/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "unknown-plugin-routing-member",
+      "purpose": "Reject an unknown member at the closed plugin-routing boundary.",
+      "input": {
+        "path": "unknown-plugin-routing-member/input.json",
+        "byte_length": 308,
+        "sha256": "b1b6ad2ec6da3ff722b2a55775ece3dea0209144cdb268754be50f0c5270eb4c"
+      },
+      "acceptance": "invalid-input-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:e44556b6460d6e76b2993e8049e653db43027048c5ece22b5f5e7614b21c145c",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:2afe1eaf357e40c53e088ad6a57595464a9c62edb63d3acdafa9d757e1a0bf79",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:7e4f36764c649e947d8f0a91bd13e33673c04afa6c0793881baa9b6c1dc48f0e"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:7e4f36764c649e947d8f0a91bd13e33673c04afa6c0793881baa9b6c1dc48f0e",
+          "code": "GVE-S2-INVALID-PAYLOAD",
+          "stage": "payload-validation",
+          "scope": "request",
+          "request_id": "gve-request-sha256:e44556b6460d6e76b2993e8049e653db43027048c5ece22b5f5e7614b21c145c",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "unknown-plugin-routing-member/result.json",
+        "result_byte_length": 1214,
+        "result_sha256": "8f7173789cb5abaaed7828f4975a6fcd132c9af1c113854e7ce5d03e8aad0a74",
+        "exit_status": 2,
+        "stdout_path": "unknown-plugin-routing-member/stdout.bin",
+        "stdout_byte_length": 1214,
+        "stdout_sha256": "8f7173789cb5abaaed7828f4975a6fcd132c9af1c113854e7ce5d03e8aad0a74",
+        "stderr_path": "unknown-plugin-routing-member/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "duplicate-operation-identity",
+      "purpose": "Reject two operation envelopes that claim the same operation identity while preserving the established workflow and request identities.",
+      "input": {
+        "path": "duplicate-operation-identity/input.json",
+        "byte_length": 442,
+        "sha256": "163ac95dd33ba6fe11217479a48dea0b2e12b8ce7d4136e5660082a589a6c1e6"
+      },
+      "acceptance": "identity-mismatch-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:d667ae835271558af1ebd3651fe831ac287f57952e526535ee92c9636075437a",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1",
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:91430c6dec73f5a8cb7d8567c24c05dbf5c127c5840b937b1cc76568cf928f67",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:564a644c861a1ff3ceb19a79a902733f2338ffdf4c68f4d1046209cc60b2c4d9"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:564a644c861a1ff3ceb19a79a902733f2338ffdf4c68f4d1046209cc60b2c4d9",
+          "code": "GVE-S2-DUPLICATE-IDENTITY",
+          "stage": "identity-validation",
+          "scope": "workflow",
+          "request_id": "gve-request-sha256:d667ae835271558af1ebd3651fe831ac287f57952e526535ee92c9636075437a",
+          "workflow_id": "canonical-stage-2-no-op",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "duplicate-operation-identity/result.json",
+        "result_byte_length": 1454,
+        "result_sha256": "06e628dd9dd181e3733ba1470e38a0f11e975c545599e38b01c0d2f3c1b45760",
+        "exit_status": 2,
+        "stdout_path": "duplicate-operation-identity/stdout.bin",
+        "stdout_byte_length": 1454,
+        "stdout_sha256": "06e628dd9dd181e3733ba1470e38a0f11e975c545599e38b01c0d2f3c1b45760",
+        "stderr_path": "duplicate-operation-identity/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "id": "opaque-content-unknown-members",
+      "purpose": "Accept arbitrary unknown and execution-shaped members inside the plugin-owned opaque content boundary.",
+      "input": {
+        "path": "opaque-content-unknown-members/input.json",
+        "byte_length": 415,
+        "sha256": "7dc7fba964d534d0fbe79708fd185f824305bdba44d90b0aa1de347bd135e72c"
+      },
+      "acceptance": "accepted-no-op",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:a93eba25f58dd70debf8a32253b95327fd13338bc83af4d081417432b0fb53d5",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:9a792196c352139c27b3e3e0ec9c3e5f89dd1f4c63bcf452d2cd87821769dd9f",
+        "diagnostic_ids": []
+      },
+      "diagnostics": [],
+      "expected": {
+        "result_path": "opaque-content-unknown-members/result.json",
+        "result_byte_length": 831,
+        "result_sha256": "ff9507298b4f2fc38dc5199211844037dbb6092ce7fc27c60b28df24ec0c26f7",
+        "exit_status": 0,
+        "stdout_path": "opaque-content-unknown-members/stdout.bin",
+        "stdout_byte_length": 831,
+        "stdout_sha256": "ff9507298b4f2fc38dc5199211844037dbb6092ce7fc27c60b28df24ec0c26f7",
+        "stderr_path": "opaque-content-unknown-members/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "boundary_probes": [
+    {
+      "id": "unknown-authoritative-result-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "",
+      "member": "unknown_result_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-processing-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/processing",
+      "member": "unknown_processing_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-result-workflow-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/workflow",
+      "member": "unknown_workflow_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-workflow-effects-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/workflow/effects",
+      "member": "unknown_effect_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-result-operation-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/workflow/operations/0",
+      "member": "unknown_operation_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-operation-effects-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/workflow/operations/0/effects",
+      "member": "unknown_effect_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-diagnostic-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "missing-lifecycle/result.json",
+      "json_pointer": "/diagnostics/0",
+      "member": "unknown_diagnostic_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-process-member",
+      "schema": "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json",
+      "fixture": "canonical-success/result.json",
+      "json_pointer": "/process",
+      "member": "unknown_process_member",
+      "expected": "schema-rejected"
+    },
+    {
+      "id": "unknown-fatal-failure-member",
+      "schema": "GVE-STAGE-2-FATAL-FAILURE.schema.json",
+      "fixture": "malformed-json/stderr.bin",
+      "json_pointer": "",
+      "member": "unknown_fatal_member",
+      "expected": "schema-rejected"
+    }
+  ]
+}

@@ -1,0 +1,189 @@
+from __future__ import annotations
+
+import hashlib
+import unittest
+from pathlib import Path
+
+from jsonschema import Draft202012Validator
+
+from specs.tooling.stage2_vector_runner import run_manifest
+from specs.tooling.stage2_vectors import (
+    canonical_json_bytes,
+    canonical_success_result,
+    derived_identity,
+    reference_process,
+)
+from specs.tooling.strict_json import load_strict
+
+
+ROOT = Path(__file__).resolve().parents[2]
+FIXTURES = ROOT / "specs/tests/fixtures/issue_84"
+RESULT_SCHEMA = ROOT / "specs/schemas/GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json"
+FATAL_SCHEMA = ROOT / "specs/schemas/GVE-STAGE-2-FATAL-FAILURE.schema.json"
+
+
+class Issue84Stage2VectorTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.manifest = load_strict(FIXTURES / "manifest.json")
+        cls.result_validator = Draft202012Validator(load_strict(RESULT_SCHEMA))
+        cls.fatal_validator = Draft202012Validator(load_strict(FATAL_SCHEMA))
+
+    def test_complete_manifest_runs_byte_exactly(self) -> None:
+        self.assertEqual(run_manifest(), [])
+
+    def test_canonical_result_reproduces_from_input_bytes(self) -> None:
+        base = FIXTURES / "canonical-success"
+        input_bytes = (base / "input.json").read_bytes()
+        payload = load_strict(base / "input.json")
+        expected_result = (base / "result.json").read_bytes()
+        actual = canonical_success_result(input_bytes, payload)
+        self.assertEqual(canonical_json_bytes(actual), expected_result)
+        self.assertEqual(list(self.result_validator.iter_errors(actual)), [])
+
+    def test_fatal_vectors_are_schema_valid(self) -> None:
+        for vector_id in ("malformed-utf8", "malformed-json", "duplicate-object-members"):
+            with self.subTest(vector_id=vector_id):
+                stderr = (FIXTURES / vector_id / "stderr.bin").read_bytes()
+                value = load_strict(FIXTURES / vector_id / "stderr.bin")
+                self.assertEqual(list(self.fatal_validator.iter_errors(value)), [])
+                self.assertEqual(reference_process((FIXTURES / vector_id / "input.bin").read_bytes()).stderr, stderr)
+
+    def test_malformed_utf8_is_genuinely_invalid(self) -> None:
+        data = (FIXTURES / "malformed-utf8/input.bin").read_bytes()
+        with self.assertRaises(UnicodeDecodeError):
+            data.decode("utf-8")
+
+    def test_malformed_json_is_valid_utf8(self) -> None:
+        data = (FIXTURES / "malformed-json/input.bin").read_bytes()
+        data.decode("utf-8")
+        self.assertEqual(reference_process(data).exit_status, 4)
+
+    def test_duplicate_members_are_preserved(self) -> None:
+        data = (FIXTURES / "duplicate-object-members/input.bin").read_bytes()
+        self.assertEqual(data.count(b'"lifecycle":"no-op"'), 2)
+        self.assertEqual(reference_process(data).exit_status, 4)
+
+    def test_identity_derivation_is_stable_and_domain_separated(self) -> None:
+        input_bytes = (FIXTURES / "canonical-success/input.json").read_bytes()
+        request_id = derived_identity("request", input_bytes)
+        result_id = derived_identity("result", request_id.encode("ascii"), b"success")
+        vector_ids = self.manifest["vectors"][0]["identities"]
+        self.assertEqual(request_id, vector_ids["request_id"])
+        self.assertEqual(result_id, vector_ids["result_id"])
+        self.assertNotEqual(request_id, result_id)
+
+    def test_every_fixture_hash_and_length_matches_manifest(self) -> None:
+        for vector in self.manifest["vectors"]:
+            with self.subTest(vector=vector["id"]):
+                input_bytes = (FIXTURES / vector["input"]["path"]).read_bytes()
+                self.assertEqual(len(input_bytes), vector["input"]["byte_length"])
+                self.assertEqual(hashlib.sha256(input_bytes).hexdigest(), vector["input"]["sha256"])
+
+
+    def test_lifecycle_rejections_are_distinct_authoritative_results(self) -> None:
+        vectors = {vector["id"]: vector for vector in self.manifest["vectors"]}
+        missing = vectors["missing-lifecycle"]
+        unsupported = vectors["unsupported-lifecycle"]
+        self.assertEqual(missing["expected"]["exit_status"], 2)
+        self.assertEqual(unsupported["expected"]["exit_status"], 2)
+        self.assertNotEqual(
+            missing["identities"]["request_id"],
+            unsupported["identities"]["request_id"],
+        )
+        self.assertNotEqual(
+            (FIXTURES / missing["expected"]["result_path"]).read_bytes(),
+            (FIXTURES / unsupported["expected"]["result_path"]).read_bytes(),
+        )
+
+
+    def test_workflow_and_operation_envelopes_are_independently_rejected(self) -> None:
+        vectors = {vector["id"]: vector for vector in self.manifest["vectors"]}
+        workflow = vectors["malformed-workflow-envelope"]
+        operation = vectors["malformed-operation-envelope"]
+        self.assertEqual(workflow["expected"]["exit_status"], 2)
+        self.assertEqual(operation["expected"]["exit_status"], 2)
+        self.assertNotEqual(workflow["identities"]["request_id"], operation["identities"]["request_id"])
+        self.assertNotEqual(
+            (FIXTURES / workflow["expected"]["result_path"]).read_bytes(),
+            (FIXTURES / operation["expected"]["result_path"]).read_bytes(),
+        )
+
+    def test_closed_boundaries_reject_unknown_and_execution_members(self) -> None:
+        vectors = {vector["id"]: vector for vector in self.manifest["vectors"]}
+        ids = (
+            "unknown-top-level-member",
+            "forbidden-operation-execution-field",
+            "unknown-plugin-routing-member",
+        )
+        request_ids = []
+        result_bytes = []
+        for vector_id in ids:
+            vector = vectors[vector_id]
+            self.assertEqual(vector["expected"]["exit_status"], 2)
+            request_ids.append(vector["identities"]["request_id"])
+            result_bytes.append(
+                (FIXTURES / vector["expected"]["result_path"]).read_bytes()
+            )
+        self.assertEqual(len(set(request_ids)), len(ids))
+        self.assertEqual(len(set(result_bytes)), len(ids))
+
+    def test_duplicate_operation_identity_is_an_identity_rejection(self) -> None:
+        vectors = {vector["id"]: vector for vector in self.manifest["vectors"]}
+        vector = vectors["duplicate-operation-identity"]
+        self.assertEqual(vector["expected"]["exit_status"], 2)
+        self.assertEqual(vector["diagnostics"][0]["stage"], "identity-validation")
+        self.assertEqual(
+            vector["diagnostics"][0]["code"],
+            "GVE-S2-DUPLICATE-IDENTITY",
+        )
+        self.assertEqual(
+            vector["identities"]["operation_ids"],
+            ["operation-1", "operation-1"],
+        )
+
+    def test_opaque_content_accepts_unknown_and_execution_shaped_members(self) -> None:
+        vectors = {vector["id"]: vector for vector in self.manifest["vectors"]}
+        vector = vectors["opaque-content-unknown-members"]
+        self.assertEqual(vector["expected"]["exit_status"], 0)
+        payload = load_strict(FIXTURES / vector["input"]["path"])
+        content = payload["workflow"]["operations"][0]["content"]
+        self.assertIn("execution_like_but_opaque", content)
+        self.assertIn("command", content["execution_like_but_opaque"])
+
+    def test_all_authoritative_result_fixtures_are_schema_valid(self) -> None:
+        for vector in self.manifest["vectors"]:
+            if not vector["authoritative_result"]:
+                continue
+            with self.subTest(vector=vector["id"]):
+                result = load_strict(FIXTURES / vector["expected"]["result_path"])
+                self.assertEqual(list(self.result_validator.iter_errors(result)), [])
+
+    def test_unknown_members_are_rejected_at_every_issue_83_boundary(self) -> None:
+        validators = {
+            "GVE-STAGE-2-AUTHORITATIVE-RESULT.schema.json": self.result_validator,
+            "GVE-STAGE-2-FATAL-FAILURE.schema.json": self.fatal_validator,
+        }
+        for probe in self.manifest["boundary_probes"]:
+            with self.subTest(probe=probe["id"]):
+                value = load_strict(FIXTURES / probe["fixture"])
+                target = value
+                pointer = probe["json_pointer"]
+                if pointer:
+                    for token in pointer.lstrip("/").split("/"):
+                        token = token.replace("~1", "/").replace("~0", "~")
+                        target = target[int(token)] if isinstance(target, list) else target[token]
+                self.assertIsInstance(target, dict)
+                target[probe["member"]] = "must-be-rejected"
+                errors = list(validators[probe["schema"]].iter_errors(value))
+                self.assertNotEqual(errors, [])
+                self.assertEqual(probe["expected"], "schema-rejected")
+
+    def test_identity_derivation_manifest_matches_reference_domains(self) -> None:
+        derivation = self.manifest["identity_derivation"]
+        self.assertEqual(derivation["separator"], "00")
+        self.assertEqual(derivation["request_preimage"][0], "ascii:request")
+        self.assertEqual(derivation["result_preimage"][0], "ascii:result")
+
+if __name__ == "__main__":
+    unittest.main()

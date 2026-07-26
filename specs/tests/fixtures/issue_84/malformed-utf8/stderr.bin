@@ -1,0 +1,1 @@
+{"code":"GVE-S2-INVALID-UTF8","failure_id":"gve-failure-sha256:765da4cc28e357bcb288e6d00e3d875f993f533c46406fba0a107e7fda580c51","message":"Input bytes are not valid UTF-8, so no authoritative result identity could be constructed.","process":{"exit_code":4,"stderr":"fatal-failure","stdout":"empty"},"schema_version":1,"stage":"utf8-decoding"}

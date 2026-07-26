@@ -1,0 +1,1 @@
+{"code":"GVE-S2-INVALID-JSON","failure_id":"gve-failure-sha256:587ed6af969094f484ff5ec899f787f0e0a5d1e928f733dfdfb4d63c27577a9e","message":"Input JSON contains a duplicate object member, so no authoritative result identity could be constructed.","process":{"exit_code":4,"stderr":"fatal-failure","stdout":"empty"},"schema_version":1,"stage":"json-parsing"}
