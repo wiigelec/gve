@@ -294,8 +294,7 @@ Run the complete repository-supported validation gate with:
 ./scripts/validate
 ```
 
-This entrypoint runs the specification tests under `specs/tests`, the restored
-bootstrap-executor tests under `src/scf_governed_executor/tests`, normative
+This entrypoint runs the specification tests under `specs/tests`, normative
 specification validation, and `git diff --check`. Do not substitute a command
 that discovers only one supported test tree.
 
