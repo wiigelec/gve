@@ -1,0 +1,35 @@
+{
+  "schema_version": 2,
+  "lifecycle": "no-op",
+  "workflow": {
+    "workflow_id": "canonical-stage-2-no-op",
+    "operations": [
+      {
+        "operation_id": "operation-1",
+        "plugin": {
+          "plugin_id": "example.echo",
+          "action": "record"
+        },
+        "content": {
+          "message": "opaque plugin-owned content",
+          "nested": {
+            "unknown_to_core": true
+          }
+        }
+      },
+      {
+        "operation_id": "operation-1",
+        "plugin": {
+          "plugin_id": "example.echo",
+          "action": "record"
+        },
+        "content": {
+          "message": "opaque plugin-owned content",
+          "nested": {
+            "unknown_to_core": true
+          }
+        }
+      }
+    ]
+  }
+}
