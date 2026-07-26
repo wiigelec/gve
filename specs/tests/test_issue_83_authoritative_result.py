@@ -271,7 +271,7 @@ class Issue83AuthoritativeResultTests(unittest.TestCase):
         states.extend(item["effects"] for item in operations)
         for state in states:
             self.assertEqual(state["request"], "not-requested")
-            self.assertNotEqual(state["authorization"], "authorized")
+            self.assertEqual(state["authorization"], "indeterminate")
             self.assertEqual(state["execution"], "unattempted")
             self.assertEqual(state["observation"], "unobserved")
             self.assertEqual(state["verification"], "unverified")

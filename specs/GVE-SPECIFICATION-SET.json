@@ -63,7 +63,7 @@
       "path": "levels/level-2/GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT.json",
       "role": "subordinate",
       "id": "GVE-LEVEL-2-STAGE-2-RESULT-CONTRACT",
-      "content_sha256": "1cb3cb52c2094fd05f419d46e88553b54c0586c3caf50e2fbdc92e289291e0cf"
+      "content_sha256": "7d82f2a2a35aebe6721db23e4323eba0325241a44d94514f36358696a05187d2"
     },
     {
       "path": "levels/level-2/GVE-LEVEL-2-WORKFLOW-COMPOSITION.json",

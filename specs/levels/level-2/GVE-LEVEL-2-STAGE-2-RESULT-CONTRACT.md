@@ -83,7 +83,7 @@ References: `L2-S2RC-EFFECT-STATE`
 
 ### L2-S2RC-REQ-006
 
-For the accepted no-op lifecycle, request is not-requested, execution is unattempted, observation is unobserved, and verification is unverified at workflow and operation scope. No-op status establishes no requested, authorized, attempted, completed, observed, or verified effect.
+For the accepted no-op lifecycle, request is not-requested, authorization is indeterminate, execution is unattempted, observation is unobserved, and verification is unverified at workflow and operation scope. No-op status establishes no requested, authorized, attempted, completed, observed, or verified effect.
 
 References: `L2-S2RC-NO-OP-DISPOSITION`, `L2-S2RC-EFFECT-STATE`
 
