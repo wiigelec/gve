@@ -20,6 +20,10 @@ DUPLICATE_MEMBER_FAILURE_MESSAGE = (
     "Input JSON contains a duplicate object member, so no authoritative result "
     "identity could be constructed."
 )
+RESULT_CONSTRUCTION_FAILURE_MESSAGE = (
+    "The parsed input does not contain the complete authoritative workflow and "
+    "operation identity set required to construct a truthful Stage 2 result."
+)
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -262,24 +266,33 @@ def _reject(
     )
 
 
+def _fatal_result_construction(input_bytes: bytes) -> None:
+    raise FatalInputFailure(
+        code="GVE-S2-RESULT-CONSTRUCTION-FAILURE",
+        stage="result-construction",
+        message=RESULT_CONSTRUCTION_FAILURE_MESSAGE,
+        input_bytes=input_bytes,
+    )
+
+
 def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
     payload = _parse_json(input_bytes)
     if not isinstance(payload, dict):
-        raise ValueError("canonical request must be a JSON object")
+        _fatal_result_construction(input_bytes)
 
     workflow = payload.get("workflow")
     if not isinstance(workflow, dict):
-        raise ValueError("workflow must be an object")
+        _fatal_result_construction(input_bytes)
     if not isinstance(workflow.get("workflow_id"), str) or not workflow["workflow_id"]:
-        raise ValueError("workflow_id must be a non-empty string")
+        _fatal_result_construction(input_bytes)
     operations = workflow.get("operations")
     if not isinstance(operations, list) or not operations:
-        raise ValueError("operations must be a non-empty array")
+        _fatal_result_construction(input_bytes)
     for operation in operations:
         if not isinstance(operation, dict):
-            raise ValueError("operation must be an object")
+            _fatal_result_construction(input_bytes)
         if not isinstance(operation.get("operation_id"), str) or not operation["operation_id"]:
-            raise ValueError("operation_id must be a non-empty string")
+            _fatal_result_construction(input_bytes)
 
     if "lifecycle" not in payload:
         _reject(
@@ -300,7 +313,11 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
             "The Stage 2 common payload contains an unknown top-level governed member.",
         )
     if payload["schema_version"] != 2:
-        raise ValueError("request is not the canonical-success schema version")
+        _reject(
+            input_bytes,
+            payload,
+            "The Stage 2 payload names an unsupported schema version.",
+        )
     if set(workflow) != {"workflow_id", "operations"}:
         _reject(
             input_bytes,
@@ -316,10 +333,18 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
                 "The Stage 2 operation envelope contains a forbidden execution member.",
             )
         if set(operation) != {"operation_id", "plugin", "content"}:
-            raise ValueError("operation does not match the common envelope")
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 operation envelope does not match the closed common envelope.",
+            )
         plugin = operation["plugin"]
         if not isinstance(plugin, dict):
-            raise ValueError("plugin must be an object")
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 operation plugin envelope must be an object.",
+            )
         if "action" not in plugin:
             _reject(
                 input_bytes,
@@ -333,9 +358,23 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
                 "The Stage 2 plugin routing envelope contains an unknown governed member.",
             )
         if not isinstance(plugin["plugin_id"], str) or not plugin["plugin_id"]:
-            raise ValueError("plugin_id must be a non-empty string")
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 plugin_id must be a non-empty string.",
+            )
         if not isinstance(plugin["action"], str) or not plugin["action"]:
-            raise ValueError("plugin action must be a non-empty string")
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 plugin action must be a non-empty string.",
+            )
+        if not isinstance(operation["content"], dict):
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 opaque operation content must be an object.",
+            )
 
     operation_ids = [operation["operation_id"] for operation in operations]
     if len(set(operation_ids)) != len(operation_ids):
