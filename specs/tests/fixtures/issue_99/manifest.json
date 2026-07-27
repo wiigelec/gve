@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "serialization": {
+    "encoding": "UTF-8",
+    "object_member_order": "lexicographic-by-Unicode-code-point",
+    "array_order": "preserved",
+    "whitespace": "none-outside-strings",
+    "line_termination": "LF",
+    "trailing_bytes": "forbidden-after-single-LF"
+  },
+  "identity_derivation": {
+    "algorithm": "sha256",
+    "separator": "00",
+    "output": "gve-{family}-sha256:{lowercase-hex-digest}",
+    "families": {
+      "request": {
+        "preimage": [
+          "ascii:request",
+          "00",
+          "input-bytes"
+        ]
+      },
+      "result-processing-failure": {
+        "preimage": [
+          "ascii:result",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:processing-failure"
+        ]
+      },
+      "diagnostic-processing-failure": {
+        "preimage": [
+          "ascii:diagnostic",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:failure-stage",
+          "00",
+          "ascii:processing-failure"
+        ]
+      }
+    }
+  },
+  "processor_control": {
+    "closed_members": [
+      "schema_version",
+      "disposition",
+      "failure_stage"
+    ],
+    "allowed": [
+      {
+        "schema_version": 1,
+        "disposition": "processing-failure",
+        "failure_stage": "no-op-disposition"
+      }
+    ],
+    "request_bytes_unchanged": true
+  },
+  "vectors": [
+    {
+      "id": "processing-failure-no-op-disposition",
+      "purpose": "Bind the accepted Stage 2 no-op request to an explicit conformance-only processing-failure disposition.",
+      "input": {
+        "path": "processing-failure/input.json",
+        "byte_length": 282,
+        "sha256": "b777b47c9a1801f0f1abe786f17dff4a153450b61c51cababf7ad8e73475f1b2"
+      },
+      "processor_control": {
+        "path": "processing-failure/processor-control.json",
+        "byte_length": 92,
+        "sha256": "089b754b0ff92660241585268bd56500b22e3e2dae3a4f3db6ae897eb6241267"
+      },
+      "acceptance": "processing-failure-result",
+      "authoritative_result": true,
+      "identities": {
+        "request_id": "gve-request-sha256:cb502302159536ac6b18358c32f891dc5f1c93867e853bfab00df5ad9678be4a",
+        "workflow_id": "canonical-stage-2-no-op",
+        "operation_ids": [
+          "operation-1"
+        ],
+        "result_id": "gve-result-sha256:71a07e89e1da8aafa25677afa0f1b1ce12207dab5ffc32433dd93842340c1ee4",
+        "diagnostic_ids": [
+          "gve-diagnostic-sha256:f7fe83029ce7d53e5f129c9f83b8813ab04110d27e58c8bb2a1e586c1c11a96b"
+        ]
+      },
+      "diagnostics": [
+        {
+          "diagnostic_id": "gve-diagnostic-sha256:f7fe83029ce7d53e5f129c9f83b8813ab04110d27e58c8bb2a1e586c1c11a96b",
+          "code": "GVE-S2-PROCESSING-FAILURE",
+          "stage": "no-op-disposition",
+          "scope": "workflow",
+          "request_id": "gve-request-sha256:cb502302159536ac6b18358c32f891dc5f1c93867e853bfab00df5ad9678be4a",
+          "workflow_id": "canonical-stage-2-no-op",
+          "ordering": 0,
+          "multiplicity": 1
+        }
+      ],
+      "expected": {
+        "result_path": "processing-failure/result.json",
+        "result_byte_length": 1303,
+        "result_sha256": "5dd04c3cec8e84674e012d4d0be04a3e38e83eb77348ed6eed113e3ab998d43e",
+        "exit_status": 3,
+        "stdout_path": "processing-failure/stdout.bin",
+        "stdout_byte_length": 1303,
+        "stdout_sha256": "5dd04c3cec8e84674e012d4d0be04a3e38e83eb77348ed6eed113e3ab998d43e",
+        "stderr_path": "processing-failure/stderr.bin",
+        "stderr_byte_length": 0,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "result_construction_boundary": {
+    "status": "deferred",
+    "text": "No result-construction fault vector is authorized by this manifest."
+  }
+}
