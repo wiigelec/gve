@@ -51,6 +51,13 @@
       "The module responsibility is broad enough to define a package boundary, installed entry point, broad orchestration boundary, or explicitly supported public API.",
       "The module name describes durable product functionality rather than implementation chronology.",
       "The module does not exist merely because no functional namespace had previously been established."
+    ],
+    "root_roles": [
+      "package-initialization",
+      "installed-entry-point",
+      "broad-orchestration",
+      "supported-public-api",
+      "grandfathered-single-feature"
     ]
   },
   "functional_namespace_policy": {
@@ -216,7 +223,8 @@
       "status": "active",
       "relocation_required": false,
       "api_boundary": "supported-public-api",
-      "notes": "Only explicitly exported names are compatibility promises."
+      "notes": "Only explicitly exported names are compatibility promises.",
+      "root_role": "package-initialization"
     },
     {
       "path": "src/gve/__main__.py",
@@ -224,7 +232,8 @@
       "placement_class": "installed-product-package",
       "status": "active",
       "relocation_required": false,
-      "api_boundary": "installed-entry-point"
+      "api_boundary": "installed-entry-point",
+      "root_role": "installed-entry-point"
     },
     {
       "path": "src/gve/cli.py",
@@ -233,7 +242,8 @@
       "status": "active",
       "relocation_required": false,
       "api_boundary": "installed-entry-point",
-      "notes": "Non-entry-point contents remain internal unless explicitly supported."
+      "notes": "Non-entry-point contents remain internal unless explicitly supported.",
+      "root_role": "installed-entry-point"
     },
     {
       "path": "src/gve/core.py",
@@ -241,7 +251,8 @@
       "placement_class": "installed-product-package",
       "status": "active",
       "relocation_required": false,
-      "api_boundary": "maintained-internal"
+      "api_boundary": "maintained-internal",
+      "root_role": "broad-orchestration"
     },
     {
       "path": "src/gve/processing_failure.py",
@@ -250,7 +261,8 @@
       "status": "grandfathered",
       "relocation_required": true,
       "api_boundary": "maintained-internal",
-      "successor_requirement": "Relocation requires a separately governed dependent issue and must preserve exact behavior."
+      "successor_requirement": "Relocation requires a separately governed dependent issue and must preserve exact behavior.",
+      "root_role": "grandfathered-single-feature"
     }
   ],
   "validation_requirements": [

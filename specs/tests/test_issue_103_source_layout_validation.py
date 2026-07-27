@@ -108,6 +108,7 @@ class SourceLayoutValidationTests(unittest.TestCase):
                 "status": "active",
                 "relocation_required": False,
                 "api_boundary": "maintained-internal",
+                "root_role": "broad-orchestration",
             }
         )
         with self.assertRaisesRegex(
@@ -149,6 +150,44 @@ class SourceLayoutValidationTests(unittest.TestCase):
             "forbidden repository import roots",
         ):
             validate_source_layout(root, self.document)
+
+    def test_active_single_feature_root_module_is_rejected(self) -> None:
+        _context, root = self._make_repository()
+        path = root / "src/gve/single_feature.py"
+        path.write_text("", encoding="utf-8")
+        document = copy.deepcopy(self.document)
+        document["current_tree_classification"].append(
+            {
+                "path": "src/gve/single_feature.py",
+                "functional_responsibility": "narrow single-feature implementation",
+                "placement_class": "installed-product-package",
+                "status": "active",
+                "relocation_required": False,
+                "api_boundary": "maintained-internal",
+                "root_role": "grandfathered-single-feature",
+            }
+        )
+        with self.assertRaisesRegex(
+            SourceLayoutValidationError,
+            "prohibited root role",
+        ):
+            validate_source_layout(root, document)
+
+    def test_root_role_api_boundary_conflict_is_rejected(self) -> None:
+        _context, root = self._make_repository()
+        document = copy.deepcopy(self.document)
+        item = next(
+            entry
+            for entry in document["current_tree_classification"]
+            if entry["path"] == "src/gve/cli.py"
+        )
+        item["api_boundary"] = "maintained-internal"
+        with self.assertRaisesRegex(
+            SourceLayoutValidationError,
+            "API boundary conflict",
+        ):
+            validate_source_layout(root, document)
+
 
     def test_grandfathered_root_requires_successor(self) -> None:
         _context, root = self._make_repository()

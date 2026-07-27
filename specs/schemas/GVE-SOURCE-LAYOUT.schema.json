@@ -293,7 +293,8 @@
       "required": [
         "allowed_responsibilities",
         "prohibited_responsibilities",
-        "root_module_requirements"
+        "root_module_requirements",
+        "root_roles"
       ],
       "properties": {
         "allowed_responsibilities": {
@@ -304,6 +305,29 @@
         },
         "root_module_requirements": {
           "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "root_roles": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "package-initialization"
+            },
+            {
+              "const": "installed-entry-point"
+            },
+            {
+              "const": "broad-orchestration"
+            },
+            {
+              "const": "supported-public-api"
+            },
+            {
+              "const": "grandfathered-single-feature"
+            }
+          ],
+          "items": false,
+          "minItems": 5,
+          "maxItems": 5
         }
       }
     },
@@ -497,6 +521,15 @@
         "successor_requirement": {
           "type": "string",
           "minLength": 1
+        },
+        "root_role": {
+          "enum": [
+            "package-initialization",
+            "installed-entry-point",
+            "broad-orchestration",
+            "supported-public-api",
+            "grandfathered-single-feature"
+          ]
         }
       },
       "allOf": [
@@ -520,6 +553,30 @@
             "required": [
               "successor_requirement"
             ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "path": {
+                "pattern": "^src/gve/[^/]+\\.py$"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "then": {
+            "required": [
+              "root_role"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "root_role"
+              ]
+            }
           }
         }
       ]

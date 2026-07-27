@@ -84,9 +84,24 @@ def _validate_names(paths: Sequence[str], document: Mapping[str, Any]) -> None:
 def _validate_root_modules(
     classifications: Mapping[str, Mapping[str, Any]],
 ) -> None:
+    active_roles = {
+        "package-initialization",
+        "installed-entry-point",
+        "broad-orchestration",
+        "supported-public-api",
+    }
+    expected_api_boundaries = {
+        "installed-entry-point": "installed-entry-point",
+        "supported-public-api": "supported-public-api",
+    }
+
     for path, item in classifications.items():
         relative = Path(path).relative_to("src/gve")
         if len(relative.parts) != 1:
+            if "root_role" in item:
+                raise SourceLayoutValidationError(
+                    f"non-root module declares root role: {path}"
+                )
             continue
         if item["placement_class"] != "installed-product-package":
             raise SourceLayoutValidationError(
@@ -96,7 +111,22 @@ def _validate_root_modules(
             raise SourceLayoutValidationError(
                 f"root module has invalid status: {path}"
             )
-        if item["status"] == "grandfathered":
+
+        role = item.get("root_role")
+        if item["status"] == "active":
+            if role not in active_roles:
+                raise SourceLayoutValidationError(
+                    f"active root module has prohibited root role: {path}"
+                )
+            if item["relocation_required"]:
+                raise SourceLayoutValidationError(
+                    f"active root module must not require relocation: {path}"
+                )
+        else:
+            if role != "grandfathered-single-feature":
+                raise SourceLayoutValidationError(
+                    f"grandfathered root module has invalid root role: {path}"
+                )
             if not item["relocation_required"]:
                 raise SourceLayoutValidationError(
                     f"grandfathered root module must require relocation: {path}"
@@ -105,6 +135,12 @@ def _validate_root_modules(
                 raise SourceLayoutValidationError(
                     f"grandfathered root module lacks successor requirement: {path}"
                 )
+
+        expected_api = expected_api_boundaries.get(role)
+        if expected_api is not None and item["api_boundary"] != expected_api:
+            raise SourceLayoutValidationError(
+                f"root role and API boundary conflict: {path}"
+            )
 
 
 def _validate_plugin_hierarchy(paths: Sequence[str]) -> None:
