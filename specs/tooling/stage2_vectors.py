@@ -269,26 +269,26 @@ def reference_process(input_bytes: bytes) -> ProcessOutcome:
             return _rejected_payload_result(
                 input_bytes,
                 payload,
-                "The Stage 2 payload omits the required lifecycle member.",
+                "The payload omits the required lifecycle member.",
             )
         if payload["lifecycle"] != "no-op":
             return _rejected_payload_result(
                 input_bytes,
                 payload,
-                "The Stage 2 payload names an unsupported lifecycle value.",
+                "The payload names an unsupported lifecycle value.",
             )
         workflow = payload["workflow"]
         if "unexpected" in workflow:
             return _rejected_payload_result(
                 input_bytes,
                 payload,
-                "The Stage 2 workflow envelope contains an unknown governed member.",
+                "The workflow envelope contains an unknown governed member.",
             )
         if "unexpected" in payload:
             return _rejected_payload_result(
                 input_bytes,
                 payload,
-                "The Stage 2 common payload contains an unknown top-level governed member.",
+                "The common payload contains an unknown top-level governed member.",
             )
         operations = workflow.get("operations")
         if isinstance(operations, list) and operations:
@@ -297,20 +297,20 @@ def reference_process(input_bytes: bytes) -> ProcessOutcome:
                 return _rejected_payload_result(
                     input_bytes,
                     payload,
-                    "The Stage 2 operation envelope contains a forbidden execution member.",
+                    "The operation envelope contains a forbidden execution member.",
                 )
             plugin = operation.get("plugin")
             if isinstance(plugin, dict) and "action" not in plugin:
                 return _rejected_payload_result(
                     input_bytes,
                     payload,
-                    "The Stage 2 operation plugin envelope omits the required action member.",
+                    "The operation plugin envelope omits the required action member.",
                 )
             if isinstance(plugin, dict) and "executable" in plugin:
                 return _rejected_payload_result(
                     input_bytes,
                     payload,
-                    "The Stage 2 plugin routing envelope contains an unknown governed member.",
+                    "The plugin routing envelope contains an unknown governed member.",
                 )
             operation_ids = [
                 candidate.get("operation_id")
@@ -321,7 +321,7 @@ def reference_process(input_bytes: bytes) -> ProcessOutcome:
                 return _rejected_identity_result(
                     input_bytes,
                     payload,
-                    "The Stage 2 workflow contains duplicate operation identities.",
+                    "The workflow contains duplicate operation identities.",
                 )
     result = canonical_json_bytes(canonical_success_result(input_bytes, payload))
     return ProcessOutcome(0, result, b"")
