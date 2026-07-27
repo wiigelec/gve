@@ -1,0 +1,334 @@
+{
+  "$schema": "../schemas/GVE-SOURCE-LAYOUT.schema.json",
+  "specification": {
+    "id": "GVE-SOURCE-LAYOUT",
+    "version": "1.0.0",
+    "status": "normative"
+  },
+  "schema_version": 1,
+  "title": "GVE Maintained Python Source Layout",
+  "authority_class": "cross-level",
+  "scope": {
+    "package_root": "src/gve",
+    "subject": "maintained Python source placement, naming, ownership, dependency direction, and API boundaries",
+    "runtime_authorization": false
+  },
+  "status_vocabulary": [
+    "active",
+    "reserved",
+    "prohibited",
+    "grandfathered"
+  ],
+  "placement_classes": [
+    "installed-product-package",
+    "specification-or-conformance-tooling",
+    "repository-automation",
+    "test-only-support",
+    "fixture-support",
+    "external-plugin-distribution"
+  ],
+  "api_boundaries": [
+    "supported-public-api",
+    "installed-entry-point",
+    "maintained-internal",
+    "test-only-import"
+  ],
+  "package_root_policy": {
+    "allowed_responsibilities": [
+      "package initialization",
+      "installed command-line or module entry points",
+      "broad product orchestration",
+      "explicitly supported public API modules"
+    ],
+    "prohibited_responsibilities": [
+      "single-feature implementation without broad package ownership",
+      "conformance adapters",
+      "test support",
+      "plugin actions",
+      "milestone-specific or issue-specific behavior"
+    ],
+    "root_module_requirements": [
+      "The module responsibility is broad enough to define a package boundary, installed entry point, broad orchestration boundary, or explicitly supported public API.",
+      "The module name describes durable product functionality rather than implementation chronology.",
+      "The module does not exist merely because no functional namespace had previously been established."
+    ],
+    "root_roles": [
+      "package-initialization",
+      "installed-entry-point",
+      "broad-orchestration",
+      "supported-public-api",
+      "grandfathered-single-feature"
+    ]
+  },
+  "functional_namespace_policy": {
+    "principle": "Use shallow namespaces organized by stable functional ownership.",
+    "creation_criteria_any": [
+      "contains multiple cohesive modules",
+      "establishes a meaningful dependency boundary",
+      "an accepted near-term change requires multiple owned modules",
+      "prevents package-root accumulation or dependency cycles"
+    ],
+    "speculative_empty_packages": false,
+    "illustrative_names_not_authorizations": [
+      "validation",
+      "identity",
+      "serialization",
+      "plugins",
+      "processing",
+      "results"
+    ]
+  },
+  "naming_policy": {
+    "required_style": "stable functional snake_case for Python package, module, plugin, and action identifiers",
+    "prohibited_patterns": [
+      "(^|_)stage_?[0-9]+($|_)",
+      "(^|_)phase_?[0-9a-z]+($|_)",
+      "(^|_)milestone_?[0-9a-z]+($|_)",
+      "(^|_)issue_?[0-9]+($|_)",
+      "(^|_)temporary($|_)",
+      "(^|_)temp($|_)",
+      "(^|_)new(_|$)",
+      "(^|_)next(_|$)",
+      "(^|_)v[0-9]+($|_)"
+    ],
+    "prohibited_ownerless_names": [
+      "utils",
+      "helpers",
+      "common",
+      "misc"
+    ],
+    "ownerless_name_exception": {
+      "allowed": false,
+      "requirement": "A future exception requires separately accepted normative authority with narrow ownership and dependency rules."
+    }
+  },
+  "plugin_hierarchy": {
+    "status": "reserved",
+    "paths": [
+      "src/gve/plugins/",
+      "src/gve/plugins/<plugin_name>/",
+      "src/gve/plugins/<plugin_name>/actions/",
+      "src/gve/plugins/<plugin_name>/actions/action_<action_name>.py"
+    ],
+    "rules": [
+      "Each repository-owned plugin has exactly one owning directory.",
+      "Plugin-wide code remains at the plugin directory level.",
+      "Action-specific code remains in one action_<action_name>.py module.",
+      "One concrete plugin must not import another concrete plugin implementation directly.",
+      "Shared behavior belongs to a clearly owned framework or functional namespace.",
+      "Reserved paths do not require directory creation.",
+      "Reservation does not authorize discovery, loading, registration, execution, concrete plugins, concrete actions, or Stage 3 behavior.",
+      "External plugins may be separately distributed and are not required to live in this repository tree.",
+      "Nested plugin subpackages other than actions are prohibited without separately accepted authority."
+    ]
+  },
+  "placement_policy": {
+    "roots": [
+      {
+        "path": "src/gve/**",
+        "placement_class": "installed-product-package",
+        "purpose": "installed product functionality only"
+      },
+      {
+        "path": "specs/tooling/**",
+        "placement_class": "specification-or-conformance-tooling",
+        "purpose": "executable specification and conformance tooling"
+      },
+      {
+        "path": "scripts/**",
+        "placement_class": "repository-automation",
+        "purpose": "repository-development and validation entry points"
+      },
+      {
+        "path": "tests/**",
+        "placement_class": "test-only-support",
+        "purpose": "tests and test-only support"
+      },
+      {
+        "path": "specs/tests/**",
+        "placement_class": "test-only-support",
+        "purpose": "normative specification tests and fixtures"
+      }
+    ],
+    "closed_classification": true
+  },
+  "dependency_rules": [
+    {
+      "rule_id": "low-level-no-cli-backflow",
+      "source_paths": [
+        "src/gve/identity/*.py",
+        "src/gve/identity/**/*.py",
+        "src/gve/results/*.py",
+        "src/gve/results/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_modules": [
+        "gve.__main__",
+        "gve.cli"
+      ],
+      "statement": "Low-level functional namespaces must not import CLI or process-boundary modules."
+    },
+    {
+      "rule_id": "no-circular-functional-ownership",
+      "source_paths": [
+        "src/gve/*.py",
+        "src/gve/**/*.py"
+      ],
+      "enforcement": "architectural-graph",
+      "statement": "Circular ownership between maintained functional modules is prohibited and is checked from the maintained gve import graph."
+    },
+    {
+      "rule_id": "plugin-framework-no-external-concrete-import",
+      "source_paths": [
+        "src/gve/plugins/*.py",
+        "src/gve/plugins/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_modules": [
+        "external_plugins"
+      ],
+      "statement": "Repository-owned plugin framework code must not import concrete external plugin implementations."
+    },
+    {
+      "rule_id": "product-no-repository-backflow",
+      "source_paths": [
+        "src/gve/*.py",
+        "src/gve/**/*.py"
+      ],
+      "enforcement": "active",
+      "forbidden_import_roots": [
+        "specs",
+        "scripts",
+        "tests"
+      ],
+      "statement": "Installed product code must not import specification tooling, repository scripts, or tests."
+    },
+    {
+      "rule_id": "serialization-no-cli-parsing",
+      "source_paths": [
+        "src/gve/serialization/*.py",
+        "src/gve/serialization/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_roots": [
+        "argparse"
+      ],
+      "statement": "Serialization functionality must not parse command-line arguments."
+    },
+    {
+      "rule_id": "validation-no-process-io",
+      "source_paths": [
+        "src/gve/validation/*.py",
+        "src/gve/validation/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_roots": [
+        "subprocess"
+      ],
+      "statement": "Validation functionality must not perform process I/O."
+    }
+  ],
+  "public_api_policy": {
+    "principles": [
+      "Importability alone does not create a supported compatibility promise.",
+      "Supported public package API, installed entry points, maintained internal modules, and test-only imports are distinct classifications.",
+      "Relocations preserve explicitly supported public interfaces or use separately accepted compatibility handling."
+    ]
+  },
+  "reserved_paths": [
+    {
+      "path": "src/gve/plugins/",
+      "status": "reserved",
+      "implementation_required": false,
+      "runtime_authorization": false
+    }
+  ],
+  "prohibited_paths": [
+    {
+      "path_pattern": "src/gve/**/{stage*,stage_*,phase*,phase_*,milestone*,milestone_*,issue_*,temporary*,new_*,next_*,*_v[0-9]*}.py",
+      "status": "prohibited",
+      "reason": "chronology, issue, phase, milestone, temporary, or replacement-generation naming"
+    },
+    {
+      "path_pattern": "src/gve/**/{utils,helpers,common,misc}/**",
+      "status": "prohibited",
+      "reason": "ownerless generic namespace"
+    }
+  ],
+  "current_tree_classification": [
+    {
+      "path": "src/gve/__init__.py",
+      "functional_responsibility": "package initialization and package boundary",
+      "placement_class": "installed-product-package",
+      "status": "active",
+      "relocation_required": false,
+      "api_boundary": "supported-public-api",
+      "notes": "Only explicitly exported names are compatibility promises.",
+      "root_role": "package-initialization"
+    },
+    {
+      "path": "src/gve/__main__.py",
+      "functional_responsibility": "installed module execution entry point",
+      "placement_class": "installed-product-package",
+      "status": "active",
+      "relocation_required": false,
+      "api_boundary": "installed-entry-point",
+      "root_role": "installed-entry-point"
+    },
+    {
+      "path": "src/gve/cli.py",
+      "functional_responsibility": "installed command-line boundary",
+      "placement_class": "installed-product-package",
+      "status": "active",
+      "relocation_required": false,
+      "api_boundary": "installed-entry-point",
+      "notes": "Non-entry-point contents remain internal unless explicitly supported.",
+      "root_role": "installed-entry-point"
+    },
+    {
+      "path": "src/gve/core.py",
+      "functional_responsibility": "broad product orchestration and maintained product behavior",
+      "placement_class": "installed-product-package",
+      "status": "active",
+      "relocation_required": false,
+      "api_boundary": "maintained-internal",
+      "root_role": "broad-orchestration"
+    },
+    {
+      "path": "src/gve/processing_failure.py",
+      "functional_responsibility": "narrow processing-failure implementation",
+      "placement_class": "installed-product-package",
+      "status": "grandfathered",
+      "relocation_required": true,
+      "api_boundary": "maintained-internal",
+      "successor_requirement": "Relocation requires a separately governed dependent issue and must preserve exact behavior.",
+      "root_role": "grandfathered-single-feature"
+    }
+  ],
+  "validation_requirements": [
+    "Validate this document against its dedicated closed schema.",
+    "Confirm this document is outside specs/levels/.",
+    "Include this document exactly once in applicable normative discovery, identity, and revision mechanisms.",
+    "Do not validate this document as a level document.",
+    "Classify every maintained src/gve/**/*.py path exactly once.",
+    "Reject unclassified maintained Python paths.",
+    "Reject prohibited chronological and ownerless names.",
+    "Enforce package-root criteria.",
+    "Enforce plugin and action path patterns when those paths exist.",
+    "Permit reserved paths without requiring them to exist.",
+    "Reject installed product imports from specs, scripts, or tests.",
+    "Fail closed when a reserved conditional dependency namespace appears before its rule is activated.",
+    "Report grandfathered paths explicitly.",
+    "Leave installed runtime behavior and entry points unchanged."
+  ],
+  "exclusions": [
+    "relocation or semantic modification of src/gve/processing_failure.py",
+    "removal of maintained Stage 2 references",
+    "plugin framework behavior",
+    "plugin discovery, loading, registration, or execution",
+    "concrete plugins or actions",
+    "Stage 3 runtime semantics",
+    "speculative empty source packages",
+    "installed entry-point or runtime behavior changes"
+  ]
+}

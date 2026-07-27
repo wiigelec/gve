@@ -97,6 +97,16 @@
       }
     },
     "member": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/levelMember"
+        },
+        {
+          "$ref": "#/$defs/crossLevelMember"
+        }
+      ]
+    },
+    "levelMember": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -120,6 +130,34 @@
         "id": {
           "type": "string",
           "pattern": "^GVE-LEVEL-[0-9]+(?:-[A-Z0-9]+(?:-[A-Z0-9]+)*)?$"
+        },
+        "content_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "crossLevelMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "role",
+        "id",
+        "schema_path",
+        "content_sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "source-layout/GVE-SOURCE-LAYOUT.json"
+        },
+        "role": {
+          "const": "cross-level"
+        },
+        "id": {
+          "const": "GVE-SOURCE-LAYOUT"
+        },
+        "schema_path": {
+          "const": "schemas/GVE-SOURCE-LAYOUT.schema.json"
         },
         "content_sha256": {
           "$ref": "#/$defs/sha256"
