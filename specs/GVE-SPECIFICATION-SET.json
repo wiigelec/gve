@@ -100,6 +100,13 @@
       "role": "subordinate",
       "id": "GVE-LEVEL-3-WORKFLOW-PLANNING-LIFECYCLE",
       "content_sha256": "0e0edc7e0c65f54cd7bdc3698ced2ed9334117ea605583a73a3a4726188a6c00"
+    },
+    {
+      "path": "source-layout/GVE-SOURCE-LAYOUT.json",
+      "role": "cross-level",
+      "id": "GVE-SOURCE-LAYOUT",
+      "schema_path": "schemas/GVE-SOURCE-LAYOUT.schema.json",
+      "content_sha256": "8e8b70095f6ea95165b0b6d583a33a0b0e2f4adc7024616e8e9fe41d09c11461"
     }
   ]
 }

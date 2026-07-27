@@ -1,0 +1,528 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/wiigelec/gve/specs/schemas/GVE-SOURCE-LAYOUT.schema.json",
+  "title": "GVE Source Layout Specification Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "specification",
+    "schema_version",
+    "title",
+    "authority_class",
+    "scope",
+    "status_vocabulary",
+    "placement_classes",
+    "api_boundaries",
+    "package_root_policy",
+    "functional_namespace_policy",
+    "naming_policy",
+    "plugin_hierarchy",
+    "placement_policy",
+    "dependency_rules",
+    "public_api_policy",
+    "reserved_paths",
+    "prohibited_paths",
+    "current_tree_classification",
+    "validation_requirements",
+    "exclusions"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "../schemas/GVE-SOURCE-LAYOUT.schema.json"
+    },
+    "specification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "const": "GVE-SOURCE-LAYOUT"
+        },
+        "version": {
+          "const": "1.0.0"
+        },
+        "status": {
+          "const": "normative"
+        }
+      }
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authority_class": {
+      "const": "cross-level"
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "package_root",
+        "subject",
+        "runtime_authorization"
+      ],
+      "properties": {
+        "package_root": {
+          "const": "src/gve"
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime_authorization": {
+          "const": false
+        }
+      }
+    },
+    "status_vocabulary": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "const": "active"
+        },
+        {
+          "const": "reserved"
+        },
+        {
+          "const": "prohibited"
+        },
+        {
+          "const": "grandfathered"
+        }
+      ],
+      "items": false,
+      "minItems": 4,
+      "maxItems": 4
+    },
+    "placement_classes": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 6,
+      "items": {
+        "enum": [
+          "installed-product-package",
+          "specification-or-conformance-tooling",
+          "repository-automation",
+          "test-only-support",
+          "fixture-support",
+          "external-plugin-distribution"
+        ]
+      }
+    },
+    "api_boundaries": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 4,
+      "items": {
+        "enum": [
+          "supported-public-api",
+          "installed-entry-point",
+          "maintained-internal",
+          "test-only-import"
+        ]
+      }
+    },
+    "package_root_policy": {
+      "$ref": "#/$defs/packageRootPolicy"
+    },
+    "functional_namespace_policy": {
+      "$ref": "#/$defs/functionalNamespacePolicy"
+    },
+    "naming_policy": {
+      "$ref": "#/$defs/namingPolicy"
+    },
+    "plugin_hierarchy": {
+      "$ref": "#/$defs/pluginHierarchy"
+    },
+    "placement_policy": {
+      "$ref": "#/$defs/placementPolicy"
+    },
+    "dependency_rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rule_id",
+          "source"
+        ],
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "forbidden_import_roots": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "forbidden_dependency": {
+            "type": "string",
+            "minLength": 1
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "oneOf": [
+          {
+            "required": [
+              "forbidden_import_roots",
+              "statement"
+            ]
+          },
+          {
+            "required": [
+              "forbidden_dependency"
+            ]
+          }
+        ]
+      }
+    },
+    "public_api_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principles"
+      ],
+      "properties": {
+        "principles": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      }
+    },
+    "reserved_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "status",
+          "implementation_required",
+          "runtime_authorization"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "const": "reserved"
+          },
+          "implementation_required": {
+            "const": false
+          },
+          "runtime_authorization": {
+            "const": false
+          }
+        }
+      }
+    },
+    "prohibited_paths": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path_pattern",
+          "status",
+          "reason"
+        ],
+        "properties": {
+          "path_pattern": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "const": "prohibited"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "current_tree_classification": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/classification"
+      }
+    },
+    "validation_requirements": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    },
+    "exclusions": {
+      "$ref": "#/$defs/nonEmptyStringArray"
+    }
+  },
+  "$defs": {
+    "nonEmptyStringArray": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "packageRootPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed_responsibilities",
+        "prohibited_responsibilities",
+        "root_module_requirements"
+      ],
+      "properties": {
+        "allowed_responsibilities": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "prohibited_responsibilities": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "root_module_requirements": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      }
+    },
+    "functionalNamespacePolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "principle",
+        "creation_criteria_any",
+        "speculative_empty_packages",
+        "illustrative_names_not_authorizations"
+      ],
+      "properties": {
+        "principle": {
+          "type": "string",
+          "minLength": 1
+        },
+        "creation_criteria_any": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "speculative_empty_packages": {
+          "const": false
+        },
+        "illustrative_names_not_authorizations": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      }
+    },
+    "namingPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "required_style",
+        "prohibited_patterns",
+        "prohibited_ownerless_names",
+        "ownerless_name_exception"
+      ],
+      "properties": {
+        "required_style": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prohibited_patterns": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "prohibited_ownerless_names": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "const": "utils"
+            },
+            {
+              "const": "helpers"
+            },
+            {
+              "const": "common"
+            },
+            {
+              "const": "misc"
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "ownerless_name_exception": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "allowed",
+            "requirement"
+          ],
+          "properties": {
+            "allowed": {
+              "const": false
+            },
+            "requirement": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "pluginHierarchy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "paths",
+        "rules"
+      ],
+      "properties": {
+        "status": {
+          "const": "reserved"
+        },
+        "paths": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        },
+        "rules": {
+          "$ref": "#/$defs/nonEmptyStringArray"
+        }
+      }
+    },
+    "placementPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "roots",
+        "closed_classification"
+      ],
+      "properties": {
+        "roots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "placement_class",
+              "purpose"
+            ],
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "placement_class": {
+                "type": "string",
+                "minLength": 1
+              },
+              "purpose": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "closed_classification": {
+          "const": true
+        }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "functional_responsibility",
+        "placement_class",
+        "status",
+        "relocation_required",
+        "api_boundary"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^src/gve/.+\\.py$"
+        },
+        "functional_responsibility": {
+          "type": "string",
+          "minLength": 1
+        },
+        "placement_class": {
+          "const": "installed-product-package"
+        },
+        "status": {
+          "enum": [
+            "active",
+            "reserved",
+            "prohibited",
+            "grandfathered"
+          ]
+        },
+        "relocation_required": {
+          "type": "boolean"
+        },
+        "api_boundary": {
+          "enum": [
+            "supported-public-api",
+            "installed-entry-point",
+            "maintained-internal",
+            "test-only-import"
+          ]
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        },
+        "successor_requirement": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "grandfathered"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "relocation_required": {
+                "const": true
+              }
+            },
+            "required": [
+              "successor_requirement"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

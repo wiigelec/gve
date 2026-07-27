@@ -1,4 +1,4 @@
-"""Repository validation for GVE level specifications."""
+"""Repository validation for the accepted GVE normative specification set."""
 
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ from .render import render_markdown
 from .revision import SpecificationRevisionError, build_specification_revision
 from .semantics import SemanticValidationError, validate_hierarchy
 from .strict_json import StrictJSONError, load_strict
+from .source_layout import SourceLayoutValidationError, validate_source_layout
 
 
 class SchemaValidationError(ValueError):
@@ -148,7 +149,10 @@ def _validate_manifest_member_metadata(
             f"{member['path']}: manifest identity {member['id']} conflicts with "
             f"document identity {identifier}"
         )
-    role = document.get("document", {}).get("role", "root")
+    if member["role"] == "cross-level":
+        role = document.get("authority_class")
+    else:
+        role = document.get("document", {}).get("role", "root")
     if role != member["role"]:
         raise SpecificationManifestError(
             f"{member['id']}: manifest role {member['role']} conflicts with "
@@ -166,10 +170,11 @@ def _undeclared_normative_candidates(
     specs_root: Path,
     declared_paths: set[str],
 ) -> list[Path]:
-    levels_root = specs_root / "levels"
+    candidates = list((specs_root / "levels").glob("level-*/GVE-LEVEL-*.json"))
+    candidates.extend((specs_root / "source-layout").glob("GVE-*.json"))
     return sorted(
         path
-        for path in levels_root.glob("level-*/GVE-LEVEL-*.json")
+        for path in candidates
         if path.relative_to(specs_root).as_posix() not in declared_paths
     )
 
@@ -207,42 +212,51 @@ def _reject_undeclared_candidates(
 def validate_specification_set(specs_root: Path) -> dict[str, Any]:
     specs_root = specs_root.resolve()
     levels_root = specs_root / "levels"
-    schema_path = specs_root / "schemas" / "GVE-LEVEL.schema.json"
+    level_schema_path = specs_root / "schemas" / "GVE-LEVEL.schema.json"
     manifest = load_specification_manifest(specs_root)
     declared_paths = {member["path"] for member in manifest["members"]}
     _reject_undeclared_candidates(specs_root, declared_paths)
 
     records: list[tuple[Path, dict[str, Any]]] = []
+    level_records: list[tuple[Path, dict[str, Any]]] = []
     members_by_path = {member["path"]: member for member in manifest["members"]}
     for document_path in discover_specifications(specs_root):
         relative = document_path.relative_to(specs_root).as_posix()
         if not document_path.is_file():
             continue
+        member = members_by_path[relative]
+        schema_path = (
+            specs_root / member["schema_path"]
+            if member["role"] == "cross-level"
+            else level_schema_path
+        )
         validate_document(document_path, schema_path)
         document = load_strict(document_path)
         _validate_manifest_member_metadata(
             specs_root,
-            members_by_path[relative],
+            member,
             document_path,
             document,
         )
-        markdown_path = document_path.with_suffix(".md")
-        expected_markdown = render_markdown(document)
-        try:
-            actual_markdown = markdown_path.read_text(encoding="utf-8")
-        except OSError as exc:
-            raise ProjectionValidationError(
-                f"{document['specification']['id']}: cannot read projection "
-                f"{markdown_path}: {exc}"
-            ) from exc
-        if actual_markdown != expected_markdown:
-            raise ProjectionValidationError(
-                f"{document['specification']['id']}: deterministic Markdown "
-                f"projection differs at {markdown_path}"
-            )
+        if member["role"] != "cross-level":
+            markdown_path = document_path.with_suffix(".md")
+            expected_markdown = render_markdown(document)
+            try:
+                actual_markdown = markdown_path.read_text(encoding="utf-8")
+            except OSError as exc:
+                raise ProjectionValidationError(
+                    f"{document['specification']['id']}: cannot read projection "
+                    f"{markdown_path}: {exc}"
+                ) from exc
+            if actual_markdown != expected_markdown:
+                raise ProjectionValidationError(
+                    f"{document['specification']['id']}: deterministic Markdown "
+                    f"projection differs at {markdown_path}"
+                )
+            level_records.append((document_path, document))
         records.append((document_path, document))
 
-    validate_hierarchy(records, levels_root=levels_root)
+    validate_hierarchy(level_records, levels_root=levels_root)
     for document_path, document in records:
         relative = document_path.relative_to(specs_root).as_posix()
         member = members_by_path[relative]
@@ -260,12 +274,25 @@ def validate_specification_set(specs_root: Path) -> dict[str, Any]:
         raise SpecificationManifestError(
             f"normative manifest members are missing from repository: {missing}"
         )
+
+    source_layout_document = next(
+        (
+            document
+            for _path, document in records
+            if document.get("specification", {}).get("id")
+            == "GVE-SOURCE-LAYOUT"
+        ),
+        None,
+    )
+    if source_layout_document is not None:
+        validate_source_layout(specs_root.parent, source_layout_document)
+
     return build_specification_revision([document for _path, document in records])
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Validate the accepted GVE level specification set."
+        description="Validate the accepted GVE normative specification set."
     )
     parser.add_argument(
         "--specs-root",
@@ -283,6 +310,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         SemanticValidationError,
         SpecificationManifestError,
         SpecificationRevisionError,
+        SourceLayoutValidationError,
         StrictJSONError,
     ) as exc:
         print(f"specification validation failed: {exc}", file=sys.stderr)
