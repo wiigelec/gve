@@ -1,10 +1,25 @@
-"""Core canonical request processing."""
+"""Maintained Stage 2 request processing."""
 
 from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from typing import Any
+
+
+UTF8_FAILURE_MESSAGE = (
+    "Input bytes are not valid UTF-8, so no authoritative result identity "
+    "could be constructed."
+)
+JSON_FAILURE_MESSAGE = (
+    "Input bytes could not be parsed as one JSON value, so no authoritative "
+    "result identity could be constructed."
+)
+DUPLICATE_MEMBER_FAILURE_MESSAGE = (
+    "Input JSON contains a duplicate object member, so no authoritative result "
+    "identity could be constructed."
+)
 
 
 def _canonical_json_bytes(value: Any) -> bytes:
@@ -24,6 +39,91 @@ def _derived_identity(family: str, *parts: bytes) -> str:
     return f"gve-{family}-sha256:{digest}"
 
 
+@dataclass(frozen=True)
+class FatalInputFailure(Exception):
+    code: str
+    stage: str
+    message: str
+    input_bytes: bytes
+
+    def artifact_bytes(self) -> bytes:
+        failure_id = _derived_identity(
+            "failure",
+            self.input_bytes,
+            self.stage.encode("ascii"),
+        )
+        return _canonical_json_bytes(
+            {
+                "schema_version": 1,
+                "failure_id": failure_id,
+                "code": self.code,
+                "stage": self.stage,
+                "message": self.message,
+                "process": {
+                    "exit_code": 4,
+                    "stdout": "empty",
+                    "stderr": "fatal-failure",
+                },
+            }
+        )
+
+
+class _DuplicateObjectMember(ValueError):
+    pass
+
+
+class _NonStandardConstant(ValueError):
+    pass
+
+
+def _object_without_duplicates(
+    pairs: list[tuple[str, Any]],
+) -> dict[str, Any]:
+    result: dict[str, Any] = {}
+    for key, value in pairs:
+        if key in result:
+            raise _DuplicateObjectMember(key)
+        result[key] = value
+    return result
+
+
+def _reject_non_standard_constant(value: str) -> None:
+    raise _NonStandardConstant(value)
+
+
+def _parse_json(input_bytes: bytes) -> Any:
+    try:
+        text = input_bytes.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as exc:
+        raise FatalInputFailure(
+            code="GVE-S2-INVALID-UTF8",
+            stage="utf8-decoding",
+            message=UTF8_FAILURE_MESSAGE,
+            input_bytes=input_bytes,
+        ) from exc
+
+    try:
+        return json.loads(
+            text,
+            object_pairs_hook=_object_without_duplicates,
+            parse_constant=_reject_non_standard_constant,
+        )
+    except _DuplicateObjectMember as exc:
+        raise FatalInputFailure(
+            code="GVE-S2-INVALID-JSON",
+            stage="json-parsing",
+            message=DUPLICATE_MEMBER_FAILURE_MESSAGE,
+            input_bytes=input_bytes,
+        ) from exc
+    except (json.JSONDecodeError, _NonStandardConstant) as exc:
+        raise FatalInputFailure(
+            code="GVE-S2-INVALID-JSON",
+            stage="json-parsing",
+            message=JSON_FAILURE_MESSAGE,
+            input_bytes=input_bytes,
+        ) from exc
+
+
 def _require_exact_members(
     value: dict[str, Any],
     expected: set[str],
@@ -34,8 +134,7 @@ def _require_exact_members(
 
 
 def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
-    text = input_bytes.decode("utf-8", errors="strict")
-    payload = json.loads(text)
+    payload = _parse_json(input_bytes)
     if not isinstance(payload, dict):
         raise ValueError("canonical request must be a JSON object")
 

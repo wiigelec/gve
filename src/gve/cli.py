@@ -4,7 +4,7 @@ import sys
 from importlib import metadata
 from typing import Sequence
 
-from .core import canonical_success
+from .core import FatalInputFailure, canonical_success
 
 
 DISTRIBUTION_NAME = "gve"
@@ -37,10 +37,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     input_bytes = sys.stdin.buffer.read()
-    if not input_bytes:
-        print(USAGE_DIAGNOSTIC, file=sys.stderr)
-        return 2
+    try:
+        output_bytes = canonical_success(input_bytes)
+    except FatalInputFailure as failure:
+        sys.stderr.buffer.write(failure.artifact_bytes())
+        return 4
 
-    output_bytes = canonical_success(input_bytes)
     sys.stdout.buffer.write(output_bytes)
     return 0

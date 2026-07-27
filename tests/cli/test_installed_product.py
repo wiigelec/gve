@@ -192,7 +192,7 @@ class InstalledProductTests(unittest.TestCase):
         self.assertFalse(imported.is_relative_to(REPOSITORY_ROOT.resolve()))
 
     def test_unsupported_and_malformed_invocations_return_usage_status(self) -> None:
-        for arguments in ((), ("execute", "operation.json"), ("--unknown",)):
+        for arguments in (("execute", "operation.json"), ("--unknown",)):
             with self.subTest(arguments=arguments):
                 completed = self.invoke(*arguments)
                 self.assertEqual(completed.returncode, 2)
