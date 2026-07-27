@@ -11,8 +11,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from gve import cli
-from gve.core import FatalInputFailure
-from gve.processing_failure import ProcessingFailure, process_request
+from gve.processing_failure import (
+    RESULT_CONSTRUCTION_CONTROL_STATUS,
+    ProcessingFailure,
+    process_request,
+)
 
 
 FIXTURE = ROOT / "specs" / "tests" / "fixtures" / "issue_99" / "processing-failure"
@@ -54,23 +57,29 @@ class ProcessingFailureTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.result_bytes(), self.expected)
 
-    def test_cli_maps_authoritative_failure_to_exit_three(self) -> None:
-        stdin = _Input(self.input_bytes)
-        stdout = _Output()
-        stderr = _Output()
+    def test_process_boundary_maps_authoritative_failure_exactly(self) -> None:
+        outcome = cli.run_process(
+            self.input_bytes,
+            processor_control=self.control,
+        )
 
-        with patch.object(sys, "stdin", stdin), patch.object(
-            sys, "stdout", stdout
-        ), patch.object(sys, "stderr", stderr):
-            exit_code = cli.main([], processor_control=self.control)
+        self.assertEqual(outcome.exit_status, 3)
+        self.assertEqual(outcome.stdout, self.expected)
+        self.assertEqual(outcome.stderr, b"")
+        self.assertNotIn(b"Traceback", outcome.stdout)
 
-        self.assertEqual(exit_code, 3)
-        self.assertEqual(stdout.buffer.getvalue(), self.expected)
-        self.assertEqual(stderr.buffer.getvalue(), b"")
-        self.assertNotIn(b"Traceback", stdout.buffer.getvalue())
+        result = json.loads(outcome.stdout)
+        self.assertEqual(result["processing"], {
+            "failure_stage": "no-op-disposition",
+            "status": "failed",
+        })
+        self.assertEqual(result["workflow"]["status"], "failed")
+        self.assertEqual(result["workflow"]["operations"][0]["status"], "failed")
+        self.assertEqual(result["diagnostics"][0]["code"], "GVE-S2-PROCESSING-FAILURE")
+        self.assertEqual(result["diagnostics"][0]["scope"], "workflow")
 
-    def test_installed_path_does_not_infer_control(self) -> None:
-        expected_success = process_request(self.input_bytes)
+    def test_installed_command_is_input_only(self) -> None:
+        expected_success = cli.run_process(self.input_bytes)
         stdin = _Input(self.input_bytes)
         stdout = _Output()
         stderr = _Output()
@@ -81,10 +90,14 @@ class ProcessingFailureTests(unittest.TestCase):
             exit_code = cli.main([])
 
         self.assertEqual(exit_code, 0)
-        self.assertEqual(stdout.buffer.getvalue(), expected_success)
+        self.assertEqual(stdout.buffer.getvalue(), expected_success.stdout)
         self.assertEqual(stderr.buffer.getvalue(), b"")
 
-    def test_processor_control_is_closed(self) -> None:
+    def test_processor_control_is_closed_and_result_construction_is_deferred(self) -> None:
+        self.assertEqual(
+            RESULT_CONSTRUCTION_CONTROL_STATUS,
+            "deferred-by-issue-99-authority",
+        )
         for control in (
             {},
             {"schema_version": 1},
@@ -94,27 +107,25 @@ class ProcessingFailureTests(unittest.TestCase):
             with self.subTest(control=control):
                 with self.assertRaisesRegex(
                     ValueError,
-                    "unsupported Stage 2 processor control",
+                    "result-construction control is deferred-by-issue-99-authority",
                 ):
                     process_request(
                         self.input_bytes,
                         processor_control=control,
                     )
 
-    def test_fatal_result_construction_remains_fatal(self) -> None:
+    def test_incomplete_identity_set_remains_fatal(self) -> None:
         incomplete = b'{"schema_version":2,"lifecycle":"no-op"}\n'
-
-        with self.assertRaises(FatalInputFailure) as raised:
-            process_request(
-                incomplete,
-                processor_control=self.control,
-            )
-
-        self.assertEqual(raised.exception.stage, "result-construction")
-        self.assertEqual(
-            json.loads(raised.exception.artifact_bytes())["process"]["exit_code"],
-            4,
+        outcome = cli.run_process(
+            incomplete,
+            processor_control=self.control,
         )
+
+        self.assertEqual(outcome.exit_status, 4)
+        self.assertEqual(outcome.stdout, b"")
+        failure = json.loads(outcome.stderr)
+        self.assertEqual(failure["stage"], "result-construction")
+        self.assertEqual(failure["process"]["exit_code"], 4)
 
 
 if __name__ == "__main__":

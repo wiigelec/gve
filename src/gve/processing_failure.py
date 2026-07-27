@@ -17,6 +17,8 @@ PROCESSING_FAILURE_MESSAGE = (
     "The accepted conformance disposition requires a deterministic processing "
     "failure after authoritative identities are established."
 )
+RESULT_CONSTRUCTION_CONTROL_STATUS = "deferred-by-issue-99-authority"
+
 _ACCEPTED_CONTROL = {
     "schema_version": 1,
     "disposition": "processing-failure",
@@ -107,7 +109,10 @@ def process_request(
 
     control = dict(processor_control)
     if control != _ACCEPTED_CONTROL:
-        raise ValueError("unsupported Stage 2 processor control")
+        raise ValueError(
+            "unsupported Stage 2 processor control; "
+            f"result-construction control is {RESULT_CONSTRUCTION_CONTROL_STATUS}"
+        )
 
     payload = _parse_canonical_request(input_bytes)
     raise ProcessingFailure(

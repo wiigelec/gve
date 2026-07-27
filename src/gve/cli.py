@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from dataclasses import dataclass
 from importlib import metadata
 from typing import Any, Mapping, Sequence
 
@@ -13,15 +14,44 @@ USAGE_DIAGNOSTIC = "gve: expected exactly one argument: --version"
 INSTALLATION_DIAGNOSTIC = "gve: installed package metadata is unavailable"
 
 
+@dataclass(frozen=True)
+class ProcessOutcome:
+    """Exact maintained Stage 2 process-boundary outcome."""
+
+    stdout: bytes
+    stderr: bytes
+    exit_status: int
+
+
 def _installed_version() -> str:
     return metadata.version(DISTRIBUTION_NAME)
 
 
-def main(
-    argv: Sequence[str] | None = None,
+def run_process(
+    input_bytes: bytes,
     *,
     processor_control: Mapping[str, Any] | None = None,
-) -> int:
+) -> ProcessOutcome:
+    """Run Stage 2 with an explicit conformance-only processor control."""
+
+    try:
+        output_bytes = process_request(
+            input_bytes,
+            processor_control=processor_control,
+        )
+    except PayloadRejection as rejection:
+        return ProcessOutcome(rejection.result_bytes(), b"", 2)
+    except ProcessingFailure as failure:
+        return ProcessOutcome(failure.result_bytes(), b"", 3)
+    except FatalInputFailure as failure:
+        return ProcessOutcome(b"", failure.artifact_bytes(), 4)
+
+    return ProcessOutcome(output_bytes, b"", 0)
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Installed input-only command; conformance controls are not CLI inputs."""
+
     arguments = list(sys.argv[1:] if argv is None else argv)
     if arguments == ["--version"]:
         try:
@@ -41,21 +71,7 @@ def main(
         print(USAGE_DIAGNOSTIC, file=sys.stderr)
         return 2
 
-    input_bytes = sys.stdin.buffer.read()
-    try:
-        output_bytes = process_request(
-            input_bytes,
-            processor_control=processor_control,
-        )
-    except PayloadRejection as rejection:
-        sys.stdout.buffer.write(rejection.result_bytes())
-        return 2
-    except ProcessingFailure as failure:
-        sys.stdout.buffer.write(failure.result_bytes())
-        return 3
-    except FatalInputFailure as failure:
-        sys.stderr.buffer.write(failure.artifact_bytes())
-        return 4
-
-    sys.stdout.buffer.write(output_bytes)
-    return 0
+    outcome = run_process(sys.stdin.buffer.read())
+    sys.stdout.buffer.write(outcome.stdout)
+    sys.stderr.buffer.write(outcome.stderr)
+    return outcome.exit_status
