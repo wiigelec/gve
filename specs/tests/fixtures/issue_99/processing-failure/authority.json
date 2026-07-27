@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "status": "normative",
+  "issue": 99,
+  "purpose": "Define the closed conformance-only control and identity derivations for the executable Stage 2 processing-failure vector.",
+  "identity_derivation": {
+    "algorithm": "sha256",
+    "separator": "00",
+    "output": "gve-{family}-sha256:{lowercase-hex-digest}",
+    "families": {
+      "result-processing-failure": {
+        "preimage": [
+          "ascii:result",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:processing-failure"
+        ]
+      },
+      "diagnostic-processing-failure": {
+        "preimage": [
+          "ascii:diagnostic",
+          "00",
+          "ascii:request-id",
+          "00",
+          "ascii:failure-stage",
+          "00",
+          "ascii:processing-failure"
+        ]
+      }
+    }
+  },
+  "processor_control": {
+    "closed_members": [
+      "schema_version",
+      "disposition",
+      "failure_stage"
+    ],
+    "schema_version": 1,
+    "disposition": "processing-failure",
+    "failure_stage": "no-op-disposition",
+    "semantics": [
+      "The control is conformance authority and is not part of Stage 2 request bytes.",
+      "The control must be passed explicitly by vector tooling.",
+      "Production request processing must not infer this control from payload content, identifiers, environment variables, or incidental exceptions.",
+      "The controlled failure occurs only after request, workflow, operation, result, and diagnostic identities can be constructed truthfully."
+    ]
+  },
+  "result_construction_boundary": {
+    "status": "deferred",
+    "text": "This issue defines only the executable no-op-disposition processing-failure vector. Authoritative and fatal result-construction fault injection remain separately governed and must not be inferred from this control."
+  },
+  "fixture": {
+    "input_path": "input.json",
+    "control_path": "processor-control.json",
+    "result_path": "result.json",
+    "stdout_path": "stdout.bin",
+    "stderr_path": "stderr.bin",
+    "exit_status": 3,
+    "request_id": "gve-request-sha256:cb502302159536ac6b18358c32f891dc5f1c93867e853bfab00df5ad9678be4a",
+    "result_id": "gve-result-sha256:71a07e89e1da8aafa25677afa0f1b1ce12207dab5ffc32433dd93842340c1ee4",
+    "diagnostic_id": "gve-diagnostic-sha256:f7fe83029ce7d53e5f129c9f83b8813ab04110d27e58c8bb2a1e586c1c11a96b"
+  }
+}
