@@ -4,7 +4,7 @@ import sys
 from importlib import metadata
 from typing import Sequence
 
-from .core import FatalInputFailure, canonical_success
+from .core import FatalInputFailure, PayloadRejection, canonical_success
 
 
 DISTRIBUTION_NAME = "gve"
@@ -39,6 +39,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     input_bytes = sys.stdin.buffer.read()
     try:
         output_bytes = canonical_success(input_bytes)
+    except PayloadRejection as rejection:
+        sys.stdout.buffer.write(rejection.result_bytes())
+        return 2
     except FatalInputFailure as failure:
         sys.stderr.buffer.write(failure.artifact_bytes())
         return 4
