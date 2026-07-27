@@ -68,6 +68,69 @@ class FatalInputFailure(Exception):
         )
 
 
+@dataclass(frozen=True)
+class PayloadRejection(Exception):
+    input_bytes: bytes
+    payload: dict[str, Any]
+    message: str
+
+    def result_bytes(self) -> bytes:
+        request_id = _derived_identity("request", self.input_bytes)
+        result_id = _derived_identity(
+            "result", request_id.encode("ascii"), b"invalid-input"
+        )
+        diagnostic_id = _derived_identity(
+            "diagnostic", request_id.encode("ascii"), b"payload-validation"
+        )
+        workflow = self.payload["workflow"]
+        effects = {
+            "request": "not-requested",
+            "authorization": "indeterminate",
+            "execution": "unattempted",
+            "observation": "unobserved",
+            "verification": "unverified",
+        }
+        result = {
+            "schema_version": 1,
+            "result_id": result_id,
+            "request_id": request_id,
+            "lifecycle": "no-op",
+            "processing": {
+                "status": "rejected",
+                "failure_stage": "payload-validation",
+            },
+            "workflow": {
+                "workflow_id": workflow["workflow_id"],
+                "status": "rejected",
+                "effects": dict(effects),
+                "operations": [
+                    {
+                        "operation_id": operation["operation_id"],
+                        "status": "unattempted",
+                        "effects": dict(effects),
+                    }
+                    for operation in workflow["operations"]
+                ],
+            },
+            "diagnostics": [
+                {
+                    "diagnostic_id": diagnostic_id,
+                    "code": "GVE-S2-INVALID-PAYLOAD",
+                    "stage": "payload-validation",
+                    "scope": "request",
+                    "message": self.message,
+                    "request_id": request_id,
+                }
+            ],
+            "process": {
+                "exit_code": 2,
+                "stdout": "authoritative-result",
+                "stderr": "empty",
+            },
+        }
+        return _canonical_json_bytes(result)
+
+
 class _DuplicateObjectMember(ValueError):
     pass
 
@@ -124,13 +187,16 @@ def _parse_json(input_bytes: bytes) -> Any:
         ) from exc
 
 
-def _require_exact_members(
-    value: dict[str, Any],
-    expected: set[str],
-    location: str,
+def _reject(
+    input_bytes: bytes,
+    payload: dict[str, Any],
+    message: str,
 ) -> None:
-    if set(value) != expected:
-        raise ValueError(f"{location} does not match the canonical-success envelope")
+    raise PayloadRejection(
+        input_bytes=input_bytes,
+        payload=payload,
+        message=message,
+    )
 
 
 def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
@@ -138,38 +204,71 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError("canonical request must be a JSON object")
 
-    _require_exact_members(
-        payload,
-        {"schema_version", "lifecycle", "workflow"},
-        "request",
-    )
-    if payload["schema_version"] != 2 or payload["lifecycle"] != "no-op":
-        raise ValueError("request is not the canonical-success lifecycle")
-
-    workflow = payload["workflow"]
+    workflow = payload.get("workflow")
     if not isinstance(workflow, dict):
         raise ValueError("workflow must be an object")
-    _require_exact_members(workflow, {"workflow_id", "operations"}, "workflow")
-    if not isinstance(workflow["workflow_id"], str) or not workflow["workflow_id"]:
+    if not isinstance(workflow.get("workflow_id"), str) or not workflow["workflow_id"]:
         raise ValueError("workflow_id must be a non-empty string")
-
-    operations = workflow["operations"]
+    operations = workflow.get("operations")
     if not isinstance(operations, list) or not operations:
         raise ValueError("operations must be a non-empty array")
     for operation in operations:
         if not isinstance(operation, dict):
             raise ValueError("operation must be an object")
-        _require_exact_members(
-            operation,
-            {"operation_id", "plugin", "content"},
-            "operation",
-        )
-        if not isinstance(operation["operation_id"], str) or not operation["operation_id"]:
+        if not isinstance(operation.get("operation_id"), str) or not operation["operation_id"]:
             raise ValueError("operation_id must be a non-empty string")
+
+    if "lifecycle" not in payload:
+        _reject(
+            input_bytes,
+            payload,
+            "The Stage 2 payload omits the required lifecycle member.",
+        )
+    if payload["lifecycle"] != "no-op":
+        _reject(
+            input_bytes,
+            payload,
+            "The Stage 2 payload names an unsupported lifecycle value.",
+        )
+    if set(payload) != {"schema_version", "lifecycle", "workflow"}:
+        _reject(
+            input_bytes,
+            payload,
+            "The Stage 2 common payload contains an unknown top-level governed member.",
+        )
+    if payload["schema_version"] != 2:
+        raise ValueError("request is not the canonical-success schema version")
+    if set(workflow) != {"workflow_id", "operations"}:
+        _reject(
+            input_bytes,
+            payload,
+            "The Stage 2 workflow envelope contains an unknown governed member.",
+        )
+
+    for operation in operations:
+        if "command" in operation:
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 operation envelope contains a forbidden execution member.",
+            )
+        if set(operation) != {"operation_id", "plugin", "content"}:
+            raise ValueError("operation does not match the common envelope")
         plugin = operation["plugin"]
         if not isinstance(plugin, dict):
             raise ValueError("plugin must be an object")
-        _require_exact_members(plugin, {"plugin_id", "action"}, "plugin")
+        if "action" not in plugin:
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 operation plugin envelope omits the required action member.",
+            )
+        if set(plugin) != {"plugin_id", "action"}:
+            _reject(
+                input_bytes,
+                payload,
+                "The Stage 2 plugin routing envelope contains an unknown governed member.",
+            )
         if not isinstance(plugin["plugin_id"], str) or not plugin["plugin_id"]:
             raise ValueError("plugin_id must be a non-empty string")
         if not isinstance(plugin["action"], str) or not plugin["action"]:
