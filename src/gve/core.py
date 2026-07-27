@@ -131,6 +131,69 @@ class PayloadRejection(Exception):
         return _canonical_json_bytes(result)
 
 
+@dataclass(frozen=True)
+class DuplicateOperationIdentity(PayloadRejection):
+    def result_bytes(self) -> bytes:
+        request_id = _derived_identity("request", self.input_bytes)
+        result_id = _derived_identity(
+            "result", request_id.encode("ascii"), b"invalid-identity"
+        )
+        diagnostic_id = _derived_identity(
+            "diagnostic",
+            request_id.encode("ascii"),
+            b"identity-validation",
+            b"duplicate-operation-id",
+        )
+        workflow = self.payload["workflow"]
+        effects = {
+            "request": "not-requested",
+            "authorization": "indeterminate",
+            "execution": "unattempted",
+            "observation": "unobserved",
+            "verification": "unverified",
+        }
+        result = {
+            "schema_version": 1,
+            "result_id": result_id,
+            "request_id": request_id,
+            "lifecycle": "no-op",
+            "processing": {
+                "status": "rejected",
+                "failure_stage": "identity-validation",
+            },
+            "workflow": {
+                "workflow_id": workflow["workflow_id"],
+                "status": "rejected",
+                "effects": dict(effects),
+                "operations": [
+                    {
+                        "operation_id": operation["operation_id"],
+                        "status": "unattempted",
+                        "effects": dict(effects),
+                    }
+                    for operation in workflow["operations"]
+                ],
+            },
+            "diagnostics": [
+                {
+                    "diagnostic_id": diagnostic_id,
+                    "code": "GVE-S2-DUPLICATE-IDENTITY",
+                    "stage": "identity-validation",
+                    "scope": "workflow",
+                    "message": self.message,
+                    "request_id": request_id,
+                    "workflow_id": workflow["workflow_id"],
+                }
+            ],
+            "process": {
+                "exit_code": 2,
+                "stdout": "authoritative-result",
+                "stderr": "empty",
+            },
+        }
+        return _canonical_json_bytes(result)
+
+
 class _DuplicateObjectMember(ValueError):
     pass
 
@@ -273,6 +336,14 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
             raise ValueError("plugin_id must be a non-empty string")
         if not isinstance(plugin["action"], str) or not plugin["action"]:
             raise ValueError("plugin action must be a non-empty string")
+
+    operation_ids = [operation["operation_id"] for operation in operations]
+    if len(set(operation_ids)) != len(operation_ids):
+        raise DuplicateOperationIdentity(
+            input_bytes=input_bytes,
+            payload=payload,
+            message="The Stage 2 workflow contains duplicate operation identities.",
+        )
 
     return payload
 
