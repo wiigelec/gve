@@ -32,13 +32,11 @@ class SourceLayoutValidationTests(unittest.TestCase):
                 "src/gve/__main__.py",
                 "src/gve/cli.py",
                 "src/gve/core.py",
-                "src/gve/processing_failure.py",
+                "src/gve/results/__init__.py",
+                "src/gve/results/processing_failure.py",
             ],
         )
-        self.assertEqual(
-            evidence["grandfathered_paths"],
-            ["src/gve/processing_failure.py"],
-        )
+        self.assertEqual(evidence["grandfathered_paths"], [])
 
     def _make_repository(self) -> tuple[tempfile.TemporaryDirectory, Path]:
         context = tempfile.TemporaryDirectory()
@@ -234,20 +232,15 @@ class SourceLayoutValidationTests(unittest.TestCase):
             validate_source_layout(root, document)
 
 
-    def test_grandfathered_root_requires_successor(self) -> None:
+    def test_results_namespace_rejects_cli_backflow(self) -> None:
         _context, root = self._make_repository()
-        document = copy.deepcopy(self.document)
-        item = next(
-            entry
-            for entry in document["current_tree_classification"]
-            if entry["path"] == "src/gve/processing_failure.py"
-        )
-        del item["successor_requirement"]
+        path = root / "src/gve/results/processing_failure.py"
+        path.write_text("import gve.cli\n", encoding="utf-8")
         with self.assertRaisesRegex(
             SourceLayoutValidationError,
-            "lacks successor requirement",
+            "forbidden dependency imports",
         ):
-            validate_source_layout(root, document)
+            validate_source_layout(root, self.document)
 
 
 if __name__ == "__main__":

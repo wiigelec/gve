@@ -6,7 +6,7 @@ from importlib import metadata
 from typing import Any, Mapping, Sequence
 
 from .core import FatalInputFailure, PayloadRejection
-from .processing_failure import ProcessingFailure, process_request
+from .results.processing_failure import ProcessingFailure, process_request
 
 
 DISTRIBUTION_NAME = "gve"

@@ -64,7 +64,7 @@ class Issue103SourceLayoutIntegrationTests(unittest.TestCase):
         ]
         self.assertEqual(revision_ids.count("GVE-SOURCE-LAYOUT"), 1)
 
-    def test_complete_validation_reports_grandfathered_paths(self) -> None:
+    def test_complete_validation_reports_no_grandfathered_paths(self) -> None:
         import contextlib
         import io
 
@@ -75,8 +75,7 @@ class Issue103SourceLayoutIntegrationTests(unittest.TestCase):
             result = main(["--specs-root", str(ACCEPTED_SPECS)])
         self.assertEqual(result, 0)
         self.assertIn(
-            "grandfathered maintained Python paths: "
-            "src/gve/processing_failure.py",
+            "grandfathered maintained Python paths: none",
             output.getvalue(),
         )
 
