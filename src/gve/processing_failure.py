@@ -17,12 +17,32 @@ PROCESSING_FAILURE_MESSAGE = (
     "The accepted conformance disposition requires a deterministic processing "
     "failure after authoritative identities are established."
 )
-RESULT_CONSTRUCTION_CONTROL_STATUS = "deferred-by-issue-99-authority"
+RESULT_CONSTRUCTION_FAILURE_MESSAGE = (
+    "Authoritative result construction failed after the complete identity set "
+    "was established, but a truthful failure result remained constructible."
+)
 
-_ACCEPTED_CONTROL = {
+_NO_OP_DISPOSITION_CONTROL = {
     "schema_version": 1,
     "disposition": "processing-failure",
     "failure_stage": "no-op-disposition",
+}
+_RESULT_CONSTRUCTION_CONTROL = {
+    "schema_version": 1,
+    "disposition": "processing-failure",
+    "failure_stage": "result-construction",
+}
+_FAILURE_DETAILS = {
+    "no-op-disposition": {
+        "code": "GVE-S2-PROCESSING-FAILURE",
+        "message": PROCESSING_FAILURE_MESSAGE,
+        "identity_discriminator": b"processing-failure",
+    },
+    "result-construction": {
+        "code": "GVE-S2-RESULT-CONSTRUCTION-FAILURE",
+        "message": RESULT_CONSTRUCTION_FAILURE_MESSAGE,
+        "identity_discriminator": b"result-construction-failure",
+    },
 }
 
 
@@ -35,17 +55,18 @@ class ProcessingFailure(Exception):
     failure_stage: str
 
     def result_bytes(self) -> bytes:
+        details = _FAILURE_DETAILS[self.failure_stage]
         request_id = _derived_identity("request", self.input_bytes)
         result_id = _derived_identity(
             "result",
             request_id.encode("ascii"),
-            b"processing-failure",
+            details["identity_discriminator"],
         )
         diagnostic_id = _derived_identity(
             "diagnostic",
             request_id.encode("ascii"),
             self.failure_stage.encode("ascii"),
-            b"processing-failure",
+            details["identity_discriminator"],
         )
         workflow = self.payload["workflow"]
         effects = {
@@ -80,10 +101,10 @@ class ProcessingFailure(Exception):
             "diagnostics": [
                 {
                     "diagnostic_id": diagnostic_id,
-                    "code": "GVE-S2-PROCESSING-FAILURE",
+                    "code": details["code"],
                     "stage": self.failure_stage,
                     "scope": "workflow",
-                    "message": PROCESSING_FAILURE_MESSAGE,
+                    "message": details["message"],
                     "request_id": request_id,
                     "workflow_id": workflow["workflow_id"],
                 }
@@ -108,11 +129,11 @@ def process_request(
         return canonical_success(input_bytes)
 
     control = dict(processor_control)
-    if control != _ACCEPTED_CONTROL:
-        raise ValueError(
-            "unsupported Stage 2 processor control; "
-            f"result-construction control is {RESULT_CONSTRUCTION_CONTROL_STATUS}"
-        )
+    if control not in (
+        _NO_OP_DISPOSITION_CONTROL,
+        _RESULT_CONSTRUCTION_CONTROL,
+    ):
+        raise ValueError("unsupported Stage 2 processor control")
 
     payload = _parse_canonical_request(input_bytes)
     raise ProcessingFailure(
