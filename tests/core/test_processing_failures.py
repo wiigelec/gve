@@ -11,7 +11,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from gve import cli
-from gve.processing_failure import ProcessingFailure, process_request
+from gve.processing_failure import (
+    ProcessingFailure,
+    _process_request_with_construction_fault,
+    process_request,
+)
 
 
 FIXTURE = ROOT / "specs" / "tests" / "fixtures" / "issue_99" / "processing-failure"
@@ -55,11 +59,6 @@ class ProcessingFailureTests(unittest.TestCase):
             "disposition": "processing-failure",
             "failure_stage": "result-construction",
         }
-        self.fatal_result_construction_control = {
-            "schema_version": 1,
-            "disposition": "fatal-no-result",
-            "failure_stage": "result-construction",
-        }
 
     def test_core_failure_matches_accepted_fixture_exactly(self) -> None:
         with self.assertRaises(ProcessingFailure) as raised:
@@ -91,7 +90,7 @@ class ProcessingFailureTests(unittest.TestCase):
         self.assertEqual(result["diagnostics"][0]["code"], "GVE-S2-PROCESSING-FAILURE")
         self.assertEqual(result["diagnostics"][0]["scope"], "workflow")
 
-    def test_result_construction_fault_falls_back_to_exact_authoritative_result(
+    def test_result_construction_fault_uses_independent_authoritative_fallback(
         self,
     ) -> None:
         outcome = cli.run_process(
@@ -167,11 +166,19 @@ class ProcessingFailureTests(unittest.TestCase):
             ).encode("utf-8"),
         )
 
-    def test_result_construction_fault_is_fatal_without_truthful_context(self) -> None:
-        outcome = cli.run_process(
-            self.input_bytes,
-            processor_control=self.fatal_result_construction_control,
-        )
+    def test_internal_pre_context_fault_is_fatal_without_new_control(self) -> None:
+        with patch.object(
+            cli,
+            "process_request",
+            side_effect=lambda input_bytes, processor_control=None: (
+                _process_request_with_construction_fault(
+                    input_bytes,
+                    processor_control=self.result_construction_control,
+                    fault_before_context=True,
+                )
+            ),
+        ):
+            outcome = cli.run_process(self.input_bytes)
 
         self.assertEqual(outcome.exit_status, 4)
         self.assertEqual(outcome.stdout, b"")
@@ -184,6 +191,30 @@ class ProcessingFailureTests(unittest.TestCase):
             "stderr": "fatal-failure",
             "stdout": "empty",
         })
+
+    def test_installed_command_maps_processing_failure_to_exit_three(self) -> None:
+        with self.assertRaises(ProcessingFailure) as raised:
+            process_request(
+                self.input_bytes,
+                processor_control=self.result_construction_control,
+            )
+        expected = raised.exception.result_bytes()
+        stdin = _Input(self.input_bytes)
+        stdout = _Output()
+        stderr = _Output()
+
+        with patch.object(
+            cli,
+            "process_request",
+            side_effect=raised.exception,
+        ), patch.object(sys, "stdin", stdin), patch.object(
+            sys, "stdout", stdout
+        ), patch.object(sys, "stderr", stderr):
+            exit_code = cli.main([])
+
+        self.assertEqual(exit_code, 3)
+        self.assertEqual(stdout.buffer.getvalue(), expected)
+        self.assertEqual(stderr.buffer.getvalue(), b"")
 
     def test_installed_command_is_input_only(self) -> None:
         expected_success = cli.run_process(self.input_bytes)
@@ -206,7 +237,11 @@ class ProcessingFailureTests(unittest.TestCase):
             {"schema_version": 1},
             {**self.control, "unknown": True},
             {**self.result_construction_control, "unknown": True},
-            {**self.fatal_result_construction_control, "unknown": True},
+            {
+                "schema_version": 1,
+                "disposition": "fatal-no-result",
+                "failure_stage": "result-construction",
+            },
             {**self.control, "failure_stage": "identity-validation"},
         ):
             with self.subTest(control=control):

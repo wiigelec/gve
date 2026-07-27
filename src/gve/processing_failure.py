@@ -37,11 +37,6 @@ _RESULT_CONSTRUCTION_CONTROL = {
     "disposition": "processing-failure",
     "failure_stage": "result-construction",
 }
-_FATAL_RESULT_CONSTRUCTION_CONTROL = {
-    "schema_version": 1,
-    "disposition": "fatal-no-result",
-    "failure_stage": "result-construction",
-}
 _FAILURE_DETAILS = {
     "no-op-disposition": {
         "code": "GVE-S2-PROCESSING-FAILURE",
@@ -101,16 +96,14 @@ def _capture_result_context(
     )
 
 
-def _construct_processing_failure_result(
-    context: _ResultContext,
-    *,
-    inject_fault: bool = False,
-) -> bytes:
-    if inject_fault:
-        raise _InjectedResultConstructionFault(
-            "controlled result-construction fault after identity capture"
-        )
+def _construct_primary_result(context: _ResultContext) -> bytes:
+    del context
+    raise _InjectedResultConstructionFault(
+        "controlled result-construction fault after identity capture"
+    )
 
+
+def _construct_authoritative_failure_fallback(context: _ResultContext) -> bytes:
     details = _FAILURE_DETAILS[context.failure_stage]
     effects = {
         "request": "not-requested",
@@ -168,7 +161,39 @@ class ProcessingFailure(Exception):
     context: _ResultContext
 
     def result_bytes(self) -> bytes:
-        return _construct_processing_failure_result(self.context)
+        return _construct_authoritative_failure_fallback(self.context)
+
+
+def _process_request_with_construction_fault(
+    input_bytes: bytes,
+    *,
+    processor_control: Mapping[str, Any],
+    fault_before_context: bool = False,
+) -> bytes:
+    """Internal conformance fault injection without expanding accepted controls."""
+
+    control = dict(processor_control)
+    if control != _RESULT_CONSTRUCTION_CONTROL:
+        raise ValueError("construction fault requires result-construction control")
+
+    payload = _parse_canonical_request(input_bytes)
+    if fault_before_context:
+        raise FatalInputFailure(
+            code="GVE-S2-RESULT-CONSTRUCTION-FAILURE",
+            stage="result-construction",
+            message=FATAL_RESULT_CONSTRUCTION_MESSAGE,
+            input_bytes=input_bytes,
+        )
+
+    context = _capture_result_context(
+        input_bytes,
+        payload,
+        "result-construction",
+    )
+    try:
+        return _construct_primary_result(context)
+    except _InjectedResultConstructionFault:
+        raise ProcessingFailure(context=context)
 
 
 def process_request(
@@ -185,28 +210,19 @@ def process_request(
     if control not in (
         _NO_OP_DISPOSITION_CONTROL,
         _RESULT_CONSTRUCTION_CONTROL,
-        _FATAL_RESULT_CONSTRUCTION_CONTROL,
     ):
         raise ValueError("unsupported Stage 2 processor control")
 
-    payload = _parse_canonical_request(input_bytes)
-    if control == _FATAL_RESULT_CONSTRUCTION_CONTROL:
-        raise FatalInputFailure(
-            code="GVE-S2-RESULT-CONSTRUCTION-FAILURE",
-            stage="result-construction",
-            message=FATAL_RESULT_CONSTRUCTION_MESSAGE,
-            input_bytes=input_bytes,
+    if control == _RESULT_CONSTRUCTION_CONTROL:
+        return _process_request_with_construction_fault(
+            input_bytes,
+            processor_control=control,
         )
 
+    payload = _parse_canonical_request(input_bytes)
     context = _capture_result_context(
         input_bytes,
         payload,
-        control["failure_stage"],
+        "no-op-disposition",
     )
-    if control == _RESULT_CONSTRUCTION_CONTROL:
-        try:
-            _construct_processing_failure_result(context, inject_fault=True)
-        except _InjectedResultConstructionFault:
-            raise ProcessingFailure(context=context)
-
     raise ProcessingFailure(context=context)
