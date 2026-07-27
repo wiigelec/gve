@@ -75,6 +75,7 @@ class CommonPayloadValidationTests(unittest.TestCase):
                 )
                 self.assertEqual(failure["stage"], "result-construction")
                 self.assertEqual(failure["process"]["exit_code"], 4)
+                self.assertNotIn("Stage 2", failure["message"])
                 self.assertNotIn(b"Traceback", completed.stderr)
 
     def test_complete_identity_set_schema_failures_are_authoritative_rejections(self) -> None:
@@ -129,6 +130,7 @@ class CommonPayloadValidationTests(unittest.TestCase):
                 self.assertEqual(
                     result["diagnostics"][0]["code"], "GVE-S2-INVALID-PAYLOAD"
                 )
+                self.assertNotIn("Stage 2", result["diagnostics"][0]["message"])
                 self.assertNotIn(b"Traceback", completed.stdout)
 
     def test_arbitrary_nested_object_content_remains_opaque_and_accepted(self) -> None:

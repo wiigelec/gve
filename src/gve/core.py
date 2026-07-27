@@ -22,7 +22,7 @@ DUPLICATE_MEMBER_FAILURE_MESSAGE = (
 )
 RESULT_CONSTRUCTION_FAILURE_MESSAGE = (
     "The parsed input does not contain the complete authoritative workflow and "
-    "operation identity set required to construct a truthful Stage 2 result."
+    "operation identity set required to construct a truthful authoritative result."
 )
 
 
@@ -298,31 +298,31 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
         _reject(
             input_bytes,
             payload,
-            "The Stage 2 payload omits the required lifecycle member.",
+            "The payload omits the required lifecycle member.",
         )
     if payload["lifecycle"] != "no-op":
         _reject(
             input_bytes,
             payload,
-            "The Stage 2 payload names an unsupported lifecycle value.",
+            "The payload names an unsupported lifecycle value.",
         )
     if set(payload) != {"schema_version", "lifecycle", "workflow"}:
         _reject(
             input_bytes,
             payload,
-            "The Stage 2 common payload contains an unknown top-level governed member.",
+            "The common payload contains an unknown top-level governed member.",
         )
     if payload["schema_version"] != 2:
         _reject(
             input_bytes,
             payload,
-            "The Stage 2 payload names an unsupported schema version.",
+            "The payload names an unsupported schema version.",
         )
     if set(workflow) != {"workflow_id", "operations"}:
         _reject(
             input_bytes,
             payload,
-            "The Stage 2 workflow envelope contains an unknown governed member.",
+            "The workflow envelope contains an unknown governed member.",
         )
 
     for operation in operations:
@@ -330,50 +330,50 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 operation envelope contains a forbidden execution member.",
+                "The operation envelope contains a forbidden execution member.",
             )
         if set(operation) != {"operation_id", "plugin", "content"}:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 operation envelope does not match the closed common envelope.",
+                "The operation envelope does not match the closed common envelope.",
             )
         plugin = operation["plugin"]
         if not isinstance(plugin, dict):
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 operation plugin envelope must be an object.",
+                "The operation plugin envelope must be an object.",
             )
         if "action" not in plugin:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 operation plugin envelope omits the required action member.",
+                "The operation plugin envelope omits the required action member.",
             )
         if set(plugin) != {"plugin_id", "action"}:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 plugin routing envelope contains an unknown governed member.",
+                "The plugin routing envelope contains an unknown governed member.",
             )
         if not isinstance(plugin["plugin_id"], str) or not plugin["plugin_id"]:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 plugin_id must be a non-empty string.",
+                "The plugin_id must be a non-empty string.",
             )
         if not isinstance(plugin["action"], str) or not plugin["action"]:
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 plugin action must be a non-empty string.",
+                "The plugin action must be a non-empty string.",
             )
         if not isinstance(operation["content"], dict):
             _reject(
                 input_bytes,
                 payload,
-                "The Stage 2 opaque operation content must be an object.",
+                "The opaque operation content must be an object.",
             )
 
     operation_ids = [operation["operation_id"] for operation in operations]
@@ -381,7 +381,7 @@ def _parse_canonical_request(input_bytes: bytes) -> dict[str, Any]:
         raise DuplicateOperationIdentity(
             input_bytes=input_bytes,
             payload=payload,
-            message="The Stage 2 workflow contains duplicate operation identities.",
+            message="The workflow contains duplicate operation identities.",
         )
 
     return payload
