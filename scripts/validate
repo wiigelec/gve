@@ -14,7 +14,8 @@ else
 fi
 
 "$PYTHON" -m unittest discover -s specs/tests
-"$PYTHON" -m unittest discover -s tests/stage_1
+"$PYTHON" -m unittest discover -s tests/cli
+"$PYTHON" -m unittest discover -s tests/core
 "$PYTHON" -m specs.tooling.validate --specs-root specs
 "$PYTHON" -m specs.tooling.validate_identity
 git diff --check

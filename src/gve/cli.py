@@ -4,6 +4,8 @@ import sys
 from importlib import metadata
 from typing import Sequence
 
+from .core import canonical_success
+
 
 DISTRIBUTION_NAME = "gve"
 USAGE_DIAGNOSTIC = "gve: expected exactly one argument: --version"
@@ -16,15 +18,29 @@ def _installed_version() -> str:
 
 def main(argv: Sequence[str] | None = None) -> int:
     arguments = list(sys.argv[1:] if argv is None else argv)
-    if arguments != ["--version"]:
+    if arguments == ["--version"]:
+        try:
+            version = _installed_version()
+        except Exception:
+            print(INSTALLATION_DIAGNOSTIC, file=sys.stderr)
+            return 70
+
+        print(f"gve {version}")
+        return 0
+
+    if arguments:
         print(USAGE_DIAGNOSTIC, file=sys.stderr)
         return 2
 
-    try:
-        version = _installed_version()
-    except Exception:
-        print(INSTALLATION_DIAGNOSTIC, file=sys.stderr)
-        return 70
+    if sys.stdin.isatty():
+        print(USAGE_DIAGNOSTIC, file=sys.stderr)
+        return 2
 
-    print(f"gve {version}")
+    input_bytes = sys.stdin.buffer.read()
+    if not input_bytes:
+        print(USAGE_DIAGNOSTIC, file=sys.stderr)
+        return 2
+
+    output_bytes = canonical_success(input_bytes)
+    sys.stdout.buffer.write(output_bytes)
     return 0
