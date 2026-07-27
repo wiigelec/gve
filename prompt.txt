@@ -41,6 +41,8 @@ First:
 
 Bootstrap governed executor version resolution:
 - Executor version is selected by the launcher’s operation-specific dispatch and the initialization authority, not merely by whether an operation type appears in the legacy core’s supported set. git-publication must use 0.9.4; local-file-operations and governed-validation may use the legacy 0.7.0 path where governed.
+- governed validation entry point is: https://github.com/wiigelec/gve/blob/main/src/scf_governed_executor/validation.py
+- stage to pr publication entry point is: https://github.com/wiigelec/gve/blob/main/src/scf_governed_executor/combined_publication.py
 
 Basic workflow:
 1. If existing issues do not already exist, user requests audit or product update.
