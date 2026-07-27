@@ -106,7 +106,7 @@
       "role": "cross-level",
       "id": "GVE-SOURCE-LAYOUT",
       "schema_path": "schemas/GVE-SOURCE-LAYOUT.schema.json",
-      "content_sha256": "6ed66e622ec99c4d3a95a755a75fd6399148c943b81e0fa68cd31b090096732c"
+      "content_sha256": "876aaa4464f68c44dbfaa85504c7244c1dfeee25f739a4819eb6a73d1380722c"
     }
   ]
 }

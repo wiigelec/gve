@@ -118,7 +118,8 @@
       "Shared behavior belongs to a clearly owned framework or functional namespace.",
       "Reserved paths do not require directory creation.",
       "Reservation does not authorize discovery, loading, registration, execution, concrete plugins, concrete actions, or Stage 3 behavior.",
-      "External plugins may be separately distributed and are not required to live in this repository tree."
+      "External plugins may be separately distributed and are not required to live in this repository tree.",
+      "Nested plugin subpackages other than actions are prohibited without separately accepted authority."
     ]
   },
   "placement_policy": {
@@ -153,8 +154,48 @@
   },
   "dependency_rules": [
     {
+      "rule_id": "low-level-no-cli-backflow",
+      "source_paths": [
+        "src/gve/identity/*.py",
+        "src/gve/identity/**/*.py",
+        "src/gve/results/*.py",
+        "src/gve/results/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_modules": [
+        "gve.__main__",
+        "gve.cli"
+      ],
+      "statement": "Low-level functional namespaces must not import CLI or process-boundary modules."
+    },
+    {
+      "rule_id": "no-circular-functional-ownership",
+      "source_paths": [
+        "src/gve/*.py",
+        "src/gve/**/*.py"
+      ],
+      "enforcement": "architectural-graph",
+      "statement": "Circular ownership between maintained functional modules is prohibited and is checked from the maintained gve import graph."
+    },
+    {
+      "rule_id": "plugin-framework-no-external-concrete-import",
+      "source_paths": [
+        "src/gve/plugins/*.py",
+        "src/gve/plugins/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_modules": [
+        "external_plugins"
+      ],
+      "statement": "Repository-owned plugin framework code must not import concrete external plugin implementations."
+    },
+    {
       "rule_id": "product-no-repository-backflow",
-      "source": "src/gve/**",
+      "source_paths": [
+        "src/gve/*.py",
+        "src/gve/**/*.py"
+      ],
+      "enforcement": "active",
       "forbidden_import_roots": [
         "specs",
         "scripts",
@@ -163,29 +204,28 @@
       "statement": "Installed product code must not import specification tooling, repository scripts, or tests."
     },
     {
-      "rule_id": "low-level-no-cli-backflow",
-      "source": "low-level functional namespaces",
-      "forbidden_dependency": "CLI or process-boundary code"
+      "rule_id": "serialization-no-cli-parsing",
+      "source_paths": [
+        "src/gve/serialization/*.py",
+        "src/gve/serialization/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_roots": [
+        "argparse"
+      ],
+      "statement": "Serialization functionality must not parse command-line arguments."
     },
     {
       "rule_id": "validation-no-process-io",
-      "source": "validation functionality",
-      "forbidden_dependency": "process I/O"
-    },
-    {
-      "rule_id": "serialization-no-cli-parsing",
-      "source": "serialization functionality",
-      "forbidden_dependency": "command-line argument parsing"
-    },
-    {
-      "rule_id": "plugin-framework-no-external-concrete-import",
-      "source": "repository-owned plugin framework",
-      "forbidden_dependency": "concrete external plugin implementation"
-    },
-    {
-      "rule_id": "no-circular-functional-ownership",
-      "source": "functional namespaces",
-      "forbidden_dependency": "circular ownership"
+      "source_paths": [
+        "src/gve/validation/*.py",
+        "src/gve/validation/**/*.py"
+      ],
+      "enforcement": "reserved-until-namespace-exists",
+      "forbidden_import_roots": [
+        "subprocess"
+      ],
+      "statement": "Validation functionality must not perform process I/O."
     }
   ],
   "public_api_policy": {
@@ -277,6 +317,7 @@
     "Enforce plugin and action path patterns when those paths exist.",
     "Permit reserved paths without requiring them to exist.",
     "Reject installed product imports from specs, scripts, or tests.",
+    "Fail closed when a reserved conditional dependency namespace appears before its rule is activated.",
     "Report grandfathered paths explicitly.",
     "Leave installed runtime behavior and entry points unchanged."
   ],

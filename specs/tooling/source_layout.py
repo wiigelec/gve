@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import fnmatch
 import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -165,7 +166,7 @@ def _validate_plugin_hierarchy(paths: Sequence[str]) -> None:
             raise SourceLayoutValidationError(
                 f"invalid plugin directory name: {path}"
             )
-        if len(parts) >= 2 and parts[1] == "actions":
+        if parts[1] == "actions":
             if len(parts) == 3 and parts[2] == "__init__.py":
                 continue
             if len(parts) != 3 or not re.fullmatch(
@@ -174,9 +175,14 @@ def _validate_plugin_hierarchy(paths: Sequence[str]) -> None:
                 raise SourceLayoutValidationError(
                     f"invalid plugin action path: {path}"
                 )
+            continue
+        if len(parts) != 2:
+            raise SourceLayoutValidationError(
+                f"unauthorized nested plugin namespace: {path}"
+            )
 
 
-def _import_roots(path: Path) -> set[str]:
+def _imports(path: Path) -> tuple[set[str], set[str]]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except (OSError, SyntaxError) as exc:
@@ -185,36 +191,114 @@ def _import_roots(path: Path) -> set[str]:
         ) from exc
 
     roots: set[str] = set()
+    modules: set[str] = set()
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             for alias in node.names:
+                modules.add(alias.name)
                 roots.add(alias.name.split(".", 1)[0])
         elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+            modules.add(node.module)
             roots.add(node.module.split(".", 1)[0])
-    return roots
+    return roots, modules
 
 
-def _validate_import_backflow(
+def _matches_source(path: str, patterns: Sequence[str]) -> bool:
+    return any(fnmatch.fnmatchcase(path, pattern) for pattern in patterns)
+
+
+def _validate_dependency_rules(
     repository_root: Path,
     paths: Sequence[str],
     document: Mapping[str, Any],
 ) -> None:
-    forbidden: set[str] = set()
-    for rule in document["dependency_rules"]:
-        if rule["rule_id"] == "product-no-repository-backflow":
-            forbidden.update(rule["forbidden_import_roots"])
-    if not forbidden:
+    rules = document["dependency_rules"]
+    identifiers = [rule["rule_id"] for rule in rules]
+    if identifiers != sorted(set(identifiers)):
         raise SourceLayoutValidationError(
-            "product-no-repository-backflow rule is missing"
+            "dependency rules must have unique ascending identifiers"
         )
 
-    for path in paths:
-        roots = _import_roots(repository_root / path)
-        invalid = sorted(roots & forbidden)
-        if invalid:
+    imports_by_path = {
+        path: _imports(repository_root / path)
+        for path in paths
+    }
+    graph: dict[str, set[str]] = {path: set() for path in paths}
+    module_to_path = {
+        "gve."
+        + Path(path)
+        .relative_to("src/gve")
+        .with_suffix("")
+        .as_posix()
+        .replace("/", "."): path
+        for path in paths
+    }
+
+    for path, (_roots, modules) in imports_by_path.items():
+        for module in modules:
+            target = module_to_path.get(module)
+            if target is not None and target != path:
+                graph[path].add(target)
+
+    for rule in rules:
+        matching = [
+            path
+            for path in paths
+            if _matches_source(path, rule["source_paths"])
+        ]
+        enforcement = rule["enforcement"]
+        if enforcement == "reserved-until-namespace-exists":
+            if matching:
+                raise SourceLayoutValidationError(
+                    f"{rule['rule_id']}: reserved dependency namespace now exists; "
+                    "activate deterministic enforcement before implementation"
+                )
+            continue
+        if enforcement == "architectural-graph":
+            continue
+        if enforcement != "active":
             raise SourceLayoutValidationError(
-                f"{path}: forbidden repository import roots {invalid}"
+                f"{rule['rule_id']}: unsupported dependency enforcement mode"
             )
+
+        forbidden_roots = set(rule.get("forbidden_import_roots", []))
+        forbidden_modules = set(rule.get("forbidden_import_modules", []))
+        for path in matching:
+            roots, modules = imports_by_path[path]
+            invalid_roots = sorted(roots & forbidden_roots)
+            invalid_modules = sorted(
+                module
+                for module in modules
+                if any(
+                    module == forbidden
+                    or module.startswith(forbidden + ".")
+                    for forbidden in forbidden_modules
+                )
+            )
+            if invalid_roots or invalid_modules:
+                raise SourceLayoutValidationError(
+                    f"{path}: forbidden dependency imports "
+                    f"roots={invalid_roots}, modules={invalid_modules}"
+                )
+
+    visiting: set[str] = set()
+    visited: set[str] = set()
+
+    def visit(path: str) -> None:
+        if path in visiting:
+            raise SourceLayoutValidationError(
+                f"circular maintained functional dependency detected at {path}"
+            )
+        if path in visited:
+            return
+        visiting.add(path)
+        for target in sorted(graph[path]):
+            visit(target)
+        visiting.remove(path)
+        visited.add(path)
+
+    for path in sorted(graph):
+        visit(path)
 
 
 def validate_source_layout(
@@ -245,7 +329,7 @@ def validate_source_layout(
     _validate_names(paths, document)
     _validate_root_modules(classifications)
     _validate_plugin_hierarchy(paths)
-    _validate_import_backflow(repository_root, paths, document)
+    _validate_dependency_rules(repository_root, paths, document)
 
     grandfathered = sorted(
         path

@@ -139,6 +139,51 @@ class SourceLayoutValidationTests(unittest.TestCase):
         ):
             validate_source_layout(root, document)
 
+    def test_unauthorized_nested_plugin_namespace_is_rejected(self) -> None:
+        _context, root = self._make_repository()
+        path = root / "src/gve/plugins/example/internal/worker.py"
+        path.parent.mkdir(parents=True)
+        path.write_text("", encoding="utf-8")
+        document = copy.deepcopy(self.document)
+        document["current_tree_classification"].append(
+            {
+                "path": "src/gve/plugins/example/internal/worker.py",
+                "functional_responsibility": "unauthorized nested plugin support",
+                "placement_class": "installed-product-package",
+                "status": "active",
+                "relocation_required": False,
+                "api_boundary": "maintained-internal",
+            }
+        )
+        with self.assertRaisesRegex(
+            SourceLayoutValidationError,
+            "unauthorized nested plugin namespace",
+        ):
+            validate_source_layout(root, document)
+
+    def test_reserved_dependency_namespace_fails_closed(self) -> None:
+        _context, root = self._make_repository()
+        path = root / "src/gve/validation/check.py"
+        path.parent.mkdir(parents=True)
+        path.write_text("", encoding="utf-8")
+        document = copy.deepcopy(self.document)
+        document["current_tree_classification"].append(
+            {
+                "path": "src/gve/validation/check.py",
+                "functional_responsibility": "future validation functionality",
+                "placement_class": "installed-product-package",
+                "status": "active",
+                "relocation_required": False,
+                "api_boundary": "maintained-internal",
+            }
+        )
+        with self.assertRaisesRegex(
+            SourceLayoutValidationError,
+            "reserved dependency namespace now exists",
+        ):
+            validate_source_layout(root, document)
+
+
     def test_product_import_backflow_is_rejected(self) -> None:
         _context, root = self._make_repository()
         (root / "src/gve/core.py").write_text(
@@ -147,7 +192,7 @@ class SourceLayoutValidationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(
             SourceLayoutValidationError,
-            "forbidden repository import roots",
+            "forbidden dependency imports",
         ):
             validate_source_layout(root, self.document)
 

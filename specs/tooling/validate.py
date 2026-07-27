@@ -303,6 +303,19 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         validate_specification_set(args.specs_root)
+        source_layout_path = (
+            args.specs_root
+            / "source-layout"
+            / "GVE-SOURCE-LAYOUT.json"
+        )
+        source_layout_evidence = (
+            validate_source_layout(
+                args.specs_root.resolve().parent,
+                load_strict(source_layout_path),
+            )
+            if source_layout_path.is_file()
+            else None
+        )
     except (
         ProjectionValidationError,
         RuntimeError,
@@ -315,6 +328,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     ) as exc:
         print(f"specification validation failed: {exc}", file=sys.stderr)
         return 1
+    if source_layout_evidence is not None:
+        grandfathered = source_layout_evidence["grandfathered_paths"]
+        print(
+            "grandfathered maintained Python paths: "
+            + (", ".join(grandfathered) if grandfathered else "none")
+        )
     print("specification validation passed")
     return 0
 

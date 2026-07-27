@@ -64,6 +64,23 @@ class Issue103SourceLayoutIntegrationTests(unittest.TestCase):
         ]
         self.assertEqual(revision_ids.count("GVE-SOURCE-LAYOUT"), 1)
 
+    def test_complete_validation_reports_grandfathered_paths(self) -> None:
+        import contextlib
+        import io
+
+        from specs.tooling.validate import main
+
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            result = main(["--specs-root", str(ACCEPTED_SPECS)])
+        self.assertEqual(result, 0)
+        self.assertIn(
+            "grandfathered maintained Python paths: "
+            "src/gve/processing_failure.py",
+            output.getvalue(),
+        )
+
+
     def test_cross_level_member_does_not_require_markdown_projection(self) -> None:
         self.assertFalse(
             (ACCEPTED_SPECS / "source-layout/GVE-SOURCE-LAYOUT.md").exists()
