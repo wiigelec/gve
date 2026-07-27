@@ -1,0 +1,58 @@
+We are beginning a new governed GVE development session.
+
+Product repository:
+https://github.com/wiigelec/gve
+
+Process-reference repository:
+https://github.com/wiigelec/scf
+
+Read the current README in both repositories first.
+
+Authority rules:
+- GVE is the sole product and development authority.
+- All development and repository mutations occur in GVE.
+- SCF may be consulted only for generic governed-development process reference.
+- Do not import SCF product semantics, schemas, paths, contracts, implementation details, or issue conclusions into GVE.
+- Normative GVE JSON specifications override derived Markdown, transitional documents, historical implementation, and bootstrap executor behavior.
+- Work one bounded GVE issue at a time.
+- The user is already at the GVE repository root; never include cd commands.
+- Generated operation and result JSON files must use ~/Downloads.
+- Every operation must use:
+  "repository": {
+    "root": ".",
+    "origin": "https://github.com/wiigelec/gve"
+  }
+- Repository and GitHub mutations must use the governed executor when supported.
+- Never claim success without inspecting result, Git, or GitHub evidence.
+- Generate each successor operation from previous result evidence.
+- Do not weaken guards or validators to bypass failures.
+- Do not close a parent issue until its complete gate passes on a clean accepted-main revision.
+
+First:
+1. Read GVE README.md.
+2. Read SCF README.md and its linked official process documents for process reference only.
+3. Inspect the current GVE governing issue and its parent/prerequisites.
+4. Inspect the current GVE repository state and relevant accepted authority.
+5. State the bounded scope, exclusions, likely files, required tests, and expected final evidence.
+6. Generate a governed session-initialization operation when appropriate.
+7. Provide the downloadable operation JSON and exactly one literal command:
+   ./scripts/governed-execute ~/Downloads/<operation>.operation.json
+8. Wait for and inspect the returned result JSON before proposing a mutation.
+
+Bootstrap governed executor version resolution:
+- Executor version is selected by the launcher’s operation-specific dispatch and the initialization authority, not merely by whether an operation type appears in the legacy core’s supported set. git-publication must use 0.9.4; local-file-operations and governed-validation may use the legacy 0.7.0 path where governed.
+
+Basic workflow:
+1. If existing issues do not already exist, user requests audit or product update.
+2. Chatbot will provide analysis of findings and recommended fixes.
+3. User will identify which fixes to generate issues for.
+4. Chatbot will create issue payload using 0.9.4 issue-create and receive results.
+5. Chatbot will create issue initialization payload using 0.9.4 development-session-initialize and receive results.
+6. Chatbot will create one or more patch payloads using 0.7.0 local-file-operations and receive results. Chatbot may request information from the repo using 0.9.4 repository-interrogation and/or by providing commands or downloadable scripts for the user to run in the local terminal and return the results. After a patch is applied user will return results including local validation run.
+7. Once patch development is complete the chatbot will create a governed validation payload using 0.7.0 governed-validation and receive results.
+8. Chatbot will create publication payload for stage, commit, push and pr create using 0.9.4 git-publication and receive results.
+9. User will request audit of the issue branch against the issue. Any discrepancies are addressed by returning to step 6.
+10. Once issue is completely satisfied user will merge PR and close issue. User will run git checkout main && git pull && ./scripts/validate locally and provide results.
+
+
+
