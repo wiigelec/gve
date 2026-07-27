@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any, Mapping
 
 from .core import (
+    FatalInputFailure,
     _canonical_json_bytes,
     _derived_identity,
     _parse_canonical_request,
@@ -21,6 +22,10 @@ RESULT_CONSTRUCTION_FAILURE_MESSAGE = (
     "Authoritative result construction failed after the complete identity set "
     "was established, but a truthful failure result remained constructible."
 )
+FATAL_RESULT_CONSTRUCTION_MESSAGE = (
+    "Result construction failed before the complete authoritative identity set "
+    "could be retained for a truthful authoritative result."
+)
 
 _NO_OP_DISPOSITION_CONTROL = {
     "schema_version": 1,
@@ -30,6 +35,11 @@ _NO_OP_DISPOSITION_CONTROL = {
 _RESULT_CONSTRUCTION_CONTROL = {
     "schema_version": 1,
     "disposition": "processing-failure",
+    "failure_stage": "result-construction",
+}
+_FATAL_RESULT_CONSTRUCTION_CONTROL = {
+    "schema_version": 1,
+    "disposition": "fatal-no-result",
     "failure_stage": "result-construction",
 }
 _FAILURE_DETAILS = {
@@ -47,75 +57,118 @@ _FAILURE_DETAILS = {
 
 
 @dataclass(frozen=True)
+class _ResultContext:
+    request_id: str
+    result_id: str
+    diagnostic_id: str
+    workflow_id: str
+    operation_ids: tuple[str, ...]
+    failure_stage: str
+
+
+class _InjectedResultConstructionFault(RuntimeError):
+    pass
+
+
+def _capture_result_context(
+    input_bytes: bytes,
+    payload: Mapping[str, Any],
+    failure_stage: str,
+) -> _ResultContext:
+    details = _FAILURE_DETAILS[failure_stage]
+    request_id = _derived_identity("request", input_bytes)
+    result_id = _derived_identity(
+        "result",
+        request_id.encode("ascii"),
+        details["identity_discriminator"],
+    )
+    diagnostic_id = _derived_identity(
+        "diagnostic",
+        request_id.encode("ascii"),
+        failure_stage.encode("ascii"),
+        details["identity_discriminator"],
+    )
+    workflow = payload["workflow"]
+    return _ResultContext(
+        request_id=request_id,
+        result_id=result_id,
+        diagnostic_id=diagnostic_id,
+        workflow_id=workflow["workflow_id"],
+        operation_ids=tuple(
+            operation["operation_id"] for operation in workflow["operations"]
+        ),
+        failure_stage=failure_stage,
+    )
+
+
+def _construct_processing_failure_result(
+    context: _ResultContext,
+    *,
+    inject_fault: bool = False,
+) -> bytes:
+    if inject_fault:
+        raise _InjectedResultConstructionFault(
+            "controlled result-construction fault after identity capture"
+        )
+
+    details = _FAILURE_DETAILS[context.failure_stage]
+    effects = {
+        "request": "not-requested",
+        "authorization": "indeterminate",
+        "execution": "unattempted",
+        "observation": "unobserved",
+        "verification": "unverified",
+    }
+    result = {
+        "schema_version": 1,
+        "result_id": context.result_id,
+        "request_id": context.request_id,
+        "lifecycle": "no-op",
+        "processing": {
+            "status": "failed",
+            "failure_stage": context.failure_stage,
+        },
+        "workflow": {
+            "workflow_id": context.workflow_id,
+            "status": "failed",
+            "effects": dict(effects),
+            "operations": [
+                {
+                    "operation_id": operation_id,
+                    "status": "failed",
+                    "effects": dict(effects),
+                }
+                for operation_id in context.operation_ids
+            ],
+        },
+        "diagnostics": [
+            {
+                "diagnostic_id": context.diagnostic_id,
+                "code": details["code"],
+                "stage": context.failure_stage,
+                "scope": "workflow",
+                "message": details["message"],
+                "request_id": context.request_id,
+                "workflow_id": context.workflow_id,
+            }
+        ],
+        "process": {
+            "exit_code": 3,
+            "stdout": "authoritative-result",
+            "stderr": "empty",
+        },
+    }
+    return _canonical_json_bytes(result)
+
+
+@dataclass(frozen=True)
 class ProcessingFailure(Exception):
     """Authoritative failure after the complete identity set exists."""
 
-    input_bytes: bytes
-    payload: dict[str, Any]
-    failure_stage: str
+    context: _ResultContext
 
     def result_bytes(self) -> bytes:
-        details = _FAILURE_DETAILS[self.failure_stage]
-        request_id = _derived_identity("request", self.input_bytes)
-        result_id = _derived_identity(
-            "result",
-            request_id.encode("ascii"),
-            details["identity_discriminator"],
-        )
-        diagnostic_id = _derived_identity(
-            "diagnostic",
-            request_id.encode("ascii"),
-            self.failure_stage.encode("ascii"),
-            details["identity_discriminator"],
-        )
-        workflow = self.payload["workflow"]
-        effects = {
-            "request": "not-requested",
-            "authorization": "indeterminate",
-            "execution": "unattempted",
-            "observation": "unobserved",
-            "verification": "unverified",
-        }
-        result = {
-            "schema_version": 1,
-            "result_id": result_id,
-            "request_id": request_id,
-            "lifecycle": "no-op",
-            "processing": {
-                "status": "failed",
-                "failure_stage": self.failure_stage,
-            },
-            "workflow": {
-                "workflow_id": workflow["workflow_id"],
-                "status": "failed",
-                "effects": dict(effects),
-                "operations": [
-                    {
-                        "operation_id": operation["operation_id"],
-                        "status": "failed",
-                        "effects": dict(effects),
-                    }
-                    for operation in workflow["operations"]
-                ],
-            },
-            "diagnostics": [
-                {
-                    "diagnostic_id": diagnostic_id,
-                    "code": details["code"],
-                    "stage": self.failure_stage,
-                    "scope": "workflow",
-                    "message": details["message"],
-                    "request_id": request_id,
-                    "workflow_id": workflow["workflow_id"],
-                }
-            ],
-            "process": {
-                "exit_code": 3,
-                "stdout": "authoritative-result",
-                "stderr": "empty",
-            },
-        }
-        return _canonical_json_bytes(result)
+        return _construct_processing_failure_result(self.context)
 
 
 def process_request(
@@ -132,12 +185,28 @@ def process_request(
     if control not in (
         _NO_OP_DISPOSITION_CONTROL,
         _RESULT_CONSTRUCTION_CONTROL,
+        _FATAL_RESULT_CONSTRUCTION_CONTROL,
     ):
         raise ValueError("unsupported Stage 2 processor control")
 
     payload = _parse_canonical_request(input_bytes)
-    raise ProcessingFailure(
-        input_bytes=input_bytes,
-        payload=payload,
-        failure_stage=control["failure_stage"],
+    if control == _FATAL_RESULT_CONSTRUCTION_CONTROL:
+        raise FatalInputFailure(
+            code="GVE-S2-RESULT-CONSTRUCTION-FAILURE",
+            stage="result-construction",
+            message=FATAL_RESULT_CONSTRUCTION_MESSAGE,
+            input_bytes=input_bytes,
+        )
+
+    context = _capture_result_context(
+        input_bytes,
+        payload,
+        control["failure_stage"],
     )
+    if control == _RESULT_CONSTRUCTION_CONTROL:
+        try:
+            _construct_processing_failure_result(context, inject_fault=True)
+        except _InjectedResultConstructionFault:
+            raise ProcessingFailure(context=context)
+
+    raise ProcessingFailure(context=context)

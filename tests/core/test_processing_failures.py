@@ -15,6 +15,13 @@ from gve.processing_failure import ProcessingFailure, process_request
 
 
 FIXTURE = ROOT / "specs" / "tests" / "fixtures" / "issue_99" / "processing-failure"
+NO_OP_EFFECTS = {
+    "authorization": "indeterminate",
+    "execution": "unattempted",
+    "observation": "unobserved",
+    "request": "not-requested",
+    "verification": "unverified",
+}
 
 
 class _Input:
@@ -48,6 +55,11 @@ class ProcessingFailureTests(unittest.TestCase):
             "disposition": "processing-failure",
             "failure_stage": "result-construction",
         }
+        self.fatal_result_construction_control = {
+            "schema_version": 1,
+            "disposition": "fatal-no-result",
+            "failure_stage": "result-construction",
+        }
 
     def test_core_failure_matches_accepted_fixture_exactly(self) -> None:
         with self.assertRaises(ProcessingFailure) as raised:
@@ -79,10 +91,9 @@ class ProcessingFailureTests(unittest.TestCase):
         self.assertEqual(result["diagnostics"][0]["code"], "GVE-S2-PROCESSING-FAILURE")
         self.assertEqual(result["diagnostics"][0]["scope"], "workflow")
 
-    def test_result_construction_failure_is_authoritative_when_identities_exist(
+    def test_result_construction_fault_falls_back_to_exact_authoritative_result(
         self,
     ) -> None:
-        no_op_result = json.loads(self.expected)
         outcome = cli.run_process(
             self.input_bytes,
             processor_control=self.result_construction_control,
@@ -93,23 +104,85 @@ class ProcessingFailureTests(unittest.TestCase):
         self.assertNotIn(b"Traceback", outcome.stdout)
 
         result = json.loads(outcome.stdout)
-        self.assertEqual(result["request_id"], no_op_result["request_id"])
-        self.assertNotEqual(result["result_id"], no_op_result["result_id"])
+        self.assertEqual(
+            result["request_id"],
+            "gve-request-sha256:"
+            "cb502302159536ac6b18358c32f891dc5f1c93867e853bfab00df5ad9678be4a",
+        )
+        self.assertEqual(
+            result["result_id"],
+            "gve-result-sha256:"
+            "cde2bcacac272d6454e6d82c6e6cafdb9c923d97bfbea7a3af1c8db53b505d87",
+        )
         self.assertEqual(result["processing"], {
             "failure_stage": "result-construction",
             "status": "failed",
         })
-        self.assertEqual(result["workflow"]["status"], "failed")
-        self.assertEqual(result["workflow"]["operations"][0]["status"], "failed")
-        self.assertEqual(
-            result["diagnostics"][0]["code"],
-            "GVE-S2-RESULT-CONSTRUCTION-FAILURE",
-        )
-        self.assertEqual(result["diagnostics"][0]["stage"], "result-construction")
+        self.assertEqual(result["workflow"], {
+            "effects": NO_OP_EFFECTS,
+            "operations": [
+                {
+                    "effects": NO_OP_EFFECTS,
+                    "operation_id": "operation-1",
+                    "status": "failed",
+                }
+            ],
+            "status": "failed",
+            "workflow_id": "canonical-stage-2-no-op",
+        })
+        self.assertEqual(result["diagnostics"], [
+            {
+                "code": "GVE-S2-RESULT-CONSTRUCTION-FAILURE",
+                "diagnostic_id": (
+                    "gve-diagnostic-sha256:"
+                    "2fa4067e96fac01c1f94fce10784f79b5f478528784060c45affd7b3efc3c16c"
+                ),
+                "message": (
+                    "Authoritative result construction failed after the complete "
+                    "identity set was established, but a truthful failure result "
+                    "remained constructible."
+                ),
+                "request_id": result["request_id"],
+                "scope": "workflow",
+                "stage": "result-construction",
+                "workflow_id": "canonical-stage-2-no-op",
+            }
+        ])
         self.assertEqual(result["process"], {
             "exit_code": 3,
             "stderr": "empty",
             "stdout": "authoritative-result",
+        })
+        self.assertEqual(
+            outcome.stdout,
+            (
+                json.dumps(
+                    result,
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                    allow_nan=False,
+                )
+                + "\n"
+            ).encode("utf-8"),
+        )
+
+    def test_result_construction_fault_is_fatal_without_truthful_context(self) -> None:
+        outcome = cli.run_process(
+            self.input_bytes,
+            processor_control=self.fatal_result_construction_control,
+        )
+
+        self.assertEqual(outcome.exit_status, 4)
+        self.assertEqual(outcome.stdout, b"")
+        self.assertNotIn(b"Traceback", outcome.stderr)
+        failure = json.loads(outcome.stderr)
+        self.assertEqual(failure["code"], "GVE-S2-RESULT-CONSTRUCTION-FAILURE")
+        self.assertEqual(failure["stage"], "result-construction")
+        self.assertEqual(failure["process"], {
+            "exit_code": 4,
+            "stderr": "fatal-failure",
+            "stdout": "empty",
         })
 
     def test_installed_command_is_input_only(self) -> None:
@@ -133,6 +206,7 @@ class ProcessingFailureTests(unittest.TestCase):
             {"schema_version": 1},
             {**self.control, "unknown": True},
             {**self.result_construction_control, "unknown": True},
+            {**self.fatal_result_construction_control, "unknown": True},
             {**self.control, "failure_stage": "identity-validation"},
         ):
             with self.subTest(control=control):
