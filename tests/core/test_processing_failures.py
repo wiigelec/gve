@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
 from gve import cli
-from gve.processing_failure import ProcessingFailure, process_request
+from gve.results.processing_failure import ProcessingFailure, process_request
 
 
 FIXTURE = ROOT / "specs" / "tests" / "fixtures" / "issue_99" / "processing-failure"

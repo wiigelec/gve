@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping
 
-from .core import (
+from ..core import (
     _canonical_json_bytes,
     _derived_identity,
     _parse_canonical_request,

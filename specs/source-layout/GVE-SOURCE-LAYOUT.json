@@ -161,7 +161,7 @@
         "src/gve/results/*.py",
         "src/gve/results/**/*.py"
       ],
-      "enforcement": "reserved-until-namespace-exists",
+      "enforcement": "active",
       "forbidden_import_modules": [
         "gve.__main__",
         "gve.cli"
@@ -295,14 +295,22 @@
       "root_role": "broad-orchestration"
     },
     {
-      "path": "src/gve/processing_failure.py",
-      "functional_responsibility": "narrow processing-failure implementation",
+      "path": "src/gve/results/__init__.py",
+      "functional_responsibility": "results functional namespace package boundary",
       "placement_class": "installed-product-package",
-      "status": "grandfathered",
-      "relocation_required": true,
+      "status": "active",
+      "relocation_required": false,
       "api_boundary": "maintained-internal",
-      "successor_requirement": "Relocation requires a separately governed dependent issue and must preserve exact behavior.",
-      "root_role": "grandfathered-single-feature"
+      "notes": "Defines an internal functional namespace and exports no supported public API."
+    },
+    {
+      "path": "src/gve/results/processing_failure.py",
+      "functional_responsibility": "authoritative processing-failure result construction and conformance-only disposition",
+      "placement_class": "installed-product-package",
+      "status": "active",
+      "relocation_required": false,
+      "api_boundary": "maintained-internal",
+      "notes": "Relocated from the grandfathered package-root module with exact Stage 2 behavior preserved."
     }
   ],
   "validation_requirements": [
@@ -322,7 +330,7 @@
     "Leave installed runtime behavior and entry points unchanged."
   ],
   "exclusions": [
-    "relocation or semantic modification of src/gve/processing_failure.py",
+    "semantic modification of accepted Stage 2 processing-failure behavior",
     "removal of maintained Stage 2 references",
     "plugin framework behavior",
     "plugin discovery, loading, registration, or execution",
