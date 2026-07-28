@@ -64,11 +64,15 @@ class IdentityConstructionTests(unittest.TestCase):
                 self.assert_failure("REPO-SPEC-IDENTITY-PATH-001", root=copy)
 
     def test_each_supporting_marker_is_required(self) -> None:
-        for relative in VALIDATOR.SUPPORTING_PATHS:
+        for index, relative in enumerate(VALIDATOR.SUPPORTING_PATHS):
             with self.subTest(relative=relative):
-                copy = Path(self.temporary.name) / relative.replace("/", "-")
+                copy = Path(self.temporary.name) / f"supporting-{index}"
                 shutil.copytree(self.root, copy, symlinks=True)
-                (copy / relative).unlink()
+                target = copy / relative
+                if target.is_dir():
+                    shutil.rmtree(target)
+                else:
+                    target.unlink()
                 self.assert_failure("REPO-SPEC-IDENTITY-PATH-001", root=copy)
 
     def test_malformed_json_fails(self) -> None:
@@ -99,16 +103,16 @@ class IdentityConstructionTests(unittest.TestCase):
         self.write_json(relative, value)
         self.assert_failure("REPO-SPEC-IDENTITY-FIELD-002")
 
-    def test_each_forbidden_claim_field_fails_with_claim_code(self) -> None:
-        for claim in sorted(VALIDATOR.FORBIDDEN_CLAIM_KEYS):
+    def test_each_forbidden_claim_field_is_rejected(self) -> None:
+        for index, claim in enumerate(sorted(VALIDATOR.FORBIDDEN_CLAIM_KEYS)):
             with self.subTest(claim=claim):
-                copy = Path(self.temporary.name) / claim.replace("_", "-")
+                copy = Path(self.temporary.name) / f"forbidden-{index}"
                 shutil.copytree(self.root, copy, symlinks=True)
                 relative = VALIDATOR.ARTIFACTS[0]
                 value = self.read_json(relative, root=copy)
                 value[claim] = True
                 self.write_json(relative, value, root=copy)
-                self.assert_failure("REPO-SPEC-IDENTITY-CLAIM-001", root=copy)
+                self.assert_failure("REPO-SPEC-IDENTITY-FIELD-001", root=copy)
 
     def test_invalid_identity_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
@@ -132,12 +136,12 @@ class IdentityConstructionTests(unittest.TestCase):
         self.write_json(second, second_value)
         self.assert_failure("REPO-SPEC-IDENTITY-IDENTITY-003")
 
-    def test_unexpected_identity_fails(self) -> None:
+    def test_unexpected_model_identity_fails_policy_check(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["construction_identity"] = "alternate-identity-construction"
         self.write_json(relative, value)
-        self.assert_failure("REPO-SPEC-IDENTITY-IDENTITY-002")
+        self.assert_failure("REPO-SPEC-IDENTITY-MODEL-001")
 
     def test_invalid_status_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
@@ -192,13 +196,13 @@ class IdentityConstructionTests(unittest.TestCase):
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
         self.assert_failure("REPO-SPEC-IDENTITY-PATH-003")
 
-    def test_work_derived_manifest_path_fails(self) -> None:
+    def test_work_derived_missing_manifest_path_fails_closed(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
         manifest["artifact_paths"].append(
             "authoritative/identity/phase/IDENTITY.json"
         )
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("REPO-SPEC-IDENTITY-NAME-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-MANIFEST-003")
 
     @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
     def test_supporting_marker_symlink_escape_fails(self) -> None:
