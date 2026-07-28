@@ -1,0 +1,15 @@
+{
+  "construction_identity": "canonical-json-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future canonical JSON input boundary without defining serialization, normalization, number, string, object, or duplicate-key behavior.",
+  "normative": false,
+  "expected_relationships": [
+    "identity model construction boundary",
+    "identity family construction boundary",
+    "future canonicalization validation"
+  ],
+  "unresolved_questions": [
+    "Canonical JSON rules and versioning are not defined.",
+    "Digest algorithms, encodings, and domain-separated preimages remain separately governed."
+  ]
+}

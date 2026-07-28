@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import importlib.util
 import json
 import re
 import sys
@@ -28,9 +29,13 @@ PLACEHOLDER_FIELDS = {
 }
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
+    "canonical-json-construction",
     "conformance-boundary-placeholder",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-family-model-construction",
+    "identity-model-construction",
+    "identity-verification-construction",
     "level-model-placeholder",
     "normative-change-placeholder",
     "repository-model-placeholder",
@@ -45,6 +50,10 @@ PLACEHOLDER_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/identity/IDENTITY-AUTHORITY.json",
+    "authoritative/identity/IDENTITY-MODEL.json",
+    "authoritative/identity/CANONICAL-JSON.json",
+    "authoritative/identity/IDENTITY-FAMILY-MODEL.json",
+    "authoritative/identity/IDENTITY-VERIFICATION.json",
     "authoritative/development-process/DEVELOPMENT-PROCESS.json",
     "authoritative/normative-change/NORMATIVE-CHANGE.json",
     "authoritative/level-model/LEVEL-MODEL.json",
@@ -64,22 +73,30 @@ REQUIRED_DIRECTORIES = (
     "authoritative/level-model",
     "authoritative/source-layout",
     "authoritative/schemas",
+    "authoritative/schemas/identity",
     "authoritative/conformance",
     "derived/markdown",
+    "derived/markdown/identity",
     "validation/lib",
     "validation/intrinsic",
     "validation/repository",
     "validation/tests",
     "validation/fixtures",
+    "validation/fixtures/identity",
 )
 REQUIRED_PATHS = (
     MANIFEST_PATH,
     "validate",
     *PLACEHOLDER_PATHS,
     "derived/markdown/README.md",
+    "authoritative/schemas/identity/README.md",
+    "derived/markdown/identity/README.md",
+    "validation/fixtures/identity/README.md",
     "validation/intrinsic/validate_skeleton.py",
+    "validation/intrinsic/validate_identity_construction.py",
     "validation/tests/test_construction_skeleton.py",
     "validation/tests/test_complete_construction_skeleton.py",
+    "validation/tests/test_identity_construction.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 FORBIDDEN_NAME_PARTS = {
@@ -216,6 +233,19 @@ def validate_python_dependencies(root: Path) -> None:
                     )
 
 
+def validate_focused_identity(root: Path) -> None:
+    path = root / "validation/intrinsic/validate_identity_construction.py"
+    spec = importlib.util.spec_from_file_location("identity_construction_validator", path)
+    if spec is None or spec.loader is None:
+        fail("GVE-RSC-PYTHON-001", f"{path}: cannot load focused validator")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    try:
+        module.validate(root)
+    except module.ValidationFailure as exc:
+        fail("GVE-RSC-IDENTITY-CONSTRUCTION-001", str(exc))
+
+
 def validate(root: Path) -> None:
     if not root.is_dir():
         fail("GVE-RSC-PATH-001", f"{root}: construction root is missing")
@@ -279,6 +309,7 @@ def validate(root: Path) -> None:
         string_list(value["expected_relationships"], f"{relative}.expected_relationships")
 
     validate_python_dependencies(root)
+    validate_focused_identity(root)
 
 
 def main(argv: list[str] | None = None) -> int:
