@@ -5,6 +5,7 @@
   "validation_entry_point": "validate",
   "artifact_classes": [
     "canonical-json-construction",
+    "canonical-json-construction-schema",
     "conformance-boundary-placeholder",
     "development-process-placeholder",
     "identity-authority-placeholder",
@@ -34,6 +35,7 @@
     "authoritative/level-model/LEVEL-MODEL.json",
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
+    "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",

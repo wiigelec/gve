@@ -1,0 +1,81 @@
+{
+  "construction_identity": "canonical-json-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the closed non-normative construction representation of the canonical JSON model.",
+  "normative": false,
+  "target_construction_identity": "canonical-json-construction",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "canonicalization_version",
+    "input_domain",
+    "encoding",
+    "object_rules",
+    "array_rules",
+    "string_rules",
+    "number_rules",
+    "rejection_rules",
+    "output_rules",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "construction_status": [
+      "under-construction"
+    ],
+    "normative": [
+      false
+    ],
+    "canonicalization_version": [
+      "canonical-json-v1"
+    ],
+    "accepted_value_kinds": [
+      [
+        "null",
+        "boolean",
+        "integer",
+        "string",
+        "array",
+        "object"
+      ]
+    ],
+    "integer_range": [
+      "signed-64-bit"
+    ],
+    "duplicate_member_names": [
+      "reject"
+    ],
+    "array_input_order": [
+      "preserve"
+    ],
+    "unicode_normalization": [
+      "none"
+    ],
+    "output_boundary": [
+      "exact-canonical-utf-8-bytes"
+    ]
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "canonical JSON construction model",
+    "identity construction validation",
+    "repository construction manifest"
+  ],
+  "unresolved_questions": [
+    "A final normative schema remains outside this construction issue."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "z": [3, 2, 1],
+  "a": {
+    "quote": "\"",
+    "control": "\b\f\n\r\t",
+    "slash": "/",
+    "backslash": "\\"
+  },
+  "integer": -42,
+  "boolean": true,
+  "nothing": null
+}
