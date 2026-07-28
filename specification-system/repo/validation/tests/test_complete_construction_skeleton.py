@@ -68,7 +68,7 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
                 shutil.rmtree(copy / relative)
                 with self.assertRaises(VALIDATOR.ValidationFailure) as raised:
                     VALIDATOR.validate(copy)
-                self.assertTrue(str(raised.exception).startswith("GVE-RSC-PATH-001:"))
+                self.assertTrue(str(raised.exception).startswith("REPO-SPEC-CONSTRUCTION-PATH-001:"))
 
     def test_each_new_validation_area_is_required(self) -> None:
         for relative in ("validation/lib", "validation/repository", "validation/fixtures"):
@@ -78,30 +78,30 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
                 shutil.rmtree(copy / relative)
                 with self.assertRaises(VALIDATOR.ValidationFailure) as raised:
                     VALIDATOR.validate(copy)
-                self.assertTrue(str(raised.exception).startswith("GVE-RSC-PATH-001:"))
+                self.assertTrue(str(raised.exception).startswith("REPO-SPEC-CONSTRUCTION-PATH-001:"))
 
     def test_unknown_artifact_class_fails(self) -> None:
         value = self.read_manifest()
         value["artifact_classes"][0] = "unknown-placeholder"
         self.write_manifest(value)
-        self.assert_failure("GVE-RSC-CLASS-001")
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-CLASS-001")
 
     def test_declared_missing_artifact_fails(self) -> None:
         path = self.root / "authoritative/identity/IDENTITY-AUTHORITY.json"
         path.unlink()
-        self.assert_failure("GVE-RSC-PATH-001")
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-001")
 
     def test_undeclared_participant_fails(self) -> None:
         source = self.root / "authoritative/identity/IDENTITY-AUTHORITY.json"
         target = self.root / "authoritative/identity/EXTRA-AUTHORITY.json"
         target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-        self.assert_failure("GVE-RSC-PATH-006")
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-006")
 
     def test_manifest_inventory_mismatch_fails(self) -> None:
         value = self.read_manifest()
         value["artifact_paths"] = value["artifact_paths"][:-1]
         self.write_manifest(value)
-        self.assert_failure("GVE-RSC-PATH-004")
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-004")
 
 
 if __name__ == "__main__":

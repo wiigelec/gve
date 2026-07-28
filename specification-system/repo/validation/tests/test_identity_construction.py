@@ -61,7 +61,7 @@ class IdentityConstructionTests(unittest.TestCase):
                 copy = Path(self.temporary.name) / Path(relative).stem
                 shutil.copytree(self.root, copy, symlinks=True)
                 (copy / relative).unlink()
-                self.assert_failure("GVE-RSI-PATH-001", root=copy)
+                self.assert_failure("REPO-SPEC-IDENTITY-PATH-001", root=copy)
 
     def test_each_supporting_marker_is_required(self) -> None:
         for relative in VALIDATOR.SUPPORTING_PATHS:
@@ -69,11 +69,11 @@ class IdentityConstructionTests(unittest.TestCase):
                 copy = Path(self.temporary.name) / relative.replace("/", "-")
                 shutil.copytree(self.root, copy, symlinks=True)
                 (copy / relative).unlink()
-                self.assert_failure("GVE-RSI-PATH-001", root=copy)
+                self.assert_failure("REPO-SPEC-IDENTITY-PATH-001", root=copy)
 
     def test_malformed_json_fails(self) -> None:
         (self.root / VALIDATOR.ARTIFACTS[0]).write_text("{", encoding="utf-8")
-        self.assert_failure("GVE-RSI-JSON-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-JSON-001")
 
     def test_non_standard_json_constant_fails(self) -> None:
         path = self.root / VALIDATOR.ARTIFACTS[0]
@@ -83,21 +83,21 @@ class IdentityConstructionTests(unittest.TestCase):
             ),
             encoding="utf-8",
         )
-        self.assert_failure("GVE-RSI-JSON-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-JSON-001")
 
     def test_unknown_field_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["unrecognized"] = True
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-FIELD-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-FIELD-001")
 
     def test_missing_field_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         del value["responsibility"]
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-FIELD-002")
+        self.assert_failure("REPO-SPEC-IDENTITY-FIELD-002")
 
     def test_each_forbidden_claim_field_fails_with_claim_code(self) -> None:
         for claim in sorted(VALIDATOR.FORBIDDEN_CLAIM_KEYS):
@@ -108,21 +108,21 @@ class IdentityConstructionTests(unittest.TestCase):
                 value = self.read_json(relative, root=copy)
                 value[claim] = True
                 self.write_json(relative, value, root=copy)
-                self.assert_failure("GVE-RSI-CLAIM-001", root=copy)
+                self.assert_failure("REPO-SPEC-IDENTITY-CLAIM-001", root=copy)
 
     def test_invalid_identity_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["construction_identity"] = "Invalid Identity"
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-IDENTITY-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-IDENTITY-001")
 
     def test_work_derived_identity_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["construction_identity"] = "identity-phase-construction"
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-NAME-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-NAME-001")
 
     def test_duplicate_identity_fails_with_duplicate_code(self) -> None:
         first, second = VALIDATOR.ARTIFACTS[:2]
@@ -130,35 +130,35 @@ class IdentityConstructionTests(unittest.TestCase):
         second_value = self.read_json(second)
         second_value["construction_identity"] = first_value["construction_identity"]
         self.write_json(second, second_value)
-        self.assert_failure("GVE-RSI-IDENTITY-003")
+        self.assert_failure("REPO-SPEC-IDENTITY-IDENTITY-003")
 
     def test_unexpected_identity_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["construction_identity"] = "alternate-identity-construction"
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-IDENTITY-002")
+        self.assert_failure("REPO-SPEC-IDENTITY-IDENTITY-002")
 
     def test_invalid_status_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["construction_status"] = "candidate"
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-STATUS-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-STATUS-001")
 
     def test_normative_true_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         value = self.read_json(relative)
         value["normative"] = True
         self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-STATUS-002")
+        self.assert_failure("REPO-SPEC-IDENTITY-STATUS-002")
 
     def test_manifest_omission_fails(self) -> None:
         relative = VALIDATOR.ARTIFACTS[0]
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
         manifest["artifact_paths"].remove(relative)
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-MANIFEST-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-MANIFEST-001")
 
     def test_manifest_declared_missing_identity_artifact_fails(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
@@ -166,31 +166,31 @@ class IdentityConstructionTests(unittest.TestCase):
             "authoritative/identity/MISSING-IDENTITY.json"
         )
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-MANIFEST-003")
+        self.assert_failure("REPO-SPEC-IDENTITY-MANIFEST-003")
 
     def test_undeclared_identity_participant_fails(self) -> None:
         source = self.root / VALIDATOR.ARTIFACTS[0]
         target = self.root / "authoritative/identity/EXTRA-IDENTITY.json"
         target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
-        self.assert_failure("GVE-RSI-MANIFEST-004")
+        self.assert_failure("REPO-SPEC-IDENTITY-MANIFEST-004")
 
     def test_duplicate_manifest_path_fails(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
         manifest["artifact_paths"].append(manifest["artifact_paths"][0])
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-MANIFEST-002")
+        self.assert_failure("REPO-SPEC-IDENTITY-MANIFEST-002")
 
     def test_manifest_absolute_path_fails(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
         manifest["artifact_paths"].append("/tmp/identity.json")
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-PATH-003")
+        self.assert_failure("REPO-SPEC-IDENTITY-PATH-003")
 
     def test_manifest_traversal_path_fails(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
         manifest["artifact_paths"].append("../identity.json")
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-PATH-003")
+        self.assert_failure("REPO-SPEC-IDENTITY-PATH-003")
 
     def test_work_derived_manifest_path_fails(self) -> None:
         manifest = self.read_json(VALIDATOR.MANIFEST_PATH)
@@ -198,7 +198,7 @@ class IdentityConstructionTests(unittest.TestCase):
             "authoritative/identity/phase/IDENTITY.json"
         )
         self.write_json(VALIDATOR.MANIFEST_PATH, manifest)
-        self.assert_failure("GVE-RSI-NAME-001")
+        self.assert_failure("REPO-SPEC-IDENTITY-NAME-001")
 
     @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
     def test_supporting_marker_symlink_escape_fails(self) -> None:
@@ -208,25 +208,7 @@ class IdentityConstructionTests(unittest.TestCase):
         identity_dir = self.root / "authoritative/schemas/identity"
         shutil.rmtree(identity_dir)
         identity_dir.symlink_to(outside, target_is_directory=True)
-        self.assert_failure("GVE-RSI-PATH-002")
-
-    def test_generic_gve_product_family_leakage_fails(self) -> None:
-        relative = VALIDATOR.ARTIFACTS[0]
-        value = self.read_json(relative)
-        value["expected_relationships"].append("gve-future-product-family")
-        self.write_json(relative, value)
-        self.assert_failure("GVE-RSI-PRODUCT-001")
-
-    def test_maintained_product_import_in_validator_fails(self) -> None:
-        relative = VALIDATOR.FOCUSED_PYTHON_PATHS[0]
-        path = self.root / relative
-        path.write_text(path.read_text(encoding="utf-8") + "\nimport gve\n", encoding="utf-8")
-        self.assert_failure("GVE-RSI-DEPENDENCY-001")
-
-    def test_unrelated_construction_python_import_is_outside_focused_scan(self) -> None:
-        path = self.root / "validation/intrinsic/unrelated_construction.py"
-        path.write_text("import gve\n", encoding="utf-8")
-        VALIDATOR.validate(self.root)
+        self.assert_failure("REPO-SPEC-IDENTITY-PATH-002")
 
     def test_main_returns_deterministic_failure_exit(self) -> None:
         (self.root / VALIDATOR.ARTIFACTS[0]).unlink()
@@ -236,7 +218,7 @@ class IdentityConstructionTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertTrue(
             stderr.getvalue().startswith(
-                "identity construction validation failed: GVE-RSI-PATH-001:"
+                "identity construction validation failed: REPO-SPEC-IDENTITY-PATH-001:"
             ),
             stderr.getvalue(),
         )

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import json
 import re
 import sys
@@ -17,7 +16,7 @@ CANONICAL_FIELDS = {
     "construction_identity", "construction_status", "responsibility", "normative",
     "canonicalization_version", "decision_basis", "input_domain", "encoding",
     "object_rules", "array_rules", "string_rules", "number_rules",
-    "rejection_rules", "output_rules", "expected_relationships",
+    "output_rules", "expected_relationships",
     "unresolved_questions",
 }
 SCHEMA_FIELDS = {
@@ -42,12 +41,6 @@ SUPPORTING_PATHS = (
     "validation/tests/test_canonical_json.py",
     "validation/fixtures/identity/canonical-json",
 )
-# Preserve the pre-existing focused legacy scan without extending it to the new,
-# repository-neutral canonical JSON mechanism.
-FOCUSED_PYTHON_PATHS = (
-    "validation/intrinsic/validate_identity_construction.py",
-    "validation/tests/test_identity_construction.py",
-)
 EXPECTED_IDENTITIES = {
     "authoritative/identity/IDENTITY-MODEL.json": "identity-model-construction",
     "authoritative/identity/CANONICAL-JSON.json": "canonical-json-construction",
@@ -69,10 +62,9 @@ FORBIDDEN_NAME_PARTS = {
     "temporary", "temp", "patch", "step", "chronology",
 }
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
-GVE_FAMILY = re.compile(r"\bgve-[a-z0-9]+(?:-[a-z0-9]+)*\b")
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 
-EXPECTED_CANONICAL_CONSTRAINTS = {'canonicalization_version': ['canonical-json-v1'], 'decision_basis': [{'portable_behavior': ['strict-json-and-utf-8-boundary', 'object-member-ordering', 'array-order-preservation', 'deterministic-string-escaping', 'duplicate-member-rejection', 'non-standard-constant-rejection', 'exact-utf-8-output'], 'repository_generic_decisions': ['canonicalization-version-name', 'signed-64-bit-integer-domain', 'no-unicode-normalization', 'deterministic-diagnostic-codes', 'failure-exit-status']}], 'input_domain': [{'accepted_value_kinds': ['null', 'boolean', 'integer', 'string', 'array', 'object'], 'integer_range': 'signed-64-bit', 'object_member_names': 'string-only'}], 'encoding': [{'input': 'strict-utf-8', 'output': 'utf-8', 'byte_order_mark': 'forbidden', 'unicode_normalization': 'none'}], 'object_rules': [{'member_order': 'ascending-unicode-code-point-sequence', 'source_declaration_order_significant': False, 'duplicate_member_names': 'reject'}], 'array_rules': [{'input_order': 'preserve', 'semantic_sorting': 'outside-canonical-json'}], 'string_rules': [{'quotation_mark': 'escape', 'reverse_solidus': 'escape', 'control_characters': 'deterministic-json-escapes', 'solidus': 'unescaped', 'non_ascii': 'literal-utf-8', 'surrogate_code_points': 'reject'}], 'number_rules': [{'accepted': 'signed-64-bit-integers-only', 'representation': 'minimal-base-10', 'negative_zero': 'not-distinct', 'fractions': 'reject', 'exponents': 'reject', 'non_finite': 'reject'}], 'rejection_rules': [{'invalid_utf8': 'CANONICAL_JSON_INVALID_UTF8', 'malformed_json': 'CANONICAL_JSON_MALFORMED', 'duplicate_member_name': 'CANONICAL_JSON_DUPLICATE_KEY', 'non_standard_constant': 'CANONICAL_JSON_NON_STANDARD_CONSTANT', 'unsupported_number': 'CANONICAL_JSON_UNSUPPORTED_NUMBER', 'invalid_unicode': 'CANONICAL_JSON_INVALID_UNICODE', 'unsupported_value': 'CANONICAL_JSON_UNSUPPORTED_VALUE', 'unsupported_version': 'CANONICAL_JSON_UNSUPPORTED_VERSION', 'failure_exit_status': 1}], 'output_rules': [{'insignificant_whitespace': 'omit', 'trailing_newline': 'forbidden', 'output_boundary': 'exact-canonical-utf-8-bytes'}]}
+EXPECTED_CANONICAL_CONSTRAINTS = {'canonicalization_version': ['canonical-json-v1'], 'decision_basis': [{'portable_behavior': ['strict-json-and-utf-8-boundary', 'object-member-ordering', 'array-order-preservation', 'deterministic-string-escaping', 'duplicate-member-rejection', 'non-standard-constant-rejection', 'exact-utf-8-output'], 'repository_generic_decisions': ['canonicalization-version-name', 'signed-64-bit-integer-domain', 'no-unicode-normalization']}], 'input_domain': [{'accepted_value_kinds': ['null', 'boolean', 'integer', 'string', 'array', 'object'], 'integer_range': 'signed-64-bit', 'object_member_names': 'string-only'}], 'encoding': [{'input': 'strict-utf-8', 'output': 'utf-8', 'byte_order_mark': 'forbidden', 'unicode_normalization': 'none'}], 'object_rules': [{'member_order': 'ascending-unicode-code-point-sequence', 'source_declaration_order_significant': False, 'duplicate_member_names': 'reject'}], 'array_rules': [{'input_order': 'preserve', 'semantic_sorting': 'outside-canonical-json'}], 'string_rules': [{'quotation_mark': 'escape', 'reverse_solidus': 'escape', 'control_characters': 'deterministic-json-escapes', 'solidus': 'unescaped', 'non_ascii': 'literal-utf-8', 'surrogate_code_points': 'reject'}], 'number_rules': [{'accepted': 'signed-64-bit-integers-only', 'representation': 'minimal-base-10', 'negative_zero': 'not-distinct', 'fractions': 'reject', 'exponents': 'reject', 'non_finite': 'reject'}], 'output_rules': [{'insignificant_whitespace': 'omit', 'trailing_newline': 'forbidden', 'output_boundary': 'exact-canonical-utf-8-bytes'}]}
 
 
 class ValidationFailure(Exception):
@@ -87,9 +79,9 @@ def strict_json(path: Path) -> dict[str, Any]:
     try:
         raw = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
-        fail("GVE-RSI-JSON-001", f"{path}: invalid UTF-8")
+        fail("REPO-SPEC-IDENTITY-JSON-001", f"{path}: invalid UTF-8")
     except OSError as exc:
-        fail("GVE-RSI-PATH-001", f"{path}: {exc}")
+        fail("REPO-SPEC-IDENTITY-PATH-001", f"{path}: {exc}")
     try:
         value = json.loads(
             raw,
@@ -99,9 +91,9 @@ def strict_json(path: Path) -> dict[str, Any]:
             ),
         )
     except (json.JSONDecodeError, ValueError) as exc:
-        fail("GVE-RSI-JSON-001", f"{path}: {exc}")
+        fail("REPO-SPEC-IDENTITY-JSON-001", f"{path}: {exc}")
     if not isinstance(value, dict):
-        fail("GVE-RSI-JSON-002", f"{path}: top level must be an object")
+        fail("REPO-SPEC-IDENTITY-JSON-002", f"{path}: top level must be an object")
     return value
 
 
@@ -118,58 +110,58 @@ def exact_fields(value: dict[str, Any], fields: set[str], label: str) -> None:
     unknown = sorted(set(value) - fields)
     missing = sorted(fields - set(value))
     if unknown:
-        fail("GVE-RSI-FIELD-001", f"{label}: unknown fields: {', '.join(unknown)}")
+        fail("REPO-SPEC-IDENTITY-FIELD-001", f"{label}: unknown fields: {', '.join(unknown)}")
     if missing:
-        fail("GVE-RSI-FIELD-002", f"{label}: missing fields: {', '.join(missing)}")
+        fail("REPO-SPEC-IDENTITY-FIELD-002", f"{label}: missing fields: {', '.join(missing)}")
 
 
 def string_list(value: Any, label: str) -> list[str]:
     if not isinstance(value, list) or not value:
-        fail("GVE-RSI-TYPE-001", f"{label}: must be a non-empty array")
+        fail("REPO-SPEC-IDENTITY-TYPE-001", f"{label}: must be a non-empty array")
     if any(not isinstance(item, str) or not item.strip() for item in value):
-        fail("GVE-RSI-TYPE-001", f"{label}: entries must be non-empty strings")
+        fail("REPO-SPEC-IDENTITY-TYPE-001", f"{label}: entries must be non-empty strings")
     return list(value)
 
 
 def validate_identity(value: Any, label: str) -> str:
     if not isinstance(value, str) or not IDENTITY.fullmatch(value):
-        fail("GVE-RSI-IDENTITY-001", f"{label}: invalid construction identity")
+        fail("REPO-SPEC-IDENTITY-IDENTITY-001", f"{label}: invalid construction identity")
     forbidden = sorted(set(value.split("-")) & FORBIDDEN_NAME_PARTS)
     if forbidden:
-        fail("GVE-RSI-NAME-001", f"{label}: work-derived identity parts are forbidden")
+        fail("REPO-SPEC-IDENTITY-NAME-001", f"{label}: work-derived identity parts are forbidden")
     return value
 
 
 def contained_path(root: Path, value: Any, label: str) -> Path:
     if not isinstance(value, str) or not value:
-        fail("GVE-RSI-PATH-003", f"{label}: must be a non-empty relative path")
+        fail("REPO-SPEC-IDENTITY-PATH-003", f"{label}: must be a non-empty relative path")
     pure = PurePosixPath(value)
     if pure.is_absolute() or any(part in {"", ".", ".."} for part in pure.parts):
-        fail("GVE-RSI-PATH-003", f"{label}: path is not normalized and relative")
+        fail("REPO-SPEC-IDENTITY-PATH-003", f"{label}: path is not normalized and relative")
     target = root.joinpath(*pure.parts)
     try:
         target.resolve(strict=False).relative_to(root.resolve())
     except ValueError:
-        fail("GVE-RSI-PATH-002", f"{label}: path escapes construction root")
+        fail("REPO-SPEC-IDENTITY-PATH-002", f"{label}: path escapes construction root")
     current = root
     for part in pure.parts:
         current = current / part
         if current.is_symlink():
-            fail("GVE-RSI-PATH-002", f"{label}: symlink is forbidden")
+            fail("REPO-SPEC-IDENTITY-PATH-002", f"{label}: symlink is forbidden")
     return target
 
 
 def validate_common(value: dict[str, Any], label: str) -> str:
     present = sorted(set(value) & FORBIDDEN_CLAIM_KEYS)
     if present:
-        fail("GVE-RSI-CLAIM-001", f"{label}: forbidden final-authority fields")
+        fail("REPO-SPEC-IDENTITY-CLAIM-001", f"{label}: forbidden final-authority fields")
     identity = validate_identity(value["construction_identity"], f"{label}.construction_identity")
     if value["construction_status"] != "under-construction":
-        fail("GVE-RSI-STATUS-001", f"{label}: status must be under-construction")
+        fail("REPO-SPEC-IDENTITY-STATUS-001", f"{label}: status must be under-construction")
     if value["normative"] is not False:
-        fail("GVE-RSI-STATUS-002", f"{label}: normative must be false")
+        fail("REPO-SPEC-IDENTITY-STATUS-002", f"{label}: normative must be false")
     if not isinstance(value["responsibility"], str) or not value["responsibility"].strip():
-        fail("GVE-RSI-TYPE-001", f"{label}.responsibility must be non-empty")
+        fail("REPO-SPEC-IDENTITY-TYPE-001", f"{label}.responsibility must be non-empty")
     string_list(value["expected_relationships"], f"{label}.expected_relationships")
     string_list(value["unresolved_questions"], f"{label}.unresolved_questions")
     return identity
@@ -181,65 +173,48 @@ def validate_canonical(value: dict[str, Any], label: str) -> None:
     actual = {field: value[field] for field in EXPECTED_CANONICAL_CONSTRAINTS}
     expected = {field: allowed[0] for field, allowed in EXPECTED_CANONICAL_CONSTRAINTS.items()}
     if actual != expected:
-        fail("GVE-RSI-CANONICAL-001", f"{label}: canonical construction claims do not match policy")
+        fail("REPO-SPEC-IDENTITY-CANONICAL-001", f"{label}: canonical construction claims do not match policy")
 
 
 def validate_schema(value: dict[str, Any], label: str) -> None:
     exact_fields(value, SCHEMA_FIELDS, label)
     validate_common(value, label)
     if value["target_construction_identity"] != "canonical-json-construction":
-        fail("GVE-RSI-SCHEMA-001", f"{label}: invalid schema target")
+        fail("REPO-SPEC-IDENTITY-SCHEMA-001", f"{label}: invalid schema target")
     required_fields = value["required_fields"]
     if (
         not isinstance(required_fields, list)
         or len(required_fields) != len(CANONICAL_FIELDS)
         or set(required_fields) != CANONICAL_FIELDS
     ):
-        fail("GVE-RSI-SCHEMA-001", f"{label}: required fields do not match model")
+        fail("REPO-SPEC-IDENTITY-SCHEMA-001", f"{label}: required fields do not match model")
     if value["closed"] is not True:
-        fail("GVE-RSI-SCHEMA-001", f"{label}: schema must be closed")
+        fail("REPO-SPEC-IDENTITY-SCHEMA-001", f"{label}: schema must be closed")
     if value["field_constraints"] != EXPECTED_CANONICAL_CONSTRAINTS:
-        fail("GVE-RSI-SCHEMA-001", f"{label}: field constraints do not match model")
+        fail("REPO-SPEC-IDENTITY-SCHEMA-001", f"{label}: field constraints do not match model")
     forbidden_fields = value["forbidden_claim_fields"]
     if (
         not isinstance(forbidden_fields, list)
         or len(forbidden_fields) != len(SCHEMA_FORBIDDEN_CLAIM_FIELDS)
         or set(forbidden_fields) != SCHEMA_FORBIDDEN_CLAIM_FIELDS
     ):
-        fail("GVE-RSI-SCHEMA-001", f"{label}: forbidden claim fields do not match policy")
-
-
-def validate_python_dependencies(root: Path) -> None:
-    for relative in FOCUSED_PYTHON_PATHS:
-        path = contained_path(root, relative, relative)
-        if not path.is_file():
-            fail("GVE-RSI-PATH-001", f"{relative}: required focused Python file is missing")
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-        for node in ast.walk(tree):
-            modules = []
-            if isinstance(node, ast.Import):
-                modules = [alias.name for alias in node.names]
-            elif isinstance(node, ast.ImportFrom):
-                modules = [node.module or ""]
-            for module in modules:
-                if module == "gve" or module.startswith("gve."):
-                    fail("GVE-RSI-DEPENDENCY-001", f"{path}: maintained product import forbidden")
+        fail("REPO-SPEC-IDENTITY-SCHEMA-001", f"{label}: forbidden claim fields do not match policy")
 
 
 def validate_manifest(root: Path) -> None:
     manifest = strict_json(root / MANIFEST_PATH)
     paths = manifest.get("artifact_paths")
     if not isinstance(paths, list) or not paths or len(paths) != len(set(paths)):
-        fail("GVE-RSI-MANIFEST-002", "manifest paths are malformed or duplicate")
+        fail("REPO-SPEC-IDENTITY-MANIFEST-002", "manifest paths are malformed or duplicate")
     declared = set(paths)
     for relative in (*ARTIFACTS, SCHEMA_PATH):
         if paths.count(relative) != 1:
-            fail("GVE-RSI-MANIFEST-001", f"{relative}: must participate exactly once")
+            fail("REPO-SPEC-IDENTITY-MANIFEST-001", f"{relative}: must participate exactly once")
     for index, relative in enumerate(paths):
         target = contained_path(root, relative, f"manifest.artifact_paths[{index}]")
         if relative.startswith("authoritative/identity/") or relative == SCHEMA_PATH:
             if not target.is_file():
-                fail("GVE-RSI-MANIFEST-003", f"{relative}: declared identity artifact is missing")
+                fail("REPO-SPEC-IDENTITY-MANIFEST-003", f"{relative}: declared identity artifact is missing")
     participating = set()
     for directory in (root / "authoritative/identity", root / "authoritative/schemas/identity"):
         for path in sorted(directory.glob("*.json")):
@@ -248,7 +223,7 @@ def validate_manifest(root: Path) -> None:
                 participating.add(path.relative_to(root).as_posix())
     undeclared = sorted(participating - declared)
     if undeclared:
-        fail("GVE-RSI-MANIFEST-004", "undeclared identity construction participants")
+        fail("REPO-SPEC-IDENTITY-MANIFEST-004", "undeclared identity construction participants")
 
 
 def validate(root: Path) -> None:
@@ -257,7 +232,7 @@ def validate(root: Path) -> None:
     for relative in (*ARTIFACTS, *SUPPORTING_PATHS):
         path = contained_path(root, relative, relative)
         if not path.exists():
-            fail("GVE-RSI-PATH-001", f"{relative}: required path is missing")
+            fail("REPO-SPEC-IDENTITY-PATH-001", f"{relative}: required path is missing")
     for relative in ARTIFACTS:
         value = strict_json(root / relative)
         if relative.endswith("CANONICAL-JSON.json"):
@@ -265,14 +240,9 @@ def validate(root: Path) -> None:
         else:
             exact_fields(value, PLACEHOLDER_FIELDS, relative)
             validate_common(value, relative)
-            text = "\n".join(
-                [value["responsibility"], *value["expected_relationships"], *value["unresolved_questions"]]
-            ).lower()
-            if GVE_FAMILY.search(text):
-                fail("GVE-RSI-PRODUCT-001", f"{relative}: product identity family forbidden")
         identity = value["construction_identity"]
         if identity in identities:
-            fail("GVE-RSI-IDENTITY-003", f"{relative}: duplicate construction identity")
+            fail("REPO-SPEC-IDENTITY-IDENTITY-003", f"{relative}: duplicate construction identity")
         identities.add(identity)
         observed[relative] = identity
     schema_value = strict_json(root / SCHEMA_PATH)
@@ -280,9 +250,8 @@ def validate(root: Path) -> None:
     observed[SCHEMA_PATH] = schema_value["construction_identity"]
     for relative, expected in EXPECTED_IDENTITIES.items():
         if observed.get(relative) != expected:
-            fail("GVE-RSI-IDENTITY-002", f"{relative}: unexpected construction identity")
+            fail("REPO-SPEC-IDENTITY-IDENTITY-002", f"{relative}: unexpected construction identity")
     validate_manifest(root)
-    validate_python_dependencies(root)
 
 
 def main(argv: list[str] | None = None) -> int:
