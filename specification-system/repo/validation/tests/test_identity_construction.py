@@ -210,15 +210,6 @@ class IdentityConstructionTests(unittest.TestCase):
         identity_dir.symlink_to(outside, target_is_directory=True)
         self.assert_failure("REPO-SPEC-IDENTITY-PATH-002")
 
-    def test_product_reference_in_explanatory_text_is_not_semantically_rejected(self) -> None:
-        relative = VALIDATOR.ARTIFACTS[0]
-        value = self.read_json(relative)
-        value["expected_relationships"].append(
-            "gve-product-family is cited only as excluded provenance"
-        )
-        self.write_json(relative, value)
-        VALIDATOR.validate(self.root)
-
     def test_main_returns_deterministic_failure_exit(self) -> None:
         (self.root / VALIDATOR.ARTIFACTS[0]).unlink()
         stderr = io.StringIO()

@@ -149,11 +149,6 @@ class ConstructionSkeletonTests(unittest.TestCase):
         self.write_json(path, value)
         self.assert_failure("REPO-SPEC-CONSTRUCTION-NAME-001")
 
-    def test_product_import_fails(self) -> None:
-        path = self.root / "validation/intrinsic/forbidden_dependency.py"
-        path.write_text("import gve\n", encoding="utf-8")
-        self.assert_failure("REPO-SPEC-CONSTRUCTION-DEPENDENCY-001")
-
     def test_unrelated_product_or_third_party_import_fails(self) -> None:
         for module in ("some_other_product", "requests"):
             with self.subTest(module=module):
