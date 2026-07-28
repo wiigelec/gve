@@ -35,9 +35,9 @@ class ConstructionSkeletonTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
-    def assert_failure(self, code: str) -> None:
+    def assert_failure(self, code: str, *, root: Path | None = None) -> None:
         with self.assertRaises(VALIDATOR.ValidationFailure) as raised:
-            VALIDATOR.validate(self.root)
+            VALIDATOR.validate(root or self.root)
         self.assertTrue(
             str(raised.exception).startswith(code + ":"),
             str(raised.exception),
@@ -153,6 +153,30 @@ class ConstructionSkeletonTests(unittest.TestCase):
         path = self.root / "validation/intrinsic/forbidden_dependency.py"
         path.write_text("import gve\n", encoding="utf-8")
         self.assert_failure("REPO-SPEC-CONSTRUCTION-DEPENDENCY-001")
+
+    def test_unrelated_product_or_third_party_import_fails(self) -> None:
+        for module in ("some_other_product", "requests"):
+            with self.subTest(module=module):
+                copy = Path(self.temporary.name) / module
+                shutil.copytree(self.root, copy, symlinks=True)
+                path = copy / "validation/intrinsic/forbidden_dependency.py"
+                path.write_text(f"import {module}\n", encoding="utf-8")
+                self.assert_failure(
+                    "REPO-SPEC-CONSTRUCTION-DEPENDENCY-001",
+                    root=copy,
+                )
+
+    def test_standard_library_and_local_imports_pass(self) -> None:
+        local_module = self.root / "repository_local_helper.py"
+        local_module.write_text("VALUE = 1\n", encoding="utf-8")
+        path = self.root / "validation/intrinsic/allowed_dependencies.py"
+        path.write_text(
+            "import json\n"
+            "from pathlib import Path\n"
+            "import repository_local_helper\n",
+            encoding="utf-8",
+        )
+        VALIDATOR.validate(self.root)
 
 
 if __name__ == "__main__":

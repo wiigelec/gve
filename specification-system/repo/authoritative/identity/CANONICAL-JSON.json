@@ -17,9 +17,7 @@
     "repository_generic_decisions": [
       "canonicalization-version-name",
       "signed-64-bit-integer-domain",
-      "no-unicode-normalization",
-      "deterministic-diagnostic-codes",
-      "failure-exit-status"
+      "no-unicode-normalization"
     ]
   },
   "input_domain": {
@@ -64,17 +62,6 @@
     "fractions": "reject",
     "exponents": "reject",
     "non_finite": "reject"
-  },
-  "rejection_rules": {
-    "invalid_utf8": "CANONICAL_JSON_INVALID_UTF8",
-    "malformed_json": "CANONICAL_JSON_MALFORMED",
-    "duplicate_member_name": "CANONICAL_JSON_DUPLICATE_KEY",
-    "non_standard_constant": "CANONICAL_JSON_NON_STANDARD_CONSTANT",
-    "unsupported_number": "CANONICAL_JSON_UNSUPPORTED_NUMBER",
-    "invalid_unicode": "CANONICAL_JSON_INVALID_UNICODE",
-    "unsupported_value": "CANONICAL_JSON_UNSUPPORTED_VALUE",
-    "unsupported_version": "CANONICAL_JSON_UNSUPPORTED_VERSION",
-    "failure_exit_status": 1
   },
   "output_rules": {
     "insignificant_whitespace": "omit",

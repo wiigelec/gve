@@ -158,7 +158,9 @@ names, keyword rejection, identity-family scans, terminology blacklists, or
 heuristic source inspection. A product reference may be legitimate provenance or
 exclusion documentation, and the absence of product names does not prove product
 independence. Objective mechanical boundaries may remain validated when they are
-exactly defined, including the prohibition on importing maintained product code.
+exactly defined. Python under `specification-system/repo/` may import only
+Python standard-library modules and repository-local modules; imports from GVE,
+other products, frameworks, or installed third-party packages are forbidden.
 
 When a proposed repository-generic rule cannot be separated confidently from
 GVE product semantics, the rule must remain unresolved or be deferred to a

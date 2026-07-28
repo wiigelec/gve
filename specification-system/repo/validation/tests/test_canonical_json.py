@@ -62,7 +62,7 @@ class CanonicalJsonTests(unittest.TestCase):
             with self.subTest(source=source):
                 with self.assertRaisesRegex(
                     MODULE.CanonicalJsonFailure,
-                    "^CANONICAL_JSON_UNSUPPORTED_NUMBER:",
+                    "^REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER:",
                 ):
                     MODULE.canonicalize_bytes(source)
 
@@ -71,14 +71,14 @@ class CanonicalJsonTests(unittest.TestCase):
             with self.subTest(source=source):
                 with self.assertRaisesRegex(
                     MODULE.CanonicalJsonFailure,
-                    "^CANONICAL_JSON_UNSUPPORTED_NUMBER:",
+                    "^REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER:",
                 ):
                     MODULE.canonicalize_bytes(source)
 
     def test_nonminimal_source_integer_is_malformed_json(self) -> None:
         with self.assertRaisesRegex(
             MODULE.CanonicalJsonFailure,
-            "^CANONICAL_JSON_MALFORMED:",
+            "^REPO-SPEC-CANONICAL-JSON-MALFORMED:",
         ):
             MODULE.canonicalize_bytes(b"01")
 
@@ -90,9 +90,9 @@ class CanonicalJsonTests(unittest.TestCase):
 
     def test_negative_fixtures_fail_with_stable_codes(self) -> None:
         cases = (
-            ("duplicate-key.input.json", "CANONICAL_JSON_DUPLICATE_KEY"),
-            ("floating-point.input.json", "CANONICAL_JSON_UNSUPPORTED_NUMBER"),
-            ("surrogate.input.json", "CANONICAL_JSON_INVALID_UNICODE"),
+            ("duplicate-key.input.json", "REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY"),
+            ("floating-point.input.json", "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER"),
+            ("surrogate.input.json", "REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE"),
         )
         for filename, code in cases:
             with self.subTest(filename=filename):
@@ -105,7 +105,7 @@ class CanonicalJsonTests(unittest.TestCase):
             with self.subTest(source=source):
                 with self.assertRaisesRegex(
                     MODULE.CanonicalJsonFailure,
-                    "^CANONICAL_JSON_NON_STANDARD_CONSTANT:",
+                    "^REPO-SPEC-CANONICAL-JSON-NON-STANDARD-CONSTANT:",
                 ):
                     MODULE.canonicalize_bytes(source)
 
@@ -114,22 +114,22 @@ class CanonicalJsonTests(unittest.TestCase):
             with self.subTest(source=source):
                 with self.assertRaisesRegex(
                     MODULE.CanonicalJsonFailure,
-                    "^CANONICAL_JSON_INVALID_UTF8:",
+                    "^REPO-SPEC-CANONICAL-JSON-INVALID-UTF8:",
                 ):
                     MODULE.canonicalize_bytes(source)
 
     def test_malformed_json_fails(self) -> None:
         with self.assertRaisesRegex(
             MODULE.CanonicalJsonFailure,
-            "^CANONICAL_JSON_MALFORMED:",
+            "^REPO-SPEC-CANONICAL-JSON-MALFORMED:",
         ):
             MODULE.canonicalize_bytes(b'{"missing":}')
 
     def test_python_values_reject_floats_surrogates_and_non_string_keys(self) -> None:
         for value, code in (
-            (1.0, "CANONICAL_JSON_UNSUPPORTED_NUMBER"),
-            ("\ud800", "CANONICAL_JSON_INVALID_UNICODE"),
-            ({1: "value"}, "CANONICAL_JSON_UNSUPPORTED_VALUE"),
+            (1.0, "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER"),
+            ("\ud800", "REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE"),
+            ({1: "value"}, "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE"),
         ):
             with self.subTest(value=repr(value)):
                 with self.assertRaises(MODULE.CanonicalJsonFailure) as caught:
@@ -151,7 +151,7 @@ class CanonicalJsonTests(unittest.TestCase):
         )
         self.assertEqual(failure.returncode, 1)
         self.assertEqual(failure.stdout, b"")
-        self.assertEqual(failure.stderr, b"CANONICAL_JSON_DUPLICATE_KEY: a\n")
+        self.assertEqual(failure.stderr, b"REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY: a\n")
 
     def test_unsupported_cli_version_fails(self) -> None:
         completed = subprocess.run(
@@ -166,7 +166,7 @@ class CanonicalJsonTests(unittest.TestCase):
         self.assertEqual(completed.stdout, b"")
         self.assertEqual(
             completed.stderr,
-            b"CANONICAL_JSON_UNSUPPORTED_VERSION: unknown\n",
+            b"REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VERSION: unknown\n",
         )
 
     def test_canonicalizer_imports_only_standard_library_modules(self) -> None:
@@ -179,6 +179,13 @@ class CanonicalJsonTests(unittest.TestCase):
             elif isinstance(node, ast.ImportFrom):
                 observed.add((node.module or "").split(".", 1)[0])
         self.assertEqual(observed - allowed, set())
+
+    def test_canonical_model_excludes_validator_interface_policy(self) -> None:
+        model = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+        self.assertNotIn("rejection_rules", model)
+        decisions = model["decision_basis"]["repository_generic_decisions"]
+        self.assertNotIn("deterministic-diagnostic-codes", decisions)
+        self.assertNotIn("failure-exit-status", decisions)
 
     def test_every_canonical_construction_claim_is_closed(self) -> None:
         model = json.loads(MODEL_PATH.read_text(encoding="utf-8"))

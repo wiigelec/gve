@@ -184,20 +184,35 @@ def validate_common(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def _local_import_exists(root: Path, module: str) -> bool:
+    parts = module.split(".")
+    module_file = root.joinpath(*parts).with_suffix(".py")
+    package_dir = root.joinpath(*parts)
+    return module_file.is_file() or package_dir.is_dir()
+
+
 def validate_python_dependencies(root: Path) -> None:
+    standard_library = set(sys.stdlib_module_names) | {"__future__"}
     for path in sorted(root.rglob("*.py")):
         if path.is_symlink():
             fail("REPO-SPEC-CONSTRUCTION-PATH-003", f"{path}: symlink is forbidden")
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
-            modules = []
+            modules: list[tuple[str, int]] = []
             if isinstance(node, ast.Import):
-                modules = [alias.name for alias in node.names]
+                modules = [(alias.name, 0) for alias in node.names]
             elif isinstance(node, ast.ImportFrom):
-                modules = [node.module or ""]
-            for module in modules:
-                if module == "gve" or module.startswith("gve."):
-                    fail("REPO-SPEC-CONSTRUCTION-DEPENDENCY-001", f"{path}: maintained product import forbidden")
+                modules = [(node.module or "", node.level)]
+            for module, level in modules:
+                if level:
+                    continue
+                top_level = module.split(".", 1)[0]
+                if top_level in standard_library or _local_import_exists(root, module):
+                    continue
+                fail(
+                    "REPO-SPEC-CONSTRUCTION-DEPENDENCY-001",
+                    f"{path}: non-standard, non-local import forbidden: {module}",
+                )
 
 
 def validate_focused_identity(root: Path) -> None:

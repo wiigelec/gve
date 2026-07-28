@@ -26,17 +26,17 @@ def fail(code: str, detail: str) -> None:
 
 
 def _reject_constant(token: str) -> None:
-    fail("CANONICAL_JSON_NON_STANDARD_CONSTANT", token)
+    fail("REPO-SPEC-CANONICAL-JSON-NON-STANDARD-CONSTANT", token)
 
 
 def _reject_float(token: str) -> None:
-    fail("CANONICAL_JSON_UNSUPPORTED_NUMBER", token)
+    fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER", token)
 
 
 def _parse_integer(token: str) -> int:
     value = int(token, 10)
     if value < MIN_INTEGER or value > MAX_INTEGER:
-        fail("CANONICAL_JSON_UNSUPPORTED_NUMBER", token)
+        fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER", token)
     return value
 
 
@@ -44,7 +44,7 @@ def _object_from_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
-            fail("CANONICAL_JSON_DUPLICATE_KEY", key)
+            fail("REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY", key)
         result[key] = value
     return result
 
@@ -54,13 +54,13 @@ def _validate_value(value: Any) -> None:
         return
     if isinstance(value, int) and not isinstance(value, bool):
         if value < MIN_INTEGER or value > MAX_INTEGER:
-            fail("CANONICAL_JSON_UNSUPPORTED_NUMBER", str(value))
+            fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER", str(value))
         return
     if isinstance(value, float):
-        fail("CANONICAL_JSON_UNSUPPORTED_NUMBER", repr(value))
+        fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER", repr(value))
     if isinstance(value, str):
         if any(0xD800 <= ord(character) <= 0xDFFF for character in value):
-            fail("CANONICAL_JSON_INVALID_UNICODE", "surrogate code point")
+            fail("REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE", "surrogate code point")
         return
     if isinstance(value, list):
         for item in value:
@@ -69,20 +69,20 @@ def _validate_value(value: Any) -> None:
     if isinstance(value, Mapping):
         for key, item in value.items():
             if not isinstance(key, str):
-                fail("CANONICAL_JSON_UNSUPPORTED_VALUE", "non-string object member name")
+                fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", "non-string object member name")
             _validate_value(key)
             _validate_value(item)
         return
-    fail("CANONICAL_JSON_UNSUPPORTED_VALUE", type(value).__name__)
+    fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", type(value).__name__)
 
 
 def parse_json_bytes(source: bytes) -> Any:
     try:
         text = source.decode("utf-8")
     except UnicodeDecodeError as exc:
-        fail("CANONICAL_JSON_INVALID_UTF8", str(exc))
+        fail("REPO-SPEC-CANONICAL-JSON-INVALID-UTF8", str(exc))
     if text.startswith("\ufeff"):
-        fail("CANONICAL_JSON_INVALID_UTF8", "UTF-8 byte-order mark is forbidden")
+        fail("REPO-SPEC-CANONICAL-JSON-INVALID-UTF8", "UTF-8 byte-order mark is forbidden")
     try:
         value = json.loads(
             text,
@@ -95,7 +95,7 @@ def parse_json_bytes(source: bytes) -> Any:
         raise
     except json.JSONDecodeError as exc:
         fail(
-            "CANONICAL_JSON_MALFORMED",
+            "REPO-SPEC-CANONICAL-JSON-MALFORMED",
             f"line {exc.lineno} column {exc.colno}: {exc.msg}",
         )
     _validate_value(value)
@@ -113,10 +113,10 @@ def canonical_json_bytes(value: Any) -> bytes:
             allow_nan=False,
         )
     except (TypeError, ValueError) as exc:
-        fail("CANONICAL_JSON_UNSUPPORTED_VALUE", str(exc))
+        fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", str(exc))
     encoded = text.encode("utf-8")
     if encoded.startswith(b"\xef\xbb\xbf") or encoded.endswith(b"\n"):
-        fail("CANONICAL_JSON_UNSUPPORTED_VALUE", "serializer violated output boundary")
+        fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", "serializer violated output boundary")
     return encoded
 
 
@@ -136,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.canonicalization_version != CANONICALIZATION_VERSION:
         print(
-            "CANONICAL_JSON_UNSUPPORTED_VERSION: "
+            "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VERSION: "
             f"{args.canonicalization_version}",
             file=sys.stderr,
         )
@@ -145,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         result = canonicalize_bytes(args.input.read_bytes())
     except OSError as exc:
-        print(f"CANONICAL_JSON_MALFORMED: {exc}", file=sys.stderr)
+        print(f"REPO-SPEC-CANONICAL-JSON-MALFORMED: {exc}", file=sys.stderr)
         return 1
     except CanonicalJsonFailure as exc:
         print(str(exc), file=sys.stderr)
@@ -157,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         try:
             args.output.write_bytes(result)
         except OSError as exc:
-            print(f"CANONICAL_JSON_MALFORMED: {exc}", file=sys.stderr)
+            print(f"REPO-SPEC-CANONICAL-JSON-MALFORMED: {exc}", file=sys.stderr)
             return 1
     return 0
 
