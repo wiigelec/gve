@@ -1,0 +1,12 @@
+{
+  "construction_identity": "repository-model",
+  "construction_status": "under-construction",
+  "responsibility": "Define the durable repository tree model.",
+  "normative": false,
+  "expected_relationships": [
+    "repository-specification-construction-set"
+  ],
+  "unresolved_questions": [
+    "Normative repository tree semantics are not defined by this placeholder."
+  ]
+}

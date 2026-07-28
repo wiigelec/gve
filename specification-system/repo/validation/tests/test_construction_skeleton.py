@@ -1,0 +1,159 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import os
+import shutil
+import tempfile
+import unittest
+from pathlib import Path
+
+
+SOURCE_ROOT = Path(__file__).resolve().parents[2]
+VALIDATOR_PATH = SOURCE_ROOT / "validation/intrinsic/validate_skeleton.py"
+
+
+def load_validator():
+    spec = importlib.util.spec_from_file_location(
+        "construction_validator", VALIDATOR_PATH
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+VALIDATOR = load_validator()
+
+
+class ConstructionSkeletonTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.root = Path(self.temporary.name) / "repo"
+        shutil.copytree(SOURCE_ROOT, self.root, symlinks=True)
+
+    def tearDown(self) -> None:
+        self.temporary.cleanup()
+
+    def assert_failure(self, code: str) -> None:
+        with self.assertRaises(VALIDATOR.ValidationFailure) as raised:
+            VALIDATOR.validate(self.root)
+        self.assertTrue(
+            str(raised.exception).startswith(code + ":"),
+            str(raised.exception),
+        )
+
+    def json_path(self, relative: str) -> Path:
+        return self.root / relative
+
+    def read_json(self, relative: str) -> dict:
+        return json.loads(self.json_path(relative).read_text(encoding="utf-8"))
+
+    def write_json(self, relative: str, value: dict) -> None:
+        self.json_path(relative).write_text(
+            json.dumps(value, indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    def test_valid_bounded_tree_passes(self) -> None:
+        VALIDATOR.validate(self.root)
+
+    def test_missing_required_path_fails(self) -> None:
+        self.json_path("derived/markdown/README.md").unlink()
+        self.assert_failure("GVE-RSC-PATH-001")
+
+    def test_malformed_json_fails(self) -> None:
+        self.json_path("REPOSITORY-SPECIFICATION-SET.json").write_text(
+            "{",
+            encoding="utf-8",
+        )
+        self.assert_failure("GVE-RSC-JSON-001")
+
+    def test_non_standard_json_constant_fails(self) -> None:
+        self.json_path("REPOSITORY-SPECIFICATION-SET.json").write_text(
+            '{"construction_identity": NaN}',
+            encoding="utf-8",
+        )
+        self.assert_failure("GVE-RSC-JSON-001")
+
+    def test_unknown_manifest_field_fails(self) -> None:
+        value = self.read_json("REPOSITORY-SPECIFICATION-SET.json")
+        value["extra"] = True
+        self.write_json("REPOSITORY-SPECIFICATION-SET.json", value)
+        self.assert_failure("GVE-RSC-FIELD-001")
+
+    def test_unknown_placeholder_field_fails(self) -> None:
+        path = "authoritative/repository-model/REPOSITORY-MODEL.json"
+        value = self.read_json(path)
+        value["extra"] = True
+        self.write_json(path, value)
+        self.assert_failure("GVE-RSC-FIELD-001")
+
+    def test_duplicate_identity_fails(self) -> None:
+        first = self.read_json(
+            "authoritative/repository-model/REPOSITORY-MODEL.json"
+        )
+        second_path = (
+            "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json"
+        )
+        second = self.read_json(second_path)
+        second["construction_identity"] = first["construction_identity"]
+        self.write_json(second_path, second)
+        self.assert_failure("GVE-RSC-IDENTITY-003")
+
+    def test_normative_placeholder_fails(self) -> None:
+        path = "authoritative/repository-model/REPOSITORY-MODEL.json"
+        value = self.read_json(path)
+        value["normative"] = True
+        self.write_json(path, value)
+        self.assert_failure("GVE-RSC-STATUS-002")
+
+    def test_completion_claim_fails(self) -> None:
+        path = "authoritative/repository-model/REPOSITORY-MODEL.json"
+        value = self.read_json(path)
+        value["construction_status"] = "complete"
+        self.write_json(path, value)
+        self.assert_failure("GVE-RSC-STATUS-001")
+
+    def test_fabricated_digest_field_fails(self) -> None:
+        value = self.read_json("REPOSITORY-SPECIFICATION-SET.json")
+        value["digest"] = "sha256:" + "0" * 64
+        self.write_json("REPOSITORY-SPECIFICATION-SET.json", value)
+        self.assert_failure("GVE-RSC-FIELD-001")
+
+    def test_absolute_artifact_path_fails(self) -> None:
+        value = self.read_json("REPOSITORY-SPECIFICATION-SET.json")
+        value["artifact_paths"][0] = "/tmp/REPOSITORY-MODEL.json"
+        self.write_json("REPOSITORY-SPECIFICATION-SET.json", value)
+        self.assert_failure("GVE-RSC-PATH-004")
+
+    def test_traversal_artifact_path_fails(self) -> None:
+        value = self.read_json("REPOSITORY-SPECIFICATION-SET.json")
+        value["artifact_paths"][0] = "../REPOSITORY-MODEL.json"
+        self.write_json("REPOSITORY-SPECIFICATION-SET.json", value)
+        self.assert_failure("GVE-RSC-PATH-004")
+
+    @unittest.skipUnless(hasattr(os, "symlink"), "symlinks unavailable")
+    def test_symlink_escape_fails(self) -> None:
+        target = self.root / (
+            "authoritative/repository-model/REPOSITORY-MODEL.json"
+        )
+        target.unlink()
+        os.symlink("/tmp", target)
+        self.assert_failure("GVE-RSC-PATH-003")
+
+    def test_work_derived_identity_fails(self) -> None:
+        path = "authoritative/repository-model/REPOSITORY-MODEL.json"
+        value = self.read_json(path)
+        value["construction_identity"] = "issue-model"
+        self.write_json(path, value)
+        self.assert_failure("GVE-RSC-NAME-001")
+
+    def test_product_import_fails(self) -> None:
+        path = self.root / "validation/intrinsic/forbidden_dependency.py"
+        path.write_text("import gve\n", encoding="utf-8")
+        self.assert_failure("GVE-RSC-DEPENDENCY-001")
+
+
+if __name__ == "__main__":
+    unittest.main()

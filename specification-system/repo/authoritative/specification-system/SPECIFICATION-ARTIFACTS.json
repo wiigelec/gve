@@ -1,0 +1,13 @@
+{
+  "construction_identity": "specification-artifacts",
+  "construction_status": "under-construction",
+  "responsibility": "Define authoritative, derived, schema, conformance, and validation artifact classes.",
+  "normative": false,
+  "expected_relationships": [
+    "repository-specification-construction-set",
+    "repository-model"
+  ],
+  "unresolved_questions": [
+    "The final specification authoring schema is not defined by this placeholder."
+  ]
+}
