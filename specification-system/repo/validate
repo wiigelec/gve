@@ -3,6 +3,11 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
+if [ "$#" -ne 0 ]; then
+    printf '%s\n' "repository-specification validate: arguments are not supported" >&2
+    exit 2
+fi
+
 if command -v python3 >/dev/null 2>&1; then
     PYTHON=python3
 elif command -v python >/dev/null 2>&1; then
@@ -12,4 +17,41 @@ else
     exit 2
 fi
 
-exec "$PYTHON" "$ROOT/validation/intrinsic/validate_skeleton.py" --root "$ROOT"
+"$PYTHON" "$ROOT/validation/intrinsic/validate_skeleton.py" --root "$ROOT"
+
+printf "%s\n" "$PYTHON -m unittest discover -s specification-system/repo/validation/tests -p 'test_*.py'"
+if "$PYTHON" -m unittest discover \
+    -s "$ROOT/validation/tests" \
+    -p 'test_*.py'
+then
+    TEST_STATUS=0
+else
+    TEST_STATUS=$?
+fi
+
+TEST_COUNT=$(
+    "$PYTHON" - "$ROOT/validation/tests" <<'PY'
+import sys
+import unittest
+
+suite = unittest.defaultTestLoader.discover(sys.argv[1], pattern="test_*.py")
+print(suite.countTestCases())
+PY
+)
+
+case "$TEST_COUNT" in
+    ''|*[!0-9]*)
+        printf '%s\n' "repository-specification validate: could not determine discovered test count" >&2
+        exit 1
+        ;;
+    0)
+        printf '%s\n' "repository-specification validate: unit-test discovery ran zero tests" >&2
+        exit 1
+        ;;
+esac
+
+if [ "$TEST_STATUS" -ne 0 ]; then
+    exit "$TEST_STATUS"
+fi
+
+printf '%s\n' "repository-specification validate: complete unit-test discovery passed ($TEST_COUNT tests)"
