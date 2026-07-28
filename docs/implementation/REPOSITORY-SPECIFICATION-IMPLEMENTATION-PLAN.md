@@ -89,6 +89,74 @@ specification-system/repo/   replacement repository specifications under constru
 No construction artifact becomes authoritative merely because it exists,
 validates, is reviewed, or is merged.
 
+### No product leakage into repository specifications
+
+The repository-specification construction tree must remain repository-generic and
+product-independent.
+
+Nothing under:
+
+```text
+specification-system/repo/
+```
+
+may contain, encode, copy, depend upon, or be designed around GVE product
+semantics merely because those semantics exist in the accepted product
+specifications or maintained implementation.
+
+Prohibited product leakage includes direct or indirect introduction of:
+
+- GVE product identity families;
+- GVE request, workflow, operation, effect, result, evidence, finalization, or
+  execution-record semantics;
+- product-specific schemas, payload fields, status models, diagnostic codes,
+  exit-status behavior, lifecycle rules, or processing contracts;
+- product-specific terminology presented as repository-generic terminology;
+- product conformance vectors, fixtures, examples, or test cases used as though
+  they define portable repository behavior;
+- dependencies on maintained GVE product code under `src/gve`;
+- structural decisions made solely to match the current GVE implementation;
+- assumptions that every repository using the specification system implements
+  the GVE product;
+- product-specific behavior generalized without explicit accepted authority for
+  that generalization.
+
+Accepted GVE product authority may be consulted as evidence that a mechanism
+exists, but product behavior may enter the repository-specification construction
+tree only when the portable repository-generic portion is explicitly separated
+from the product-specific portion.
+
+Such separation must identify:
+
+- the accepted authority supplying the source behavior;
+- the exact behavior claimed to be portable;
+- the product-specific behavior that is excluded;
+- the repository-generic reason the portable behavior is required;
+- any new repository-generic construction decision that is not copied from
+  accepted authority.
+
+Similarity to existing GVE behavior is not sufficient evidence that a rule is
+repository-generic.
+
+Repository-specification artifacts must remain usable and interpretable without:
+
+- importing maintained GVE product code;
+- knowing GVE product identities or payload contracts;
+- reproducing GVE runtime behavior;
+- consulting GVE product fixtures or implementation details;
+- assuming GVE is the only product governed by the repository specification
+  system.
+
+Every bounded issue affecting `specification-system/repo/` must include a
+product-leakage review. That review must inspect semantics, terminology,
+schemas, fixtures, validation logic, examples, and dependencies. Checking only
+for imports from `src/gve` or literal `gve-*` names is insufficient.
+
+When a proposed repository-generic rule cannot be separated confidently from
+GVE product semantics, the rule must remain unresolved or be deferred to a
+separately governed product-profile boundary. It must not be silently added to
+the repository-specification construction tree.
+
 ### Functional names only
 
 Permanent paths and artifact names must describe durable responsibility.
