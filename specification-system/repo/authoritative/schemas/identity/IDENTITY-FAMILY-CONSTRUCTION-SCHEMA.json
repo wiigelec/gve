@@ -42,6 +42,7 @@
       },
       "family_declaration": {
         "required_fields": [
+          "family_construction_identity",
           "family_name",
           "semantic_domain",
           "subject_category",
@@ -73,7 +74,7 @@
         ],
         "domain_prefix": "non-empty-printable-ascii",
         "included_preimage_fields": "non-empty-unique-normalized-field-name-array",
-        "omitted_preimage_fields": "unique-normalized-field-name-array",
+        "omitted_preimage_fields": "non-empty-unique-normalized-field-name-array",
         "included_and_omitted_preimage_fields": "disjoint",
         "unresolved_capabilities": [
           "own-identity-behavior",
@@ -93,10 +94,11 @@
           "manifest-bootstrap",
           "sealing",
           "acceptance"
-        ]
+        ],
+        "family_construction_identity": "lowercase-functional-identifier"
       },
       "uniqueness_constraints": [
-        "construction-identity",
+        "family-construction-identity",
         "family-name",
         "semantic-domain-and-family-name",
         "domain-prefix"

@@ -10,6 +10,7 @@
     "responsibility",
     "normative",
     "decision_basis",
+    "identifier_distinction",
     "semantic_identity_representation",
     "canonicalization_reference",
     "digest_declaration",
@@ -41,6 +42,12 @@
           "explicit-included-and-omitted-preimage-fields",
           "later-capabilities-unavailable-until-separately-governed"
         ]
+      },
+      "identifier_distinction": {
+        "semantic_identity": "family-qualified-content-derived-identity",
+        "implementation_identifier": "implementation-local-locator-or-handle",
+        "equality_rule": "implementation-identifiers-do-not-determine-semantic-identity-equality",
+        "preimage_rule": "implementation-identifiers-are-excluded-unless-a-family-declaration-explicitly-includes-a-semantic-field"
       },
       "semantic_identity_representation": {
         "representation_kind": "closed-object",

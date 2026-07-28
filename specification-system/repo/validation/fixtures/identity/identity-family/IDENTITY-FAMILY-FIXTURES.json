@@ -1,0 +1,798 @@
+{
+  "construction_identity": "identity-family-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative validator inputs for identity-family declaration construction without defining accepted conformance vectors.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-object-and-aggregate-families",
+      "expected": "pass",
+      "expected_diagnostic": null,
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        },
+        {
+          "family_construction_identity": "bundle-family-construction",
+          "family_name": "bundle",
+          "semantic_domain": "collection",
+          "subject_category": "aggregate",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.bundle.v1",
+          "included_preimage_fields": [
+            "members",
+            "name"
+          ],
+          "omitted_preimage_fields": [
+            "display_order"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unsupported-canonicalization-version",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-CANONICAL-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v2",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unsupported-digest-algorithm",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-DIGEST-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-512",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "unsupported-digest-encoding",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-DIGEST-002",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "base64",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "malformed-domain-prefix",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-DOMAIN-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "bad\nprefix",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "overlapping-preimage-fields",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-PREIMAGE-002",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "title"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate-preimage-fields",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-PREIMAGE-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "body"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalid-subject-category",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-CATEGORY-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "hybrid",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "undeclared-later-stage-field",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FIELD-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ],
+          "reference_modes": [
+            "direct"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "malformed-functional-identifier",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-NAME-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "Product Name",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate-family-construction-identity",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-UNIQUE-001",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        },
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "other-document",
+          "semantic_domain": "other-content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.other-document.v1",
+          "included_preimage_fields": [
+            "body"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate-family-name",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-UNIQUE-002",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        },
+        {
+          "family_construction_identity": "document-family-two-construction",
+          "family_name": "document",
+          "semantic_domain": "other-content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document-two.v1",
+          "included_preimage_fields": [
+            "body"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate-semantic-family",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-UNIQUE-003",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        },
+        {
+          "family_construction_identity": "document-family-three-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "aggregate",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document-three.v1",
+          "included_preimage_fields": [
+            "members"
+          ],
+          "omitted_preimage_fields": [
+            "display_order"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "duplicate-domain-prefix",
+      "expected": "reject",
+      "expected_diagnostic": "REPO-SPEC-IDENTITY-FAMILY-UNIQUE-004",
+      "declarations": [
+        {
+          "family_construction_identity": "document-family-construction",
+          "family_name": "document",
+          "semantic_domain": "content",
+          "subject_category": "object",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "body",
+            "title"
+          ],
+          "omitted_preimage_fields": [
+            "cache_key"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        },
+        {
+          "family_construction_identity": "bundle-family-two-construction",
+          "family_name": "bundle-two",
+          "semantic_domain": "collection-two",
+          "subject_category": "aggregate",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "digest_encoding": "lowercase-hexadecimal",
+          "domain_prefix": "repo.identity.document.v1",
+          "included_preimage_fields": [
+            "members"
+          ],
+          "omitted_preimage_fields": [
+            "display_order"
+          ],
+          "unresolved_capabilities": [
+            "own-identity-behavior",
+            "reference-modes",
+            "reference-encoding",
+            "aggregate-membership",
+            "aggregate-ordering",
+            "aggregate-duplicates",
+            "aggregate-empty-policy",
+            "aggregate-closure",
+            "cycle-handling",
+            "verification-modes",
+            "verification-context",
+            "verification-evidence",
+            "governing-revision-binding",
+            "self-reference",
+            "manifest-bootstrap",
+            "sealing",
+            "acceptance"
+          ]
+        }
+      ]
+    }
+  ],
+  "expected_relationships": [
+    "identity family construction validator",
+    "identity family construction model",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "These fixtures are construction validator inputs and are not accepted conformance vectors.",
+    "Final accepted identity families and digests remain separately governed."
+  ]
+}

@@ -27,6 +27,7 @@ ARTIFACT_CLASSES = (
     "development-process-placeholder",
     "identity-authority-placeholder",
     "identity-family-construction-schema",
+    "identity-family-fixture-set-construction",
     "identity-family-model-construction",
     "identity-model-construction",
     "identity-model-construction-schema",
@@ -61,6 +62,7 @@ ARTIFACT_PATHS = (
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
+    "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
 )
 NON_PLACEHOLDER_PATHS = {
     "authoritative/identity/IDENTITY-MODEL.json",
@@ -69,6 +71,7 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -81,6 +84,7 @@ REQUIRED_DIRECTORIES = (
     "validation/intrinsic", "validation/repository", "validation/tests",
     "validation/fixtures", "validation/fixtures/identity",
     "validation/fixtures/identity/canonical-json",
+    "validation/fixtures/identity/identity-family",
 )
 REQUIRED_PATHS = (
     MANIFEST_PATH, "validate", *ARTIFACT_PATHS,
