@@ -1,0 +1,14 @@
+{
+  "construction_identity": "normative-change-placeholder",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future normative-change authority without defining acceptance semantics.",
+  "normative": false,
+  "expected_relationships": [
+    "development-process authority",
+    "validation evidence"
+  ],
+  "unresolved_questions": [
+    "Substantive semantics require a separately governed issue.",
+    "Final schema and identity bindings are not defined."
+  ]
+}

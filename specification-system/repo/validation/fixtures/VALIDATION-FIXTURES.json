@@ -1,0 +1,14 @@
+{
+  "construction_identity": "validation-fixtures-placeholder",
+  "construction_status": "under-construction",
+  "responsibility": "Represent synthetic validator-test fixtures that are not conformance authority.",
+  "normative": false,
+  "expected_relationships": [
+    "validation tests",
+    "intrinsic validation"
+  ],
+  "unresolved_questions": [
+    "Substantive semantics require a separately governed issue.",
+    "Final schema and identity bindings are not defined."
+  ]
+}
