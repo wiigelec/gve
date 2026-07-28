@@ -152,6 +152,14 @@ product-leakage review. That review must inspect semantics, terminology,
 schemas, fixtures, validation logic, examples, and dependencies. Checking only
 for imports from `src/gve` or literal `gve-*` names is insufficient.
 
+Product leakage is a semantic authority and governed-review concern. Repository
+validation must not attempt to decide semantic product leakage through product
+names, keyword rejection, identity-family scans, terminology blacklists, or
+heuristic source inspection. A product reference may be legitimate provenance or
+exclusion documentation, and the absence of product names does not prove product
+independence. Objective mechanical boundaries may remain validated when they are
+exactly defined, including the prohibition on importing maintained product code.
+
 When a proposed repository-generic rule cannot be separated confidently from
 GVE product semantics, the rule must remain unresolved or be deferred to a
 separately governed product-profile boundary. It must not be silently added to

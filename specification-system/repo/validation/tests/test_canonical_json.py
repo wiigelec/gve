@@ -189,7 +189,7 @@ class CanonicalJsonTests(unittest.TestCase):
                 changed[field] = {"unexpected": True}
                 with self.assertRaisesRegex(
                     IDENTITY.ValidationFailure,
-                    "^GVE-RSI-CANONICAL-001:",
+                    "^REPO-SPEC-IDENTITY-CANONICAL-001:",
                 ):
                     IDENTITY.validate_canonical(changed, "canonical")
 
@@ -198,7 +198,7 @@ class CanonicalJsonTests(unittest.TestCase):
                     changed[field]["unexpected"] = True
                     with self.assertRaisesRegex(
                         IDENTITY.ValidationFailure,
-                        "^GVE-RSI-CANONICAL-001:",
+                        "^REPO-SPEC-IDENTITY-CANONICAL-001:",
                     ):
                         IDENTITY.validate_canonical(changed, "canonical")
 
@@ -217,7 +217,7 @@ class CanonicalJsonTests(unittest.TestCase):
                 changed[field] = replacement
                 with self.assertRaisesRegex(
                     IDENTITY.ValidationFailure,
-                    "^GVE-RSI-SCHEMA-001:",
+                    "^REPO-SPEC-IDENTITY-SCHEMA-001:",
                 ):
                     IDENTITY.validate_schema(changed, "schema")
 
@@ -225,7 +225,7 @@ class CanonicalJsonTests(unittest.TestCase):
         changed["required_fields"].append("unexpected")
         with self.assertRaisesRegex(
             IDENTITY.ValidationFailure,
-            "^GVE-RSI-SCHEMA-001:",
+            "^REPO-SPEC-IDENTITY-SCHEMA-001:",
         ):
             IDENTITY.validate_schema(changed, "schema")
 
