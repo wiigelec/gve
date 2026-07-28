@@ -1,0 +1,14 @@
+{
+  "construction_identity": "validation-library-placeholder",
+  "construction_status": "under-construction",
+  "responsibility": "Represent reusable validation mechanisms without implementing future semantics.",
+  "normative": false,
+  "expected_relationships": [
+    "intrinsic validation",
+    "repository validation"
+  ],
+  "unresolved_questions": [
+    "Substantive semantics require a separately governed issue.",
+    "Final schema and identity bindings are not defined."
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "construction_identity": "identity-authority-placeholder",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future portable identity authority without defining identity semantics.",
+  "normative": false,
+  "expected_relationships": [
+    "repository specification artifacts",
+    "future canonical representation authority"
+  ],
+  "unresolved_questions": [
+    "Substantive semantics require a separately governed issue.",
+    "Final schema and identity bindings are not defined."
+  ]
+}

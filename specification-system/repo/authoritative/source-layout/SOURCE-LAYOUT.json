@@ -1,0 +1,14 @@
+{
+  "construction_identity": "source-layout-placeholder",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future source-layout authority without defining source semantics.",
+  "normative": false,
+  "expected_relationships": [
+    "repository model",
+    "Level-model authority"
+  ],
+  "unresolved_questions": [
+    "Substantive semantics require a separately governed issue.",
+    "Final schema and identity bindings are not defined."
+  ]
+}

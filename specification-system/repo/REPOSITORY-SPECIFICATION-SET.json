@@ -4,15 +4,36 @@
   "normative": false,
   "validation_entry_point": "validate",
   "artifact_classes": [
+    "conformance-boundary-placeholder",
+    "development-process-placeholder",
+    "identity-authority-placeholder",
+    "level-model-placeholder",
+    "normative-change-placeholder",
     "repository-model-placeholder",
-    "specification-artifact-placeholder"
+    "repository-validation-placeholder",
+    "schema-boundary-placeholder",
+    "source-layout-placeholder",
+    "specification-artifact-placeholder",
+    "validation-fixtures-placeholder",
+    "validation-library-placeholder"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
-    "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json"
+    "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
+    "authoritative/identity/IDENTITY-AUTHORITY.json",
+    "authoritative/development-process/DEVELOPMENT-PROCESS.json",
+    "authoritative/normative-change/NORMATIVE-CHANGE.json",
+    "authoritative/level-model/LEVEL-MODEL.json",
+    "authoritative/source-layout/SOURCE-LAYOUT.json",
+    "authoritative/schemas/SCHEMA-BOUNDARY.json",
+    "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
+    "validation/lib/VALIDATION-LIBRARY.json",
+    "validation/repository/REPOSITORY-VALIDATION.json",
+    "validation/fixtures/VALIDATION-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
-    "Final content identities and sealing model are not defined."
+    "Final content identities and sealing model are not defined.",
+    "Substantive authority and conformance semantics remain separately governed."
   ]
 }
