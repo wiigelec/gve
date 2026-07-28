@@ -4,6 +4,24 @@
   "responsibility": "Define the repository-neutral canonical JSON construction boundary used by later identity-preimage construction without selecting any digest, identity family, domain prefix, or final authority.",
   "normative": false,
   "canonicalization_version": "canonical-json-v1",
+  "decision_basis": {
+    "portable_behavior": [
+      "strict-json-and-utf-8-boundary",
+      "object-member-ordering",
+      "array-order-preservation",
+      "deterministic-string-escaping",
+      "duplicate-member-rejection",
+      "non-standard-constant-rejection",
+      "exact-utf-8-output"
+    ],
+    "repository_generic_decisions": [
+      "canonicalization-version-name",
+      "signed-64-bit-integer-domain",
+      "no-unicode-normalization",
+      "deterministic-diagnostic-codes",
+      "failure-exit-status"
+    ]
+  },
   "input_domain": {
     "accepted_value_kinds": [
       "null",

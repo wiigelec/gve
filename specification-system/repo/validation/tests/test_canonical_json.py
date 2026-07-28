@@ -1,22 +1,33 @@
 from __future__ import annotations
 
+import ast
+import copy
 import importlib.util
 import json
 import subprocess
 import sys
-import tempfile
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = ROOT / "validation/intrinsic/validate_canonical_json.py"
+IDENTITY_VALIDATOR_PATH = ROOT / "validation/intrinsic/validate_identity_construction.py"
+MODEL_PATH = ROOT / "authoritative/identity/CANONICAL-JSON.json"
+SCHEMA_PATH = ROOT / "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json"
 FIXTURES = ROOT / "validation/fixtures/identity/canonical-json"
 
-SPEC = importlib.util.spec_from_file_location("canonical_json_validator", VALIDATOR_PATH)
-assert SPEC is not None and SPEC.loader is not None
-MODULE = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(MODULE)
+
+def load_module(name: str, path: Path):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+MODULE = load_module("canonical_json_validator", VALIDATOR_PATH)
+IDENTITY = load_module("identity_construction_validator", IDENTITY_VALIDATOR_PATH)
 
 
 class CanonicalJsonTests(unittest.TestCase):
@@ -33,19 +44,19 @@ class CanonicalJsonTests(unittest.TestCase):
                 self.assertFalse(expected.startswith(b"\xef\xbb\xbf"))
                 self.assertFalse(expected.endswith(b"\n"))
 
-    def test_object_order_is_source_independent(self) -> None:
-        left = MODULE.canonicalize_bytes(b'{"b":2,"a":1}')
-        right = MODULE.canonicalize_bytes(b'{ "a" : 1, "b" : 2 }')
+    def test_object_order_is_source_independent_and_recursive(self) -> None:
+        left = MODULE.canonicalize_bytes(b'{"b":{"d":4,"c":3},"a":1}')
+        right = MODULE.canonicalize_bytes(b'{"a":1,"b":{"c":3,"d":4}}')
         self.assertEqual(left, right)
-        self.assertEqual(left, b'{"a":1,"b":2}')
+        self.assertEqual(left, b'{"a":1,"b":{"c":3,"d":4}}')
 
     def test_arrays_preserve_order(self) -> None:
         self.assertEqual(MODULE.canonicalize_bytes(b'[3,2,1]'), b'[3,2,1]')
 
-    def test_signed_64_bit_integer_boundary(self) -> None:
+    def test_signed_64_bit_integer_boundary_and_negative_zero(self) -> None:
         self.assertEqual(
-            MODULE.canonicalize_bytes(b'[-9223372036854775808,9223372036854775807]'),
-            b'[-9223372036854775808,9223372036854775807]',
+            MODULE.canonicalize_bytes(b'[-9223372036854775808,9223372036854775807,-0]'),
+            b'[-9223372036854775808,9223372036854775807,0]',
         )
         for source in (b'9223372036854775808', b'-9223372036854775809'):
             with self.subTest(source=source):
@@ -54,6 +65,28 @@ class CanonicalJsonTests(unittest.TestCase):
                     "^CANONICAL_JSON_UNSUPPORTED_NUMBER:",
                 ):
                     MODULE.canonicalize_bytes(source)
+
+    def test_fraction_and_exponent_forms_fail(self) -> None:
+        for source in (b"1.5", b"1e2", b"-2E-3"):
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(
+                    MODULE.CanonicalJsonFailure,
+                    "^CANONICAL_JSON_UNSUPPORTED_NUMBER:",
+                ):
+                    MODULE.canonicalize_bytes(source)
+
+    def test_nonminimal_source_integer_is_malformed_json(self) -> None:
+        with self.assertRaisesRegex(
+            MODULE.CanonicalJsonFailure,
+            "^CANONICAL_JSON_MALFORMED:",
+        ):
+            MODULE.canonicalize_bytes(b"01")
+
+    def test_strings_escape_exactly_and_do_not_normalize_unicode(self) -> None:
+        source = '"quote:\\" slash:/ reverse:\\\\ controls:\\b\\f\\n\\r\\t composed:é decomposed:é"'.encode()
+        expected = '"quote:\\" slash:/ reverse:\\\\ controls:\\b\\f\\n\\r\\t composed:é decomposed:é"'.encode()
+        self.assertEqual(MODULE.canonicalize_bytes(source), expected)
+        self.assertNotEqual("é".encode("utf-8"), "é".encode("utf-8"))
 
     def test_negative_fixtures_fail_with_stable_codes(self) -> None:
         cases = (
@@ -68,7 +101,7 @@ class CanonicalJsonTests(unittest.TestCase):
                 self.assertEqual(caught.exception.code, code)
 
     def test_non_standard_constants_fail(self) -> None:
-        for source in (b'NaN', b'Infinity', b'-Infinity'):
+        for source in (b"NaN", b"Infinity", b"-Infinity"):
             with self.subTest(source=source):
                 with self.assertRaisesRegex(
                     MODULE.CanonicalJsonFailure,
@@ -77,15 +110,13 @@ class CanonicalJsonTests(unittest.TestCase):
                     MODULE.canonicalize_bytes(source)
 
     def test_invalid_utf8_and_bom_fail(self) -> None:
-        cases = (
-            (b'{"value":"\xff"}', "CANONICAL_JSON_INVALID_UTF8"),
-            (b'\xef\xbb\xbf{}', "CANONICAL_JSON_INVALID_UTF8"),
-        )
-        for source, code in cases:
+        for source in (b'{"value":"\xff"}', b"\xef\xbb\xbf{}"):
             with self.subTest(source=source):
-                with self.assertRaises(MODULE.CanonicalJsonFailure) as caught:
+                with self.assertRaisesRegex(
+                    MODULE.CanonicalJsonFailure,
+                    "^CANONICAL_JSON_INVALID_UTF8:",
+                ):
                     MODULE.canonicalize_bytes(source)
-                self.assertEqual(caught.exception.code, code)
 
     def test_malformed_json_fails(self) -> None:
         with self.assertRaisesRegex(
@@ -94,10 +125,11 @@ class CanonicalJsonTests(unittest.TestCase):
         ):
             MODULE.canonicalize_bytes(b'{"missing":}')
 
-    def test_python_values_reject_floats_and_surrogates(self) -> None:
+    def test_python_values_reject_floats_surrogates_and_non_string_keys(self) -> None:
         for value, code in (
             (1.0, "CANONICAL_JSON_UNSUPPORTED_NUMBER"),
             ("\ud800", "CANONICAL_JSON_INVALID_UNICODE"),
+            ({1: "value"}, "CANONICAL_JSON_UNSUPPORTED_VALUE"),
         ):
             with self.subTest(value=repr(value)):
                 with self.assertRaises(MODULE.CanonicalJsonFailure) as caught:
@@ -107,45 +139,28 @@ class CanonicalJsonTests(unittest.TestCase):
     def test_cli_has_exact_stdout_and_deterministic_failure(self) -> None:
         success = subprocess.run(
             [sys.executable, str(VALIDATOR_PATH), str(FIXTURES / "object-reordered.input.json")],
-            cwd=ROOT,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(success.returncode, 0)
-        self.assertEqual(
-            success.stdout,
-            (FIXTURES / "object-reordered.canonical.json").read_bytes(),
-        )
+        self.assertEqual(success.stdout, (FIXTURES / "object-reordered.canonical.json").read_bytes())
         self.assertEqual(success.stderr, b"")
 
         failure = subprocess.run(
             [sys.executable, str(VALIDATOR_PATH), str(FIXTURES / "duplicate-key.input.json")],
-            cwd=ROOT,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(failure.returncode, 1)
         self.assertEqual(failure.stdout, b"")
-        self.assertEqual(
-            failure.stderr,
-            b"CANONICAL_JSON_DUPLICATE_KEY: a\n",
-        )
+        self.assertEqual(failure.stderr, b"CANONICAL_JSON_DUPLICATE_KEY: a\n")
 
     def test_unsupported_cli_version_fails(self) -> None:
         completed = subprocess.run(
             [
-                sys.executable,
-                str(VALIDATOR_PATH),
+                sys.executable, str(VALIDATOR_PATH),
                 str(FIXTURES / "object-reordered.input.json"),
-                "--canonicalization-version",
-                "unknown",
+                "--canonicalization-version", "unknown",
             ],
-            cwd=ROOT,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=False,
+            cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False,
         )
         self.assertEqual(completed.returncode, 1)
         self.assertEqual(completed.stdout, b"")
@@ -154,9 +169,65 @@ class CanonicalJsonTests(unittest.TestCase):
             b"CANONICAL_JSON_UNSUPPORTED_VERSION: unknown\n",
         )
 
-    def test_validator_has_no_maintained_product_import(self) -> None:
-        source = VALIDATOR_PATH.read_text(encoding="utf-8")
-        self.assertNotIn("maintained product", source.lower())
+    def test_canonicalizer_imports_only_standard_library_modules(self) -> None:
+        allowed = {"argparse", "collections", "json", "pathlib", "sys", "typing", "__future__"}
+        tree = ast.parse(VALIDATOR_PATH.read_text(encoding="utf-8"))
+        observed = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                observed.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                observed.add((node.module or "").split(".", 1)[0])
+        self.assertEqual(observed - allowed, set())
+
+    def test_every_canonical_construction_claim_is_closed(self) -> None:
+        model = json.loads(MODEL_PATH.read_text(encoding="utf-8"))
+        constrained = IDENTITY.EXPECTED_CANONICAL_CONSTRAINTS
+        for field, allowed in constrained.items():
+            with self.subTest(field=field):
+                changed = copy.deepcopy(model)
+                changed[field] = {"unexpected": True}
+                with self.assertRaisesRegex(
+                    IDENTITY.ValidationFailure,
+                    "^GVE-RSI-CANONICAL-001:",
+                ):
+                    IDENTITY.validate_canonical(changed, "canonical")
+
+                changed = copy.deepcopy(model)
+                if isinstance(changed[field], dict):
+                    changed[field]["unexpected"] = True
+                    with self.assertRaisesRegex(
+                        IDENTITY.ValidationFailure,
+                        "^GVE-RSI-CANONICAL-001:",
+                    ):
+                        IDENTITY.validate_canonical(changed, "canonical")
+
+    def test_schema_constraints_are_exact_and_closed(self) -> None:
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        IDENTITY.validate_schema(schema, "schema")
+        mutations = (
+            ("target_construction_identity", "other"),
+            ("closed", False),
+            ("field_constraints", {}),
+            ("forbidden_claim_fields", []),
+        )
+        for field, replacement in mutations:
+            with self.subTest(field=field):
+                changed = copy.deepcopy(schema)
+                changed[field] = replacement
+                with self.assertRaisesRegex(
+                    IDENTITY.ValidationFailure,
+                    "^GVE-RSI-SCHEMA-001:",
+                ):
+                    IDENTITY.validate_schema(changed, "schema")
+
+        changed = copy.deepcopy(schema)
+        changed["required_fields"].append("unexpected")
+        with self.assertRaisesRegex(
+            IDENTITY.ValidationFailure,
+            "^GVE-RSI-SCHEMA-001:",
+        ):
+            IDENTITY.validate_schema(changed, "schema")
 
 
 if __name__ == "__main__":

@@ -15,9 +15,10 @@ PLACEHOLDER_FIELDS = {
 }
 CANONICAL_FIELDS = {
     "construction_identity", "construction_status", "responsibility", "normative",
-    "canonicalization_version", "input_domain", "encoding", "object_rules",
-    "array_rules", "string_rules", "number_rules", "rejection_rules",
-    "output_rules", "expected_relationships", "unresolved_questions",
+    "canonicalization_version", "decision_basis", "input_domain", "encoding",
+    "object_rules", "array_rules", "string_rules", "number_rules",
+    "rejection_rules", "output_rules", "expected_relationships",
+    "unresolved_questions",
 }
 SCHEMA_FIELDS = {
     "construction_identity", "construction_status", "responsibility", "normative",
@@ -41,11 +42,11 @@ SUPPORTING_PATHS = (
     "validation/tests/test_canonical_json.py",
     "validation/fixtures/identity/canonical-json",
 )
+# Preserve the pre-existing focused legacy scan without extending it to the new,
+# repository-neutral canonical JSON mechanism.
 FOCUSED_PYTHON_PATHS = (
     "validation/intrinsic/validate_identity_construction.py",
-    "validation/intrinsic/validate_canonical_json.py",
     "validation/tests/test_identity_construction.py",
-    "validation/tests/test_canonical_json.py",
 )
 EXPECTED_IDENTITIES = {
     "authoritative/identity/IDENTITY-MODEL.json": "identity-model-construction",
@@ -70,6 +71,8 @@ FORBIDDEN_NAME_PARTS = {
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 GVE_FAMILY = re.compile(r"\bgve-[a-z0-9]+(?:-[a-z0-9]+)*\b")
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
+
+EXPECTED_CANONICAL_CONSTRAINTS = {'canonicalization_version': ['canonical-json-v1'], 'decision_basis': [{'portable_behavior': ['strict-json-and-utf-8-boundary', 'object-member-ordering', 'array-order-preservation', 'deterministic-string-escaping', 'duplicate-member-rejection', 'non-standard-constant-rejection', 'exact-utf-8-output'], 'repository_generic_decisions': ['canonicalization-version-name', 'signed-64-bit-integer-domain', 'no-unicode-normalization', 'deterministic-diagnostic-codes', 'failure-exit-status']}], 'input_domain': [{'accepted_value_kinds': ['null', 'boolean', 'integer', 'string', 'array', 'object'], 'integer_range': 'signed-64-bit', 'object_member_names': 'string-only'}], 'encoding': [{'input': 'strict-utf-8', 'output': 'utf-8', 'byte_order_mark': 'forbidden', 'unicode_normalization': 'none'}], 'object_rules': [{'member_order': 'ascending-unicode-code-point-sequence', 'source_declaration_order_significant': False, 'duplicate_member_names': 'reject'}], 'array_rules': [{'input_order': 'preserve', 'semantic_sorting': 'outside-canonical-json'}], 'string_rules': [{'quotation_mark': 'escape', 'reverse_solidus': 'escape', 'control_characters': 'deterministic-json-escapes', 'solidus': 'unescaped', 'non_ascii': 'literal-utf-8', 'surrogate_code_points': 'reject'}], 'number_rules': [{'accepted': 'signed-64-bit-integers-only', 'representation': 'minimal-base-10', 'negative_zero': 'not-distinct', 'fractions': 'reject', 'exponents': 'reject', 'non_finite': 'reject'}], 'rejection_rules': [{'invalid_utf8': 'CANONICAL_JSON_INVALID_UTF8', 'malformed_json': 'CANONICAL_JSON_MALFORMED', 'duplicate_member_name': 'CANONICAL_JSON_DUPLICATE_KEY', 'non_standard_constant': 'CANONICAL_JSON_NON_STANDARD_CONSTANT', 'unsupported_number': 'CANONICAL_JSON_UNSUPPORTED_NUMBER', 'invalid_unicode': 'CANONICAL_JSON_INVALID_UNICODE', 'unsupported_value': 'CANONICAL_JSON_UNSUPPORTED_VALUE', 'unsupported_version': 'CANONICAL_JSON_UNSUPPORTED_VERSION', 'failure_exit_status': 1}], 'output_rules': [{'insignificant_whitespace': 'omit', 'trailing_newline': 'forbidden', 'output_boundary': 'exact-canonical-utf-8-bytes'}]}
 
 
 class ValidationFailure(Exception):
@@ -175,22 +178,10 @@ def validate_common(value: dict[str, Any], label: str) -> str:
 def validate_canonical(value: dict[str, Any], label: str) -> None:
     exact_fields(value, CANONICAL_FIELDS, label)
     validate_common(value, label)
-    if value["canonicalization_version"] != "canonical-json-v1":
-        fail("GVE-RSI-CANONICAL-001", f"{label}: unsupported canonicalization version")
-    if value["input_domain"] != {
-        "accepted_value_kinds": ["null", "boolean", "integer", "string", "array", "object"],
-        "integer_range": "signed-64-bit",
-        "object_member_names": "string-only",
-    }:
-        fail("GVE-RSI-CANONICAL-001", f"{label}: invalid input domain")
-    if value["object_rules"]["duplicate_member_names"] != "reject":
-        fail("GVE-RSI-CANONICAL-001", f"{label}: duplicate names must be rejected")
-    if value["array_rules"]["input_order"] != "preserve":
-        fail("GVE-RSI-CANONICAL-001", f"{label}: array order must be preserved")
-    if value["encoding"]["unicode_normalization"] != "none":
-        fail("GVE-RSI-CANONICAL-001", f"{label}: Unicode normalization must be absent")
-    if value["output_rules"]["output_boundary"] != "exact-canonical-utf-8-bytes":
-        fail("GVE-RSI-CANONICAL-001", f"{label}: invalid output boundary")
+    actual = {field: value[field] for field in EXPECTED_CANONICAL_CONSTRAINTS}
+    expected = {field: allowed[0] for field, allowed in EXPECTED_CANONICAL_CONSTRAINTS.items()}
+    if actual != expected:
+        fail("GVE-RSI-CANONICAL-001", f"{label}: canonical construction claims do not match policy")
 
 
 def validate_schema(value: dict[str, Any], label: str) -> None:
@@ -207,6 +198,8 @@ def validate_schema(value: dict[str, Any], label: str) -> None:
         fail("GVE-RSI-SCHEMA-001", f"{label}: required fields do not match model")
     if value["closed"] is not True:
         fail("GVE-RSI-SCHEMA-001", f"{label}: schema must be closed")
+    if value["field_constraints"] != EXPECTED_CANONICAL_CONSTRAINTS:
+        fail("GVE-RSI-SCHEMA-001", f"{label}: field constraints do not match model")
     forbidden_fields = value["forbidden_claim_fields"]
     if (
         not isinstance(forbidden_fields, list)
