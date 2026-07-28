@@ -26,8 +26,11 @@ ARTIFACT_CLASSES = (
     "conformance-boundary-placeholder",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-family-construction-schema",
+    "identity-family-fixture-set-construction",
     "identity-family-model-construction",
     "identity-model-construction",
+    "identity-model-construction-schema",
     "identity-verification-construction",
     "level-model-placeholder",
     "normative-change-placeholder",
@@ -53,18 +56,24 @@ ARTIFACT_PATHS = (
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
     "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
+    "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
 )
-PLACEHOLDER_PATHS = tuple(
-    path for path in ARTIFACT_PATHS
-    if path not in {
-        "authoritative/identity/CANONICAL-JSON.json",
-        "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
-    }
-)
+NON_PLACEHOLDER_PATHS = {
+    "authoritative/identity/IDENTITY-MODEL.json",
+    "authoritative/identity/CANONICAL-JSON.json",
+    "authoritative/identity/IDENTITY-FAMILY-MODEL.json",
+    "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
+}
+PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
     "authoritative/identity", "authoritative/repository-model",
     "authoritative/specification-system", "authoritative/development-process",
@@ -75,6 +84,7 @@ REQUIRED_DIRECTORIES = (
     "validation/intrinsic", "validation/repository", "validation/tests",
     "validation/fixtures", "validation/fixtures/identity",
     "validation/fixtures/identity/canonical-json",
+    "validation/fixtures/identity/identity-family",
 )
 REQUIRED_PATHS = (
     MANIFEST_PATH, "validate", *ARTIFACT_PATHS,
@@ -88,6 +98,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_construction_skeleton.py",
     "validation/tests/test_complete_construction_skeleton.py",
     "validation/tests/test_identity_construction.py",
+    "validation/tests/test_identity_family.py",
     "validation/tests/test_canonical_json.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
@@ -100,20 +111,24 @@ FORBIDDEN_CLAIM_KEYS = {
     "content_digest", "revision", "specification_revision", "aggregate_revision",
 }
 
-
 class ValidationFailure(Exception):
     pass
-
 
 def fail(code: str, detail: str) -> None:
     raise ValidationFailure(f"{code}: {detail}")
 
+def _unique_pairs(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f"duplicate object member {key}")
+        result[key] = value
+    return result
 
 def strict_json(path: Path) -> dict[str, Any]:
     try:
-        raw = path.read_text(encoding="utf-8")
         value = json.loads(
-            raw,
+            path.read_text(encoding="utf-8"),
             object_pairs_hook=_unique_pairs,
             parse_constant=lambda token: (_ for _ in ()).throw(
                 ValueError(f"non-standard JSON constant {token}")
@@ -125,16 +140,6 @@ def strict_json(path: Path) -> dict[str, Any]:
         fail("REPO-SPEC-CONSTRUCTION-JSON-002", f"{path}: top level must be an object")
     return value
 
-
-def _unique_pairs(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError(f"duplicate object member {key}")
-        result[key] = value
-    return result
-
-
 def exact_fields(value: dict[str, Any], fields: set[str], label: str) -> None:
     unknown = sorted(set(value) - fields)
     missing = sorted(fields - set(value))
@@ -142,7 +147,6 @@ def exact_fields(value: dict[str, Any], fields: set[str], label: str) -> None:
         fail("REPO-SPEC-CONSTRUCTION-FIELD-001", f"{label}: unknown fields: {', '.join(unknown)}")
     if missing:
         fail("REPO-SPEC-CONSTRUCTION-FIELD-002", f"{label}: missing fields: {', '.join(missing)}")
-
 
 def contained_path(root: Path, value: str, label: str) -> Path:
     pure = PurePosixPath(value)
@@ -160,7 +164,6 @@ def contained_path(root: Path, value: str, label: str) -> Path:
             fail("REPO-SPEC-CONSTRUCTION-PATH-003", f"{label}: symlink is forbidden")
     return target
 
-
 def validate_identity(value: Any, label: str) -> str:
     if not isinstance(value, str) or not IDENTITY.fullmatch(value):
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-001", f"{label}: invalid functional identity")
@@ -168,10 +171,8 @@ def validate_identity(value: Any, label: str) -> str:
         fail("REPO-SPEC-CONSTRUCTION-NAME-001", f"{label}: work-derived name is forbidden")
     return value
 
-
 def validate_common(value: dict[str, Any], label: str) -> str:
-    present = sorted(set(value) & FORBIDDEN_CLAIM_KEYS)
-    if present:
+    if set(value) & FORBIDDEN_CLAIM_KEYS:
         fail("REPO-SPEC-CONSTRUCTION-CLAIM-001", f"{label}: forbidden final-authority fields")
     identity = validate_identity(value["construction_identity"], label)
     if value["construction_status"] != "under-construction":
@@ -183,13 +184,9 @@ def validate_common(value: dict[str, Any], label: str) -> str:
         fail("REPO-SPEC-CONSTRUCTION-TYPE-001", f"{label}: unresolved questions required")
     return identity
 
-
 def _local_import_exists(root: Path, module: str) -> bool:
     parts = module.split(".")
-    module_file = root.joinpath(*parts).with_suffix(".py")
-    package_dir = root.joinpath(*parts)
-    return module_file.is_file() or package_dir.is_dir()
-
+    return root.joinpath(*parts).with_suffix(".py").is_file() or root.joinpath(*parts).is_dir()
 
 def validate_python_dependencies(root: Path) -> None:
     standard_library = set(sys.stdlib_module_names) | {"__future__"}
@@ -198,7 +195,7 @@ def validate_python_dependencies(root: Path) -> None:
             fail("REPO-SPEC-CONSTRUCTION-PATH-003", f"{path}: symlink is forbidden")
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
-            modules: list[tuple[str, int]] = []
+            modules = []
             if isinstance(node, ast.Import):
                 modules = [(alias.name, 0) for alias in node.names]
             elif isinstance(node, ast.ImportFrom):
@@ -209,11 +206,8 @@ def validate_python_dependencies(root: Path) -> None:
                 top_level = module.split(".", 1)[0]
                 if top_level in standard_library or _local_import_exists(root, module):
                     continue
-                fail(
-                    "REPO-SPEC-CONSTRUCTION-DEPENDENCY-001",
-                    f"{path}: non-standard, non-local import forbidden: {module}",
-                )
-
+                fail("REPO-SPEC-CONSTRUCTION-DEPENDENCY-001",
+                     f"{path}: non-standard, non-local import forbidden: {module}")
 
 def validate_focused_identity(root: Path) -> None:
     path = root / "validation/intrinsic/validate_identity_construction.py"
@@ -227,14 +221,12 @@ def validate_focused_identity(root: Path) -> None:
     except module.ValidationFailure as exc:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-CONSTRUCTION-001", str(exc))
 
-
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
             fail("REPO-SPEC-CONSTRUCTION-PATH-001", f"{relative}: required directory is missing")
     for relative in REQUIRED_PATHS:
-        target = contained_path(root, relative, relative)
-        if not target.exists():
+        if not contained_path(root, relative, relative).exists():
             fail("REPO-SPEC-CONSTRUCTION-PATH-001", f"{relative}: required path is missing")
 
     manifest = strict_json(root / MANIFEST_PATH)
@@ -263,19 +255,20 @@ def validate(root: Path) -> None:
     }
     undeclared = sorted(participating - set(paths))
     if undeclared:
-        fail("REPO-SPEC-CONSTRUCTION-PATH-006", f"undeclared construction artifacts: {', '.join(undeclared)}")
+        fail("REPO-SPEC-CONSTRUCTION-PATH-006",
+             f"undeclared construction artifacts: {', '.join(undeclared)}")
 
     for relative in PLACEHOLDER_PATHS:
         value = strict_json(root / relative)
         exact_fields(value, PLACEHOLDER_FIELDS, relative)
         identity = validate_common(value, relative)
         if identity in identities:
-            fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", f"{relative}: duplicate construction identity")
+            fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+                 f"{relative}: duplicate construction identity")
         identities.add(identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
-
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
@@ -288,7 +281,6 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print("repository-specification construction validation passed")
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

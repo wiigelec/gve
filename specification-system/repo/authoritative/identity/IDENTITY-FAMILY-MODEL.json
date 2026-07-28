@@ -1,15 +1,102 @@
 {
   "construction_identity": "identity-family-model-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future family-qualified identity declaration boundary without defining family fields, object kinds, aggregate kinds, reference modes, or closure behavior.",
+  "responsibility": "Define the closed repository-neutral construction representation and mechanically decidable constraints for identity-family declarations without defining concrete reference, aggregate, verification, self-reference, sealing, or acceptance behavior.",
   "normative": false,
+  "decision_basis": {
+    "portable_behavior": [
+      "family-qualified-semantic-identity",
+      "explicit-canonicalization-binding",
+      "explicit-digest-binding",
+      "domain-separated-preimage",
+      "fail-closed-family-selection"
+    ],
+    "repository_generic_decisions": [
+      "functional-family-and-semantic-domain-names",
+      "object-or-aggregate-subject-category",
+      "construction-set-domain-prefix-uniqueness",
+      "explicit-included-and-omitted-preimage-fields",
+      "fixed-unresolved-capabilities"
+    ]
+  },
+  "family_declaration": {
+    "required_fields": [
+      "family_construction_identity",
+      "family_name",
+      "semantic_domain",
+      "subject_category",
+      "canonicalization_version",
+      "digest_algorithm",
+      "digest_encoding",
+      "domain_prefix",
+      "included_preimage_fields",
+      "omitted_preimage_fields",
+      "unresolved_capabilities"
+    ],
+    "closed": true
+  },
+  "field_constraints": {
+    "family_name": "lowercase-functional-identifier",
+    "semantic_domain": "lowercase-functional-identifier",
+    "subject_category": [
+      "object",
+      "aggregate"
+    ],
+    "canonicalization_version": [
+      "canonical-json-v1"
+    ],
+    "digest_algorithm": [
+      "sha-256"
+    ],
+    "digest_encoding": [
+      "lowercase-hexadecimal"
+    ],
+    "domain_prefix": "non-empty-printable-ascii",
+    "included_preimage_fields": "non-empty-unique-normalized-field-name-array",
+    "omitted_preimage_fields": "non-empty-unique-normalized-field-name-array",
+    "included_and_omitted_preimage_fields": "disjoint",
+    "unresolved_capabilities": [
+      "own-identity-behavior",
+      "reference-modes",
+      "reference-encoding",
+      "aggregate-membership",
+      "aggregate-ordering",
+      "aggregate-duplicates",
+      "aggregate-empty-policy",
+      "aggregate-closure",
+      "cycle-handling",
+      "verification-modes",
+      "verification-context",
+      "verification-evidence",
+      "governing-revision-binding",
+      "self-reference",
+      "manifest-bootstrap",
+      "sealing",
+      "acceptance"
+    ],
+    "family_construction_identity": "lowercase-functional-identifier"
+  },
+  "uniqueness_constraints": [
+    "family-construction-identity",
+    "family-name",
+    "semantic-domain-and-family-name",
+    "domain-prefix"
+  ],
+  "conflict_rules": [
+    "object-and-aggregate-subject-categories-are-distinct",
+    "included-and-omitted-preimage-fields-must-not-overlap",
+    "unknown-canonicalization-version-fails",
+    "unknown-digest-algorithm-fails",
+    "unknown-digest-encoding-fails",
+    "unknown-or-concrete-later-capability-field-fails"
+  ],
   "expected_relationships": [
     "identity model construction boundary",
     "canonical JSON construction boundary",
     "identity verification construction boundary"
   ],
   "unresolved_questions": [
-    "Identity family structure and domain separation are not defined.",
-    "Membership, ordering, duplicate, empty, reference, aggregate, and cycle behavior remain separately governed."
+    "No repository or product identity families are declared by this construction model.",
+    "Concrete own-identity, reference, aggregate, verification, governing-revision, self-reference, manifest, sealing, and acceptance behavior remains separately governed."
   ]
 }

@@ -9,8 +9,11 @@
     "conformance-boundary-placeholder",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-family-construction-schema",
+    "identity-family-fixture-set-construction",
     "identity-family-model-construction",
     "identity-model-construction",
+    "identity-model-construction-schema",
     "identity-verification-construction",
     "level-model-placeholder",
     "normative-change-placeholder",
@@ -36,10 +39,13 @@
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
     "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
-    "validation/fixtures/VALIDATION-FIXTURES.json"
+    "validation/fixtures/VALIDATION-FIXTURES.json",
+    "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
