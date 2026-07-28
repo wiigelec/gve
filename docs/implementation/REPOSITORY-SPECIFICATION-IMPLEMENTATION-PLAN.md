@@ -35,6 +35,27 @@ The intended final location remains:
 specs/repo/
 ```
 
+## Plan use and progress determination
+
+This plan defines durable construction boundaries, dependency ordering, and
+completion criteria. It intentionally does not designate a current phase, an
+immediate next step, or a currently authorized successor issue.
+
+Repository audits determine:
+
+- which boundaries are satisfied by accepted repository evidence;
+- which boundary is the earliest incomplete dependency;
+- whether an incomplete boundary is ready for one bounded governed issue;
+- whether corrective planning, authority, validation, or implementation work
+  must precede further construction.
+
+An audit conclusion does not itself authorize implementation. Every repository
+mutation still requires its own bounded governing issue and accepted authority.
+
+Historical statements that a foundation has been established may remain when
+they describe accepted repository history. Such statements do not select or
+authorize later work.
+
 ## Objective
 
 Build a complete, self-validating, repository-generic specification system in a
@@ -75,6 +96,7 @@ Permanent paths and artifact names must describe durable responsibility.
 They must not encode:
 
 - issue number;
+- pull-request number;
 - milestone;
 - implementation phase;
 - migration step;
@@ -191,7 +213,7 @@ During construction, the manifest must:
 
 The construction manifest is not the final normative manifest model.
 
-Every successor issue that adds an artifact family must update the manifest and
+Every bounded issue that adds an artifact family must update the manifest and
 validator atomically.
 
 ## Validation entry point
@@ -217,7 +239,7 @@ It must remain:
 
 ## Authority areas
 
-## `authoritative/identity/`
+### `authoritative/identity/`
 
 Purpose:
 
@@ -269,7 +291,7 @@ gve-authoritative-result
 gve-finalization
 ```
 
-## `authoritative/repository-model/`
+### `authoritative/repository-model/`
 
 Purpose:
 
@@ -295,7 +317,7 @@ Responsibilities:
 - define path significance;
 - define repository identity profiles only after tree semantics exist.
 
-## `authoritative/specification-system/`
+### `authoritative/specification-system/`
 
 Purpose:
 
@@ -326,7 +348,7 @@ Responsibilities:
 - define projection bindings;
 - define sealing participation.
 
-## `authoritative/development-process/`
+### `authoritative/development-process/`
 
 Purpose:
 
@@ -352,7 +374,7 @@ Responsibilities:
 - distinguish mutable planning artifacts from immutable accepted revisions;
 - define development identities only where semantic identity is required.
 
-## `authoritative/normative-change/`
+### `authoritative/normative-change/`
 
 Purpose:
 
@@ -393,7 +415,7 @@ GitHub issue, commit, branch, and pull-request identifiers remain implementation
 or evidence identifiers unless an accepted identity family explicitly governs
 them.
 
-## `authoritative/level-model/`
+### `authoritative/level-model/`
 
 Purpose:
 
@@ -431,7 +453,7 @@ Responsibilities:
 
 The project determines Level contents, not Level meanings.
 
-## `authoritative/source-layout/`
+### `authoritative/source-layout/`
 
 Purpose:
 
@@ -455,7 +477,7 @@ Responsibilities:
 - validation ownership;
 - product-independent layout requirements.
 
-## `authoritative/schemas/`
+### `authoritative/schemas/`
 
 Purpose:
 
@@ -480,7 +502,7 @@ Schemas must be introduced alongside the authority they constrain.
 
 Construction schemas must not pretend to be final normative schemas.
 
-## `authoritative/conformance/`
+### `authoritative/conformance/`
 
 Purpose:
 
@@ -506,7 +528,7 @@ accepted.
 
 ## Derived area
 
-Create:
+Maintain:
 
 ```text
 specification-system/repo/derived/markdown/
@@ -535,9 +557,9 @@ Rules:
 
 ## Validation architecture
 
-## `validation/lib/`
+### `validation/lib/`
 
-Reusable mechanisms:
+Reusable mechanisms may include:
 
 ```text
 strict_json.py
@@ -556,9 +578,9 @@ evidence_reporting.py
 Libraries should be extracted only when behavior is stable enough to justify
 reuse.
 
-Do not perform broad refactoring merely to create the directory.
+Do not perform broad refactoring merely to populate the directory.
 
-## `validation/intrinsic/`
+### `validation/intrinsic/`
 
 Checks using only `specification-system/repo/`.
 
@@ -590,7 +612,7 @@ Later checks:
 - digest and identity bindings;
 - sealing readiness.
 
-## `validation/repository/`
+### `validation/repository/`
 
 Checks an external repository against repository authority.
 
@@ -598,7 +620,7 @@ Targets:
 
 - the GVE repository;
 - a minimal initialized repository;
-- a repository receiving a copied portable specification subset.
+- a repository receiving a copied portable repository-specification subset.
 
 Responsibilities:
 
@@ -613,7 +635,7 @@ Responsibilities:
 - initialization completeness;
 - standalone validation.
 
-## `validation/tests/`
+### `validation/tests/`
 
 Tests must describe invariants.
 
@@ -635,7 +657,7 @@ test_projection_freshness.py
 test_initialization.py
 ```
 
-## `validation/fixtures/`
+### `validation/fixtures/`
 
 Synthetic invalid inputs used only to test validators.
 
@@ -671,7 +693,7 @@ device until separately accepted.
 
 ## Identity architecture
 
-## Generic identity kernel
+### Generic identity kernel
 
 The generic identity kernel defines how identities work.
 
@@ -695,11 +717,11 @@ IDENTITY-FAMILY-MODEL.json
 IDENTITY-VERIFICATION.json
 ```
 
-## Identity profiles
+### Identity profiles
 
 Profiles define which families exist for a domain.
 
-### Specification profile
+#### Specification profile
 
 Expected candidate identities:
 
@@ -712,7 +734,7 @@ Expected candidate identities:
 - validation artifact;
 - sealed specification set.
 
-### Repository profile
+#### Repository profile
 
 Expected candidate identities:
 
@@ -724,7 +746,7 @@ Expected candidate identities:
 
 These must not be defined before path and tree semantics are settled.
 
-### Development profile
+#### Development profile
 
 Expected candidate identities:
 
@@ -733,7 +755,7 @@ Expected candidate identities:
 - immutable planning revision;
 - provenance and attribution bindings.
 
-### Normative-change profile
+#### Normative-change profile
 
 Expected candidate identities:
 
@@ -793,41 +815,53 @@ Final sealing occurs as a separate governed hardening and cutover effort.
 
 ## Content development order
 
-The authoritative implementation order is:
+The durable dependency order is:
 
 ```text
 1. construction foundation
 2. complete functional skeleton
 3. generic identity construction skeleton
-4. generic identity semantic model
-5. minimal repository vocabulary
-6. specification artifact classes
+4. canonical JSON construction model
+5. identity-family construction model
+6. verification and aggregate construction model
 7. reusable validation mechanisms
-8. specification identity profile
-9. self-reference and bootstrap
-10. manifest and revision model
-11. repository model and repository identity profile
-12. development-process authority
-13. normative-change authority
-14. fixed Level model
-15. source-layout contracts
-16. conformance
-17. derived projection hardening
-18. repository validation
-19. initialization and portable copying
-20. hardening, acceptance, and cutover
+8. generic identity construction conformance
+9. minimal repository vocabulary
+10. specification artifact classes
+11. specification identity profile
+12. self-reference and bootstrap
+13. manifest and revision model
+14. repository model
+15. repository identity profile
+16. development-process authority
+17. normative-change authority
+18. fixed Level model
+19. source-layout contracts
+20. schemas and conformance hardening
+21. derived projection hardening
+22. repository validation
+23. initialization and portable copying
+24. hardening and acceptance
+25. cutover
 ```
 
-This order refines the earlier stand-up sequence by making the generic identity
-kernel explicit before identity-dependent manifest and sealing work.
+This order makes the generic identity kernel explicit before identity-dependent
+profiles, manifests, revisions, and sealing.
+
+The implementation phases below group related boundaries for explanation. They
+do not authorize combining independently governable items into one issue.
+
+Audits determine the earliest incomplete dependency supported by accepted
+repository evidence. This plan does not designate that dependency as the
+current or next step.
 
 ## Implementation phases
 
-## Phase 0 — Construction foundation
+### Phase 0 — Construction foundation
 
 Status: established.
 
-Current responsibilities:
+Responsibilities:
 
 - temporary manifest;
 - executable validation entry point;
@@ -838,21 +872,23 @@ Current responsibilities:
 - complete-gate integration;
 - no normative authority claim.
 
-## Phase 1 — Planning integrity and complete skeleton
+### Phase 1 — Planning integrity and complete skeleton
 
-Goals:
+Status: established.
 
-- reconcile all planning documents into this plan;
-- correct encoding defects;
+Responsibilities:
+
+- reconcile planning documents into this plan;
+- correct planning-discovery ambiguity;
 - create every intended functional directory;
 - create one functional placeholder for every expected authority area;
 - extend the manifest to cover the complete skeleton;
 - extend structural validation for complete directory and placeholder coverage;
 - preserve non-authoritative status.
 
-Do not add substantive semantics in this phase.
+This phase does not add substantive semantics.
 
-## Phase 2 — Generic identity construction skeleton
+### Phase 2 — Generic identity construction skeleton
 
 Create:
 
@@ -882,7 +918,7 @@ Requirements:
 - no product families;
 - no runtime imports.
 
-## Phase 3 — Generic identity semantic model
+### Phase 3 — Generic identity semantic model
 
 Define:
 
@@ -905,7 +941,16 @@ Requirements:
 - preserve unresolved questions;
 - do not alter accepted GVE families.
 
-## Phase 4 — Reusable validation library
+This phase is implemented through separately bounded construction issues for:
+
+1. canonical JSON;
+2. identity-family structure;
+3. verification, references, and aggregate behavior.
+
+The phase heading groups the related semantic boundary. It does not authorize
+one issue to define the entire identity model.
+
+### Phase 4 — Reusable validation library
 
 Create reusable strict JSON, canonicalization, identity, reference, aggregate,
 and evidence mechanisms.
@@ -918,7 +963,12 @@ Requirements:
 - deterministic diagnostics;
 - no broad unrelated refactoring.
 
-## Phase 5 — Generic identity construction conformance
+Extraction occurs only after the corresponding behavior is stable enough to
+reuse. Earlier identity issues may retain narrow local validation while their
+semantics remain unsettled. The reusable-library boundary must preserve behavior
+rather than invent or silently revise it.
+
+### Phase 5 — Generic identity construction conformance
 
 Add positive and negative construction vectors for:
 
@@ -938,9 +988,9 @@ Add positive and negative construction vectors for:
 - self-reference;
 - cycles.
 
-These are still construction vectors.
+These remain construction vectors until their governing semantics are accepted.
 
-## Phase 6 — Minimal repository vocabulary
+### Phase 6 — Minimal repository vocabulary
 
 Define the minimum repository model needed by later profiles:
 
@@ -954,7 +1004,7 @@ Define the minimum repository model needed by later profiles:
 
 Do not yet define final repository identities.
 
-## Phase 7 — Specification artifact classes
+### Phase 7 — Specification artifact classes
 
 Define:
 
@@ -970,7 +1020,7 @@ Define:
 
 This phase is a prerequisite for the specification identity profile.
 
-## Phase 8 — Specification identity profile
+### Phase 8 — Specification identity profile
 
 Create:
 
@@ -992,7 +1042,7 @@ Resolve:
 - governing revision;
 - verification context.
 
-## Phase 9 — Self-reference and bootstrap
+### Phase 9 — Self-reference and bootstrap
 
 Resolve:
 
@@ -1006,7 +1056,7 @@ Resolve:
 
 Add negative tests for every prohibited cycle.
 
-## Phase 10 — Manifest and revision model
+### Phase 10 — Manifest and revision model
 
 Define the final candidate manifest model.
 
@@ -1024,7 +1074,7 @@ Requirements:
 - stale member rejection;
 - incomplete membership rejection.
 
-## Phase 11 — Repository model and identity profile
+### Phase 11 — Repository model and identity profile
 
 Complete:
 
@@ -1045,34 +1095,37 @@ Resolve:
 - tree identity;
 - layout revision identity.
 
-## Phase 12 — Development-process authority
+Repository-model semantics and repository identity profiles may require separate
+bounded issues even though they are grouped in this phase.
+
+### Phase 12 — Development-process authority
 
 Define scratchpad, implementation plan, progression, readiness, provenance, and
 development identities where required.
 
-## Phase 13 — Normative-change authority
+### Phase 13 — Normative-change authority
 
 Define work items, change sets, review proposals, acceptance, validation
 evidence, exact revision binding, replay rules, and portable identity profiles.
 
-## Phase 14 — Fixed Level model
+### Phase 14 — Fixed Level model
 
 Define Level 0 through Level 3 and all dependency and source correspondence
 rules.
 
-## Phase 15 — Source-layout contracts
+### Phase 15 — Source-layout contracts
 
 Define maintained source structure, Level mapping, generated source treatment,
 and source validation ownership.
 
-## Phase 16 — Schemas and conformance hardening
+### Phase 16 — Schemas and conformance hardening
 
 Replace construction schemas and vectors with final candidate schemas and
 authority-backed conformance artifacts.
 
 Freeze vectors only at acceptance.
 
-## Phase 17 — Derived projection hardening
+### Phase 17 — Derived projection hardening
 
 Implement deterministic projection generation.
 
@@ -1084,7 +1137,7 @@ Validate:
 - reproducibility;
 - no hand-authored authority drift.
 
-## Phase 18 — Repository validation
+### Phase 18 — Repository validation
 
 Validate:
 
@@ -1100,7 +1153,7 @@ Validate:
 - conformance;
 - projections.
 
-## Phase 19 — Initialization and copying
+### Phase 19 — Initialization and copying
 
 Define:
 
@@ -1114,7 +1167,7 @@ Define:
 - recomputed identities;
 - standalone validation.
 
-## Phase 20 — Hardening and acceptance
+### Phase 20 — Hardening and acceptance
 
 Before acceptance:
 
@@ -1124,12 +1177,12 @@ Before acceptance:
 - remove construction exceptions;
 - verify deterministic projections;
 - verify every identity recomputes;
-- verify no product-specific authority leaked into generic repo authority;
+- verify no product-specific authority leaked into generic repository authority;
 - validate GVE and minimal initialized repositories;
 - validate clean accepted-main;
 - seal the subtree into its parent manifest.
 
-## Phase 21 — Cutover
+### Phase 21 — Cutover
 
 At cutover:
 
@@ -1209,27 +1262,27 @@ closure and cycle handling.
 Construction identity, candidate identity, accepted identity, aggregate
 revision, and sealing identity remain distinct stages.
 
-## Issue sequencing
+## Bounded issue sequencing
 
-Recommended issue order:
+Durable dependency order:
 
-1. reconcile plan and complete directory skeleton;
-2. establish generic identity construction skeleton;
-3. define canonical JSON construction model;
-4. define identity-family construction model;
-5. define verification and aggregate construction model;
-6. create reusable validation library;
+1. reconcile planning and complete the directory skeleton;
+2. establish the generic identity construction skeleton;
+3. define the canonical JSON construction model;
+4. define the identity-family construction model;
+5. define verification and aggregate construction behavior;
+6. create reusable validation mechanisms;
 7. add generic identity construction vectors;
 8. define minimal repository vocabulary;
 9. define specification artifact classes;
-10. define specification identity profile;
+10. define the specification identity profile;
 11. define self-reference and bootstrap;
-12. define manifest and revision model;
-13. complete repository model;
-14. define repository identity profile;
+12. define the manifest and revision model;
+13. complete the repository model;
+14. define the repository identity profile;
 15. define development-process authority;
 16. define normative-change authority;
-17. define fixed Level model;
+17. define the fixed Level model;
 18. define source layout;
 19. harden schemas and conformance;
 20. implement deterministic projections;
@@ -1240,6 +1293,10 @@ Recommended issue order:
 
 A single issue must not combine multiple independent authority families merely
 because they appear in the same phase.
+
+This sequence is not a progress tracker and does not designate a next issue.
+An audit of accepted authority, repository state, predecessor evidence, and
+validation determines which bounded item may be proposed.
 
 ## Skeleton completion criteria
 
@@ -1256,11 +1313,36 @@ The structural skeleton is complete when:
   separated;
 - the structure is reviewable before substantive content is added.
 
-## Identity construction completion criteria
+## Generic identity skeleton completion criteria
 
-Generic identity construction is complete when:
+The generic identity construction skeleton is complete when:
 
 - all four generic identity artifacts exist;
+- each artifact uses a closed construction-only envelope;
+- each artifact remains explicitly under construction and non-normative;
+- the identity schema, derived, fixture, validator, and test areas are visibly
+  represented;
+- the root construction manifest covers the complete identity skeleton
+  atomically;
+- construction identities are unique and functional;
+- missing, malformed, undeclared, or duplicate identity construction
+  participants fail closed;
+- no final digest, accepted identity, aggregate revision, sealing, or completion
+  claim exists;
+- no GVE product family is declared;
+- no maintained GVE runtime import exists;
+- focused identity-skeleton tests and the complete repository gate pass.
+
+The skeleton boundary does not require or authorize canonicalization, digest,
+domain-separation, family, reference, aggregate, verification, self-reference,
+or governing-revision semantics.
+
+## Generic identity construction-system completion criteria
+
+The generic identity construction system is complete when:
+
+- all four generic identity artifacts contain the required construction
+  semantics;
 - canonicalization is explicit;
 - domain separation is explicit;
 - family structure is complete;
@@ -1272,6 +1354,10 @@ Generic identity construction is complete when:
 - all references close;
 - generic validators are product-independent;
 - no GVE-specific family is represented as generic authority.
+
+Completion of this construction system remains distinct from normative
+acceptance, final identity assignment, manifest sealing, and repository-
+specification cutover.
 
 ## Content completion criteria
 
