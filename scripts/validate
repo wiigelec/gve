@@ -18,4 +18,5 @@ fi
 "$PYTHON" -m unittest discover -s tests/core
 "$PYTHON" -m specs.tooling.validate --specs-root specs
 "$PYTHON" -m specs.tooling.validate_identity
+specification-system/repo/validate
 git diff --check

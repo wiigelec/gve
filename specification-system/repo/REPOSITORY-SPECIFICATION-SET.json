@@ -1,0 +1,18 @@
+{
+  "construction_identity": "repository-specification-construction-set",
+  "construction_status": "under-construction",
+  "normative": false,
+  "validation_entry_point": "validate",
+  "artifact_classes": [
+    "repository-model-placeholder",
+    "specification-artifact-placeholder"
+  ],
+  "artifact_paths": [
+    "authoritative/repository-model/REPOSITORY-MODEL.json",
+    "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json"
+  ],
+  "unresolved_questions": [
+    "Final normative manifest schema is not defined.",
+    "Final content identities and sealing model are not defined."
+  ]
+}
