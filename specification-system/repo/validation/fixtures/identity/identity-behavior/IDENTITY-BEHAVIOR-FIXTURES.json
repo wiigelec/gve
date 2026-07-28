@@ -1,0 +1,948 @@
+{
+  "construction_identity": "identity-behavior-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide fixed repository-neutral construction vectors for own-identity omission, reference verification, direct aggregate behavior, deterministic identity derivation, and fail-closed rejection.",
+  "normative": false,
+  "family_declarations": [
+    {
+      "family_construction_identity": "document-family-construction",
+      "family_name": "document",
+      "semantic_domain": "document-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.document.v1",
+      "included_preimage_fields": [
+        "identity",
+        "title",
+        "body"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "none",
+        "identity_field": null,
+        "value_field": null,
+        "allowed_family_names": []
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "none",
+        "context_source": "none"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "link-family-construction",
+      "family_name": "link",
+      "semantic_domain": "link-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.link.v1",
+      "included_preimage_fields": [
+        "identity",
+        "name",
+        "references"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "by-identity",
+        "identity_field": "identity",
+        "value_field": null,
+        "allowed_family_names": [
+          "document"
+        ]
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "verified-identity-set",
+        "context_source": "caller-supplied"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "envelope-family-construction",
+      "family_name": "envelope",
+      "semantic_domain": "envelope-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.envelope.v1",
+      "included_preimage_fields": [
+        "identity",
+        "label",
+        "references"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "identity-plus-value",
+        "identity_field": "identity",
+        "value_field": "value",
+        "allowed_family_names": [
+          "document"
+        ]
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "embedded-value-recomputation",
+        "context_source": "embedded-value"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "ordered-bundle-family-construction",
+      "family_name": "ordered-bundle",
+      "semantic_domain": "ordered-bundle-content",
+      "object_kind": "ordered-aggregate",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.ordered-bundle.v1",
+      "included_preimage_fields": [
+        "identity",
+        "members"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "by-identity",
+        "identity_field": "identity",
+        "value_field": null,
+        "allowed_family_names": [
+          "document"
+        ]
+      },
+      "aggregate": {
+        "membership_field": "members",
+        "member_family_names": [
+          "document"
+        ],
+        "ordering": "ordered",
+        "duplicate_policy": "reject",
+        "empty_policy": "reject",
+        "closure_boundary": "direct",
+        "cycle_policy": "reject"
+      },
+      "verification": {
+        "mode": "verified-identity-set",
+        "context_source": "caller-supplied"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "unordered-bundle-family-construction",
+      "family_name": "unordered-bundle",
+      "semantic_domain": "unordered-bundle-content",
+      "object_kind": "unordered-aggregate",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.unordered-bundle.v1",
+      "included_preimage_fields": [
+        "identity",
+        "members"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "by-identity",
+        "identity_field": "identity",
+        "value_field": null,
+        "allowed_family_names": [
+          "document"
+        ]
+      },
+      "aggregate": {
+        "membership_field": "members",
+        "member_family_names": [
+          "document"
+        ],
+        "ordering": "unordered",
+        "duplicate_policy": "reject",
+        "empty_policy": "reject",
+        "closure_boundary": "direct",
+        "cycle_policy": "reject"
+      },
+      "verification": {
+        "mode": "verified-identity-set",
+        "context_source": "caller-supplied"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "cycle-link-family-construction",
+      "family_name": "cycle-link",
+      "semantic_domain": "cycle-link-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.cycle-link.v1",
+      "included_preimage_fields": [
+        "identity",
+        "name",
+        "references"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "by-identity",
+        "identity_field": "identity",
+        "value_field": null,
+        "allowed_family_names": [
+          "cycle-parent"
+        ]
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "verified-identity-set",
+        "context_source": "caller-supplied"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "cycle-parent-family-construction",
+      "family_name": "cycle-parent",
+      "semantic_domain": "cycle-parent-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.cycle-parent.v1",
+      "included_preimage_fields": [
+        "identity",
+        "label",
+        "references"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "identity-plus-value",
+        "identity_field": "identity",
+        "value_field": "value",
+        "allowed_family_names": [
+          "cycle-link"
+        ]
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "embedded-value-recomputation",
+        "context_source": "embedded-value"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "own-identity-omission",
+      "request": {
+        "mode": "derive",
+        "family_name": "document",
+        "value": {
+          "identity": {
+            "family": "document",
+            "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "title": "A",
+          "body": "alpha"
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "document",
+        "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "own-identity-value-does-not-change-result",
+      "request": {
+        "mode": "derive",
+        "family_name": "document",
+        "value": {
+          "identity": {
+            "family": "document",
+            "encoded_digest": "9999999999999999999999999999999999999999999999999999999999999999"
+          },
+          "title": "A",
+          "body": "alpha"
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "document",
+        "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "by-identity-reference-verifies",
+      "request": {
+        "mode": "verify",
+        "family_name": "link",
+        "value": {
+          "identity": {
+            "family": "link",
+            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "name": "link",
+          "references": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            }
+          ]
+        },
+        "supplied_identity": {
+          "family": "link",
+          "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+        },
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "verified",
+      "expected_identity": {
+        "family": "link",
+        "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-by-identity-context-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "link",
+        "value": {
+          "identity": {
+            "family": "link",
+            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "name": "link",
+          "references": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "missing-reference-context"
+    },
+    {
+      "name": "identity-plus-value-recomputes",
+      "request": {
+        "mode": "verify",
+        "family_name": "envelope",
+        "value": {
+          "identity": {
+            "family": "envelope",
+            "encoded_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+          },
+          "label": "env",
+          "references": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              },
+              "value": {
+                "identity": {
+                  "family": "document",
+                  "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+                },
+                "title": "A",
+                "body": "alpha"
+              }
+            }
+          ]
+        },
+        "supplied_identity": {
+          "family": "envelope",
+          "encoded_digest": "a3153f347675aed6c1d5dc7e9fb61bfff135ed48f44b79047432ebc87390c893"
+        },
+        "verification_context": []
+      },
+      "expected_status": "verified",
+      "expected_identity": {
+        "family": "envelope",
+        "encoded_digest": "a3153f347675aed6c1d5dc7e9fb61bfff135ed48f44b79047432ebc87390c893"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "identity-plus-value-mismatch-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "envelope",
+        "value": {
+          "identity": {
+            "family": "envelope",
+            "encoded_digest": "2222222222222222222222222222222222222222222222222222222222222222"
+          },
+          "label": "env",
+          "references": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "value": {
+                "identity": {
+                  "family": "document",
+                  "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+                },
+                "title": "A",
+                "body": "alpha"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "embedded-reference-identity-mismatch"
+    },
+    {
+      "name": "ordered-aggregate-ab",
+      "request": {
+        "mode": "derive",
+        "family_name": "ordered-bundle",
+        "value": {
+          "identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            },
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "ordered-bundle",
+        "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "ordered-aggregate-ba",
+      "request": {
+        "mode": "derive",
+        "family_name": "ordered-bundle",
+        "value": {
+          "identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+              }
+            },
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "ordered-bundle",
+        "encoded_digest": "ee081dad3d6161e388b6192365641184c71f436ce1c1fab78d56258ad45b3384"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unordered-aggregate-ab",
+      "request": {
+        "mode": "derive",
+        "family_name": "unordered-bundle",
+        "value": {
+          "identity": {
+            "family": "unordered-bundle",
+            "encoded_digest": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            },
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "unordered-bundle",
+        "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unordered-aggregate-ba",
+      "request": {
+        "mode": "derive",
+        "family_name": "unordered-bundle",
+        "value": {
+          "identity": {
+            "family": "unordered-bundle",
+            "encoded_digest": "4444444444444444444444444444444444444444444444444444444444444444"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+              }
+            },
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "unordered-bundle",
+        "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "duplicate-aggregate-member-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "ordered-bundle",
+        "value": {
+          "identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            },
+            {
+              "identity": {
+                "family": "document",
+                "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+            },
+            "family_name": "document",
+            "verified": true
+          },
+          {
+            "identity": {
+              "family": "document",
+              "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+            },
+            "family_name": "document",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "duplicate-aggregate-member"
+    },
+    {
+      "name": "empty-aggregate-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "ordered-bundle",
+        "value": {
+          "identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
+          },
+          "members": []
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "empty-aggregate-forbidden"
+    },
+    {
+      "name": "self-membership-rejects",
+      "request": {
+        "mode": "verify",
+        "family_name": "ordered-bundle",
+        "value": {
+          "identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+          },
+          "members": [
+            {
+              "identity": {
+                "family": "ordered-bundle",
+                "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+              }
+            }
+          ]
+        },
+        "supplied_identity": {
+          "family": "ordered-bundle",
+          "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+        },
+        "verification_context": [
+          {
+            "identity": {
+              "family": "ordered-bundle",
+              "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+            },
+            "family_name": "ordered-bundle",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "self-membership"
+    },
+    {
+      "name": "reference-family-mismatch-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "link",
+        "value": {
+          "identity": {
+            "family": "link",
+            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
+          },
+          "name": "link",
+          "references": [
+            {
+              "identity": {
+                "family": "link",
+                "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": [
+          {
+            "identity": {
+              "family": "link",
+              "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+            },
+            "family_name": "link",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "reference-family-mismatch"
+    },
+    {
+      "name": "supplied-identity-mismatch-rejects",
+      "request": {
+        "mode": "verify",
+        "family_name": "document",
+        "value": {
+          "identity": {
+            "family": "document",
+            "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+          },
+          "title": "A",
+          "body": "alpha"
+        },
+        "supplied_identity": {
+          "family": "document",
+          "encoded_digest": "0d77829c2beb4595331d3820df2b226de3540e3142722f50c5dcbfed4d9f529c"
+        },
+        "verification_context": []
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "supplied-identity-mismatch"
+    },
+    {
+      "name": "aggregate-cycle-rejects",
+      "request": {
+        "mode": "verify",
+        "family_name": "cycle-parent",
+        "value": {
+          "identity": {
+            "family": "cycle-parent",
+            "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "label": "parent",
+          "references": [
+            {
+              "identity": {
+                "family": "cycle-link",
+                "encoded_digest": "3a466776c3fba6c8334a6fe4561fb78b78f466a2138dc549f323faeb1b989c2a"
+              },
+              "value": {
+                "identity": {
+                  "family": "cycle-link",
+                  "encoded_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "name": "child",
+                "references": [
+                  {
+                    "identity": {
+                      "family": "cycle-parent",
+                      "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "supplied_identity": {
+          "family": "cycle-parent",
+          "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "verification_context": [
+          {
+            "identity": {
+              "family": "cycle-parent",
+              "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            },
+            "family_name": "cycle-parent",
+            "verified": true
+          }
+        ]
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "aggregate-cycle"
+    }
+  ],
+  "expected_relationships": [
+    "identity verification construction validator",
+    "identity model construction boundary",
+    "identity family construction boundary"
+  ],
+  "unresolved_questions": [
+    "These construction vectors are not accepted product conformance vectors.",
+    "Governing revision, bootstrap, sealing, and acceptance remain separately governed."
+  ]
+}

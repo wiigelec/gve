@@ -1,7 +1,7 @@
 {
   "construction_identity": "identity-family-model-construction",
   "construction_status": "under-construction",
-  "responsibility": "Define the closed repository-neutral construction representation and mechanically decidable constraints for identity-family declarations without defining concrete reference, aggregate, verification, self-reference, sealing, or acceptance behavior.",
+  "responsibility": "Define the closed repository-neutral construction representation and mechanically decidable constraints for identity-family declarations, including own-identity, reference, aggregate, and verification behavior without defining repository profiles, bootstrap, sealing, or acceptance.",
   "normative": false,
   "decision_basis": {
     "portable_behavior": [
@@ -9,14 +9,19 @@
       "explicit-canonicalization-binding",
       "explicit-digest-binding",
       "domain-separated-preimage",
+      "explicit-own-identity-mode",
+      "explicit-reference-mode",
+      "explicit-aggregate-semantics",
+      "explicit-verification-mode",
       "fail-closed-family-selection"
     ],
     "repository_generic_decisions": [
       "functional-family-and-semantic-domain-names",
-      "object-or-aggregate-subject-category",
-      "construction-set-domain-prefix-uniqueness",
-      "explicit-included-and-omitted-preimage-fields",
-      "fixed-unresolved-capabilities"
+      "closed-object-kind-declaration",
+      "designated-own-identity-field-omission",
+      "identity-only-or-identity-plus-value-references",
+      "unordered-member-semantic-identity-sort",
+      "fixed-unavailable-later-capabilities"
     ]
   },
   "family_declaration": {
@@ -24,23 +29,28 @@
       "family_construction_identity",
       "family_name",
       "semantic_domain",
-      "subject_category",
+      "object_kind",
       "canonicalization_version",
       "digest_algorithm",
       "digest_encoding",
       "domain_prefix",
       "included_preimage_fields",
       "omitted_preimage_fields",
-      "unresolved_capabilities"
+      "own_identity",
+      "references",
+      "aggregate",
+      "verification",
+      "unavailable_capabilities"
     ],
     "closed": true
   },
   "field_constraints": {
     "family_name": "lowercase-functional-identifier",
     "semantic_domain": "lowercase-functional-identifier",
-    "subject_category": [
+    "object_kind": [
       "object",
-      "aggregate"
+      "ordered-aggregate",
+      "unordered-aggregate"
     ],
     "canonicalization_version": [
       "canonical-json-v1"
@@ -51,25 +61,87 @@
     "digest_encoding": [
       "lowercase-hexadecimal"
     ],
-    "domain_prefix": "non-empty-printable-ascii",
+    "domain_prefix": "non-empty-printable-ascii-with-implicit-nul-terminator",
     "included_preimage_fields": "non-empty-unique-normalized-field-name-array",
-    "omitted_preimage_fields": "non-empty-unique-normalized-field-name-array",
+    "omitted_preimage_fields": "unique-normalized-field-name-array",
     "included_and_omitted_preimage_fields": "disjoint",
-    "unresolved_capabilities": [
-      "own-identity-behavior",
-      "reference-modes",
-      "reference-encoding",
-      "aggregate-membership",
-      "aggregate-ordering",
-      "aggregate-duplicates",
-      "aggregate-empty-policy",
-      "aggregate-closure",
-      "cycle-handling",
-      "verification-modes",
-      "verification-context",
-      "verification-evidence",
+    "own_identity": {
+      "required_fields": [
+        "mode",
+        "field"
+      ],
+      "closed": true,
+      "mode": [
+        "omit-own-identity"
+      ],
+      "field": "normalized-field-name"
+    },
+    "references": {
+      "required_fields": [
+        "mode",
+        "identity_field",
+        "value_field",
+        "allowed_family_names"
+      ],
+      "closed": true,
+      "mode": [
+        "none",
+        "by-identity",
+        "identity-plus-value"
+      ],
+      "identity_field": "normalized-field-name-or-null",
+      "value_field": "normalized-field-name-or-null",
+      "allowed_family_names": "unique-lowercase-functional-identifier-array"
+    },
+    "aggregate": {
+      "required_fields": [
+        "membership_field",
+        "member_family_names",
+        "ordering",
+        "duplicate_policy",
+        "empty_policy",
+        "closure_boundary",
+        "cycle_policy"
+      ],
+      "closed": true,
+      "non_aggregate_value": null,
+      "ordering": [
+        "ordered",
+        "unordered"
+      ],
+      "duplicate_policy": [
+        "reject"
+      ],
+      "empty_policy": [
+        "allow",
+        "reject"
+      ],
+      "closure_boundary": [
+        "direct"
+      ],
+      "cycle_policy": [
+        "reject"
+      ]
+    },
+    "verification": {
+      "required_fields": [
+        "mode",
+        "context_source"
+      ],
+      "closed": true,
+      "mode": [
+        "none",
+        "verified-identity-set",
+        "embedded-value-recomputation"
+      ],
+      "context_source": [
+        "none",
+        "caller-supplied",
+        "embedded-value"
+      ]
+    },
+    "unavailable_capabilities": [
       "governing-revision-binding",
-      "self-reference",
       "manifest-bootstrap",
       "sealing",
       "acceptance"
@@ -83,8 +155,13 @@
     "domain-prefix"
   ],
   "conflict_rules": [
-    "object-and-aggregate-subject-categories-are-distinct",
     "included-and-omitted-preimage-fields-must-not-overlap",
+    "object-kind-requires-null-aggregate",
+    "aggregate-kind-requires-non-null-aggregate",
+    "reference-mode-and-verification-mode-must-correspond",
+    "identity-plus-value-requires-identity-and-value-fields",
+    "by-identity-requires-identity-field-and-null-value-field",
+    "none-reference-mode-requires-null-reference-fields-and-empty-family-list",
     "unknown-canonicalization-version-fails",
     "unknown-digest-algorithm-fails",
     "unknown-digest-encoding-fails",
@@ -97,6 +174,6 @@
   ],
   "unresolved_questions": [
     "No repository or product identity families are declared by this construction model.",
-    "Concrete own-identity, reference, aggregate, verification, governing-revision, self-reference, manifest, sealing, and acceptance behavior remains separately governed."
+    "Governing revision, manifest bootstrap, sealing, and acceptance behavior remains separately governed."
   ]
 }
