@@ -306,6 +306,97 @@
         "sealing",
         "acceptance"
       ]
+    },
+    {
+      "family_construction_identity": "empty-bundle-family-construction",
+      "family_name": "empty-bundle",
+      "semantic_domain": "empty-bundle-content",
+      "object_kind": "unordered-aggregate",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.empty-bundle.v1",
+      "included_preimage_fields": [
+        "identity",
+        "members"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "by-identity",
+        "identity_field": "identity",
+        "value_field": null,
+        "allowed_family_names": [
+          "document"
+        ]
+      },
+      "aggregate": {
+        "membership_field": "members",
+        "member_family_names": [
+          "document"
+        ],
+        "ordering": "unordered",
+        "duplicate_policy": "reject",
+        "empty_policy": "allow",
+        "closure_boundary": "direct",
+        "cycle_policy": "reject"
+      },
+      "verification": {
+        "mode": "verified-identity-set",
+        "context_source": "caller-supplied"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
+    },
+    {
+      "family_construction_identity": "direct-cycle-family-construction",
+      "family_name": "direct-cycle",
+      "semantic_domain": "direct-cycle-content",
+      "object_kind": "object",
+      "canonicalization_version": "canonical-json-v1",
+      "digest_algorithm": "sha-256",
+      "digest_encoding": "lowercase-hexadecimal",
+      "domain_prefix": "repo.identity.direct-cycle.v1",
+      "included_preimage_fields": [
+        "identity",
+        "label",
+        "references"
+      ],
+      "omitted_preimage_fields": [
+        "cache_key"
+      ],
+      "own_identity": {
+        "mode": "omit-own-identity",
+        "field": "identity"
+      },
+      "references": {
+        "mode": "identity-plus-value",
+        "identity_field": "identity",
+        "value_field": "value",
+        "allowed_family_names": [
+          "direct-cycle"
+        ]
+      },
+      "aggregate": null,
+      "verification": {
+        "mode": "embedded-value-recomputation",
+        "context_source": "embedded-value"
+      },
+      "unavailable_capabilities": [
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance"
+      ]
     }
   ],
   "cases": [
@@ -315,10 +406,6 @@
         "mode": "derive",
         "family_name": "document",
         "value": {
-          "identity": {
-            "family": "document",
-            "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
-          },
           "title": "A",
           "body": "alpha"
         },
@@ -333,27 +420,50 @@
       "expected_diagnostic": null
     },
     {
-      "name": "own-identity-value-does-not-change-result",
+      "name": "matching-own-identity-verifies",
       "request": {
-        "mode": "derive",
+        "mode": "verify",
         "family_name": "document",
         "value": {
           "identity": {
             "family": "document",
-            "encoded_digest": "9999999999999999999999999999999999999999999999999999999999999999"
+            "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
           },
           "title": "A",
           "body": "alpha"
         },
-        "supplied_identity": null,
+        "supplied_identity": {
+          "family": "document",
+          "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+        },
         "verification_context": []
       },
-      "expected_status": "derived",
+      "expected_status": "verified",
       "expected_identity": {
         "family": "document",
         "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
       },
       "expected_diagnostic": null
+    },
+    {
+      "name": "contradictory-own-identity-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "document",
+        "value": {
+          "title": "A",
+          "body": "alpha",
+          "identity": {
+            "family": "document",
+            "encoded_digest": "9999999999999999999999999999999999999999999999999999999999999999"
+          }
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "contradictory-own-identity"
     },
     {
       "name": "by-identity-reference-verifies",
@@ -361,10 +471,6 @@
         "mode": "verify",
         "family_name": "link",
         "value": {
-          "identity": {
-            "family": "link",
-            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
-          },
           "name": "link",
           "references": [
             {
@@ -411,10 +517,6 @@
         "mode": "derive",
         "family_name": "link",
         "value": {
-          "identity": {
-            "family": "link",
-            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
-          },
           "name": "link",
           "references": [
             {
@@ -438,10 +540,6 @@
         "mode": "verify",
         "family_name": "envelope",
         "value": {
-          "identity": {
-            "family": "envelope",
-            "encoded_digest": "2222222222222222222222222222222222222222222222222222222222222222"
-          },
           "label": "env",
           "references": [
             {
@@ -450,10 +548,6 @@
                 "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
               },
               "value": {
-                "identity": {
-                  "family": "document",
-                  "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
-                },
                 "title": "A",
                 "body": "alpha"
               }
@@ -462,14 +556,14 @@
         },
         "supplied_identity": {
           "family": "envelope",
-          "encoded_digest": "a3153f347675aed6c1d5dc7e9fb61bfff135ed48f44b79047432ebc87390c893"
+          "encoded_digest": "c9bc8601d26b3580d60fd1ffc9ba2331239dce360eb900c38928152ee5a7984b"
         },
         "verification_context": []
       },
       "expected_status": "verified",
       "expected_identity": {
         "family": "envelope",
-        "encoded_digest": "a3153f347675aed6c1d5dc7e9fb61bfff135ed48f44b79047432ebc87390c893"
+        "encoded_digest": "c9bc8601d26b3580d60fd1ffc9ba2331239dce360eb900c38928152ee5a7984b"
       },
       "expected_diagnostic": null
     },
@@ -479,10 +573,6 @@
         "mode": "derive",
         "family_name": "envelope",
         "value": {
-          "identity": {
-            "family": "envelope",
-            "encoded_digest": "2222222222222222222222222222222222222222222222222222222222222222"
-          },
           "label": "env",
           "references": [
             {
@@ -491,10 +581,6 @@
                 "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
               },
               "value": {
-                "identity": {
-                  "family": "document",
-                  "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
-                },
                 "title": "A",
                 "body": "alpha"
               }
@@ -514,10 +600,6 @@
         "mode": "derive",
         "family_name": "ordered-bundle",
         "value": {
-          "identity": {
-            "family": "ordered-bundle",
-            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
-          },
           "members": [
             {
               "identity": {
@@ -566,10 +648,6 @@
         "mode": "derive",
         "family_name": "ordered-bundle",
         "value": {
-          "identity": {
-            "family": "ordered-bundle",
-            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
-          },
           "members": [
             {
               "identity": {
@@ -618,10 +696,6 @@
         "mode": "derive",
         "family_name": "unordered-bundle",
         "value": {
-          "identity": {
-            "family": "unordered-bundle",
-            "encoded_digest": "4444444444444444444444444444444444444444444444444444444444444444"
-          },
           "members": [
             {
               "identity": {
@@ -670,10 +744,6 @@
         "mode": "derive",
         "family_name": "unordered-bundle",
         "value": {
-          "identity": {
-            "family": "unordered-bundle",
-            "encoded_digest": "4444444444444444444444444444444444444444444444444444444444444444"
-          },
           "members": [
             {
               "identity": {
@@ -722,10 +792,6 @@
         "mode": "derive",
         "family_name": "ordered-bundle",
         "value": {
-          "identity": {
-            "family": "ordered-bundle",
-            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
-          },
           "members": [
             {
               "identity": {
@@ -771,10 +837,6 @@
         "mode": "derive",
         "family_name": "ordered-bundle",
         "value": {
-          "identity": {
-            "family": "ordered-bundle",
-            "encoded_digest": "3333333333333333333333333333333333333333333333333333333333333333"
-          },
           "members": []
         },
         "supplied_identity": null,
@@ -790,10 +852,6 @@
         "mode": "verify",
         "family_name": "ordered-bundle",
         "value": {
-          "identity": {
-            "family": "ordered-bundle",
-            "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
-          },
           "members": [
             {
               "identity": {
@@ -828,10 +886,6 @@
         "mode": "derive",
         "family_name": "link",
         "value": {
-          "identity": {
-            "family": "link",
-            "encoded_digest": "1111111111111111111111111111111111111111111111111111111111111111"
-          },
           "name": "link",
           "references": [
             {
@@ -864,10 +918,6 @@
         "mode": "verify",
         "family_name": "document",
         "value": {
-          "identity": {
-            "family": "document",
-            "encoded_digest": "0000000000000000000000000000000000000000000000000000000000000000"
-          },
           "title": "A",
           "body": "alpha"
         },
@@ -882,15 +932,11 @@
       "expected_diagnostic": "supplied-identity-mismatch"
     },
     {
-      "name": "aggregate-cycle-rejects",
+      "name": "indirect-cycle-rejects",
       "request": {
         "mode": "verify",
         "family_name": "cycle-parent",
         "value": {
-          "identity": {
-            "family": "cycle-parent",
-            "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-          },
           "label": "parent",
           "references": [
             {
@@ -899,10 +945,6 @@
                 "encoded_digest": "3a466776c3fba6c8334a6fe4561fb78b78f466a2138dc549f323faeb1b989c2a"
               },
               "value": {
-                "identity": {
-                  "family": "cycle-link",
-                  "encoded_digest": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
-                },
                 "name": "child",
                 "references": [
                   {
@@ -930,6 +972,62 @@
             "verified": true
           }
         ]
+      },
+      "expected_status": "rejected",
+      "expected_identity": null,
+      "expected_diagnostic": "aggregate-cycle"
+    },
+    {
+      "name": "empty-aggregate-allowed",
+      "request": {
+        "mode": "derive",
+        "family_name": "empty-bundle",
+        "value": {
+          "members": []
+        },
+        "supplied_identity": null,
+        "verification_context": []
+      },
+      "expected_status": "derived",
+      "expected_identity": {
+        "family": "empty-bundle",
+        "encoded_digest": "de72db850f1569a5645c17bfb2d117c043bb51d413b8915c4565211ed949c107"
+      },
+      "expected_diagnostic": null
+    },
+    {
+      "name": "direct-cycle-rejects",
+      "request": {
+        "mode": "derive",
+        "family_name": "direct-cycle",
+        "value": {
+          "label": "root",
+          "references": [
+            {
+              "identity": {
+                "family": "direct-cycle",
+                "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "value": {
+                "label": "child",
+                "references": [
+                  {
+                    "identity": {
+                      "family": "direct-cycle",
+                      "encoded_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                    },
+                    "value": {
+                      "label": "loop",
+                      "references": []
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "supplied_identity": null,
+        "verification_context": []
       },
       "expected_status": "rejected",
       "expected_identity": null,

@@ -20,8 +20,9 @@ printable ASCII family domain prefix || NUL || canonical JSON value bytes
 
 Each participating family explicitly identifies its own-identity field. The
 current repository-neutral construction mode omits that field before
-canonicalization. Different supplied values in the omitted field therefore do
-not change the computed identity.
+canonicalization. An absent or null field is allowed during derivation, and a
+present field must exactly match the computed identity; contradictory values
+are rejected.
 
 ## References
 

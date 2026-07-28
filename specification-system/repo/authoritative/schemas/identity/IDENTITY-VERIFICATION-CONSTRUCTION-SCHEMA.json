@@ -11,6 +11,7 @@
     "normative",
     "decision_basis",
     "verification_request",
+    "own_identity_verification",
     "verification_context",
     "construction_sequence",
     "reference_verification",
@@ -33,6 +34,7 @@
           "family-resolution-before-construction",
           "domain-separated-canonical-preimage",
           "omit-designated-own-identity-field",
+          "contradictory-own-identity-rejection",
           "by-identity-context-verification",
           "identity-plus-value-recomputation",
           "ordered-and-unordered-direct-aggregate-verification",
@@ -62,6 +64,12 @@
         "verify_supplied_identity": "required-semantic-identity",
         "verification_context": "unique-sequence-of-verified-identity-records-or-empty"
       },
+      "own_identity_verification": {
+        "preimage_treatment": "omit-designated-field",
+        "absent_or_null": "allowed",
+        "matching_computed_identity": "allowed",
+        "contradictory_identity": "reject"
+      },
       "verification_context": {
         "record_required_fields": [
           "identity",
@@ -81,7 +89,7 @@
         "resolve-family",
         "validate-family-applicability",
         "copy-declared-included-fields",
-        "omit-designated-own-identity-field",
+        "capture-and-omit-designated-own-identity-field",
         "resolve-and-verify-references",
         "validate-direct-aggregate-membership",
         "canonicalize-value",
@@ -89,6 +97,7 @@
         "compute-sha-256",
         "encode-lowercase-hexadecimal",
         "construct-family-qualified-semantic-identity",
+        "validate-supplied-own-identity",
         "compare-supplied-and-computed-identity"
       ],
       "reference_verification": {
