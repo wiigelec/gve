@@ -1,0 +1,15 @@
+{
+  "construction_identity": "identity-verification-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future supplied-versus-computed identity and verification-context boundary without defining verification modes, evidence fields, or acceptance behavior.",
+  "normative": false,
+  "expected_relationships": [
+    "identity model construction boundary",
+    "canonical JSON construction boundary",
+    "identity family construction boundary"
+  ],
+  "unresolved_questions": [
+    "Verification contexts and deterministic evidence are not defined.",
+    "Self-reference, governing revision, acceptance, and sealing behavior remain separately governed."
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "construction_identity": "identity-family-model-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future family-qualified identity declaration boundary without defining family fields, object kinds, aggregate kinds, reference modes, or closure behavior.",
+  "normative": false,
+  "expected_relationships": [
+    "identity model construction boundary",
+    "canonical JSON construction boundary",
+    "identity verification construction boundary"
+  ],
+  "unresolved_questions": [
+    "Identity family structure and domain separation are not defined.",
+    "Membership, ordering, duplicate, empty, reference, aggregate, and cycle behavior remain separately governed."
+  ]
+}

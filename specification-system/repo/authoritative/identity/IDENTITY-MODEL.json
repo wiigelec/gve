@@ -1,0 +1,15 @@
+{
+  "construction_identity": "identity-model-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Represent the future repository-neutral distinction between semantic identity and implementation identifiers without defining identity representation or computation semantics.",
+  "normative": false,
+  "expected_relationships": [
+    "canonical JSON construction boundary",
+    "identity family construction boundary",
+    "identity verification construction boundary"
+  ],
+  "unresolved_questions": [
+    "The final semantic identity representation is not defined.",
+    "Identity inputs, omissions, and governing revision bindings remain separately governed."
+  ]
+}
