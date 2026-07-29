@@ -1,0 +1,30 @@
+{
+  "construction_identity": "repository-vocabulary-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative construction inputs for the minimal repository vocabulary without defining accepted conformance.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-vocabulary-boundary",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "forbidden-file-containment",
+      "expected": "reject",
+      "model_overrides": {
+        "containment_rules.file_may_contain": true
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001"
+    }
+  ],
+  "expected_relationships": [
+    "repository vocabulary construction",
+    "repository vocabulary validation",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Complete repository profiles, fixture execution contracts, accepted conformance, revisions, acceptance, sealing, and cutover are not defined."
+  ]
+}

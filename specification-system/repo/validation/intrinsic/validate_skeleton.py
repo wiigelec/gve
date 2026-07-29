@@ -19,6 +19,24 @@ PLACEHOLDER_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "expected_relationships", "unresolved_questions",
 }
+REPOSITORY_VOCABULARY_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "repository_area_kinds", "authority_classifications",
+    "lifecycle_classifications", "tree_entry_kinds", "ownership_roles", "record_contracts", "records",
+    "dependency_relation", "classification_rules", "path_rules",
+    "containment_rules", "ownership_rules", "tree_model_boundary",
+    "expected_relationships", "unresolved_questions",
+}
+REPOSITORY_VOCABULARY_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields", "closed",
+    "field_constraints", "forbidden_claim_fields", "expected_relationships",
+    "unresolved_questions",
+}
+REPOSITORY_VOCABULARY_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
 VALIDATION_LIBRARY_FIELDS = PLACEHOLDER_FIELDS | {
     "module_inventory",
     "dependency_direction",
@@ -66,7 +84,9 @@ ARTIFACT_CLASSES = (
     "identity-verification-construction-schema",
     "level-model-placeholder",
     "normative-change-placeholder",
-    "repository-model-placeholder",
+    "repository-vocabulary-construction",
+    "repository-vocabulary-construction-schema",
+    "repository-vocabulary-fixture-set-construction",
     "repository-validation-placeholder",
     "schema-boundary-placeholder",
     "source-layout-placeholder",
@@ -76,6 +96,8 @@ ARTIFACT_CLASSES = (
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
+    "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/identity/IDENTITY-AUTHORITY.json",
     "authoritative/identity/IDENTITY-MODEL.json",
@@ -115,6 +137,9 @@ NON_PLACEHOLDER_PATHS = {
     IDENTITY_CONFORMANCE_PATH,
     CONFORMANCE_SCHEMA_PATH,
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
+    "authoritative/repository-model/REPOSITORY-MODEL.json",
+    "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -123,6 +148,8 @@ REQUIRED_DIRECTORIES = (
     "authoritative/normative-change", "authoritative/level-model",
     "authoritative/source-layout", "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
+    "authoritative/schemas/repository-model",
+    "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
     "derived/markdown/conformance", "validation/lib",
@@ -208,6 +235,8 @@ def exact_fields(value: dict[str, Any], fields: set[str], label: str) -> None:
         fail("REPO-SPEC-CONSTRUCTION-FIELD-002", f"{label}: missing fields: {', '.join(missing)}")
 
 def contained_path(root: Path, value: str, label: str) -> Path:
+    if "\\" in value or "\x00" in value:
+        fail("REPO-SPEC-CONSTRUCTION-PATH-002", f"{label}: path contains a forbidden character")
     pure = PurePosixPath(value)
     if pure.is_absolute() or any(part in {"", ".", ".."} for part in pure.parts):
         fail("REPO-SPEC-CONSTRUCTION-PATH-002", f"{label}: path is not normalized and relative")
@@ -241,6 +270,182 @@ def validate_common(value: dict[str, Any], label: str) -> str:
     questions = value["unresolved_questions"]
     if not isinstance(questions, list) or not questions:
         fail("REPO-SPEC-CONSTRUCTION-TYPE-001", f"{label}: unresolved questions required")
+    return identity
+
+def validate_repository_vocabulary(value: dict[str, Any], label: str, root: Path) -> str:
+    exact_fields(value, REPOSITORY_VOCABULARY_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-model":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected repository-vocabulary identity")
+    expected = {
+        "repository_area_kinds": ["authority", "derived", "validation", "support", "temporary"],
+        "authority_classifications": ["normative", "non-normative"],
+        "lifecycle_classifications": ["maintained", "generated", "temporary"],
+        "tree_entry_kinds": ["file", "directory"],
+        "ownership_roles": ["area-owner", "artifact-owner"],
+    }
+    for field, expected_value in expected.items():
+        if value[field] != expected_value:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.{field}: vocabulary mismatch")
+    contracts = value["record_contracts"]
+    if set(contracts) != {"areas", "tree_members", "owners", "containments", "dependencies"}:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.record_contracts: unknown or missing contract")
+    contract_fields = {
+        "areas": {"fields", "unique_by", "kind_values"},
+        "tree_members": {"fields", "unique_by", "entry_kind_values", "authority_values", "lifecycle_values"},
+        "owners": {"fields", "unique_by", "target", "role_values"},
+        "containments": {"fields", "unique_by", "parent_kind", "child_relation", "immediate_parent"},
+        "dependencies": {"fields", "unique_by", "relation_values", "endpoints", "self_reference", "cycles"},
+    }
+    for contract_name, fields in contract_fields.items():
+        exact_fields(contracts[contract_name], fields, f"{label}.record_contracts.{contract_name}")
+        contract = contracts[contract_name]
+        if (
+            not isinstance(contract["fields"], list)
+            or not contract["fields"]
+            or len(contract["fields"]) != len(set(contract["fields"]))
+            or not isinstance(contract["unique_by"], list)
+            or not contract["unique_by"]
+            or len(contract["unique_by"]) != len(set(contract["unique_by"]))
+        ):
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.record_contracts.{contract_name}: invalid field contract")
+    if contracts["dependencies"]["relation_values"] != ["depends-on"] or contracts["dependencies"]["self_reference"] != "forbidden" or contracts["dependencies"]["cycles"] != "forbidden":
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.record_contracts.dependencies: boundary mismatch")
+    exact_fields(value["dependency_relation"], {"name", "direction", "endpoints", "self_dependency", "cycles"}, f"{label}.dependency_relation")
+    if value["dependency_relation"] != {
+        "name": "depends-on", "direction": "dependent-to-prerequisite",
+        "endpoints": "declared-area-or-tree-member-identifiers",
+        "self_dependency": "forbidden", "cycles": "forbidden",
+    }:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.dependency_relation: boundary mismatch")
+    exact_fields(value["classification_rules"], {
+        "tree_member_authority", "tree_member_lifecycle", "normative_requires",
+        "generated_requires", "temporary_requires", "lifecycle_classifications_are_disjoint",
+    }, f"{label}.classification_rules")
+    exact_fields(value["path_rules"], {
+        "root_representation", "root_is_implicit", "format", "components", "forbidden", "symlinks",
+    }, f"{label}.path_rules")
+    exact_fields(value["containment_rules"], {
+        "relation", "directory_may_contain", "file_may_contain", "declared_parent", "filesystem_closure",
+    }, f"{label}.containment_rules")
+    exact_fields(value["ownership_rules"], {"owner_identifier", "owner_scope", "owner_role"}, f"{label}.ownership_rules")
+    exact_fields(value["tree_model_boundary"], {"represents", "does_not_represent"}, f"{label}.tree_model_boundary")
+    if value["path_rules"]["root_representation"] != "." or value["path_rules"]["root_is_implicit"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.path_rules: root boundary mismatch")
+    if value["containment_rules"]["directory_may_contain"] is not True or value["containment_rules"]["file_may_contain"] is not False:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-001", f"{label}.containment_rules: directory/file containment boundary mismatch")
+    records = value["records"]
+    if set(records) != {"areas", "tree_members", "owners", "containments", "dependencies"}:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records: unknown or missing record set")
+    areas = {}
+    for item in records["areas"]:
+        exact_fields(item, {"id", "kind"}, f"{label}.records.areas")
+        identifier = validate_identity(item["id"], f"{label}.records.areas.id")
+        if identifier in areas or item["kind"] not in value["repository_area_kinds"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.areas: duplicate or invalid area")
+        areas[identifier] = item["kind"]
+    members = {}
+    paths = {}
+    for item in records["tree_members"]:
+        exact_fields(item, {"id", "path", "entry_kind", "authority_classification", "lifecycle_classification"}, f"{label}.records.tree_members")
+        identifier = validate_identity(item["id"], f"{label}.records.tree_members.id")
+        if identifier in members or item["path"] in paths:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.tree_members: duplicate identifier or path")
+        contained_path(root, item["path"], f"{label}.records.tree_members.path")
+        if item["entry_kind"] not in value["tree_entry_kinds"] or item["authority_classification"] not in value["authority_classifications"] or item["lifecycle_classification"] not in value["lifecycle_classifications"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.tree_members: unknown classification")
+        if item["authority_classification"] == "normative" and item["lifecycle_classification"] != "maintained":
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.tree_members: normative member must be maintained")
+        if item["lifecycle_classification"] in {"generated", "temporary"} and item["authority_classification"] != "non-normative":
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.tree_members: generated or temporary member must be non-normative")
+        members[identifier] = item
+        paths[item["path"]] = identifier
+    targets = set(areas) | set(members)
+    owner_ids = set()
+    owner_pairs = set()
+    for item in records["owners"]:
+        exact_fields(item, {"id", "target", "role"}, f"{label}.records.owners")
+        identifier = validate_identity(item["id"], f"{label}.records.owners.id")
+        pair = (item["target"], item["role"])
+        if identifier in owner_ids or pair in owner_pairs or item["target"] not in targets or item["role"] not in value["ownership_roles"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.owners: duplicate or invalid owner")
+        owner_ids.add(identifier)
+        owner_pairs.add(pair)
+    containment_pairs = set()
+    for item in records["containments"]:
+        exact_fields(item, {"parent", "child"}, f"{label}.records.containments")
+        pair = (item["parent"], item["child"])
+        if pair in containment_pairs or item["parent"] not in members or item["child"] not in members or item["parent"] == item["child"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.containments: invalid or duplicate containment")
+        parent = members[item["parent"]]
+        child = members[item["child"]]
+        if parent["entry_kind"] != "directory":
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.containments: parent must be directory")
+        parent_parts = PurePosixPath(parent["path"]).parts
+        child_parts = PurePosixPath(child["path"]).parts
+        if len(child_parts) <= len(parent_parts) or child_parts[:len(parent_parts)] != parent_parts:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.containments: child is not a descendant")
+        containment_pairs.add(pair)
+    dependency_edges = {}
+    dependency_pairs = set()
+    for item in records["dependencies"]:
+        exact_fields(item, {"source", "target", "relation"}, f"{label}.records.dependencies")
+        edge = (item["source"], item["target"], item["relation"])
+        if edge in dependency_pairs or item["source"] not in targets or item["target"] not in targets or item["source"] == item["target"] or item["relation"] != "depends-on":
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.dependencies: invalid or duplicate dependency")
+        dependency_pairs.add(edge)
+        dependency_edges.setdefault(item["source"], set()).add(item["target"])
+    visiting = set()
+    visited = set()
+    def visit(node: str) -> None:
+        if node in visiting:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-004", f"{label}.records.dependencies: cycle detected")
+        if node in visited:
+            return
+        visiting.add(node)
+        for target in dependency_edges.get(node, set()):
+            visit(target)
+        visiting.remove(node)
+        visited.add(node)
+    for node in targets:
+        visit(node)
+    return identity
+
+def validate_repository_vocabulary_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, REPOSITORY_VOCABULARY_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-vocabulary-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected repository-vocabulary schema identity")
+    if value["target_construction_identity"] != "repository-model" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-002", f"{label}: target or closed boundary mismatch")
+    if (
+        not isinstance(value["required_fields"], list)
+        or not value["required_fields"]
+        or any(not isinstance(field, str) for field in value["required_fields"])
+        or len(value["required_fields"]) != len(set(value["required_fields"]))
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-002", f"{label}: required fields are not deterministic")
+    return identity
+
+def validate_repository_vocabulary_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, REPOSITORY_VOCABULARY_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-vocabulary-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected repository-vocabulary fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-003", f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-003", f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-003", f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-003", f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VOCABULARY-003", f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
     return identity
 
 def validate_validation_library(value: dict[str, Any], label: str) -> str:
@@ -494,6 +699,39 @@ def validate(root: Path) -> None:
             fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
                  f"{relative}: duplicate construction identity")
         identities.add(identity)
+
+    repository_vocabulary = strict_json(root / "authoritative/repository-model/REPOSITORY-MODEL.json")
+    repository_vocabulary_identity = validate_repository_vocabulary(
+        repository_vocabulary, "authoritative/repository-model/REPOSITORY-MODEL.json", root
+    )
+    if repository_vocabulary_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             "authoritative/repository-model/REPOSITORY-MODEL.json: duplicate construction identity")
+    identities.add(repository_vocabulary_identity)
+
+    repository_vocabulary_schema = strict_json(
+        root / "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json"
+    )
+    repository_vocabulary_schema_identity = validate_repository_vocabulary_schema(
+        repository_vocabulary_schema,
+        "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
+    )
+    if repository_vocabulary_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json: duplicate construction identity")
+    identities.add(repository_vocabulary_schema_identity)
+
+    repository_vocabulary_fixtures = strict_json(
+        root / "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json"
+    )
+    repository_vocabulary_fixtures_identity = validate_repository_vocabulary_fixtures(
+        repository_vocabulary_fixtures,
+        "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
+    )
+    if repository_vocabulary_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json: duplicate construction identity")
+    identities.add(repository_vocabulary_fixtures_identity)
 
     conformance_boundary = strict_json(root / CONFORMANCE_BOUNDARY_PATH)
     conformance_boundary_identity = validate_conformance_boundary(
