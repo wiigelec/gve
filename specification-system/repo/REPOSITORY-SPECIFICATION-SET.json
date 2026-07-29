@@ -25,7 +25,7 @@
     "source-layout-placeholder",
     "specification-artifact-placeholder",
     "validation-fixtures-placeholder",
-    "validation-library-placeholder"
+    "validation-library-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",

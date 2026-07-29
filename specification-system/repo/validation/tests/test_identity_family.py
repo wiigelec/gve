@@ -3,12 +3,21 @@ from __future__ import annotations
 import importlib.util
 import json
 import shutil
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR_PATH = SOURCE_ROOT / "validation/intrinsic/validate_identity_construction.py"
+
+if str(SOURCE_ROOT) not in sys.path:
+    sys.path.insert(0, str(SOURCE_ROOT))
+
+from validation.intrinsic.identity_behavior_adapter import (  # noqa: E402
+    build_behavior_registry,
+    evaluate_behavior,
+)
 
 def load_validator():
     spec = importlib.util.spec_from_file_location("identity_family_validator_tests", VALIDATOR_PATH)
@@ -79,6 +88,27 @@ class IdentityFamilyConstructionTests(unittest.TestCase):
         fixture = self.read_json(VALIDATOR.FIXTURE_PATH)
         self.assertGreaterEqual(len(fixture["cases"]), 10)
         VALIDATOR.validate_fixture_set(fixture, VALIDATOR.FIXTURE_PATH)
+
+    def test_intrinsic_behavior_fixture_path_uses_reusable_adapter(self) -> None:
+        fixture = self.read_json(VALIDATOR.BEHAVIOR_FIXTURE_PATH)
+        VALIDATOR.validate_behavior_fixture_set(
+            fixture,
+            VALIDATOR.BEHAVIOR_FIXTURE_PATH,
+        )
+
+    def test_reusable_identity_library_matches_governed_behavior_fixtures(self) -> None:
+        fixture = self.read_json(VALIDATOR.BEHAVIOR_FIXTURE_PATH)
+        registry = build_behavior_registry(
+            fixture["family_declarations"],
+            location=VALIDATOR.BEHAVIOR_FIXTURE_PATH + ".family_declarations",
+        )
+        self.assertGreaterEqual(len(fixture["cases"]), 10)
+        for case in fixture["cases"]:
+            with self.subTest(case=case["name"]):
+                observed = evaluate_behavior(case["request"], registry)
+                self.assertEqual(observed["status"], case["expected_status"])
+                self.assertEqual(observed["computed_identity"], case["expected_identity"])
+                self.assertEqual(observed["diagnostic"], case["expected_diagnostic"])
 
     def test_unsupported_canonical_digest_and_encoding_fail(self) -> None:
         base = VALIDATOR.EXPECTED_FIXTURE_SET["cases"][0]["declarations"][0]

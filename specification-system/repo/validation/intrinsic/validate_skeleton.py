@@ -19,6 +19,19 @@ PLACEHOLDER_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "expected_relationships", "unresolved_questions",
 }
+VALIDATION_LIBRARY_FIELDS = PLACEHOLDER_FIELDS | {
+    "module_inventory",
+    "dependency_direction",
+    "api_contracts",
+    "diagnostic_contract",
+    "fail_closed_behavior",
+    "product_independence",
+    "integration_responsibilities",
+    "retained_intrinsic_behavior",
+    "unavailable_capabilities",
+    "authority_boundary",
+}
+VALIDATION_LIBRARY_PATH = "validation/lib/VALIDATION-LIBRARY.json"
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
     "canonical-json-construction",
@@ -42,7 +55,7 @@ ARTIFACT_CLASSES = (
     "source-layout-placeholder",
     "specification-artifact-placeholder",
     "validation-fixtures-placeholder",
-    "validation-library-placeholder",
+    "validation-library-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -100,9 +113,16 @@ REQUIRED_PATHS = (
     "authoritative/schemas/identity/README.md",
     "derived/markdown/identity/README.md",
     "validation/fixtures/identity/README.md",
+    "validation/intrinsic/identity_behavior_adapter.py",
     "validation/intrinsic/validate_skeleton.py",
     "validation/intrinsic/validate_identity_construction.py",
     "validation/intrinsic/validate_canonical_json.py",
+    "validation/lib/__init__.py",
+    "validation/lib/strict_json.py",
+    "validation/lib/canonical_json.py",
+    "validation/lib/contracts.py",
+    "validation/lib/identity.py",
+    VALIDATION_LIBRARY_PATH,
     "validation/tests/test_construction_skeleton.py",
     "validation/tests/test_complete_construction_skeleton.py",
     "validation/tests/test_identity_construction.py",
@@ -193,6 +213,76 @@ def validate_common(value: dict[str, Any], label: str) -> str:
         fail("REPO-SPEC-CONSTRUCTION-TYPE-001", f"{label}: unresolved questions required")
     return identity
 
+def validate_validation_library(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, VALIDATION_LIBRARY_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "validation-library-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected validation-library construction identity")
+    modules = value["module_inventory"]
+    expected_modules = [
+        "validation.lib.strict_json",
+        "validation.lib.canonical_json",
+        "validation.lib.contracts",
+        "validation.lib.identity",
+    ]
+    if (
+        not isinstance(modules, list)
+        or [item.get("module") for item in modules if isinstance(item, dict)]
+        != expected_modules
+        or any(
+            set(item) != {"module", "responsibilities"}
+            or not isinstance(item["responsibilities"], list)
+            or not item["responsibilities"]
+            or len(item["responsibilities"]) != len(set(item["responsibilities"]))
+            for item in modules
+            if isinstance(item, dict)
+        )
+        or any(not isinstance(item, dict) for item in modules)
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+             f"{label}: invalid module inventory")
+    for field in (
+        "dependency_direction",
+        "fail_closed_behavior",
+        "retained_intrinsic_behavior",
+        "unavailable_capabilities",
+    ):
+        if not isinstance(value[field], list) or not value[field]:
+            fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+                 f"{label}.{field}: non-empty array required")
+    for field in (
+        "api_contracts",
+        "diagnostic_contract",
+        "product_independence",
+        "integration_responsibilities",
+        "authority_boundary",
+    ):
+        if not isinstance(value[field], dict) or not value[field]:
+            fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+                 f"{label}.{field}: non-empty object required")
+    if value["diagnostic_contract"].get("representation") != "deterministic-string":
+        fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+             f"{label}: structured or non-deterministic diagnostics are forbidden")
+    if value["product_independence"] != {
+        "third_party_dependencies": "forbidden",
+        "maintained_product_imports": "forbidden",
+        "product-identities-and-evidence": "forbidden",
+        "repository-global-state": "forbidden",
+    }:
+        fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+             f"{label}: product-independence boundary mismatch")
+    authority = value["authority_boundary"]
+    if (
+        authority.get("status") != "construction-only"
+        or authority.get("accepted-specification-authority") is not False
+        or authority.get("accepted-product-authority") is not False
+        or authority.get("implementation-files-have-semantic-identities") is not False
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-VALIDATION-LIBRARY-001",
+             f"{label}: authority boundary mismatch")
+    return identity
+
 def _local_import_exists(root: Path, module: str) -> bool:
     parts = module.split(".")
     return root.joinpath(*parts).with_suffix(".py").is_file() or root.joinpath(*parts).is_dir()
@@ -268,6 +358,8 @@ def validate(root: Path) -> None:
              f"undeclared construction artifacts: {', '.join(undeclared)}")
 
     for relative in PLACEHOLDER_PATHS:
+        if relative == VALIDATION_LIBRARY_PATH:
+            continue
         value = strict_json(root / relative)
         exact_fields(value, PLACEHOLDER_FIELDS, relative)
         identity = validate_common(value, relative)
@@ -275,6 +367,14 @@ def validate(root: Path) -> None:
             fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
                  f"{relative}: duplicate construction identity")
         identities.add(identity)
+
+    validation_library = strict_json(root / VALIDATION_LIBRARY_PATH)
+    validation_library_identity = validate_validation_library(
+        validation_library, VALIDATION_LIBRARY_PATH
+    )
+    if validation_library_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{VALIDATION_LIBRARY_PATH}: duplicate construction identity")
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

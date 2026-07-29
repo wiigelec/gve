@@ -169,16 +169,34 @@ class CanonicalJsonTests(unittest.TestCase):
             b"REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VERSION: unknown\n",
         )
 
-    def test_canonicalizer_imports_only_standard_library_modules(self) -> None:
-        allowed = {"argparse", "collections", "json", "pathlib", "sys", "typing", "__future__"}
+    def test_canonicalizer_imports_only_standard_or_validation_library_modules(self) -> None:
+        allowed = {
+            "argparse",
+            "collections",
+            "json",
+            "pathlib",
+            "sys",
+            "typing",
+            "__future__",
+            "validation",
+        }
         tree = ast.parse(VALIDATOR_PATH.read_text(encoding="utf-8"))
         observed = set()
+        validation_imports = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 observed.update(alias.name.split(".", 1)[0] for alias in node.names)
+                validation_imports.update(
+                    alias.name for alias in node.names
+                    if alias.name.split(".", 1)[0] == "validation"
+                )
             elif isinstance(node, ast.ImportFrom):
-                observed.add((node.module or "").split(".", 1)[0])
+                module = node.module or ""
+                observed.add(module.split(".", 1)[0])
+                if module.split(".", 1)[0] == "validation":
+                    validation_imports.add(module)
         self.assertEqual(observed - allowed, set())
+        self.assertEqual(validation_imports, {"validation.lib"})
 
     def test_canonical_model_excludes_validator_interface_policy(self) -> None:
         model = json.loads(MODEL_PATH.read_text(encoding="utf-8"))

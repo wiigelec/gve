@@ -1,14 +1,138 @@
 {
-  "construction_identity": "validation-library-placeholder",
+  "construction_identity": "validation-library-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent reusable validation mechanisms without implementing future semantics.",
+  "responsibility": "Define the closed construction-only module, API, diagnostic, dependency, integration, and authority boundaries for reusable repository-specification validation mechanisms without defining product semantics or final normative validation authority.",
   "normative": false,
+  "module_inventory": [
+    {
+      "module": "validation.lib.strict_json",
+      "responsibilities": [
+        "strict-utf-8-byte-loading",
+        "malformed-json-rejection",
+        "duplicate-object-member-rejection",
+        "non-standard-constant-rejection",
+        "non-integer-json-number-rejection"
+      ]
+    },
+    {
+      "module": "validation.lib.canonical_json",
+      "responsibilities": [
+        "canonical-json-v1-value-validation",
+        "signed-64-bit-integer-enforcement",
+        "deterministic-member-ordering",
+        "array-order-preservation",
+        "deterministic-string-escaping",
+        "exact-utf-8-byte-construction"
+      ]
+    },
+    {
+      "module": "validation.lib.contracts",
+      "responsibilities": [
+        "single-validation-exception",
+        "exact-field-enforcement",
+        "functional-identifier-validation",
+        "normalized-field-name-validation",
+        "unique-sequence-validation",
+        "disjoint-sequence-validation"
+      ]
+    },
+    {
+      "module": "validation.lib.identity",
+      "responsibilities": [
+        "family-registry-construction",
+        "semantic-identity-validation",
+        "domain-separated-preimage-construction",
+        "own-identity-omission-and-contradiction-checking",
+        "reference-verification",
+        "direct-aggregate-verification",
+        "derive-and-verify-results",
+        "construction-only-evidence"
+      ]
+    }
+  ],
+  "dependency_direction": [
+    "strict_json-to-contracts",
+    "canonical_json-to-contracts",
+    "identity-to-contracts-and-canonical_json",
+    "package-exports-to-leaf-modules",
+    "intrinsic-validators-to-validation-library",
+    "validation-library-never-to-intrinsic-validators",
+    "validation-library-never-to-maintained-product-code"
+  ],
+  "api_contracts": {
+    "strict_json": "accept-explicit-bytes-and-source-context-return-python-value-or-raise-validation-error",
+    "canonical_json": "accept-supported-python-value-return-exact-canonical-utf-8-bytes-or-raise-validation-error",
+    "closed_objects": "accept-explicit-value-constraints-and-location-return-validated-value-or-raise-validation-error",
+    "identity": "accept-explicit-family-declarations-request-and-verification-context-return-construction-result-or-raise-validation-error"
+  },
+  "diagnostic_contract": {
+    "representation": "deterministic-string",
+    "exception": "single-repository-specification-validation-error",
+    "structured-diagnostic-schema": "unavailable",
+    "caller-context": "explicit-location-or-source",
+    "failure_precedence": "unknown-before-missing-for-exact-fields-and-fail-closed-at-first-deterministic-contract-violation"
+  },
+  "fail_closed_behavior": [
+    "no-permissive-json-fallback",
+    "unknown-family-rejection",
+    "malformed-reference-rejection",
+    "missing-or-conflicting-verification-context-rejection",
+    "duplicate-aggregate-member-rejection",
+    "unsupported-transitive-closure-rejection",
+    "self-membership-rejection",
+    "direct-and-indirect-cycle-rejection",
+    "member-family-mismatch-rejection"
+  ],
+  "product_independence": {
+    "third_party_dependencies": "forbidden",
+    "maintained_product_imports": "forbidden",
+    "product-identities-and-evidence": "forbidden",
+    "repository-global-state": "forbidden"
+  },
+  "integration_responsibilities": {
+    "validate_canonical_json": "delegate-exact-canonical-byte-construction-while-retaining-token-specific-parse-diagnostics-fixture-traversal-and-cli-boundary",
+    "validate_identity_construction": "delegate-family-registry-construction-and-behavior-request-evaluation-while-retaining-artifact-schema-manifest-fixture-and-cli-orchestration",
+    "validate_skeleton": "validate-this-construction-model-and-require-all-durable-library-and-integration-module-paths"
+  },
+  "retained_intrinsic_behavior": [
+    {
+      "boundary": "canonical-json-token-parser",
+      "reason": "token-specific-bom-utf8-number-duplicate-member-and-malformed-input-diagnostic-codes-and-precedence-remain-an-intrinsic-cli-contract"
+    },
+    {
+      "boundary": "legacy-identity-helper-definitions",
+      "reason": "retained-only-as-a-direct-compatibility-oracle-during-this-construction-stage-and-not-used-by-the-executable-behavior-fixture-path"
+    }
+  ],
+  "unavailable_capabilities": [
+    "final-normative-schema",
+    "accepted-conformance",
+    "governing-revision-binding",
+    "manifest-bootstrap",
+    "repository-profiles",
+    "product-evidence",
+    "sealing",
+    "completion",
+    "acceptance",
+    "cutover"
+  ],
+  "authority_boundary": {
+    "status": "construction-only",
+    "accepted-specification-authority": false,
+    "accepted-product-authority": false,
+    "implementation-files-have-semantic-identities": false,
+    "root-manifest-participation": "validation-library-construction-artifact-only; durable-python-modules-are-required-contained-implementation-paths"
+  },
   "expected_relationships": [
-    "intrinsic validation",
-    "repository validation"
+    "canonical JSON construction boundary",
+    "identity model construction boundary",
+    "identity family construction boundary",
+    "identity verification construction boundary",
+    "repository validation boundary"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final normative validation-library schema and artifact identity are not defined.",
+    "Removal of retained intrinsic compatibility-oracle helpers requires a separately governed diagnostic-compatibility decision.",
+    "Final revision binding, sealing, acceptance, and external repository profiles remain separately governed."
   ]
 }
