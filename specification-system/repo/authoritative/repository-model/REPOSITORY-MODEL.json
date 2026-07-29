@@ -1,12 +1,180 @@
 {
   "construction_identity": "repository-model",
   "construction_status": "under-construction",
-  "responsibility": "Define the durable repository tree model.",
+  "responsibility": "Define the minimum repository-neutral vocabulary for later repository-specification profiles.",
   "normative": false,
+  "repository_area_kinds": [
+    "authority",
+    "derived",
+    "validation",
+    "support",
+    "temporary"
+  ],
+  "authority_classifications": [
+    "normative",
+    "non-normative"
+  ],
+  "lifecycle_classifications": [
+    "maintained",
+    "generated",
+    "temporary"
+  ],
+  "tree_entry_kinds": [
+    "file",
+    "directory"
+  ],
+  "ownership_roles": [
+    "area-owner",
+    "artifact-owner"
+  ],
+  "record_contracts": {
+    "areas": {
+      "fields": ["id", "kind"],
+      "unique_by": ["id"],
+      "kind_values": "repository_area_kinds"
+    },
+    "tree_members": {
+      "fields": ["id", "path", "entry_kind", "authority_classification", "lifecycle_classification"],
+      "unique_by": ["id", "path"],
+      "entry_kind_values": "tree_entry_kinds",
+      "authority_values": "authority_classifications",
+      "lifecycle_values": "lifecycle_classifications"
+    },
+    "owners": {
+      "fields": ["id", "target", "role"],
+      "unique_by": ["id", "target", "role"],
+      "target": "declared-area-or-tree-member-id",
+      "role_values": "ownership_roles"
+    },
+    "containments": {
+      "fields": ["parent", "child"],
+      "unique_by": ["parent", "child"],
+      "parent_kind": "directory-tree-member",
+      "child_relation": "strict-component-boundary-descendant",
+      "immediate_parent": "unique-when-declared"
+    },
+    "dependencies": {
+      "fields": ["source", "target", "relation"],
+      "unique_by": ["source", "target", "relation"],
+      "relation_values": ["depends-on"],
+      "endpoints": "declared-area-or-tree-member-id",
+      "self_reference": "forbidden",
+      "cycles": "forbidden"
+    }
+  },
+  "records": {
+    "areas": [
+      {
+        "id": "authority",
+        "kind": "authority"
+      },
+      {
+        "id": "validation",
+        "kind": "validation"
+      }
+    ],
+    "tree_members": [
+      {
+        "id": "authority-root",
+        "path": "authority",
+        "entry_kind": "directory",
+        "authority_classification": "normative",
+        "lifecycle_classification": "maintained"
+      },
+      {
+        "id": "authority-example",
+        "path": "authority/example.json",
+        "entry_kind": "file",
+        "authority_classification": "normative",
+        "lifecycle_classification": "maintained"
+      }
+    ],
+    "owners": [
+      {
+        "id": "authority-area-owner",
+        "target": "authority",
+        "role": "area-owner"
+      },
+      {
+        "id": "authority-example-owner",
+        "target": "authority-example",
+        "role": "artifact-owner"
+      }
+    ],
+    "containments": [
+      {
+        "parent": "authority-root",
+        "child": "authority-example"
+      }
+    ],
+    "dependencies": [
+      {
+        "source": "authority-example",
+        "target": "authority",
+        "relation": "depends-on"
+      }
+    ]
+  },
+  "dependency_relation": {
+    "name": "depends-on",
+    "direction": "dependent-to-prerequisite",
+    "endpoints": "declared-area-or-tree-member-identifiers",
+    "self_dependency": "forbidden",
+    "cycles": "forbidden"
+  },
+  "classification_rules": {
+    "tree_member_authority": "exactly-one",
+    "tree_member_lifecycle": "exactly-one",
+    "normative_requires": "maintained",
+    "generated_requires": "non-normative",
+    "temporary_requires": "non-normative",
+    "lifecycle_classifications_are_disjoint": true
+  },
+  "path_rules": {
+    "root_representation": ".",
+    "root_is_implicit": true,
+    "format": "normalized-repository-relative-posix-path",
+    "components": "non-empty-utf-8",
+    "forbidden": [
+      "absolute-path",
+      "empty-component",
+      "dot-component",
+      "dot-dot-component",
+      "backslash",
+      "nul",
+      "lexical-escape"
+    ],
+    "symlinks": "not-declared-and-not-followed"
+  },
+  "containment_rules": {
+    "relation": "strict-component-boundary-prefix",
+    "directory_may_contain": true,
+    "file_may_contain": false,
+    "declared_parent": "unique-immediate-parent-when-present",
+    "filesystem_closure": "deferred"
+  },
+  "ownership_rules": {
+    "owner_identifier": "normalized-unique-repository-neutral-identifier",
+    "owner_scope": "one-declared-area-or-tree-member",
+    "owner_role": "exactly-one-declared-role"
+  },
+  "tree_model_boundary": {
+    "represents": "declared-repository-vocabulary",
+    "does_not_represent": [
+      "complete-repository-snapshot",
+      "repository-identity",
+      "artifact-discovery",
+      "ignored-content",
+      "absent-paths",
+      "final-symlink-policy"
+    ]
+  },
   "expected_relationships": [
-    "repository-specification-construction-set"
+    "repository-specification-construction-set",
+    "repository-vocabulary-construction-schema",
+    "repository-vocabulary-validation"
   ],
   "unresolved_questions": [
-    "Normative repository tree semantics are not defined by this placeholder."
+    "Final repository identity, complete tree closure, artifact discovery, repository-copy semantics, final symlink policy, revisions, acceptance, sealing, and cutover are not defined."
   ]
 }

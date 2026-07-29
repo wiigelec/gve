@@ -1,0 +1,75 @@
+{
+  "construction_identity": "repository-vocabulary-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact closed construction-only representation of the minimum repository-neutral vocabulary without claiming final repository schema authority.",
+  "normative": false,
+  "target_construction_identity": "repository-model",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "repository_area_kinds",
+    "authority_classifications",
+    "lifecycle_classifications",
+    "tree_entry_kinds",
+    "ownership_roles",
+    "record_contracts",
+    "records",
+    "dependency_relation",
+    "classification_rules",
+    "path_rules",
+    "containment_rules",
+    "ownership_rules",
+    "tree_model_boundary",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "construction_identity": [
+      "repository-vocabulary-construction-schema"
+    ],
+    "construction_status": [
+      "under-construction"
+    ],
+    "normative": [
+      false
+    ],
+    "repository_area_kinds": "exact-closed-enum-array",
+    "authority_classifications": "exact-closed-enum-array",
+    "lifecycle_classifications": "exact-closed-enum-array",
+    "tree_entry_kinds": "exact-closed-enum-array",
+    "ownership_roles": "exact-closed-enum-array",
+    "record_contracts": "closed-object-of-closed-record-contracts",
+    "records": "closed-object-of-record-arrays",
+    "dependency_relation": "closed-object",
+    "classification_rules": "closed-object",
+    "path_rules": "closed-object",
+    "containment_rules": "closed-object",
+    "ownership_rules": "closed-object",
+    "tree_model_boundary": "closed-object",
+    "expected_relationships": "non-empty-unique-string-array",
+    "unresolved_questions": "non-empty-string-array"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "repository vocabulary construction",
+    "repository specification construction manifest",
+    "repository vocabulary validation"
+  ],
+  "unresolved_questions": [
+    "Final normative repository schema, repository identity, complete tree closure, revisions, acceptance, sealing, and cutover are not defined."
+  ]
+}
