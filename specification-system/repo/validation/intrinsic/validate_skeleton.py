@@ -26,12 +26,14 @@ ARTIFACT_CLASSES = (
     "conformance-boundary-placeholder",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-behavior-fixture-set-construction",
     "identity-family-construction-schema",
     "identity-family-fixture-set-construction",
     "identity-family-model-construction",
     "identity-model-construction",
     "identity-model-construction-schema",
     "identity-verification-construction",
+    "identity-verification-construction-schema",
     "level-model-placeholder",
     "normative-change-placeholder",
     "repository-model-placeholder",
@@ -58,19 +60,24 @@ ARTIFACT_PATHS = (
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
     "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
+    "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
 )
 NON_PLACEHOLDER_PATHS = {
+    "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
     "authoritative/identity/IDENTITY-MODEL.json",
     "authoritative/identity/CANONICAL-JSON.json",
     "authoritative/identity/IDENTITY-FAMILY-MODEL.json",
+    "authoritative/identity/IDENTITY-VERIFICATION.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
+    "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
@@ -85,6 +92,7 @@ REQUIRED_DIRECTORIES = (
     "validation/fixtures", "validation/fixtures/identity",
     "validation/fixtures/identity/canonical-json",
     "validation/fixtures/identity/identity-family",
+    "validation/fixtures/identity/identity-behavior",
 )
 REQUIRED_PATHS = (
     MANIFEST_PATH, "validate", *ARTIFACT_PATHS,
@@ -99,6 +107,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_complete_construction_skeleton.py",
     "validation/tests/test_identity_construction.py",
     "validation/tests/test_identity_family.py",
+    "validation/tests/test_identity_behavior.py",
     "validation/tests/test_canonical_json.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")

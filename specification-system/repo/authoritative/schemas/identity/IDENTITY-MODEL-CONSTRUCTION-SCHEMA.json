@@ -15,8 +15,11 @@
     "canonicalization_reference",
     "digest_declaration",
     "domain_separation",
-    "subject_categories",
+    "object_kinds",
     "canonical_preimage_declaration",
+    "reference_model",
+    "aggregate_model",
+    "verification_boundary",
     "unavailable_capabilities",
     "expected_relationships",
     "unresolved_questions"
@@ -26,7 +29,7 @@
     "exact_policy": {
       "construction_identity": "identity-model-construction",
       "construction_status": "under-construction",
-      "responsibility": "Define the minimum repository-neutral semantic identity construction kernel required to interpret identity-family declarations without defining later reference, aggregate, verification, governing-revision, self-reference, sealing, or acceptance behavior.",
+      "responsibility": "Define the repository-neutral semantic identity construction kernel, including explicit own-identity, reference, aggregate, cycle, and verification boundaries without defining repository profiles, manifest bootstrap, sealing, or acceptance behavior.",
       "normative": false,
       "decision_basis": {
         "portable_behavior": [
@@ -34,13 +37,20 @@
           "family-qualified-identity",
           "explicit-canonicalization-version",
           "explicit-digest-algorithm-and-encoding",
-          "domain-separated-canonical-preimage"
+          "domain-separated-canonical-preimage",
+          "explicit-own-identity-handling",
+          "family-qualified-reference-verification",
+          "ordered-and-unordered-aggregate-construction",
+          "direct-aggregate-closure",
+          "fail-closed-cycle-and-ambiguity-rejection"
         ],
         "repository_generic_decisions": [
           "closed-family-and-encoded-digest-object-representation",
-          "object-and-aggregate-subject-categories",
-          "explicit-included-and-omitted-preimage-fields",
-          "later-capabilities-unavailable-until-separately-governed"
+          "object-ordered-aggregate-and-unordered-aggregate-kinds",
+          "designated-own-identity-field-omission",
+          "identity-only-and-identity-plus-value-reference-values",
+          "unordered-members-sorted-by-semantic-identity",
+          "construction-only-verification-evidence"
         ]
       },
       "identifier_distinction": {
@@ -55,6 +65,8 @@
           "family",
           "encoded_digest"
         ],
+        "family_qualification_required": true,
+        "encoded_digest_constraint": "sixty-four-lowercase-hexadecimal-characters",
         "final_string_syntax": "unresolved"
       },
       "canonicalization_reference": {
@@ -76,32 +88,53 @@
         "ownership": "identity-family",
         "prefix_required": true,
         "prefix_character_domain": "printable-ascii",
+        "prefix_terminator": "nul",
         "prefix_uniqueness": "repository-specification-construction-set"
       },
-      "subject_categories": [
+      "object_kinds": [
         "object",
-        "aggregate"
+        "ordered-aggregate",
+        "unordered-aggregate"
       ],
       "canonical_preimage_declaration": {
         "included_fields": "non-empty-unique-normalized-field-name-array",
         "omitted_fields": "unique-normalized-field-name-array",
-        "included_and_omitted_fields": "disjoint"
+        "included_and_omitted_fields": "disjoint",
+        "own_identity_rule": "omit-designated-own-identity-field",
+        "domain_prefix_application": "domain-prefix-bytes-followed-by-canonical-value-bytes"
+      },
+      "reference_model": {
+        "permitted_modes": [
+          "by-identity",
+          "identity-plus-value"
+        ],
+        "family_qualification_required": true,
+        "identity_only_context": "caller-supplied-verified-identity-set",
+        "identity_plus_value_context": "embedded-value-recomputation",
+        "unsupported_or_ambiguous_reference": "reject"
+      },
+      "aggregate_model": {
+        "ordering_modes": [
+          "ordered",
+          "unordered"
+        ],
+        "ordered_rule": "preserve-declared-order",
+        "unordered_rule": "sort-ascending-by-member-semantic-identity",
+        "duplicate_policy": "reject",
+        "empty_policy": "family-declaration-required",
+        "closure_boundary": "direct",
+        "transitive_closure": "unavailable",
+        "self_membership": "reject",
+        "cycle_policy": "reject"
+      },
+      "verification_boundary": {
+        "supplied_identity_comparison": "exact-family-and-digest-match",
+        "reference_verification": "family-specific-and-fail-closed",
+        "aggregate_verification": "all-direct-members-required",
+        "evidence_scope": "construction-computation-only"
       },
       "unavailable_capabilities": [
-        "own-identity-behavior",
-        "reference-modes",
-        "reference-encoding",
-        "aggregate-membership",
-        "aggregate-ordering",
-        "aggregate-duplicates",
-        "aggregate-empty-policy",
-        "aggregate-closure",
-        "cycle-handling",
-        "verification-modes",
-        "verification-context",
-        "verification-evidence",
         "governing-revision-binding",
-        "self-reference",
         "manifest-bootstrap",
         "sealing",
         "acceptance"
@@ -112,8 +145,8 @@
         "identity verification construction boundary"
       ],
       "unresolved_questions": [
-        "Final accepted semantic identity syntax is not defined.",
-        "Concrete own-identity, reference, aggregate, verification, governing-revision, self-reference, manifest, sealing, and acceptance behavior remains separately governed."
+        "Final accepted semantic identity string syntax is not defined.",
+        "Governing revision, manifest bootstrap, sealing, and acceptance behavior remains separately governed."
       ]
     },
     "unknown_fields": "reject",
@@ -134,10 +167,11 @@
   "expected_relationships": [
     "identity model construction boundary",
     "identity family construction schema",
+    "identity verification construction schema",
     "repository specification construction manifest"
   ],
   "unresolved_questions": [
     "Final normative identity-model schema is not defined.",
-    "Later identity behavior remains separately governed."
+    "Governing revision, manifest bootstrap, sealing, and acceptance behavior remains separately governed."
   ]
 }

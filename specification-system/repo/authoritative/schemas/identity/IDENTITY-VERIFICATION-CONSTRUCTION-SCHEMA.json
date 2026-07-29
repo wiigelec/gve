@@ -1,0 +1,215 @@
+{
+  "construction_identity": "identity-verification-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact construction-only shape of repository-neutral identity verification behavior without claiming final normative schema authority.",
+  "normative": false,
+  "target_construction_identity": "identity-verification-construction",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "decision_basis",
+    "verification_request",
+    "own_identity_verification",
+    "verification_context",
+    "construction_sequence",
+    "reference_verification",
+    "aggregate_verification",
+    "verification_result",
+    "construction_evidence",
+    "rejection_classes",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "exact_policy": {
+      "construction_identity": "identity-verification-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define closed repository-neutral construction behavior for identity derivation, supplied-versus-computed verification, reference verification, direct aggregate verification, deterministic results, and construction-only evidence.",
+      "normative": false,
+      "decision_basis": {
+        "portable_behavior": [
+          "family-resolution-before-construction",
+          "domain-separated-canonical-preimage",
+          "omit-designated-own-identity-field",
+          "contradictory-own-identity-rejection",
+          "by-identity-context-verification",
+          "identity-plus-value-recomputation",
+          "ordered-and-unordered-direct-aggregate-verification",
+          "fail-closed-cycle-and-family-rejection"
+        ],
+        "repository_generic_decisions": [
+          "closed-verification-request-and-result-objects",
+          "unordered-members-sorted-by-semantic-identity",
+          "deterministic-construction-only-evidence",
+          "no-governing-revision-input-for-this-boundary"
+        ]
+      },
+      "verification_request": {
+        "required_fields": [
+          "mode",
+          "family_name",
+          "value",
+          "supplied_identity",
+          "verification_context"
+        ],
+        "closed": true,
+        "modes": [
+          "derive",
+          "verify"
+        ],
+        "derive_supplied_identity": null,
+        "verify_supplied_identity": "required-semantic-identity",
+        "verification_context": "unique-sequence-of-verified-identity-records-or-empty"
+      },
+      "own_identity_verification": {
+        "preimage_treatment": "omit-designated-field",
+        "absent_or_null": "allowed",
+        "matching_computed_identity": "allowed",
+        "contradictory_identity": "reject"
+      },
+      "verification_context": {
+        "record_required_fields": [
+          "identity",
+          "family_name",
+          "verified"
+        ],
+        "record_closed": true,
+        "identity": "family-qualified-semantic-identity",
+        "family_name": "lowercase-functional-identifier",
+        "verified": [
+          true
+        ],
+        "duplicate_identity_policy": "reject",
+        "external_to_canonical_preimage": true
+      },
+      "construction_sequence": [
+        "resolve-family",
+        "validate-family-applicability",
+        "copy-declared-included-fields",
+        "capture-and-omit-designated-own-identity-field",
+        "resolve-and-verify-references",
+        "validate-direct-aggregate-membership",
+        "canonicalize-value",
+        "prepend-domain-prefix-and-nul",
+        "compute-sha-256",
+        "encode-lowercase-hexadecimal",
+        "construct-family-qualified-semantic-identity",
+        "validate-supplied-own-identity",
+        "compare-supplied-and-computed-identity"
+      ],
+      "reference_verification": {
+        "by_identity": {
+          "required_context": "caller-supplied-verified-identity-set",
+          "canonical_value": "referenced-semantic-identity",
+          "missing_unknown_conflicting_or_unverified": "reject"
+        },
+        "identity_plus_value": {
+          "required_context": "embedded-value",
+          "canonical_value": "declared-identity-and-value-reference-object",
+          "verification": "recompute-value-identity-and-require-exact-match"
+        }
+      },
+      "aggregate_verification": {
+        "closure_boundary": "direct",
+        "ordered_members": "preserve-declared-order",
+        "unordered_members": "sort-ascending-by-member-semantic-identity",
+        "duplicate_members": "reject",
+        "empty_members": "apply-family-declared-policy",
+        "self_membership": "reject",
+        "cycles": "reject",
+        "member_family_mismatch": "reject"
+      },
+      "verification_result": {
+        "required_fields": [
+          "status",
+          "family_name",
+          "computed_identity",
+          "supplied_identity",
+          "evidence",
+          "diagnostic"
+        ],
+        "closed": true,
+        "statuses": [
+          "derived",
+          "verified",
+          "rejected"
+        ],
+        "success_diagnostic": null,
+        "rejected_computed_identity": null
+      },
+      "construction_evidence": {
+        "required_fields": [
+          "family_name",
+          "canonicalization_version",
+          "digest_algorithm",
+          "domain_prefix",
+          "own_identity_field_omitted",
+          "reference_count",
+          "aggregate_member_count",
+          "aggregate_ordering",
+          "canonical_value_sha256",
+          "computed_identity"
+        ],
+        "closed": true,
+        "scope": "construction-computation-only"
+      },
+      "rejection_classes": [
+        "malformed-request",
+        "missing-family",
+        "unknown-family",
+        "family-mismatch",
+        "unsupported-object-kind",
+        "malformed-own-identity",
+        "contradictory-own-identity",
+        "malformed-reference",
+        "missing-reference-context",
+        "unverified-reference",
+        "reference-family-mismatch",
+        "embedded-reference-identity-mismatch",
+        "duplicate-aggregate-member",
+        "empty-aggregate-forbidden",
+        "self-membership",
+        "aggregate-cycle",
+        "supplied-identity-mismatch",
+        "unsupported-construction-capability"
+      ],
+      "expected_relationships": [
+        "identity model construction boundary",
+        "canonical JSON construction boundary",
+        "identity family construction boundary",
+        "identity verification construction schema"
+      ],
+      "unresolved_questions": [
+        "Governing specification revision selection is not required for this bounded generic construction mechanism.",
+        "Manifest bootstrap, sealing, acceptance, and product evidence semantics remain separately governed."
+      ]
+    },
+    "unknown_fields": "reject",
+    "missing_fields": "reject"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "identity verification construction boundary",
+    "identity model construction boundary",
+    "identity family construction boundary",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Final normative identity verification schema is not defined.",
+    "Governing revision, manifest bootstrap, sealing, and acceptance behavior remains separately governed."
+  ]
+}
