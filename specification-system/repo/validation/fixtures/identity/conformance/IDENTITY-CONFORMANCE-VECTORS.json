@@ -421,6 +421,28 @@
       ]
     },
     {
+      "vector_id": "identity-aggregate-member-family-mismatch-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "ordered-aggregate-ab",
+        "mutation": "aggregate-member-family-mismatch"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "reference-family-mismatch",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "aggregate-member-family-rejection"
+      ]
+    },
+    {
       "vector_id": "identity-ambiguous-context-rejects",
       "behavior_class": "reference",
       "classification": "negative",
@@ -718,6 +740,28 @@
       ]
     },
     {
+      "vector_id": "identity-malformed-semantic-identity-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "malformed-semantic-identity"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "invalid lowercase SHA-256",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "malformed-semantic-identity-rejection"
+      ]
+    },
+    {
       "vector_id": "identity-matching-own-identity-verifies",
       "behavior_class": "own-identity",
       "classification": "positive",
@@ -907,7 +951,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "member-family-rejection"
+        "reference-family-rejection"
       ]
     },
     {
@@ -1099,6 +1143,28 @@
         "direct-closure",
         "ordered-unordered-nonconflation",
         "unordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "identity-unresolved-context-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "unresolved-context"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "missing-reference-context",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "reference-unresolved-context-rejection"
       ]
     },
     {

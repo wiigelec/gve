@@ -40,7 +40,7 @@ class IdentityConformanceVectorTests(unittest.TestCase):
         identifiers = [item["vector_id"] for item in vectors]
         self.assertEqual(identifiers, sorted(identifiers))
         self.assertEqual(len(identifiers), len(set(identifiers)))
-        self.assertGreaterEqual(len(vectors), 48)
+        self.assertGreaterEqual(len(vectors), 51)
         expected_fields = {
             "vector_id",
             "behavior_class",

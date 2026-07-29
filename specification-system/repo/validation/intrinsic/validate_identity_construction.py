@@ -1007,6 +1007,14 @@ def _validate_conformance_vector_set(
                 request["verification_context"][0]["family_name"] = "link"
             elif mutation == "remove-reference-identity":
                 request["value"]["references"][0].pop("identity")
+            elif mutation == "aggregate-member-family-mismatch":
+                request["value"]["members"][0]["identity"]["family"] = "link"
+            elif mutation == "malformed-semantic-identity":
+                request["value"]["references"][0]["identity"]["encoded_digest"] = "ABC"
+            elif mutation == "unresolved-context":
+                request["value"]["references"][0]["identity"]["encoded_digest"] = (
+                    "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                )
             elif mutation == "unknown-family":
                 request["family_name"] = "unknown-family"
             elif mutation == "unverified-context":
