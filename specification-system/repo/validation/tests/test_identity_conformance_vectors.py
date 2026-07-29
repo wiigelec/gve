@@ -40,7 +40,7 @@ class IdentityConformanceVectorTests(unittest.TestCase):
         identifiers = [item["vector_id"] for item in vectors]
         self.assertEqual(identifiers, sorted(identifiers))
         self.assertEqual(len(identifiers), len(set(identifiers)))
-        self.assertGreaterEqual(len(vectors), 27)
+        self.assertGreaterEqual(len(vectors), 48)
         expected_fields = {
             "vector_id",
             "behavior_class",
@@ -138,36 +138,46 @@ class IdentityConformanceVectorTests(unittest.TestCase):
         )
         self.assertEqual(observed, sorted(model["coverage_requirements"]))
 
-    def test_missing_coverage_fails(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            copy_root = Path(directory) / "repo"
-            shutil.copytree(ROOT, copy_root)
-            path = (
-                copy_root
-                / "validation/fixtures/identity/conformance/"
-                "IDENTITY-CONFORMANCE-VECTORS.json"
-            )
-            value = json.loads(path.read_text(encoding="utf-8"))
-            for vector in value["vectors"]:
-                if "signed-64-bit-boundary" not in vector["coverage_tags"]:
-                    continue
-                replacement = next(
-                    tag
-                    for tag in value["vectors"][0]["coverage_tags"]
-                    if tag != "signed-64-bit-boundary"
-                )
-                vector["coverage_tags"] = [
-                    replacement
-                    if tag == "signed-64-bit-boundary"
-                    else tag
-                    for tag in vector["coverage_tags"]
-                ]
-            path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
-            with self.assertRaisesRegex(
-                VALIDATOR.ValidationFailure,
-                "coverage mismatch: missing=signed-64-bit-boundary",
-            ):
-                VALIDATOR.validate(copy_root)
+    def test_each_required_coverage_obligation_fails_when_removed(self) -> None:
+        model = json.loads(
+            (
+                ROOT / "authoritative/conformance/IDENTITY-CONFORMANCE.json"
+            ).read_text(encoding="utf-8")
+        )
+        for required_tag in model["coverage_requirements"]:
+            with self.subTest(required_tag=required_tag):
+                with tempfile.TemporaryDirectory() as directory:
+                    copy_root = Path(directory) / "repo"
+                    shutil.copytree(ROOT, copy_root)
+                    path = (
+                        copy_root
+                        / "validation/fixtures/identity/conformance/"
+                        "IDENTITY-CONFORMANCE-VECTORS.json"
+                    )
+                    value = json.loads(path.read_text(encoding="utf-8"))
+                    fallback = next(
+                        tag
+                        for vector in value["vectors"]
+                        for tag in vector["coverage_tags"]
+                        if tag != required_tag
+                    )
+                    for vector in value["vectors"]:
+                        vector["coverage_tags"] = [
+                            fallback if tag == required_tag else tag
+                            for tag in vector["coverage_tags"]
+                        ]
+                        vector["coverage_tags"] = sorted(
+                            set(vector["coverage_tags"])
+                        )
+                    path.write_text(
+                        json.dumps(value, indent=2) + "\n",
+                        encoding="utf-8",
+                    )
+                    with self.assertRaisesRegex(
+                        VALIDATOR.ValidationFailure,
+                        "coverage mismatch: missing=" + required_tag,
+                    ):
+                        VALIDATOR.validate(copy_root)
 
     def test_undeclared_coverage_fails(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

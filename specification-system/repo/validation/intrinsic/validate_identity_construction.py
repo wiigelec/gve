@@ -943,11 +943,100 @@ def _validate_conformance_vector_set(
                 ):
                     fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
                          f"{vector_label}: canonical value bytes mismatch")
+        elif kind == "canonical-source-hex":
+            if set(input_value) != {"kind", "source_hex"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: canonical source fields mismatch")
+            source_hex = input_value["source_hex"]
+            if (
+                not isinstance(source_hex, str)
+                or len(source_hex) % 2
+                or not re.fullmatch(r"[0-9a-f]*", source_hex)
+            ):
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.source_hex: invalid lowercase hexadecimal")
+            try:
+                canonical_json_validator.canonicalize_bytes(bytes.fromhex(source_hex))
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: canonical source diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected canonical source rejection")
+        elif kind == "canonical-generated-value":
+            if set(input_value) != {"kind", "value_type"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: generated value fields mismatch")
+            generated_values = {"bytes": b"unsupported"}
+            if input_value["value_type"] not in generated_values:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.value_type: unsupported generated value")
+            try:
+                canonical_json_validator.canonical_json_bytes(
+                    generated_values[input_value["value_type"]]
+                )
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: generated value diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected generated value rejection")
+        elif kind == "identity-behavior-mutation":
+            if set(input_value) != {"kind", "case_name", "mutation"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: behavior mutation fields mismatch")
+            case = case_map.get(input_value["case_name"])
+            if case is None:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}: unknown mutation source case")
+            request = json.loads(json.dumps(case["request"]))
+            mutation = input_value["mutation"]
+            if mutation == "duplicate-context":
+                request["verification_context"].append(
+                    json.loads(json.dumps(request["verification_context"][0]))
+                )
+            elif mutation == "conflicting-context-family":
+                request["verification_context"][0]["family_name"] = "link"
+            elif mutation == "remove-reference-identity":
+                request["value"]["references"][0].pop("identity")
+            elif mutation == "unknown-family":
+                request["family_name"] = "unknown-family"
+            elif mutation == "unverified-context":
+                request["verification_context"][0]["verified"] = False
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.mutation: unsupported mutation")
+            try:
+                result = reusable_evaluate_behavior(request, registry)
+            except ReusableValidationError as exc:
+                diagnostic = str(exc)
+                status = "rejected"
+            else:
+                diagnostic = result["diagnostic"]
+                status = result["status"]
+            if (
+                status != expected["status"]
+                or expected["diagnostic"] not in diagnostic
+            ):
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: behavior mutation outcome mismatch")
         elif kind == "family-declaration-mutation":
             if set(input_value) != {"kind", "family_name", "mutation"}:
                 fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
                      f"{vector_label}.input: family mutation fields mismatch")
-            if input_value["mutation"] != "clear-unavailable-capabilities":
+            if input_value["mutation"] not in {
+                "clear-unavailable-capabilities",
+                "transitive-closure",
+                "unsupported-reference-mode",
+            }:
                 fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
                      f"{vector_label}.input.mutation: unsupported mutation")
             declarations = [
@@ -961,7 +1050,12 @@ def _validate_conformance_vector_set(
             if len(matches) != 1:
                 fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
                      f"{vector_label}: family mutation target mismatch")
-            matches[0]["unavailable_capabilities"] = []
+            if input_value["mutation"] == "clear-unavailable-capabilities":
+                matches[0]["unavailable_capabilities"] = []
+            elif input_value["mutation"] == "transitive-closure":
+                matches[0]["aggregate"]["closure_boundary"] = "transitive"
+            else:
+                matches[0]["references"]["mode"] = "unsupported"
             try:
                 reusable_build_behavior_registry(
                     declarations,

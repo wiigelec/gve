@@ -7,6 +7,243 @@
   "execution_order": "ascending-vector-id",
   "vectors": [
     {
+      "vector_id": "canonical-accepted-array",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": [
+          2,
+          1
+        ]
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "5b322c315d",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-array-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-accepted-boolean",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": true
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "74727565",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-boolean-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-accepted-integer",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": 0
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "30",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-integer-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-accepted-null",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": null
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "6e756c6c",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-null-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-accepted-object",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": {
+          "b": 2,
+          "a": 1
+        }
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "7b2261223a312c2262223a327d",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-object-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-accepted-string",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": "value"
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "2276616c756522",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "accepted-string-value"
+      ]
+    },
+    {
+      "vector_id": "canonical-exponent-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-source-hex",
+        "source_hex": "316533"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unsupported-number-form-rejection"
+      ]
+    },
+    {
+      "vector_id": "canonical-malformed-json-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-source-hex",
+        "source_hex": "7b"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-MALFORMED",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "malformed-json-rejection"
+      ]
+    },
+    {
+      "vector_id": "canonical-malformed-utf8-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-source-hex",
+        "source_hex": "7b2276223aff7d"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-INVALID-UTF8",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "malformed-utf8-rejection"
+      ]
+    },
+    {
+      "vector_id": "canonical-non-finite-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-source-hex",
+        "source_hex": "496e66696e697479"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-NON-STANDARD-CONSTANT",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "non-finite-number-rejection"
+      ]
+    },
+    {
+      "vector_id": "canonical-non-standard-constant-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-source-hex",
+        "source_hex": "4e614e"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-NON-STANDARD-CONSTANT",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "non-standard-constant-rejection"
+      ]
+    },
+    {
       "vector_id": "canonical-object-order-and-escaping",
       "behavior_class": "canonical-json",
       "classification": "positive",
@@ -16,9 +253,10 @@
         "expected_path": "validation/fixtures/identity/canonical-json/object-reordered.canonical.json"
       },
       "coverage_tags": [
-        "canonical-json-value-domain",
-        "deterministic-object-ordering",
         "array-order-preservation",
+        "canonical-json-value-domain",
+        "canonical-output-boundary",
+        "deterministic-object-ordering",
         "deterministic-string-escaping"
       ],
       "expected_outcome": {
@@ -49,7 +287,28 @@
       "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
       "validator_owner": "validation/intrinsic/validate_canonical_json.py",
       "coverage_tags": [
-        "signed-64-bit-boundary"
+        "signed-64-bit-maximum"
+      ]
+    },
+    {
+      "vector_id": "canonical-signed-64-bit-minimum",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": -9223372036854775808
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "2d39323233333732303336383534373735383038",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "signed-64-bit-minimum"
       ]
     },
     {
@@ -70,7 +329,28 @@
       "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
       "validator_owner": "validation/intrinsic/validate_canonical_json.py",
       "coverage_tags": [
-        "signed-64-bit-boundary"
+        "signed-64-bit-overflow-rejection"
+      ]
+    },
+    {
+      "vector_id": "canonical-signed-64-bit-underflow-rejects",
+      "behavior_class": "canonical-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": -9223372036854775809
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "signed-64-bit-underflow-rejection"
       ]
     },
     {
@@ -83,7 +363,7 @@
         "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE"
       },
       "coverage_tags": [
-        "surrogate-and-unsupported-number-rejection"
+        "surrogate-rejection"
       ],
       "expected_outcome": {
         "status": "rejected",
@@ -120,6 +400,49 @@
       "validator_owner": "validation/intrinsic/validate_canonical_json.py"
     },
     {
+      "vector_id": "canonical-unsupported-value-rejects",
+      "behavior_class": "canonical-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-generated-value",
+        "value_type": "bytes"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unsupported-value-form-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-ambiguous-context-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "duplicate-context"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "duplicate identity",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "reference-ambiguous-context-rejection"
+      ]
+    },
+    {
       "vector_id": "identity-by-identity-reference-verifies",
       "behavior_class": "reference",
       "classification": "positive",
@@ -135,13 +458,50 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "link",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.link.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 1,
+          "aggregate_member_count": 0,
+          "aggregate_ordering": null,
+          "canonical_value_sha256": "76a36e6f12bc63c423f12bd2f1740a0bd8c5ae829301f556761a148a38ae412b",
+          "computed_identity": {
+            "family": "link",
+            "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
         "by-identity-reference-context",
-        "derive-and-verify-results"
+        "deterministic-construction-evidence",
+        "verification-verify-mode"
+      ]
+    },
+    {
+      "vector_id": "identity-conflicting-context-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "conflicting-context-family"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "family conflict",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "reference-conflicting-context-rejection"
       ]
     },
     {
@@ -183,7 +543,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "direct-cycle-rejection"
       ]
     },
     {
@@ -204,7 +564,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "duplicate-aggregate-rejection"
       ]
     },
     {
@@ -228,7 +588,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "empty-policy"
       ]
     },
     {
@@ -249,7 +609,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "empty-policy"
       ]
     },
     {
@@ -270,7 +630,8 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "identity-plus-value-recomputation"
+        "identity-plus-value-recomputation",
+        "supplied-computed-comparison"
       ]
     },
     {
@@ -289,13 +650,28 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "envelope",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.envelope.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 1,
+          "aggregate_member_count": 0,
+          "aggregate_ordering": null,
+          "canonical_value_sha256": "6535708a6e42d1bd28e09da274d32a50c13664778c71440fe3aa830ecf9b642e",
+          "computed_identity": {
+            "family": "envelope",
+            "encoded_digest": "c9bc8601d26b3580d60fd1ffc9ba2331239dce360eb900c38928152ee5a7984b"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
+        "deterministic-construction-evidence",
         "identity-plus-value-recomputation",
-        "derive-and-verify-results"
+        "verification-verify-mode"
       ]
     },
     {
@@ -316,7 +692,29 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "indirect-cycle-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-malformed-reference-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "remove-reference-identity"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "malformed-reference",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "malformed-reference-rejection"
       ]
     },
     {
@@ -341,7 +739,8 @@
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
         "own-identity-omission-and-contradiction",
-        "derive-and-verify-results"
+        "supplied-computed-comparison",
+        "verification-verify-mode"
       ]
     },
     {
@@ -362,7 +761,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "by-identity-reference-context"
+        "reference-missing-context-rejection"
       ]
     },
     {
@@ -381,12 +780,29 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "ordered-bundle",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.ordered-bundle.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 2,
+          "aggregate_member_count": 2,
+          "aggregate_ordering": "ordered",
+          "canonical_value_sha256": "25fc7e8734f0fd063b46487daefac14e2b545e5e6042e3e869c38e39dc0924c2",
+          "computed_identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "ordered-direct-aggregate"
+        "deterministic-construction-evidence",
+        "direct-closure",
+        "ordered-direct-aggregate",
+        "ordered-unordered-nonconflation"
       ]
     },
     {
@@ -405,12 +821,29 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "ordered-bundle",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.ordered-bundle.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 2,
+          "aggregate_member_count": 2,
+          "aggregate_ordering": "ordered",
+          "canonical_value_sha256": "08b1bf89c6ee548d3ea3b9951cb95f66891150b1acb29cff6ac92731f37f387b",
+          "computed_identity": {
+            "family": "ordered-bundle",
+            "encoded_digest": "ee081dad3d6161e388b6192365641184c71f436ce1c1fab78d56258ad45b3384"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "ordered-direct-aggregate"
+        "deterministic-construction-evidence",
+        "direct-closure",
+        "ordered-direct-aggregate",
+        "ordered-unordered-nonconflation"
       ]
     },
     {
@@ -448,11 +881,12 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "derive-and-verify-results",
+        "canonicalization-and-digest-selection",
         "deterministic-construction-evidence",
         "domain-separated-preimage",
         "family-qualified-identity",
-        "own-identity-omission-and-contradiction"
+        "own-identity-omission-and-contradiction",
+        "verification-derive-mode"
       ]
     },
     {
@@ -473,7 +907,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "member-family-rejection"
       ]
     },
     {
@@ -494,7 +928,7 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+        "direct-cycle-rejection"
       ]
     },
     {
@@ -515,7 +949,30 @@
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
-        "derive-and-verify-results"
+        "supplied-computed-comparison",
+        "verification-verify-mode"
+      ]
+    },
+    {
+      "vector_id": "identity-transitive-closure-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "family-declaration-mutation",
+        "family_name": "ordered-bundle",
+        "mutation": "transitive-closure"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "unsupported policy",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "transitive-closure-rejection"
       ]
     },
     {
@@ -541,6 +998,28 @@
       ]
     },
     {
+      "vector_id": "identity-unknown-family-rejects",
+      "behavior_class": "identity-family",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "own-identity-omission",
+        "mutation": "unknown-family"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "unknown-family",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unknown-family-rejection"
+      ]
+    },
+    {
       "vector_id": "identity-unordered-aggregate-ab",
       "behavior_class": "aggregate",
       "classification": "positive",
@@ -556,11 +1035,28 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "unordered-bundle",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.unordered-bundle.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 2,
+          "aggregate_member_count": 2,
+          "aggregate_ordering": "unordered",
+          "canonical_value_sha256": "08b1bf89c6ee548d3ea3b9951cb95f66891150b1acb29cff6ac92731f37f387b",
+          "computed_identity": {
+            "family": "unordered-bundle",
+            "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
+        "deterministic-construction-evidence",
+        "direct-closure",
+        "ordered-unordered-nonconflation",
         "unordered-direct-aggregate"
       ]
     },
@@ -580,12 +1076,73 @@
         },
         "canonical_utf8_hex": null,
         "diagnostic": null,
-        "evidence": null
+        "evidence": {
+          "family_name": "unordered-bundle",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.unordered-bundle.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 2,
+          "aggregate_member_count": 2,
+          "aggregate_ordering": "unordered",
+          "canonical_value_sha256": "08b1bf89c6ee548d3ea3b9951cb95f66891150b1acb29cff6ac92731f37f387b",
+          "computed_identity": {
+            "family": "unordered-bundle",
+            "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+          }
+        }
       },
       "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
       "validator_owner": "validation/intrinsic/validate_identity_construction.py",
       "coverage_tags": [
+        "deterministic-construction-evidence",
+        "direct-closure",
+        "ordered-unordered-nonconflation",
         "unordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "identity-unsupported-reference-mode-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "family-declaration-mutation",
+        "family_name": "link",
+        "mutation": "unsupported-reference-mode"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "unsupported reference mode",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unsupported-reference-mode-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-unverified-context-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-mutation",
+        "case_name": "by-identity-reference-verifies",
+        "mutation": "unverified-context"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "identity is not verified",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "reference-unverified-context-rejection"
       ]
     },
     {
@@ -598,7 +1155,7 @@
         "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY"
       },
       "coverage_tags": [
-        "strict-json-boundary"
+        "duplicate-key-rejection"
       ],
       "expected_outcome": {
         "status": "rejected",
@@ -620,8 +1177,7 @@
         "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER"
       },
       "coverage_tags": [
-        "strict-json-boundary",
-        "surrogate-and-unsupported-number-rejection"
+        "unsupported-number-form-rejection"
       ],
       "expected_outcome": {
         "status": "rejected",
