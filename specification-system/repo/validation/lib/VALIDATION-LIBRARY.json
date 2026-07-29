@@ -1,14 +1,18 @@
 {
   "construction_identity": "validation-library-placeholder",
   "construction_status": "under-construction",
-  "responsibility": "Represent reusable validation mechanisms without implementing future semantics.",
+  "responsibility": "Represent reusable repository-specification validation mechanisms for strict JSON loading, canonical JSON byte construction, closed-shape contracts, semantic identity derivation, reference verification, and direct aggregate verification without defining product semantics or final normative validation authority.",
   "normative": false,
   "expected_relationships": [
-    "intrinsic validation",
-    "repository validation"
+    "canonical JSON construction boundary",
+    "identity model construction boundary",
+    "identity family construction boundary",
+    "identity verification construction boundary",
+    "repository validation boundary"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final normative validation-library schema and artifact identity are not defined.",
+    "Intrinsic validator integration remains under governed construction.",
+    "Final revision binding, sealing, acceptance, and external repository profiles remain separately governed."
   ]
 }

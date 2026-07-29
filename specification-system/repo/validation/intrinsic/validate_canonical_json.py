@@ -9,6 +9,18 @@ from pathlib import Path
 from typing import Any
 
 
+CONSTRUCTION_ROOT = Path(__file__).resolve().parents[2]
+if str(CONSTRUCTION_ROOT) not in sys.path:
+    sys.path.insert(0, str(CONSTRUCTION_ROOT))
+
+from validation.lib import (  # noqa: E402
+    ValidationError as ReusableValidationError,
+)
+from validation.lib import (  # noqa: E402
+    canonical_json_bytes as reusable_canonical_json_bytes,
+)
+
+
 CANONICALIZATION_VERSION = "canonical-json-v1"
 MIN_INTEGER = -(2**63)
 MAX_INTEGER = 2**63 - 1
@@ -105,16 +117,9 @@ def parse_json_bytes(source: bytes) -> Any:
 def canonical_json_bytes(value: Any) -> bytes:
     _validate_value(value)
     try:
-        text = json.dumps(
-            value,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-            allow_nan=False,
-        )
-    except (TypeError, ValueError) as exc:
+        encoded = reusable_canonical_json_bytes(value, location="canonical-value")
+    except ReusableValidationError as exc:
         fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", str(exc))
-    encoded = text.encode("utf-8")
     if encoded.startswith(b"\xef\xbb\xbf") or encoded.endswith(b"\n"):
         fail("REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-VALUE", "serializer violated output boundary")
     return encoded
