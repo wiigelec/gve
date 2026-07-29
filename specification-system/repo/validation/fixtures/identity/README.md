@@ -1,7 +1,11 @@
 # Identity validation fixture boundary
 
-This directory is reserved for synthetic inputs used by focused generic identity
-construction tests.
+This directory contains synthetic repository-neutral construction inputs used by
+focused generic identity validation.
 
-Fixtures here are not accepted conformance vectors and do not define identity
-semantics.
+The `identity-family` and `identity-behavior` fixture sets preserve established
+construction values. The `conformance` vector set references those values and
+canonical JSON files through closed positive and negative vector envelopes.
+
+These artifacts remain under construction and non-normative. They are not
+accepted conformance vectors and do not define new identity semantics.

@@ -6,9 +6,12 @@
   "artifact_classes": [
     "canonical-json-construction",
     "canonical-json-construction-schema",
-    "conformance-boundary-placeholder",
+    "conformance-boundary-construction",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-conformance-construction",
+    "identity-conformance-construction-schema",
+    "identity-conformance-vector-set-construction",
     "identity-behavior-fixture-set-construction",
     "identity-family-construction-schema",
     "identity-family-fixture-set-construction",
@@ -45,11 +48,14 @@
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
     "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
+    "authoritative/conformance/IDENTITY-CONFORMANCE.json",
+    "authoritative/schemas/conformance/IDENTITY-CONFORMANCE-CONSTRUCTION-SCHEMA.json",
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
-    "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json"
+    "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+    "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",

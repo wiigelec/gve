@@ -1,14 +1,63 @@
 {
-  "construction_identity": "conformance-boundary-placeholder",
+  "construction_identity": "conformance-boundary-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future conformance authority boundary without creating accepted vectors.",
+  "responsibility": "Define the closed construction-only authority, participation, execution, coverage, diagnostic, and availability boundaries for repository-neutral generic identity conformance without creating accepted normative conformance.",
   "normative": false,
+  "conformance_scope": [
+    "canonical-json-construction",
+    "identity-family-construction",
+    "own-identity-construction",
+    "reference-construction",
+    "direct-aggregate-construction",
+    "identity-verification-construction",
+    "construction-evidence"
+  ],
+  "vector_classes": [
+    "positive",
+    "negative"
+  ],
+  "execution_contract": {
+    "discovery": "manifest-declared-fixture-participants",
+    "execution_count": "exactly-once-per-declared-vector",
+    "ordering": "ascending-vector-identifier",
+    "missing_duplicate_unknown_or_unexecuted": "reject",
+    "result_comparison": "closed-deterministic-expected-outcome"
+  },
+  "diagnostic_contract": {
+    "accepted-construction-diagnostics": "exact-string",
+    "otherwise": "closed-diagnostic-class-with-required-stable-evidence",
+    "structural-errors-precede-semantic-execution": true
+  },
+  "coverage_contract": {
+    "coverage_tags_required": true,
+    "every-required-behavior-covered": true,
+    "undeclared-coverage-tag": "reject"
+  },
+  "authority_boundary": {
+    "status": "construction-only",
+    "accepted-conformance": false,
+    "accepted-specification-authority": false,
+    "accepted-product-authority": false,
+    "vectors-define-new-semantics": false
+  },
+  "unavailable_capabilities": [
+    "governing-revision-binding",
+    "manifest-bootstrap",
+    "sealing",
+    "acceptance",
+    "product-specific-evidence",
+    "cutover"
+  ],
   "expected_relationships": [
-    "repository specification authority",
-    "future validation behavior"
+    "identity conformance construction",
+    "canonical JSON construction boundary",
+    "identity family construction boundary",
+    "identity verification construction boundary",
+    "reusable validation construction",
+    "repository specification construction manifest"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final normative conformance authority and accepted vector identities are not defined.",
+    "Governing revision, bootstrap, sealing, acceptance, and cutover remain separately governed."
   ]
 }

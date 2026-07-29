@@ -1,0 +1,128 @@
+{
+  "construction_identity": "identity-conformance-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed repository-neutral construction representation for deterministic positive and negative identity conformance vectors while preserving already-established identity semantics.",
+  "normative": false,
+  "vector_envelope": {
+    "required_fields": [
+      "vector_id",
+      "behavior_class",
+      "classification",
+      "input",
+      "expected_outcome",
+      "fixture_owner",
+      "validator_owner",
+      "coverage_tags"
+    ],
+    "closed": true,
+    "vector_id": "lowercase-functional-identifier",
+    "behavior_class": [
+      "strict-json",
+      "canonical-json",
+      "identity-family",
+      "own-identity",
+      "reference",
+      "aggregate",
+      "verification",
+      "construction-evidence",
+      "unavailable-capability"
+    ],
+    "classification": [
+      "positive",
+      "negative"
+    ],
+    "input": "closed-behavior-specific-object",
+    "expected_outcome": {
+      "required_fields": [
+        "status",
+        "computed_identity",
+        "canonical_utf8_hex",
+        "diagnostic",
+        "evidence"
+      ],
+      "closed": true,
+      "status": [
+        "derived",
+        "verified",
+        "rejected",
+        "canonicalized",
+        "parsed"
+      ],
+      "computed_identity": "semantic-identity-or-null",
+      "canonical_utf8_hex": "lowercase-even-length-hexadecimal-or-null",
+      "diagnostic": "deterministic-string-or-null",
+      "evidence": "closed-behavior-specific-object-or-null"
+    },
+    "fixture_owner": "normalized-repository-relative-path",
+    "validator_owner": "normalized-repository-relative-path",
+    "coverage_tags": "non-empty-unique-lowercase-functional-identifier-array"
+  },
+  "uniqueness_constraints": [
+    "vector-id",
+    "fixture-owner-and-vector-id",
+    "declared-execution-record"
+  ],
+  "coverage_requirements": [
+    "strict-json-boundary",
+    "canonical-json-value-domain",
+    "signed-64-bit-boundary",
+    "deterministic-object-ordering",
+    "array-order-preservation",
+    "deterministic-string-escaping",
+    "surrogate-and-unsupported-number-rejection",
+    "family-qualified-identity",
+    "domain-separated-preimage",
+    "own-identity-omission-and-contradiction",
+    "by-identity-reference-context",
+    "identity-plus-value-recomputation",
+    "ordered-direct-aggregate",
+    "unordered-direct-aggregate",
+    "duplicate-empty-transitive-self-cycle-and-family-rejection",
+    "derive-and-verify-results",
+    "deterministic-construction-evidence",
+    "unavailable-later-capabilities"
+  ],
+  "failure_precedence": [
+    "vector-envelope-structure",
+    "family-and-mode-resolution",
+    "closed-input-validation",
+    "reference-context-validation",
+    "aggregate-structural-validation",
+    "canonicalization-and-identity-derivation",
+    "supplied-versus-computed-comparison",
+    "expected-result-comparison"
+  ],
+  "fixture_integration": {
+    "existing-fixture-values": "retain-unless-deterministic-defect-is-proven",
+    "silent-duplication": "forbidden",
+    "every-declared-vector": "execute-exactly-once",
+    "undeclared-or-unexecuted-vector": "reject"
+  },
+  "product_independence": {
+    "third_party_dependencies": "forbidden",
+    "maintained_product_imports": "forbidden",
+    "product-specific-identities-examples-or-evidence": "forbidden"
+  },
+  "unavailable_capabilities": [
+    "final-normative-schema",
+    "accepted-conformance",
+    "governing-revision-binding",
+    "manifest-bootstrap",
+    "repository-profiles",
+    "sealing",
+    "acceptance",
+    "cutover"
+  ],
+  "expected_relationships": [
+    "conformance boundary construction",
+    "identity behavior fixture construction",
+    "canonical JSON fixtures",
+    "identity construction validator",
+    "reusable validation construction",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Final accepted conformance vector identities and revision binding are not defined.",
+    "Repository profiles, bootstrap, sealing, acceptance, and cutover remain separately governed."
+  ]
+}

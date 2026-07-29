@@ -1,0 +1,656 @@
+{
+  "construction_identity": "identity-conformance-vector-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Declare the complete currently governed repository-neutral generic identity construction vector inventory by referencing existing canonical JSON and identity behavior fixtures without duplicating their semantic values.",
+  "normative": false,
+  "conformance_model": "authoritative/conformance/IDENTITY-CONFORMANCE.json",
+  "execution_order": "ascending-vector-id",
+  "vectors": [
+    {
+      "vector_id": "canonical-object-order-and-escaping",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-file-pair",
+        "input_path": "validation/fixtures/identity/canonical-json/object-reordered.input.json",
+        "expected_path": "validation/fixtures/identity/canonical-json/object-reordered.canonical.json"
+      },
+      "coverage_tags": [
+        "canonical-json-value-domain",
+        "deterministic-object-ordering",
+        "array-order-preservation",
+        "deterministic-string-escaping"
+      ],
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/canonical-json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py"
+    },
+    {
+      "vector_id": "canonical-signed-64-bit-maximum",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": 9223372036854775807
+      },
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": "39323233333732303336383534373735383037",
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py",
+      "coverage_tags": [
+        "signed-64-bit-boundary"
+      ]
+    },
+    {
+      "vector_id": "canonical-signed-64-bit-overflow-rejects",
+      "behavior_class": "canonical-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-python-value",
+        "value": 9223372036854775808
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py",
+      "coverage_tags": [
+        "signed-64-bit-boundary"
+      ]
+    },
+    {
+      "vector_id": "canonical-surrogate-rejects",
+      "behavior_class": "canonical-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-rejection-file",
+        "input_path": "validation/fixtures/identity/canonical-json/surrogate.input.json",
+        "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE"
+      },
+      "coverage_tags": [
+        "surrogate-and-unsupported-number-rejection"
+      ],
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-INVALID-UNICODE",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/canonical-json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py"
+    },
+    {
+      "vector_id": "canonical-unicode-order",
+      "behavior_class": "canonical-json",
+      "classification": "positive",
+      "input": {
+        "kind": "canonical-file-pair",
+        "input_path": "validation/fixtures/identity/canonical-json/unicode.input.json",
+        "expected_path": "validation/fixtures/identity/canonical-json/unicode.canonical.json"
+      },
+      "coverage_tags": [
+        "canonical-json-value-domain",
+        "deterministic-object-ordering",
+        "deterministic-string-escaping"
+      ],
+      "expected_outcome": {
+        "status": "canonicalized",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/canonical-json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py"
+    },
+    {
+      "vector_id": "identity-by-identity-reference-verifies",
+      "behavior_class": "reference",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "by-identity-reference-verifies"
+      },
+      "expected_outcome": {
+        "status": "verified",
+        "computed_identity": {
+          "family": "link",
+          "encoded_digest": "d11781e2fcf066ee07a968791f19513afffb6c6009c1a579018b99433c09cc3b"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "by-identity-reference-context",
+        "derive-and-verify-results"
+      ]
+    },
+    {
+      "vector_id": "identity-contradictory-own-identity-rejects",
+      "behavior_class": "own-identity",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "contradictory-own-identity-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "contradictory-own-identity",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "own-identity-omission-and-contradiction"
+      ]
+    },
+    {
+      "vector_id": "identity-direct-cycle-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "direct-cycle-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "aggregate-cycle",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-duplicate-aggregate-member-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "duplicate-aggregate-member-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "duplicate-aggregate-member",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-empty-aggregate-allowed",
+      "behavior_class": "aggregate",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "empty-aggregate-allowed"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "empty-bundle",
+          "encoded_digest": "de72db850f1569a5645c17bfb2d117c043bb51d413b8915c4565211ed949c107"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-empty-aggregate-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "empty-aggregate-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "empty-aggregate-forbidden",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-identity-plus-value-mismatch-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "identity-plus-value-mismatch-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "embedded-reference-identity-mismatch",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "identity-plus-value-recomputation"
+      ]
+    },
+    {
+      "vector_id": "identity-identity-plus-value-recomputes",
+      "behavior_class": "reference",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "identity-plus-value-recomputes"
+      },
+      "expected_outcome": {
+        "status": "verified",
+        "computed_identity": {
+          "family": "envelope",
+          "encoded_digest": "c9bc8601d26b3580d60fd1ffc9ba2331239dce360eb900c38928152ee5a7984b"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "identity-plus-value-recomputation",
+        "derive-and-verify-results"
+      ]
+    },
+    {
+      "vector_id": "identity-indirect-cycle-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "indirect-cycle-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "aggregate-cycle",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-matching-own-identity-verifies",
+      "behavior_class": "own-identity",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "matching-own-identity-verifies"
+      },
+      "expected_outcome": {
+        "status": "verified",
+        "computed_identity": {
+          "family": "document",
+          "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "own-identity-omission-and-contradiction",
+        "derive-and-verify-results"
+      ]
+    },
+    {
+      "vector_id": "identity-missing-by-identity-context-rejects",
+      "behavior_class": "verification",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "missing-by-identity-context-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "missing-reference-context",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "by-identity-reference-context"
+      ]
+    },
+    {
+      "vector_id": "identity-ordered-aggregate-ab",
+      "behavior_class": "aggregate",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "ordered-aggregate-ab"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "ordered-bundle",
+          "encoded_digest": "db3608b8eb9909b4f25eed2148982e89aad484870ff8b7dd5a299763ecc25272"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "ordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "identity-ordered-aggregate-ba",
+      "behavior_class": "aggregate",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "ordered-aggregate-ba"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "ordered-bundle",
+          "encoded_digest": "ee081dad3d6161e388b6192365641184c71f436ce1c1fab78d56258ad45b3384"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "ordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "identity-own-identity-omission",
+      "behavior_class": "own-identity",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "own-identity-omission"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "document",
+          "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": {
+          "family_name": "document",
+          "canonicalization_version": "canonical-json-v1",
+          "digest_algorithm": "sha-256",
+          "domain_prefix": "repo.identity.document.v1",
+          "own_identity_field_omitted": "identity",
+          "reference_count": 0,
+          "aggregate_member_count": 0,
+          "aggregate_ordering": null,
+          "canonical_value_sha256": "7d9b4b6caeee8fb99e300c62a2e3956282f371337937087fa18cdb4733c56295",
+          "computed_identity": {
+            "family": "document",
+            "encoded_digest": "6e789cfa6d882b7813b9bca2f0b2dd8ec5eb24fe496c2bb4ca83cf5c1194bd95"
+          }
+        }
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "derive-and-verify-results",
+        "deterministic-construction-evidence",
+        "domain-separated-preimage",
+        "family-qualified-identity",
+        "own-identity-omission-and-contradiction"
+      ]
+    },
+    {
+      "vector_id": "identity-reference-family-mismatch-rejects",
+      "behavior_class": "reference",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "reference-family-mismatch-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "reference-family-mismatch",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-self-membership-rejects",
+      "behavior_class": "aggregate",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "self-membership-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "self-membership",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "duplicate-empty-transitive-self-cycle-and-family-rejection"
+      ]
+    },
+    {
+      "vector_id": "identity-supplied-identity-mismatch-rejects",
+      "behavior_class": "verification",
+      "classification": "negative",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "supplied-identity-mismatch-rejects"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "supplied-identity-mismatch",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "derive-and-verify-results"
+      ]
+    },
+    {
+      "vector_id": "identity-unavailable-capability-expansion-rejects",
+      "behavior_class": "unavailable-capability",
+      "classification": "negative",
+      "input": {
+        "kind": "family-declaration-mutation",
+        "family_name": "document",
+        "mutation": "clear-unavailable-capabilities"
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "policy mismatch",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/lib/identity.py",
+      "coverage_tags": [
+        "unavailable-later-capabilities"
+      ]
+    },
+    {
+      "vector_id": "identity-unordered-aggregate-ab",
+      "behavior_class": "aggregate",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "unordered-aggregate-ab"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "unordered-bundle",
+          "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "identity-unordered-aggregate-ba",
+      "behavior_class": "aggregate",
+      "classification": "positive",
+      "input": {
+        "kind": "identity-behavior-case",
+        "case_name": "unordered-aggregate-ba"
+      },
+      "expected_outcome": {
+        "status": "derived",
+        "computed_identity": {
+          "family": "unordered-bundle",
+          "encoded_digest": "73b0826c934318d18763aa80fdbeb73ceeb016faddee7f4a65d35c164dceaaf4"
+        },
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "validator_owner": "validation/intrinsic/validate_identity_construction.py",
+      "coverage_tags": [
+        "unordered-direct-aggregate"
+      ]
+    },
+    {
+      "vector_id": "strict-json-duplicate-key-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-rejection-file",
+        "input_path": "validation/fixtures/identity/canonical-json/duplicate-key.input.json",
+        "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY"
+      },
+      "coverage_tags": [
+        "strict-json-boundary"
+      ],
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-DUPLICATE-KEY",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/canonical-json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py"
+    },
+    {
+      "vector_id": "strict-json-floating-point-rejects",
+      "behavior_class": "strict-json",
+      "classification": "negative",
+      "input": {
+        "kind": "canonical-rejection-file",
+        "input_path": "validation/fixtures/identity/canonical-json/floating-point.input.json",
+        "expected_diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER"
+      },
+      "coverage_tags": [
+        "strict-json-boundary",
+        "surrogate-and-unsupported-number-rejection"
+      ],
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-CANONICAL-JSON-UNSUPPORTED-NUMBER",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/identity/canonical-json",
+      "validator_owner": "validation/intrinsic/validate_canonical_json.py"
+    }
+  ],
+  "unavailable_capabilities": [
+    "accepted-conformance",
+    "governing-revision-binding",
+    "manifest-bootstrap",
+    "sealing",
+    "acceptance",
+    "cutover"
+  ],
+  "expected_relationships": [
+    "identity conformance construction",
+    "canonical JSON construction fixtures",
+    "identity behavior fixture construction",
+    "identity construction validation",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Additional vectors needed for complete dependency-8 coverage are added only through governed construction changes.",
+    "Accepted vector identities, revision binding, sealing, and acceptance remain unavailable."
+  ]
+}
