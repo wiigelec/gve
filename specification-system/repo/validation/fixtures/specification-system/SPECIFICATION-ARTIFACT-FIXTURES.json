@@ -1,0 +1,33 @@
+{
+  "construction_identity": "specification-artifact-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide construction cases for the specification-artifact class boundary.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-class-boundary",
+      "expected": "pass",
+      "class_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unknown-required-relationship",
+      "expected": "reject",
+      "class_overrides": {
+        "class_constraints.schema.required_relationships": [
+          "schema-target",
+          "unknown-target"
+        ]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-ARTIFACT-001"
+    }
+  ],
+  "expected_relationships": [
+    "specification-artifact-class-construction",
+    "specification-artifact-class-validation",
+    "repository-specification-construction-set"
+  ],
+  "unresolved_questions": [
+    "Final artifact identities, revisions, manifest semantics, accepted conformance, acceptance, sealing, and cutover are not defined."
+  ]
+}

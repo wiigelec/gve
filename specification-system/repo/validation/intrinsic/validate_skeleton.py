@@ -37,6 +37,20 @@ REPOSITORY_VOCABULARY_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+SPECIFICATION_ARTIFACT_FIELDS = {
+    "construction_identity", "construction_status", "responsibility", "normative",
+    "artifact_classes", "class_constraints", "relationship_types", "relationship_rules",
+    "classification_boundary", "expected_relationships", "unresolved_questions",
+}
+SPECIFICATION_ARTIFACT_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility", "normative",
+    "target_construction_identity", "required_fields", "closed", "field_constraints",
+    "forbidden_claim_fields", "expected_relationships", "unresolved_questions",
+}
+SPECIFICATION_ARTIFACT_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility", "normative",
+    "cases", "expected_relationships", "unresolved_questions",
+}
 VALIDATION_LIBRARY_FIELDS = PLACEHOLDER_FIELDS | {
     "module_inventory",
     "dependency_direction",
@@ -90,7 +104,9 @@ ARTIFACT_CLASSES = (
     "repository-validation-placeholder",
     "schema-boundary-placeholder",
     "source-layout-placeholder",
-    "specification-artifact-placeholder",
+    "specification-artifact-class-construction",
+    "specification-artifact-class-construction-schema",
+    "specification-artifact-fixture-set-construction",
     "validation-fixtures-placeholder",
     "validation-library-construction",
 )
@@ -99,6 +115,8 @@ ARTIFACT_PATHS = (
     "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
+    "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
     "authoritative/identity/IDENTITY-AUTHORITY.json",
     "authoritative/identity/IDENTITY-MODEL.json",
     "authoritative/identity/CANONICAL-JSON.json",
@@ -140,6 +158,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/repository-model/REPOSITORY-MODEL.json",
     "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
+    "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
+    "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -148,6 +169,8 @@ REQUIRED_DIRECTORIES = (
     "authoritative/normative-change", "authoritative/level-model",
     "authoritative/source-layout", "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
+    "authoritative/schemas/specification-system",
+    "validation/fixtures/specification-system",
     "authoritative/schemas/repository-model",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
@@ -448,6 +471,101 @@ def validate_repository_vocabulary_fixtures(value: dict[str, Any], label: str) -
         names.append(case["name"])
     return identity
 
+def validate_specification_artifacts(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SPECIFICATION_ARTIFACT_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "specification-artifacts":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected specification-artifact identity")
+    expected_classes = [
+        "authoritative-specification-artifact", "derived-artifact", "schema",
+        "conformance-artifact", "validation-implementation", "fixture", "manifest-participant",
+    ]
+    if value["artifact_classes"] != expected_classes:
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.artifact_classes: unexpected class inventory")
+    if set(value["class_constraints"]) != set(expected_classes):
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.class_constraints: class inventory mismatch")
+    relationship_types = value["relationship_types"]
+    if not isinstance(relationship_types, list) or not relationship_types or any(not isinstance(item, str) or not item for item in relationship_types) or len(relationship_types) != len(set(relationship_types)):
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.relationship_types: non-empty unique list required")
+    relationship_vocabulary = set(relationship_types)
+    expected_relationship_rules = {
+        "projection-source": {"acyclic": True, "deterministic": True, "max_sources": 1},
+        "authoring-source": {"acyclic": True, "deterministic": True, "max_sources": 1},
+    }
+    if value["relationship_rules"] != expected_relationship_rules:
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.relationship_rules: acyclicity or determinism boundary mismatch")
+    expected_constraints = {
+        "authoritative-specification-artifact": ([], ["projection-source", "authoring-source"]),
+        "derived-artifact": (["projection-source"], ["schema-target", "conformance-target"]),
+        "schema": (["schema-target"], ["projection-source"]),
+        "conformance-artifact": (["conformance-target"], ["projection-source"]),
+        "validation-implementation": (["validator-target"], ["schema-target", "projection-source"]),
+        "fixture": (["fixture-validator"], ["schema-target", "projection-source"]),
+        "manifest-participant": ([], ["semantic-identity", "revision-binding"]),
+    }
+    for class_name in expected_classes:
+        exact_fields(value["class_constraints"][class_name], {"required_relationships", "forbidden_relationships", "manifest_eligible"}, f"{label}.class_constraints.{class_name}")
+        constraints = value["class_constraints"][class_name]
+        required = constraints["required_relationships"]
+        forbidden = constraints["forbidden_relationships"]
+        if (
+            not isinstance(constraints["manifest_eligible"], bool)
+            or not isinstance(required, list)
+            or not isinstance(forbidden, list)
+            or any(not isinstance(item, str) or item not in relationship_vocabulary for item in required + forbidden)
+            or len(required) != len(set(required))
+            or len(forbidden) != len(set(forbidden))
+            or set(required) & set(forbidden)
+            or required != expected_constraints[class_name][0]
+            or forbidden != expected_constraints[class_name][1]
+            or constraints["manifest_eligible"] is not True
+        ):
+            fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.class_constraints.{class_name}: invalid manifest eligibility")
+    exact_fields(value["classification_boundary"], {"class_is_distinct_from_semantic_identity", "authority_is_distinct_from_class", "construction_artifacts_are_non_normative", "semantic_identity", "revision"}, f"{label}.classification_boundary")
+    boundary = value["classification_boundary"]
+    if any(boundary[key] is not True for key in ("class_is_distinct_from_semantic_identity", "authority_is_distinct_from_class", "construction_artifacts_are_non_normative")) or boundary["semantic_identity"] != "unassigned" or boundary["revision"] != "unassigned":
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-001", f"{label}.classification_boundary: identity boundary mismatch")
+    return identity
+
+def validate_specification_artifact_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SPECIFICATION_ARTIFACT_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "specification-artifact-class-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected specification-artifact schema identity")
+    if value["target_construction_identity"] != "specification-artifacts" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-002", f"{label}: target or closed boundary mismatch")
+    expected_required_fields = [
+        "construction_identity", "construction_status", "responsibility", "normative",
+        "artifact_classes", "class_constraints", "relationship_types", "relationship_rules",
+        "classification_boundary", "expected_relationships", "unresolved_questions",
+    ]
+    if value["required_fields"] != expected_required_fields:
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-002", f"{label}.required_fields: non-empty unique list required")
+    if value["forbidden_claim_fields"] != sorted(FORBIDDEN_CLAIM_KEYS):
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-002", f"{label}.forbidden_claim_fields: incomplete claim boundary")
+    return identity
+
+def validate_specification_artifact_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SPECIFICATION_ARTIFACT_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "specification-artifact-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002", f"{label}: unexpected specification-artifact fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-003", f"{label}.cases: non-empty array required")
+    names = set()
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "class_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-003", f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or not case["name"] or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-003", f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["class_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-003", f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-ARTIFACT-003", f"{label}.cases: passing diagnostic must be null")
+        names.add(case["name"])
+    return identity
+
 def validate_validation_library(value: dict[str, Any], label: str) -> str:
     exact_fields(value, VALIDATION_LIBRARY_FIELDS, label)
     identity = validate_common(value, label)
@@ -699,6 +817,47 @@ def validate(root: Path) -> None:
             fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
                  f"{relative}: duplicate construction identity")
         identities.add(identity)
+
+    specification_artifacts = strict_json(root / "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json")
+    specification_artifacts_candidate_identity = validate_common(
+        specification_artifacts, "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json"
+    )
+    repository_model_candidate_identity = validate_common(
+        strict_json(root / "authoritative/repository-model/REPOSITORY-MODEL.json"),
+        "authoritative/repository-model/REPOSITORY-MODEL.json",
+    )
+    if specification_artifacts_candidate_identity in identities or specification_artifacts_candidate_identity == repository_model_candidate_identity:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json: duplicate construction identity")
+    specification_artifacts_identity = validate_specification_artifacts(
+        specification_artifacts, "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json"
+    )
+    identities.add(specification_artifacts_identity)
+
+    specification_artifact_schema = strict_json(
+        root / "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json"
+    )
+    specification_artifact_schema_candidate_identity = validate_common(
+        specification_artifact_schema,
+        "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
+    )
+    if specification_artifact_schema_candidate_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json: duplicate construction identity")
+    specification_artifact_schema_identity = validate_specification_artifact_schema(
+        specification_artifact_schema,
+        "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
+    )
+    identities.add(specification_artifact_schema_identity)
+
+    specification_artifact_fixtures = strict_json(
+        root / "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json"
+    )
+    specification_artifact_fixtures_identity = validate_specification_artifact_fixtures(
+        specification_artifact_fixtures,
+        "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
+    )
+    if specification_artifact_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json: duplicate construction identity")
+    identities.add(specification_artifact_fixtures_identity)
 
     repository_vocabulary = strict_json(root / "authoritative/repository-model/REPOSITORY-MODEL.json")
     repository_vocabulary_identity = validate_repository_vocabulary(

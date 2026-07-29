@@ -1,0 +1,53 @@
+{
+  "construction_identity": "specification-artifact-class-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact closed construction-only representation of specification-artifact classes without claiming final schema authority.",
+  "normative": false,
+  "target_construction_identity": "specification-artifacts",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "artifact_classes",
+    "class_constraints",
+    "relationship_types",
+    "relationship_rules",
+    "classification_boundary",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "construction_identity": ["specification-artifact-class-construction-schema"],
+    "construction_status": ["under-construction"],
+    "normative": [false],
+    "artifact_classes": "non-empty-unique-lower-kebab-case-array",
+    "class_constraints": "closed-object-keyed-by-artifact-class",
+    "relationship_types": "non-empty-unique-lower-kebab-case-array",
+    "relationship_rules": "closed-object-keyed-by-projection-and-authoring-relationships",
+    "classification_boundary": "closed-object",
+    "expected_relationships": "non-empty-unique-string-array",
+    "unresolved_questions": "non-empty-string-array"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "aggregate_revision",
+    "complete",
+    "completed",
+    "content_digest",
+    "digest",
+    "final",
+    "revision",
+    "sealed",
+    "specification_revision"
+  ],
+  "expected_relationships": [
+    "specification artifact class construction",
+    "repository specification construction manifest",
+    "specification artifact validation"
+  ],
+  "unresolved_questions": [
+    "Final schema authority, artifact identities, revisions, manifest self-participation, acceptance, sealing, and cutover are not defined."
+  ]
+}
