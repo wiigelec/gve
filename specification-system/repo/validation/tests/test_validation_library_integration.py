@@ -7,6 +7,7 @@ from pathlib import Path
 
 
 CONSTRUCTION_ROOT = Path(__file__).resolve().parents[2]
+MANIFEST_PATH = CONSTRUCTION_ROOT / "REPOSITORY-SPECIFICATION-SET.json"
 VALIDATION_MODEL_PATH = (
     CONSTRUCTION_ROOT / "validation/lib/VALIDATION-LIBRARY.json"
 )
@@ -59,6 +60,15 @@ class ValidationLibraryConstructionTests(unittest.TestCase):
         )
         self.assertIs(
             model["authority_boundary"]["accepted-product-authority"], False
+        )
+
+    def test_manifest_declares_validation_library_construction(self) -> None:
+        manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
+        self.assertIn(
+            "validation-library-construction", manifest["artifact_classes"]
+        )
+        self.assertNotIn(
+            "validation-library-placeholder", manifest["artifact_classes"]
         )
 
     def test_executable_identity_validator_delegates_behavior(self) -> None:

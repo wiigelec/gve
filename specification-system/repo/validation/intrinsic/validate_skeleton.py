@@ -55,7 +55,7 @@ ARTIFACT_CLASSES = (
     "source-layout-placeholder",
     "specification-artifact-placeholder",
     "validation-fixtures-placeholder",
-    "validation-library-placeholder",
+    "validation-library-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
