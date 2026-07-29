@@ -1,0 +1,63 @@
+{
+  "construction_identity": "identity-conformance-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact closed construction-only representation of repository-neutral identity conformance without claiming final normative schema authority.",
+  "normative": false,
+  "target_construction_identity": "identity-conformance-construction",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "vector_envelope",
+    "uniqueness_constraints",
+    "coverage_requirements",
+    "failure_precedence",
+    "fixture_integration",
+    "product_independence",
+    "unavailable_capabilities",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "construction_identity": [
+      "identity-conformance-construction"
+    ],
+    "construction_status": [
+      "under-construction"
+    ],
+    "normative": [
+      false
+    ],
+    "vector_envelope": "exact-policy-declared-by-target",
+    "uniqueness_constraints": "non-empty-unique-functional-identifier-array",
+    "coverage_requirements": "non-empty-unique-functional-identifier-array",
+    "failure_precedence": "non-empty-unique-functional-identifier-array",
+    "fixture_integration": "closed-object",
+    "product_independence": "closed-object",
+    "unavailable_capabilities": "non-empty-unique-functional-identifier-array",
+    "expected_relationships": "non-empty-unique-string-array",
+    "unresolved_questions": "non-empty-string-array"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "identity conformance construction",
+    "conformance boundary construction",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Final normative conformance schema, revision binding, and accepted vector identities are not defined."
+  ]
+}

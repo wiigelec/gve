@@ -32,13 +32,30 @@ VALIDATION_LIBRARY_FIELDS = PLACEHOLDER_FIELDS | {
     "authority_boundary",
 }
 VALIDATION_LIBRARY_PATH = "validation/lib/VALIDATION-LIBRARY.json"
+CONFORMANCE_BOUNDARY_PATH = "authoritative/conformance/CONFORMANCE-BOUNDARY.json"
+IDENTITY_CONFORMANCE_PATH = "authoritative/conformance/IDENTITY-CONFORMANCE.json"
+CONFORMANCE_SCHEMA_PATH = "authoritative/schemas/conformance/IDENTITY-CONFORMANCE-CONSTRUCTION-SCHEMA.json"
+CONFORMANCE_VECTOR_PATH = "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json"
+CONFORMANCE_BOUNDARY_FIELDS = PLACEHOLDER_FIELDS | {
+    "conformance_scope", "vector_classes", "execution_contract",
+    "diagnostic_contract", "coverage_contract", "authority_boundary",
+    "unavailable_capabilities",
+}
+IDENTITY_CONFORMANCE_FIELDS = PLACEHOLDER_FIELDS | {
+    "vector_envelope", "uniqueness_constraints", "coverage_requirements",
+    "failure_precedence", "fixture_integration", "product_independence",
+    "unavailable_capabilities",
+}
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
     "canonical-json-construction",
     "canonical-json-construction-schema",
-    "conformance-boundary-placeholder",
+    "conformance-boundary-construction",
     "development-process-placeholder",
     "identity-authority-placeholder",
+    "identity-conformance-construction",
+    "identity-conformance-construction-schema",
+    "identity-conformance-vector-set-construction",
     "identity-behavior-fixture-set-construction",
     "identity-family-construction-schema",
     "identity-family-fixture-set-construction",
@@ -74,12 +91,15 @@ ARTIFACT_PATHS = (
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
-    "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
+    CONFORMANCE_BOUNDARY_PATH,
+    IDENTITY_CONFORMANCE_PATH,
+    CONFORMANCE_SCHEMA_PATH,
     "validation/lib/VALIDATION-LIBRARY.json",
     "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+    "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -91,6 +111,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
+    CONFORMANCE_BOUNDARY_PATH,
+    IDENTITY_CONFORMANCE_PATH,
+    CONFORMANCE_SCHEMA_PATH,
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
@@ -99,8 +122,10 @@ REQUIRED_DIRECTORIES = (
     "authoritative/specification-system", "authoritative/development-process",
     "authoritative/normative-change", "authoritative/level-model",
     "authoritative/source-layout", "authoritative/schemas",
-    "authoritative/schemas/identity", "authoritative/conformance",
-    "derived/markdown", "derived/markdown/identity", "validation/lib",
+    "authoritative/schemas/identity", "authoritative/schemas/conformance",
+    "authoritative/conformance",
+    "derived/markdown", "derived/markdown/identity",
+    "derived/markdown/conformance", "validation/lib",
     "validation/intrinsic", "validation/repository", "validation/tests",
     "validation/fixtures", "validation/fixtures/identity",
     "validation/fixtures/identity/canonical-json",
@@ -112,7 +137,10 @@ REQUIRED_PATHS = (
     "derived/markdown/README.md",
     "authoritative/schemas/identity/README.md",
     "derived/markdown/identity/README.md",
+    "authoritative/schemas/conformance/README.md",
+    "derived/markdown/conformance/README.md",
     "validation/fixtures/identity/README.md",
+    "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
     "validation/intrinsic/identity_behavior_adapter.py",
     "validation/intrinsic/validate_skeleton.py",
     "validation/intrinsic/validate_identity_construction.py",
@@ -129,6 +157,8 @@ REQUIRED_PATHS = (
     "validation/tests/test_identity_family.py",
     "validation/tests/test_identity_behavior.py",
     "validation/tests/test_canonical_json.py",
+    "validation/tests/test_conformance_construction.py",
+    "validation/tests/test_identity_conformance_vectors.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 FORBIDDEN_NAME_PARTS = {
@@ -283,6 +313,97 @@ def validate_validation_library(value: dict[str, Any], label: str) -> str:
              f"{label}: authority boundary mismatch")
     return identity
 
+
+def _non_empty_unique_strings(value: Any, label: str) -> list[str]:
+    if (
+        not isinstance(value, list)
+        or not value
+        or any(not isinstance(item, str) or not item for item in value)
+        or len(value) != len(set(value))
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}: non-empty unique string array required")
+    return value
+
+def validate_conformance_boundary(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, CONFORMANCE_BOUNDARY_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "conformance-boundary-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected conformance construction identity")
+    _non_empty_unique_strings(value["conformance_scope"], f"{label}.conformance_scope")
+    if value["vector_classes"] != ["positive", "negative"]:
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}: vector classes mismatch")
+    for field in ("execution_contract", "diagnostic_contract",
+                  "coverage_contract", "authority_boundary"):
+        if not isinstance(value[field], dict) or not value[field]:
+            fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+                 f"{label}.{field}: non-empty object required")
+    authority = value["authority_boundary"]
+    if (
+        authority.get("status") != "construction-only"
+        or authority.get("accepted-conformance") is not False
+        or authority.get("accepted-specification-authority") is not False
+        or authority.get("accepted-product-authority") is not False
+        or authority.get("vectors-define-new-semantics") is not False
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}: authority boundary mismatch")
+    _non_empty_unique_strings(
+        value["unavailable_capabilities"], f"{label}.unavailable_capabilities"
+    )
+    return identity
+
+def validate_identity_conformance(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, IDENTITY_CONFORMANCE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "identity-conformance-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected identity conformance construction identity")
+    envelope = value["vector_envelope"]
+    if not isinstance(envelope, dict) or envelope.get("closed") is not True:
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}.vector_envelope: closed object required")
+    expected_required = [
+        "vector_id", "behavior_class", "classification", "input",
+        "expected_outcome", "fixture_owner", "validator_owner", "coverage_tags",
+    ]
+    if envelope.get("required_fields") != expected_required:
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}: vector envelope required fields mismatch")
+    for field in (
+        "uniqueness_constraints", "coverage_requirements",
+        "failure_precedence", "unavailable_capabilities",
+    ):
+        _non_empty_unique_strings(value[field], f"{label}.{field}")
+    for field in ("fixture_integration", "product_independence"):
+        if not isinstance(value[field], dict) or not value[field]:
+            fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+                 f"{label}.{field}: non-empty object required")
+    return identity
+
+def validate_identity_conformance_schema(value: dict[str, Any], label: str) -> str:
+    required = {
+        "construction_identity", "construction_status", "responsibility",
+        "normative", "target_construction_identity", "required_fields",
+        "closed", "field_constraints", "forbidden_claim_fields",
+        "expected_relationships", "unresolved_questions",
+    }
+    exact_fields(value, required, label)
+    identity = validate_common(value, label)
+    if (
+        identity != "identity-conformance-construction-schema"
+        or value["target_construction_identity"] != "identity-conformance-construction"
+        or value["closed"] is not True
+        or not isinstance(value["required_fields"], list)
+        or len(value["required_fields"]) != len(IDENTITY_CONFORMANCE_FIELDS)
+        or set(value["required_fields"]) != IDENTITY_CONFORMANCE_FIELDS
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-CONFORMANCE-001",
+             f"{label}: conformance schema mismatch")
+    return identity
+
 def _local_import_exists(root: Path, module: str) -> bool:
     parts = module.split(".")
     return root.joinpath(*parts).with_suffix(".py").is_file() or root.joinpath(*parts).is_dir()
@@ -358,7 +479,13 @@ def validate(root: Path) -> None:
              f"undeclared construction artifacts: {', '.join(undeclared)}")
 
     for relative in PLACEHOLDER_PATHS:
-        if relative == VALIDATION_LIBRARY_PATH:
+        if relative in {
+            VALIDATION_LIBRARY_PATH,
+            CONFORMANCE_BOUNDARY_PATH,
+            IDENTITY_CONFORMANCE_PATH,
+            CONFORMANCE_SCHEMA_PATH,
+            CONFORMANCE_VECTOR_PATH,
+        }:
             continue
         value = strict_json(root / relative)
         exact_fields(value, PLACEHOLDER_FIELDS, relative)
@@ -367,6 +494,33 @@ def validate(root: Path) -> None:
             fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
                  f"{relative}: duplicate construction identity")
         identities.add(identity)
+
+    conformance_boundary = strict_json(root / CONFORMANCE_BOUNDARY_PATH)
+    conformance_boundary_identity = validate_conformance_boundary(
+        conformance_boundary, CONFORMANCE_BOUNDARY_PATH
+    )
+    if conformance_boundary_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{CONFORMANCE_BOUNDARY_PATH}: duplicate construction identity")
+    identities.add(conformance_boundary_identity)
+
+    identity_conformance = strict_json(root / IDENTITY_CONFORMANCE_PATH)
+    identity_conformance_identity = validate_identity_conformance(
+        identity_conformance, IDENTITY_CONFORMANCE_PATH
+    )
+    if identity_conformance_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{IDENTITY_CONFORMANCE_PATH}: duplicate construction identity")
+    identities.add(identity_conformance_identity)
+
+    conformance_schema = strict_json(root / CONFORMANCE_SCHEMA_PATH)
+    conformance_schema_identity = validate_identity_conformance_schema(
+        conformance_schema, CONFORMANCE_SCHEMA_PATH
+    )
+    if conformance_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{CONFORMANCE_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(conformance_schema_identity)
 
     validation_library = strict_json(root / VALIDATION_LIBRARY_PATH)
     validation_library_identity = validate_validation_library(

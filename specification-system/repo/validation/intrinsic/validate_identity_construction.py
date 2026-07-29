@@ -19,6 +19,8 @@ from validation.intrinsic.identity_behavior_adapter import (  # noqa: E402
 from validation.intrinsic.identity_behavior_adapter import (  # noqa: E402
     evaluate_behavior as reusable_evaluate_behavior,
 )
+from validation.intrinsic import validate_canonical_json as canonical_json_validator  # noqa: E402
+from validation.lib import ValidationError as ReusableValidationError  # noqa: E402
 
 PLACEHOLDER_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
@@ -62,11 +64,12 @@ FAMILY_SCHEMA_PATH = "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTIO
 VERIFICATION_SCHEMA_PATH = "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json"
 FIXTURE_PATH = "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json"
 BEHAVIOR_FIXTURE_PATH = "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json"
+CONFORMANCE_VECTOR_PATH = "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json"
 SUPPORTING_PATHS = (
     "authoritative/schemas/identity/README.md",
     "derived/markdown/identity/README.md",
     "validation/fixtures/identity/README.md",
-    SCHEMA_PATH, MODEL_SCHEMA_PATH, FAMILY_SCHEMA_PATH, VERIFICATION_SCHEMA_PATH, FIXTURE_PATH, BEHAVIOR_FIXTURE_PATH,
+    SCHEMA_PATH, MODEL_SCHEMA_PATH, FAMILY_SCHEMA_PATH, VERIFICATION_SCHEMA_PATH, FIXTURE_PATH, BEHAVIOR_FIXTURE_PATH, CONFORMANCE_VECTOR_PATH,
     "validation/intrinsic/validate_canonical_json.py",
     "validation/tests/test_canonical_json.py",
     "validation/tests/test_identity_family.py",
@@ -75,6 +78,7 @@ SUPPORTING_PATHS = (
     "validation/fixtures/identity/identity-behavior",
 )
 EXPECTED_IDENTITIES = {
+    CONFORMANCE_VECTOR_PATH: "identity-conformance-vector-set-construction",
     ARTIFACTS[0]: "identity-model-construction",
     ARTIFACTS[1]: "canonical-json-construction",
     ARTIFACTS[2]: "identity-family-model-construction",
@@ -799,6 +803,315 @@ def validate_behavior_fixture_set(value: dict[str, Any], label: str) -> None:
         if result["diagnostic"] != case["expected_diagnostic"]:
             fail("REPO-SPEC-IDENTITY-BEHAVIOR-FIXTURE-001", f"{case_label}: unexpected diagnostic {result['diagnostic']}")
 
+
+CONFORMANCE_VECTOR_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "conformance_model", "execution_order", "vectors",
+    "unavailable_capabilities", "expected_relationships", "unresolved_questions",
+}
+CONFORMANCE_VECTOR_ITEM_FIELDS = {
+    "vector_id", "behavior_class", "classification", "input",
+    "expected_outcome", "fixture_owner", "validator_owner", "coverage_tags",
+}
+CONFORMANCE_EXPECTED_FIELDS = {
+    "status", "computed_identity", "canonical_utf8_hex", "diagnostic", "evidence",
+}
+
+def _validate_conformance_vector_set(
+    root: Path,
+    value: dict[str, Any],
+    behavior_fixture_set: dict[str, Any],
+    label: str,
+) -> None:
+    exact_fields(value, CONFORMANCE_VECTOR_FIELDS, label)
+    validate_common(value, label)
+    if value["construction_identity"] != "identity-conformance-vector-set-construction":
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: unexpected construction identity")
+    if value["conformance_model"] != "authoritative/conformance/IDENTITY-CONFORMANCE.json":
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: conformance model mismatch")
+    if value["execution_order"] != "ascending-vector-id":
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: execution order mismatch")
+    vectors = value["vectors"]
+    if not isinstance(vectors, list) or not vectors:
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: non-empty vectors required")
+    case_map = {case["name"]: case for case in behavior_fixture_set["cases"]}
+    registry = reusable_build_behavior_registry(
+        behavior_fixture_set["family_declarations"],
+        location=f"{BEHAVIOR_FIXTURE_PATH}.family_declarations",
+    )
+    observed_ids: list[str] = []
+    executed: list[str] = []
+    for index, vector in enumerate(vectors):
+        vector_label = f"{label}.vectors[{index}]"
+        exact_fields(vector, CONFORMANCE_VECTOR_ITEM_FIELDS, vector_label)
+        vector_id = vector["vector_id"]
+        if not isinstance(vector_id, str) or not re.fullmatch(
+            r"[a-z][a-z0-9]*(?:-[a-z0-9]+)*", vector_id
+        ):
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.vector_id: invalid functional identifier")
+        observed_ids.append(vector_id)
+        if vector["classification"] not in {"positive", "negative"}:
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.classification: unsupported value")
+        if not isinstance(vector["coverage_tags"], list) or not vector["coverage_tags"]:
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.coverage_tags: non-empty array required")
+        if len(vector["coverage_tags"]) != len(set(vector["coverage_tags"])):
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.coverage_tags: duplicate tag")
+        exact_fields(vector["expected_outcome"], CONFORMANCE_EXPECTED_FIELDS,
+                     f"{vector_label}.expected_outcome")
+        input_value = vector["input"]
+        if not isinstance(input_value, dict):
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.input: expected object")
+        kind = input_value.get("kind")
+        expected = vector["expected_outcome"]
+        if kind == "identity-behavior-case":
+            if set(input_value) != {"kind", "case_name"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: identity case fields mismatch")
+            case_name = input_value["case_name"]
+            case = case_map.get(case_name)
+            if case is None:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}: unknown identity behavior case")
+            result = reusable_evaluate_behavior(case["request"], registry)
+            if (
+                result["status"] != expected["status"]
+                or result["computed_identity"] != expected["computed_identity"]
+                or result["diagnostic"] != expected["diagnostic"]
+                or (
+                    expected["evidence"] is not None
+                    and result["evidence"] != expected["evidence"]
+                )
+            ):
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: deterministic outcome mismatch")
+        elif kind == "canonical-file-pair":
+            if set(input_value) != {"kind", "input_path", "expected_path"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: canonical pair fields mismatch")
+            source = contained_path(root, input_value["input_path"],
+                                    f"{vector_label}.input.input_path")
+            expected_path = contained_path(root, input_value["expected_path"],
+                                           f"{vector_label}.input.expected_path")
+            parsed = canonical_json_validator.parse_json_bytes(source.read_bytes())
+            observed = canonical_json_validator.canonical_json_bytes(parsed)
+            if observed != expected_path.read_bytes():
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: canonical bytes mismatch")
+        elif kind == "canonical-rejection-file":
+            if set(input_value) != {"kind", "input_path", "expected_diagnostic"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: rejection fields mismatch")
+            source = contained_path(root, input_value["input_path"],
+                                    f"{vector_label}.input.input_path")
+            try:
+                canonical_json_validator.canonicalize_bytes(source.read_bytes())
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if input_value["expected_diagnostic"] not in str(exc):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: rejection diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected rejection")
+        elif kind == "canonical-python-value":
+            if set(input_value) != {"kind", "value"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: canonical value fields mismatch")
+            try:
+                observed = canonical_json_validator.canonical_json_bytes(
+                    input_value["value"]
+                )
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: canonical value diagnostic mismatch")
+            else:
+                if (
+                    expected["status"] != "canonicalized"
+                    or expected["canonical_utf8_hex"] != observed.hex()
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: canonical value bytes mismatch")
+        elif kind == "canonical-source-hex":
+            if set(input_value) != {"kind", "source_hex"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: canonical source fields mismatch")
+            source_hex = input_value["source_hex"]
+            if (
+                not isinstance(source_hex, str)
+                or len(source_hex) % 2
+                or not re.fullmatch(r"[0-9a-f]*", source_hex)
+            ):
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.source_hex: invalid lowercase hexadecimal")
+            try:
+                canonical_json_validator.canonicalize_bytes(bytes.fromhex(source_hex))
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: canonical source diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected canonical source rejection")
+        elif kind == "canonical-generated-value":
+            if set(input_value) != {"kind", "value_type"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: generated value fields mismatch")
+            generated_values = {"bytes": b"unsupported"}
+            if input_value["value_type"] not in generated_values:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.value_type: unsupported generated value")
+            try:
+                canonical_json_validator.canonical_json_bytes(
+                    generated_values[input_value["value_type"]]
+                )
+            except canonical_json_validator.CanonicalJsonFailure as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: generated value diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected generated value rejection")
+        elif kind == "identity-behavior-mutation":
+            if set(input_value) != {"kind", "case_name", "mutation"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: behavior mutation fields mismatch")
+            case = case_map.get(input_value["case_name"])
+            if case is None:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}: unknown mutation source case")
+            request = json.loads(json.dumps(case["request"]))
+            mutation = input_value["mutation"]
+            if mutation == "duplicate-context":
+                request["verification_context"].append(
+                    json.loads(json.dumps(request["verification_context"][0]))
+                )
+            elif mutation == "conflicting-context-family":
+                request["verification_context"][0]["family_name"] = "link"
+            elif mutation == "remove-reference-identity":
+                request["value"]["references"][0].pop("identity")
+            elif mutation == "aggregate-member-family-mismatch":
+                request["value"]["members"][0]["identity"]["family"] = "link"
+            elif mutation == "malformed-semantic-identity":
+                request["value"]["references"][0]["identity"]["encoded_digest"] = "ABC"
+            elif mutation == "unresolved-context":
+                request["value"]["references"][0]["identity"]["encoded_digest"] = (
+                    "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+                )
+            elif mutation == "unknown-family":
+                request["family_name"] = "unknown-family"
+            elif mutation == "unverified-context":
+                request["verification_context"][0]["verified"] = False
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.mutation: unsupported mutation")
+            try:
+                result = reusable_evaluate_behavior(request, registry)
+            except ReusableValidationError as exc:
+                diagnostic = str(exc)
+                status = "rejected"
+            else:
+                diagnostic = result["diagnostic"]
+                status = result["status"]
+            if (
+                status != expected["status"]
+                or expected["diagnostic"] not in diagnostic
+            ):
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: behavior mutation outcome mismatch")
+        elif kind == "family-declaration-mutation":
+            if set(input_value) != {"kind", "family_name", "mutation"}:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input: family mutation fields mismatch")
+            if input_value["mutation"] not in {
+                "clear-unavailable-capabilities",
+                "transitive-closure",
+                "unsupported-reference-mode",
+            }:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}.input.mutation: unsupported mutation")
+            declarations = [
+                json.loads(json.dumps(item))
+                for item in behavior_fixture_set["family_declarations"]
+            ]
+            matches = [
+                item for item in declarations
+                if item["family_name"] == input_value["family_name"]
+            ]
+            if len(matches) != 1:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                     f"{vector_label}: family mutation target mismatch")
+            if input_value["mutation"] == "clear-unavailable-capabilities":
+                matches[0]["unavailable_capabilities"] = []
+            elif input_value["mutation"] == "transitive-closure":
+                matches[0]["aggregate"]["closure_boundary"] = "transitive"
+            else:
+                matches[0]["references"]["mode"] = "unsupported"
+            try:
+                reusable_build_behavior_registry(
+                    declarations,
+                    location=f"{vector_label}.mutated_family_declarations",
+                )
+            except ReusableValidationError as exc:
+                if (
+                    expected["status"] != "rejected"
+                    or expected["diagnostic"] not in str(exc)
+                ):
+                    fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                         f"{vector_label}: family mutation diagnostic mismatch")
+            else:
+                fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-002",
+                     f"{vector_label}: expected family mutation rejection")
+        else:
+            fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+                 f"{vector_label}.input.kind: unsupported kind")
+        executed.append(vector_id)
+    if observed_ids != sorted(observed_ids):
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: vectors are not in ascending identifier order")
+    if len(observed_ids) != len(set(observed_ids)):
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: duplicate vector identifier")
+    if executed != observed_ids:
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-VECTOR-001",
+             f"{label}: vector execution count mismatch")
+    conformance_model = strict_json(
+        root / "authoritative/conformance/IDENTITY-CONFORMANCE.json"
+    )
+    required_coverage = conformance_model["coverage_requirements"]
+    observed_coverage = sorted({
+        tag
+        for vector in vectors
+        for tag in vector["coverage_tags"]
+    })
+    if observed_coverage != sorted(required_coverage):
+        missing = sorted(set(required_coverage) - set(observed_coverage))
+        undeclared = sorted(set(observed_coverage) - set(required_coverage))
+        detail = []
+        if missing:
+            detail.append("missing=" + ",".join(missing))
+        if undeclared:
+            detail.append("undeclared=" + ",".join(undeclared))
+        fail("REPO-SPEC-IDENTITY-CONFORMANCE-COVERAGE-001",
+             f"{label}: coverage mismatch: {'; '.join(detail)}")
+
 def validate_manifest(root: Path) -> None:
     manifest = strict_json(root / MANIFEST_PATH)
     paths = manifest.get("artifact_paths")
@@ -813,7 +1126,7 @@ def validate_manifest(root: Path) -> None:
         if (
             relative.startswith("authoritative/identity/")
             or relative.startswith("authoritative/schemas/identity/")
-            or relative in {FIXTURE_PATH, BEHAVIOR_FIXTURE_PATH}
+            or relative in {FIXTURE_PATH, BEHAVIOR_FIXTURE_PATH, CONFORMANCE_VECTOR_PATH}
         ) and not target.is_file():
             fail("REPO-SPEC-IDENTITY-MANIFEST-003", f"{relative}: declared identity artifact is missing")
     participating = set()
@@ -822,6 +1135,7 @@ def validate_manifest(root: Path) -> None:
         root / "authoritative/schemas/identity",
         root / "validation/fixtures/identity/identity-family",
         root / "validation/fixtures/identity/identity-behavior",
+        root / "validation/fixtures/identity/conformance",
     ):
         for path in sorted(directory.glob("*.json")):
             if "construction_identity" in strict_json(path):
@@ -868,6 +1182,11 @@ def validate(root: Path) -> None:
     behavior_fixture_set = strict_json(root / BEHAVIOR_FIXTURE_PATH)
     validate_behavior_fixture_set(behavior_fixture_set, BEHAVIOR_FIXTURE_PATH)
     observed[BEHAVIOR_FIXTURE_PATH] = behavior_fixture_set["construction_identity"]
+    conformance_vector_set = strict_json(root / CONFORMANCE_VECTOR_PATH)
+    _validate_conformance_vector_set(
+        root, conformance_vector_set, behavior_fixture_set, CONFORMANCE_VECTOR_PATH
+    )
+    observed[CONFORMANCE_VECTOR_PATH] = conformance_vector_set["construction_identity"]
     for relative, expected in EXPECTED_IDENTITIES.items():
         if observed.get(relative) != expected:
             fail("REPO-SPEC-IDENTITY-IDENTITY-002", f"{relative}: unexpected construction identity")

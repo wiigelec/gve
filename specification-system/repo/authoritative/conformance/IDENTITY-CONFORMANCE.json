@@ -1,0 +1,164 @@
+{
+  "construction_identity": "identity-conformance-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed repository-neutral construction representation for deterministic positive and negative identity conformance vectors while preserving already-established identity semantics.",
+  "normative": false,
+  "vector_envelope": {
+    "required_fields": [
+      "vector_id",
+      "behavior_class",
+      "classification",
+      "input",
+      "expected_outcome",
+      "fixture_owner",
+      "validator_owner",
+      "coverage_tags"
+    ],
+    "closed": true,
+    "vector_id": "lowercase-functional-identifier",
+    "behavior_class": [
+      "strict-json",
+      "canonical-json",
+      "identity-family",
+      "own-identity",
+      "reference",
+      "aggregate",
+      "verification",
+      "construction-evidence",
+      "unavailable-capability"
+    ],
+    "classification": [
+      "positive",
+      "negative"
+    ],
+    "input": "closed-behavior-specific-object",
+    "expected_outcome": {
+      "required_fields": [
+        "status",
+        "computed_identity",
+        "canonical_utf8_hex",
+        "diagnostic",
+        "evidence"
+      ],
+      "closed": true,
+      "status": [
+        "derived",
+        "verified",
+        "rejected",
+        "canonicalized",
+        "parsed"
+      ],
+      "computed_identity": "semantic-identity-or-null",
+      "canonical_utf8_hex": "lowercase-even-length-hexadecimal-or-null",
+      "diagnostic": "deterministic-string-or-null",
+      "evidence": "closed-behavior-specific-object-or-null"
+    },
+    "fixture_owner": "normalized-repository-relative-path",
+    "validator_owner": "normalized-repository-relative-path",
+    "coverage_tags": "non-empty-unique-lowercase-functional-identifier-array"
+  },
+  "uniqueness_constraints": [
+    "vector-id",
+    "fixture-owner-and-vector-id",
+    "declared-execution-record"
+  ],
+  "coverage_requirements": [
+    "accepted-array-value",
+    "accepted-boolean-value",
+    "accepted-integer-value",
+    "accepted-null-value",
+    "accepted-object-value",
+    "accepted-string-value",
+    "aggregate-member-family-rejection",
+    "array-order-preservation",
+    "by-identity-reference-context",
+    "canonical-json-value-domain",
+    "canonical-output-boundary",
+    "canonicalization-and-digest-selection",
+    "deterministic-construction-evidence",
+    "deterministic-object-ordering",
+    "deterministic-string-escaping",
+    "direct-closure",
+    "direct-cycle-rejection",
+    "domain-separated-preimage",
+    "duplicate-aggregate-rejection",
+    "duplicate-key-rejection",
+    "empty-policy",
+    "family-qualified-identity",
+    "identity-plus-value-recomputation",
+    "indirect-cycle-rejection",
+    "malformed-json-rejection",
+    "malformed-reference-rejection",
+    "malformed-semantic-identity-rejection",
+    "malformed-utf8-rejection",
+    "non-finite-number-rejection",
+    "non-standard-constant-rejection",
+    "ordered-direct-aggregate",
+    "ordered-unordered-nonconflation",
+    "own-identity-omission-and-contradiction",
+    "reference-ambiguous-context-rejection",
+    "reference-conflicting-context-rejection",
+    "reference-family-rejection",
+    "reference-missing-context-rejection",
+    "reference-unresolved-context-rejection",
+    "reference-unverified-context-rejection",
+    "signed-64-bit-maximum",
+    "signed-64-bit-minimum",
+    "signed-64-bit-overflow-rejection",
+    "signed-64-bit-underflow-rejection",
+    "supplied-computed-comparison",
+    "surrogate-rejection",
+    "transitive-closure-rejection",
+    "unavailable-later-capabilities",
+    "unknown-family-rejection",
+    "unordered-direct-aggregate",
+    "unsupported-number-form-rejection",
+    "unsupported-reference-mode-rejection",
+    "unsupported-value-form-rejection",
+    "verification-derive-mode",
+    "verification-verify-mode"
+  ],
+  "failure_precedence": [
+    "vector-envelope-structure",
+    "family-and-mode-resolution",
+    "closed-input-validation",
+    "reference-context-validation",
+    "aggregate-structural-validation",
+    "canonicalization-and-identity-derivation",
+    "supplied-versus-computed-comparison",
+    "expected-result-comparison"
+  ],
+  "fixture_integration": {
+    "existing-fixture-values": "retain-unless-deterministic-defect-is-proven",
+    "silent-duplication": "forbidden",
+    "every-declared-vector": "execute-exactly-once",
+    "undeclared-or-unexecuted-vector": "reject"
+  },
+  "product_independence": {
+    "third_party_dependencies": "forbidden",
+    "maintained_product_imports": "forbidden",
+    "product-specific-identities-examples-or-evidence": "forbidden"
+  },
+  "unavailable_capabilities": [
+    "final-normative-schema",
+    "accepted-conformance",
+    "governing-revision-binding",
+    "manifest-bootstrap",
+    "repository-profiles",
+    "sealing",
+    "acceptance",
+    "cutover"
+  ],
+  "expected_relationships": [
+    "conformance boundary construction",
+    "identity behavior fixture construction",
+    "canonical JSON fixtures",
+    "identity construction validator",
+    "reusable validation construction",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Final accepted conformance vector identities and revision binding are not defined.",
+    "Repository profiles, bootstrap, sealing, acceptance, and cutover remain separately governed."
+  ]
+}
