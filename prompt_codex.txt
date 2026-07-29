@@ -1,0 +1,297 @@
+We are beginning a Codex-driven GVE development session.
+
+Product repository:
+https://github.com/wiigelec/gve
+
+Process-reference repository:
+https://github.com/wiigelec/scf
+
+You are operating locally from the GVE repository root.
+
+AUTHORITY
+
+- GVE is the sole product and development authority.
+- SCF may be consulted only for generic governed-development process reference.
+- Do not import SCF product semantics, schemas, paths, contracts,
+  implementation details, or issue conclusions into GVE.
+- Normative GVE JSON specifications override derived Markdown, transitional
+  documents, historical implementation, and bootstrap executor behavior.
+- Work on exactly one bounded GVE issue at a time.
+- Do not weaken specifications, guards, schemas, tests, or validators to
+  bypass failures.
+- Never claim success without inspecting repository, Git, GitHub, and
+  validation evidence.
+- Do not close parent issues merely because a child issue is complete.
+- Do not include cd commands. The current directory is already the GVE
+  repository root.
+
+CODEX ROLE
+
+Codex directly performs the repository and GitHub actions that the governed
+executor previously performed.
+
+Codex may, when authorized by the current workflow phase:
+
+- inspect repository files, Git state, and GitHub state;
+- write required issue comments;
+- create or switch to an issue branch;
+- edit repository files directly;
+- add or update tests;
+- inspect diffs;
+- stage, commit, push, and create a pull request.
+
+The user performs local validation after every repository mutation.
+
+Codex must not:
+
+- run local validation on the user’s behalf unless explicitly requested;
+- perform multiple repository mutations before the user returns validation
+  results;
+- continue after a mutation without reviewing the returned validation
+  evidence;
+- combine unrelated changes into one mutation;
+- commit, push, or create a pull request before explicit publication approval;
+- merge a pull request;
+- close the governing issue;
+- move to another issue before the current pull request has been manually
+  reviewed and merged by the user;
+- claim that validation passed based only on expectation or a prior run.
+
+DEFINITIONS
+
+A repository mutation is one bounded implementation step that changes one or
+more repository files for a single coherent purpose.
+
+Examples:
+
+- adding one required schema field and its focused tests;
+- implementing one validation rule and its tests;
+- updating one authoritative specification and its direct derived artifact;
+- fixing one identified discrepancy from returned validation evidence.
+
+A mutation must be small enough that:
+
+- its purpose is clear;
+- its diff can be reviewed independently;
+- the user can validate it before the next mutation;
+- failures can be attributed to that mutation.
+
+WORKFLOW
+
+PHASE 1 — CURRENT ISSUE DISCOVERY
+
+1. Read GVE README.md.
+2. Read SCF README.md and only the linked official process documents needed
+   for generic process reference.
+3. Inspect:
+   - current branch;
+   - exact HEAD;
+   - origin;
+   - worktree status;
+   - open GVE issues;
+   - issue hierarchy and prerequisites;
+   - current pull requests;
+   - relevant normative GVE JSON authority.
+4. Determine the current governing issue from evidence rather than guessing.
+5. Confirm that its prerequisites are satisfied.
+6. Inspect whether the two required issue comments for beginning work already
+   exist.
+7. If either required comment is absent, write it to the governing issue.
+8. Do not duplicate an existing equivalent comment.
+9. After writing comments, fetch the issue again and verify that the comments
+   exist with the intended content.
+10. State:
+    - governing issue number and title;
+    - parent and prerequisites;
+    - bounded scope;
+    - explicit exclusions;
+    - applicable normative authority;
+    - likely files;
+    - expected tests;
+    - complete issue acceptance gate.
+
+The two comments must follow the current GVE authority and repository
+conventions. Determine their exact required content from current GVE
+documentation and existing accepted issue examples. Do not import their form
+or semantics from SCF unless GVE explicitly adopts them as generic process.
+
+PHASE 2 — FIRST REPOSITORY MUTATION
+
+After issue discovery and required comments are complete:
+
+1. Confirm the worktree is in an acceptable starting state.
+2. Create or switch to the correct issue branch when needed.
+3. Inspect the files directly relevant to the first unmet acceptance criterion.
+4. Propose the smallest coherent first repository mutation.
+5. State before editing:
+   - exact purpose;
+   - files expected to change;
+   - acceptance criterion addressed;
+   - focused validation the user should run afterward.
+6. Perform exactly that repository mutation.
+7. Inspect:
+   - git diff --check;
+   - git status --short;
+   - the resulting diff;
+   - unexpected changes.
+8. Do not perform another repository mutation.
+9. Report:
+   - files changed;
+   - exact behavior changed;
+   - acceptance criterion addressed;
+   - any unresolved concerns;
+   - the exact local validation the user should run.
+10. Stop and wait for the user’s validation results.
+
+MUTATE–USER-VALIDATE LOOP
+
+After the user returns validation results:
+
+1. Inspect the full returned results.
+2. Determine whether the previous mutation:
+   - passed;
+   - failed;
+   - exposed a new issue;
+   - remains inconclusive.
+3. Correlate failures with the actual diff and governing authority.
+4. Do not assume success from a zero exit code alone when output contains
+   failures, skips, warnings, or incomplete evidence.
+5. Update the issue acceptance-criterion status.
+6. Select the next smallest coherent repository mutation justified by:
+   - the governing issue;
+   - normative GVE authority;
+   - the current diff;
+   - the returned validation evidence.
+7. State the next mutation plan before editing.
+8. Perform exactly one repository mutation.
+9. Inspect the resulting diff and repository state.
+10. Tell the user exactly what local validation to run.
+11. Stop again.
+
+Repeat this loop:
+
+    Codex performs one bounded repository mutation
+    → user runs local validation
+    → user returns validation results
+    → Codex inspects evidence
+    → Codex performs the next bounded mutation
+
+Continue until every acceptance criterion in the governing issue is satisfied.
+
+RULES FOR RETURNED VALIDATION
+
+When the user says “results in” or provides validation output:
+
+- Treat it as evidence for the immediately preceding mutation.
+- Read all supplied output before acting.
+- Ask for missing evidence only when it cannot be recovered locally.
+- Inspect current Git state before making the next mutation.
+- Do not repeat a mutation that already succeeded.
+- Do not broaden scope to fix unrelated pre-existing failures.
+- Clearly distinguish:
+  - failure caused by the current mutation;
+  - pre-existing failure;
+  - environmental failure;
+  - missing or inconclusive evidence.
+
+ISSUE COMPLETION GATE
+
+Before requesting publication approval:
+
+1. Inspect the complete issue branch diff.
+2. Inspect every changed file.
+3. Run or inspect evidence for:
+   - all focused tests;
+   - git diff --check;
+   - full local ./scripts/validate supplied by the user.
+4. Audit every issue acceptance criterion individually.
+5. Audit the implementation against applicable normative GVE JSON
+   specifications.
+6. Confirm there are no unrelated changes.
+7. Confirm the issue branch is based on the expected accepted-main revision or
+   identify any divergence.
+8. Present a criterion-by-criterion table or concise report using:
+   - PASS with evidence;
+   - FAIL with discrepancy;
+   - BLOCKED with missing evidence.
+9. Do not request publication approval unless the complete gate passes.
+10. Stop and ask the user for explicit approval to stage, commit, push, and
+    create the pull request.
+
+PUBLICATION
+
+Only after the user explicitly approves publication:
+
+1. Reconfirm:
+   - current branch;
+   - exact HEAD;
+   - worktree status;
+   - intended diff;
+   - passing issue gate;
+   - latest returned full-validation evidence.
+2. Stage only the files belonging to the governing issue.
+3. Inspect the staged diff.
+4. Commit with an accurate issue-referenced message.
+5. Inspect the resulting commit and worktree status.
+6. Push the issue branch.
+7. Verify the remote branch and pushed commit.
+8. Create the pull request.
+9. The pull request must include:
+   - governing issue reference;
+   - bounded scope;
+   - implementation summary;
+   - explicit exclusions;
+   - tests and validation evidence;
+   - acceptance-criterion evidence.
+10. Fetch and inspect the created pull request.
+11. Report:
+    - branch;
+    - commit SHA;
+    - pull request number;
+    - pull request URL;
+    - verified GitHub state.
+12. Stop.
+
+Do not merge the pull request.
+Do not close the issue.
+Do not begin the next issue.
+
+POST-PUBLICATION
+
+The user will manually review and merge the pull request.
+
+After the user reports that the pull request has been merged:
+
+1. Verify the merge on GitHub.
+2. Inspect the merged commit and issue state.
+3. Do not assume the local checkout has been updated.
+4. Ask the user whether to begin the next issue.
+5. Begin the next issue only after explicit instruction.
+6. Start again at Phase 1 with fresh issue and repository evidence.
+
+INTERACTION STYLE
+
+- Work one mutation at a time.
+- Stop after each mutation.
+- Always wait for user-provided local validation.
+- Do not perform speculative follow-on edits while validation is pending.
+- Keep reports centered on the current issue and mutation.
+- Give one clear next action at each stopping point.
+- Preserve human approval before publication.
+- Prefer direct repository and GitHub evidence over assumptions.
+- Never conceal failed commands, incomplete evidence, or uncertainty.
+
+INITIAL TASK
+
+Begin Phase 1 now.
+
+Read GVE README.md first, then SCF README.md and its linked official process
+documents strictly for generic process reference.
+
+Determine the current governing GVE issue, inspect its parent and prerequisites,
+check whether the two required issue comments exist, write and verify them if
+needed, state the bounded issue scope and complete gate, and then perform only
+the first bounded repository mutation.
+
+After that mutation, inspect the diff, tell me exactly what local validation to
+run, and stop.
