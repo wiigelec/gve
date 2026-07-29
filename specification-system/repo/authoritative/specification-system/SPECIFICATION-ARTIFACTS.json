@@ -1,13 +1,90 @@
 {
   "construction_identity": "specification-artifacts",
   "construction_status": "under-construction",
-  "responsibility": "Define authoritative, derived, schema, conformance, and validation artifact classes.",
+  "responsibility": "Define the repository-neutral construction classes and relationship vocabulary for specification artifacts.",
   "normative": false,
+  "artifact_classes": [
+    "authoritative-specification-artifact",
+    "derived-artifact",
+    "schema",
+    "conformance-artifact",
+    "validation-implementation",
+    "fixture",
+    "manifest-participant"
+  ],
+  "class_constraints": {
+    "authoritative-specification-artifact": {
+      "required_relationships": [],
+      "forbidden_relationships": ["projection-source", "authoring-source"],
+      "manifest_eligible": true
+    },
+    "derived-artifact": {
+      "required_relationships": ["projection-source"],
+      "forbidden_relationships": ["schema-target", "conformance-target"],
+      "manifest_eligible": true
+    },
+    "schema": {
+      "required_relationships": ["schema-target"],
+      "forbidden_relationships": ["projection-source"],
+      "manifest_eligible": true
+    },
+    "conformance-artifact": {
+      "required_relationships": ["conformance-target"],
+      "forbidden_relationships": ["projection-source"],
+      "manifest_eligible": true
+    },
+    "validation-implementation": {
+      "required_relationships": ["validator-target"],
+      "forbidden_relationships": ["schema-target", "projection-source"],
+      "manifest_eligible": true
+    },
+    "fixture": {
+      "required_relationships": ["fixture-validator"],
+      "forbidden_relationships": ["schema-target", "projection-source"],
+      "manifest_eligible": true
+    },
+    "manifest-participant": {
+      "required_relationships": [],
+      "forbidden_relationships": ["semantic-identity", "revision-binding"],
+      "manifest_eligible": true
+    }
+  },
+  "relationship_types": [
+    "schema-target",
+    "conformance-target",
+    "validator-target",
+    "fixture-validator",
+    "projection-source",
+    "authoring-source",
+    "manifest-participation",
+    "semantic-identity",
+    "revision-binding"
+  ],
+  "relationship_rules": {
+    "projection-source": {
+      "acyclic": true,
+      "deterministic": true,
+      "max_sources": 1
+    },
+    "authoring-source": {
+      "acyclic": true,
+      "deterministic": true,
+      "max_sources": 1
+    }
+  },
+  "classification_boundary": {
+    "class_is_distinct_from_semantic_identity": true,
+    "authority_is_distinct_from_class": true,
+    "construction_artifacts_are_non_normative": true,
+    "semantic_identity": "unassigned",
+    "revision": "unassigned"
+  },
   "expected_relationships": [
     "repository-specification-construction-set",
-    "repository-model"
+    "repository-model",
+    "specification-artifact-class-construction-schema"
   ],
   "unresolved_questions": [
-    "The final specification authoring schema is not defined by this placeholder."
+    "Final specification identities, revisions, manifest semantics, bootstrap, acceptance, sealing, and cutover are not defined."
   ]
 }
