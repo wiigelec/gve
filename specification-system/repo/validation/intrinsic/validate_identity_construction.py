@@ -9,6 +9,17 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+CONSTRUCTION_ROOT = Path(__file__).resolve().parents[2]
+if str(CONSTRUCTION_ROOT) not in sys.path:
+    sys.path.insert(0, str(CONSTRUCTION_ROOT))
+
+from validation.intrinsic.identity_behavior_adapter import (  # noqa: E402
+    build_behavior_registry as reusable_build_behavior_registry,
+)
+from validation.intrinsic.identity_behavior_adapter import (  # noqa: E402
+    evaluate_behavior as reusable_evaluate_behavior,
+)
+
 PLACEHOLDER_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "expected_relationships", "unresolved_questions",
@@ -763,7 +774,10 @@ def validate_behavior_fixture_set(value: dict[str, Any], label: str) -> None:
     validate_common(value, label)
     if value != EXPECTED_BEHAVIOR_FIXTURE_SET:
         fail("REPO-SPEC-IDENTITY-BEHAVIOR-FIXTURE-001", f"{label}: fixture set does not match governed inventory")
-    registry = _behavior_family_registry(value["family_declarations"], f"{label}.family_declarations")
+    registry = reusable_build_behavior_registry(
+        value["family_declarations"],
+        location=f"{label}.family_declarations",
+    )
     cases = value["cases"]
     if not isinstance(cases, list) or not cases:
         fail("REPO-SPEC-IDENTITY-BEHAVIOR-FIXTURE-001", f"{label}: non-empty cases required")
@@ -777,7 +791,7 @@ def validate_behavior_fixture_set(value: dict[str, Any], label: str) -> None:
         if name in names:
             fail("REPO-SPEC-IDENTITY-BEHAVIOR-FIXTURE-001", f"{case_label}: duplicate case name")
         names.add(name)
-        result = evaluate_behavior_request(case["request"], registry)
+        result = reusable_evaluate_behavior(case["request"], registry)
         if result["status"] != case["expected_status"]:
             fail("REPO-SPEC-IDENTITY-BEHAVIOR-FIXTURE-001", f"{case_label}: unexpected status {result['status']}")
         if result["computed_identity"] != case["expected_identity"]:

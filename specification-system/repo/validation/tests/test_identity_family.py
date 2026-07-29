@@ -89,6 +89,13 @@ class IdentityFamilyConstructionTests(unittest.TestCase):
         self.assertGreaterEqual(len(fixture["cases"]), 10)
         VALIDATOR.validate_fixture_set(fixture, VALIDATOR.FIXTURE_PATH)
 
+    def test_intrinsic_behavior_fixture_path_uses_reusable_adapter(self) -> None:
+        fixture = self.read_json(VALIDATOR.BEHAVIOR_FIXTURE_PATH)
+        VALIDATOR.validate_behavior_fixture_set(
+            fixture,
+            VALIDATOR.BEHAVIOR_FIXTURE_PATH,
+        )
+
     def test_reusable_identity_library_matches_governed_behavior_fixtures(self) -> None:
         fixture = self.read_json(VALIDATOR.BEHAVIOR_FIXTURE_PATH)
         registry = build_behavior_registry(
