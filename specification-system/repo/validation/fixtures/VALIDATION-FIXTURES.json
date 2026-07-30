@@ -1,14 +1,41 @@
 {
-  "construction_identity": "validation-fixtures-placeholder",
+  "construction_identity": "validation-fixtures-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent synthetic validator-test fixtures that are not conformance authority.",
+  "responsibility": "Define the repository-neutral validation fixture authority model, establishing the role of fixture files as structured inputs to focused validators without claiming conformance authority or defining final sealing semantics.",
   "normative": false,
+  "fixture_authority_model": {
+    "fixture_role": "validator-input",
+    "fixture_classes": [
+      "authoritative-fixture",
+      "conformance-vector",
+      "behavior-case",
+      "synthetic-validator-input"
+    ],
+    "fixture_ownership": "fixture-owner-path-declared-in-vector",
+    "validator_ownership": "validator-owner-path-declared-in-vector",
+    "distinct_from_conformance": true,
+    "conformance_authority_remains_separate": true
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
   "expected_relationships": [
-    "validation tests",
-    "intrinsic validation"
+    "conformance boundary construction",
+    "identity conformance construction",
+    "validation library construction",
+    "repository specification construction set"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final fixture schema, identity binding, and acceptance semantics remain separately governed.",
+    "Sealing and manifest participation are not finalized."
   ]
 }

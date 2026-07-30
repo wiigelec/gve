@@ -1,14 +1,55 @@
 {
-  "construction_identity": "schema-boundary-placeholder",
+  "construction_identity": "schema-boundary-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future schema authority boundary without defining final schemas.",
+  "responsibility": "Define the repository-neutral schema authority boundary, establishing the role of construction schemas as closed field-level constraints on authoritative artifacts without claiming final normative schema authority.",
   "normative": false,
+  "schema_authority_model": {
+    "construction_schemas": {
+      "role": "closed-field-constraint",
+      "normative": false,
+      "unknown_fields": "reject",
+      "missing_fields": "reject",
+      "forbidden_claims": [
+        "accepted",
+        "complete",
+        "completed",
+        "sealed",
+        "final",
+        "digest",
+        "content_digest",
+        "revision",
+        "specification_revision",
+        "aggregate_revision"
+      ]
+    },
+    "normative_schemas": {
+      "role": "governed-separately",
+      "availability": "deferred"
+    },
+    "coverage": {
+      "each_authoritative_artifact_requires_schema": false,
+      "each_construction_artifact_with_closed_shape_requires_schema": true
+    }
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
   "expected_relationships": [
-    "repository specification artifacts",
-    "future intrinsic validation"
+    "all authoritative construction schemas",
+    "specification artifact class construction",
+    "repository specification construction set"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final normative schema authority and sealing semantics remain separately governed.",
+    "Schema identity binding and manifest participation are not finalized."
   ]
 }

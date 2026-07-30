@@ -1,14 +1,58 @@
 {
-  "construction_identity": "identity-authority-placeholder",
+  "construction_identity": "identity-authority-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future portable identity authority without defining identity semantics.",
+  "responsibility": "Define the repository-neutral identity authority model, including authority separation between framework-defined identity families and product-defined identity families, without defining final identity string syntax, sealing, or acceptance semantics.",
   "normative": false,
+  "authority_model": {
+    "framework_identity_authority": {
+      "may_define": [
+        "universal identity families",
+        "canonicalization rules",
+        "digest algorithms",
+        "reference resolution rules",
+        "aggregation rules",
+        "verification semantics"
+      ],
+      "may_not_define": [
+        "product-specific identity families",
+        "product identity string syntax"
+      ]
+    },
+    "product_identity_authority": {
+      "may_instantiate": [
+        "product-specific identity families",
+        "product identity bindings"
+      ],
+      "may_not_redefine": [
+        "universal identity families",
+        "canonicalization rules",
+        "digest algorithms",
+        "reference resolution rules",
+        "aggregation rules"
+      ]
+    }
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
   "expected_relationships": [
-    "repository specification artifacts",
-    "future canonical representation authority"
+    "identity model construction",
+    "identity family model construction",
+    "identity verification construction",
+    "canonical JSON construction",
+    "specification identity profile construction"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final identity string syntax for product families is not defined.",
+    "Sealing, acceptance, and cutover semantics remain separately governed."
   ]
 }
