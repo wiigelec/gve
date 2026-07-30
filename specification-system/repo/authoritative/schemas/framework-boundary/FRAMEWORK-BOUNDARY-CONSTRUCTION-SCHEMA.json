@@ -1,0 +1,48 @@
+{
+  "construction_identity": "framework-boundary-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed construction schema for framework-boundary model validation without defining final manifest, identity, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "framework-boundary",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "entity_types",
+    "entity_constraints",
+    "relationship_types",
+    "relationship_rules",
+    "authority_separation",
+    "decision_basis",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "entity_types": "non-empty-unique-strings",
+    "relationship_types": "non-empty-unique-strings",
+    "relationship_rules": "non-empty-object-with-closed-relationship-entries",
+    "authority_separation": "non-empty-object-with-framework-product-and-provenance-sections",
+    "decision_basis": "non-empty-object-with-closed-decision-entries"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "framework-boundary model"
+  ],
+  "unresolved_questions": [
+    "Final schema form may evolve as construction phases progress.",
+    "Concrete field-level constraints are implemented in the intrinsic validator."
+  ]
+}

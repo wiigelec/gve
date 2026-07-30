@@ -33,7 +33,10 @@
     "specification-artifact-fixture-set-construction",
     "validation-fixtures-placeholder",
     "validation-library-construction",
-    "transition-baseline-classification"
+    "transition-baseline-classification",
+    "framework-boundary",
+    "framework-boundary-construction-schema",
+    "framework-boundary-fixture-set-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -65,7 +68,10 @@
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
     "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
-    "TRANSITION-BASELINE-CLASSIFICATION.json"
+    "TRANSITION-BASELINE-CLASSIFICATION.json",
+    "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
+    "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
