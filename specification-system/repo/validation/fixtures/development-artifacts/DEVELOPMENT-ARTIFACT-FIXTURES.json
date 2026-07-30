@@ -1,0 +1,128 @@
+{
+  "construction_identity": "development-artifact-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative construction inputs for the development artifact model without defining accepted conformance.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-development-artifact-declaration",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unknown-artifact-role",
+      "expected": "reject",
+      "model_overrides": {
+        "artifact_roles": ["product-overview", "implementation-plan", "unknown-role"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "empty-artifact-roles",
+      "expected": "reject",
+      "model_overrides": {
+        "artifact_roles": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "duplicate-artifact-role",
+      "expected": "reject",
+      "model_overrides": {
+        "artifact_roles": ["product-overview", "product-overview"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "missing-overview-model",
+      "expected": "reject",
+      "model_overrides": {
+        "overview_model": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "missing-plan-model",
+      "expected": "reject",
+      "model_overrides": {
+        "plan_model": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "empty-role-relationships",
+      "expected": "reject",
+      "model_overrides": {
+        "role_relationships": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "empty-authority-separation",
+      "expected": "reject",
+      "model_overrides": {
+        "authority_separation": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {
+        "decision_basis": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "missing-overview-required-aspects",
+      "expected": "reject",
+      "model_overrides": {
+        "overview_model.required_aspects": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "missing-plan-required-aspects",
+      "expected": "reject",
+      "model_overrides": {
+        "plan_model.required_aspects": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "unknown-role-in-constraints",
+      "expected": "reject",
+      "model_overrides": {
+        "role_constraints.unknown-role": {
+          "description": "not a valid role",
+          "authority_role": "temporary",
+          "may_become_normative": false,
+          "discovery": "not-discovered",
+          "supersession": "implicit-replacement",
+          "may_override_accepted_specifications": false
+        }
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    },
+    {
+      "name": "missing-role-constraint-field",
+      "expected": "reject",
+      "model_overrides": {
+        "role_constraints.product-overview": {
+          "description": "missing required fields",
+          "authority_role": "directional"
+        }
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001"
+    }
+  ],
+  "expected_relationships": [
+    "development artifact model",
+    "development artifact validation",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Complete repository profiles, fixture execution contracts, accepted conformance, revisions, acceptance, sealing, and cutover are not defined."
+  ]
+}

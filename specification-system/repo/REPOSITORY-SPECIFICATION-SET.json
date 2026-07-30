@@ -36,7 +36,10 @@
     "transition-baseline-classification",
     "framework-boundary",
     "framework-boundary-construction-schema",
-    "framework-boundary-fixture-set-construction"
+    "framework-boundary-fixture-set-construction",
+    "development-artifact-construction",
+    "development-artifact-construction-schema",
+    "development-artifact-fixture-set-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -71,7 +74,10 @@
     "TRANSITION-BASELINE-CLASSIFICATION.json",
     "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
     "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
-    "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json"
+    "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
+    "authoritative/development-artifacts/DEVELOPMENT-ARTIFACTS.json",
+    "authoritative/schemas/development-artifacts/DEVELOPMENT-ARTIFACT-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/development-artifacts/DEVELOPMENT-ARTIFACT-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
