@@ -281,17 +281,17 @@ repository-model
 
 ## Expected Relationships
 
-- Phase 0 repository vocabulary (REPOSITORY-MODEL.json)
-- Phase 1 framework boundary entity types
-- Phase 2 development artifact roles
-- future Level 0-3 specification model (Phase 4)
-- future product artifact roles (Phase 5)
+- Repository vocabulary (REPOSITORY-MODEL.json)
+- Framework boundary entity types
+- Development artifact roles
+- Level 0-3 specification model
+- Product artifact roles
 
 
 ## Unresolved Questions
 
 - Concrete path mapping from functional areas to repository paths is not defined.
 - Repository-layout validation implementation is deferred.
-- Hosting-platform profile path conventions are not defined (Phase 11-12).
+- Hosting-platform profile path conventions are not defined.
 - Initialization template area selection is not defined.
 

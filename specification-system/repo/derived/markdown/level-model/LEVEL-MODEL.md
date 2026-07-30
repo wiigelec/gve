@@ -185,17 +185,17 @@ Define the fixed product specification Level 0-3 format with closed Level invent
 
 ## Expected Relationships
 
-- Phase 1 framework boundary entity types (product-level-specification)
-- Phase 3 repository functional-area model (product-specifications area)
+- Framework boundary entity types (product-level-specification)
+- Repository functional-area model (product-specifications area)
 - current product-level placeholder (superseded LEVEL-MODEL.json)
-- future product artifact roles (Phase 5)
-- future Git repository and revision model (Phase 6)
+- Product artifact roles
+- Git repository and revision model
 
 
 ## Unresolved Questions
 
 - Final schema and identity bindings for Level artifacts are not defined.
 - Derived projection format and generation mechanism are not defined.
-- Source correspondence ownership granularity is not defined (Phase 10).
-- Level completion certification and acceptance boundary is not defined (Phase 9).
+- Source correspondence ownership granularity is not defined.
+- Level completion certification and acceptance boundary is not defined.
 

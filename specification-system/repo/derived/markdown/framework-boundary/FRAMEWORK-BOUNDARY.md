@@ -210,15 +210,15 @@ Define the closed repository-neutral construction model for framework, template,
 
 ## Expected Relationships
 
-- Phase 0 transition baseline classification
-- future repository functional-area model (Phase 4)
+- Transition baseline classification
+- Repository functional-area model
 - future template initialization and derivation
 
 
 ## Unresolved Questions
 
 - Concrete template packaging format is not defined.
-- Concrete profile declarations and selection mechanism are not defined (Phase 11-12).
-- Framework version numbering and revision identity scheme are not defined (Phase 16).
+- Concrete profile declarations and selection mechanism are not defined.
+- Framework version numbering and revision identity scheme are not defined.
 - Framework-to-product update protocol and migration semantics are not defined.
 
