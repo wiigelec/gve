@@ -98,6 +98,38 @@ FRAMEWORK_BOUNDARY_FIXTURE_FIELDS = {
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
 FRAMEWORK_BOUNDARY_FIXTURE_PATH = "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json"
+DEVELOPMENT_ARTIFACT_PATH = "authoritative/development-artifacts/DEVELOPMENT-ARTIFACTS.json"
+DEVELOPMENT_ARTIFACT_SCHEMA_PATH = "authoritative/schemas/development-artifacts/DEVELOPMENT-ARTIFACT-CONSTRUCTION-SCHEMA.json"
+DEVELOPMENT_ARTIFACT_FIXTURE_PATH = "validation/fixtures/development-artifacts/DEVELOPMENT-ARTIFACT-FIXTURES.json"
+DEVELOPMENT_ARTIFACT_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "artifact_roles", "role_constraints",
+    "overview_model", "plan_model", "role_relationships",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+DEVELOPMENT_ARTIFACT_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+DEVELOPMENT_ARTIFACT_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+DEVELOPMENT_ARTIFACT_CLOSED_ROLES: tuple[str, ...] = (
+    "product-overview",
+    "implementation-plan",
+    "scratchpad",
+    "decision-record",
+    "governing-issue",
+    "detailed-scope",
+    "patch-plan",
+    "unresolved-question-record",
+    "validation-evidence-reference",
+    "review-evidence-reference",
+)
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
     "canonical-json-construction",
@@ -133,6 +165,9 @@ ARTIFACT_CLASSES = (
     "framework-boundary",
     "framework-boundary-construction-schema",
     "framework-boundary-fixture-set-construction",
+    "development-artifact-construction",
+    "development-artifact-construction-schema",
+    "development-artifact-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -168,6 +203,9 @@ ARTIFACT_PATHS = (
     "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
     "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
+    DEVELOPMENT_ARTIFACT_PATH,
+    DEVELOPMENT_ARTIFACT_SCHEMA_PATH,
+    DEVELOPMENT_ARTIFACT_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -193,6 +231,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
     "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
+    DEVELOPMENT_ARTIFACT_PATH,
+    DEVELOPMENT_ARTIFACT_SCHEMA_PATH,
+    DEVELOPMENT_ARTIFACT_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -206,7 +247,10 @@ REQUIRED_DIRECTORIES = (
     "authoritative/schemas/repository-model",
     "authoritative/framework-boundary",
     "authoritative/schemas/framework-boundary",
+    "authoritative/development-artifacts",
+    "authoritative/schemas/development-artifacts",
     "validation/fixtures/framework-boundary",
+    "validation/fixtures/development-artifacts",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -922,6 +966,90 @@ def validate_framework_boundary_schema(value: dict[str, Any], label: str) -> str
              f"{label}.forbidden_claim_fields: array required")
     return identity
 
+def validate_development_artifact(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, DEVELOPMENT_ARTIFACT_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "development-artifacts":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected development-artifact identity")
+    if value["artifact_roles"] != list(DEVELOPMENT_ARTIFACT_CLOSED_ROLES):
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.artifact_roles: closed set violation")
+    if not isinstance(value["role_constraints"], dict) or not value["role_constraints"]:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.role_constraints: non-empty object required")
+    for role_name in value["role_constraints"]:
+        if role_name not in DEVELOPMENT_ARTIFACT_CLOSED_ROLES:
+            fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+                 f"{label}.role_constraints.{role_name}: unknown role")
+        exact_fields(value["role_constraints"][role_name],
+                     {"description", "authority_role", "may_become_normative",
+                      "discovery", "supersession", "may_override_accepted_specifications"},
+                     f"{label}.role_constraints.{role_name}")
+    if not isinstance(value.get("overview_model"), dict) or not value["overview_model"].get("required_aspects"):
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.overview_model: required aspects required")
+    if not isinstance(value.get("plan_model"), dict) or not value["plan_model"].get("required_aspects"):
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.plan_model: required aspects required")
+    if not isinstance(value["role_relationships"], dict) or not value["role_relationships"]:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.role_relationships: non-empty object required")
+    if not isinstance(value["authority_separation"], dict) or not value["authority_separation"]:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.authority_separation: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_development_artifact_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, DEVELOPMENT_ARTIFACT_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "development-artifact-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected development-artifact fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_development_artifact_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, DEVELOPMENT_ARTIFACT_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "development-artifact-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected development-artifact schema identity")
+    if value["target_construction_identity"] != "development-artifacts" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-DEVELOPMENT-ARTIFACT-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -1110,6 +1238,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{FRAMEWORK_BOUNDARY_FIXTURE_PATH}: duplicate construction identity")
     identities.add(framework_boundary_fixtures_identity)
+
+    development_artifacts = strict_json(root / DEVELOPMENT_ARTIFACT_PATH)
+    development_artifacts_identity = validate_development_artifact(
+        development_artifacts, DEVELOPMENT_ARTIFACT_PATH
+    )
+    if development_artifacts_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{DEVELOPMENT_ARTIFACT_PATH}: duplicate construction identity")
+    identities.add(development_artifacts_identity)
+
+    development_artifact_schema = strict_json(root / DEVELOPMENT_ARTIFACT_SCHEMA_PATH)
+    development_artifact_schema_identity = validate_development_artifact_schema(
+        development_artifact_schema, DEVELOPMENT_ARTIFACT_SCHEMA_PATH
+    )
+    if development_artifact_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{DEVELOPMENT_ARTIFACT_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(development_artifact_schema_identity)
+
+    development_artifact_fixtures = strict_json(root / DEVELOPMENT_ARTIFACT_FIXTURE_PATH)
+    development_artifact_fixtures_identity = validate_development_artifact_fixtures(
+        development_artifact_fixtures, DEVELOPMENT_ARTIFACT_FIXTURE_PATH
+    )
+    if development_artifact_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{DEVELOPMENT_ARTIFACT_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(development_artifact_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

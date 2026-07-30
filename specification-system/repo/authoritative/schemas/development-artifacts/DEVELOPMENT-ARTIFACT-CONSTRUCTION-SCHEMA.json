@@ -1,0 +1,51 @@
+{
+  "construction_identity": "development-artifact-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed construction schema for development-artifact model validation without defining final manifest, identity, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "development-artifacts",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "artifact_roles",
+    "role_constraints",
+    "overview_model",
+    "plan_model",
+    "role_relationships",
+    "authority_separation",
+    "decision_basis",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "artifact_roles": "non-empty-unique-strings",
+    "role_constraints": "non-empty-object-with-closed-role-entries",
+    "overview_model": "non-empty-object-with-required-aspects-and-semantics",
+    "plan_model": "non-empty-object-with-required-aspects-and-semantics",
+    "role_relationships": "non-empty-object-with-closed-relationship-entries",
+    "authority_separation": "non-empty-object-with-framework-product-and-overview-sections",
+    "decision_basis": "non-empty-object-with-closed-decision-entries"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "development-artifact model"
+  ],
+  "unresolved_questions": [
+    "Final schema form may evolve as construction phases progress.",
+    "Concrete field-level constraints are implemented in the intrinsic validator."
+  ]
+}

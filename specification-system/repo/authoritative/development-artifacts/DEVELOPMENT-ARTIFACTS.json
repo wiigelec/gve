@@ -1,0 +1,297 @@
+{
+  "construction_identity": "development-artifacts",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed repository-neutral development artifact roles, overview model, and plan model that precede product authority without defining final identities, manifests, transport, or hosting-platform semantics.",
+  "normative": false,
+  "artifact_roles": [
+    "product-overview",
+    "implementation-plan",
+    "scratchpad",
+    "decision-record",
+    "governing-issue",
+    "detailed-scope",
+    "patch-plan",
+    "unresolved-question-record",
+    "validation-evidence-reference",
+    "review-evidence-reference"
+  ],
+  "role_constraints": {
+    "product-overview": {
+      "description": "The non-normative product-direction document that defines intended users, outcomes, capabilities, constraints, and success conditions.",
+      "authority_role": "directional",
+      "may_become_normative": false,
+      "discovery": "active-overview-discovery",
+      "supersession": "explicit-supersession",
+      "may_override_accepted_specifications": false
+    },
+    "implementation-plan": {
+      "description": "The non-normative construction planning document that defines work areas, dependency order, construction phases, transition criteria, and validation strategy.",
+      "authority_role": "directional",
+      "may_become_normative": false,
+      "discovery": "active-plan-discovery",
+      "supersession": "explicit-supersession",
+      "may_override_accepted_specifications": false
+    },
+    "scratchpad": {
+      "description": "A temporary development record for exploratory notes, analysis, and intermediate reasoning that is not authoritative for any product decision.",
+      "authority_role": "temporary",
+      "may_become_normative": false,
+      "discovery": "not-discovered",
+      "supersession": "implicit-replacement",
+      "may_override_accepted_specifications": false
+    },
+    "decision-record": {
+      "description": "A documented design or governance decision with rationale, alternatives considered, and the decision outcome.",
+      "authority_role": "advisory",
+      "may_become_normative": false,
+      "discovery": "referenced",
+      "supersession": "explicit-supersession",
+      "may_override_accepted_specifications": false
+    },
+    "governing-issue": {
+      "description": "The bounded work boundary for one governed mutation, defining authority interpretation, dependency boundary, artifact inventory, exclusions, and validation requirements.",
+      "authority_role": "governing",
+      "may_become_normative": false,
+      "discovery": "active-issue-discovery",
+      "supersession": "explicit-closure",
+      "may_override_accepted_specifications": false
+    },
+    "detailed-scope": {
+      "description": "The exact artifact inventory and mutation boundaries of a governing issue, derived from the issue's governing comment.",
+      "authority_role": "governing",
+      "may_become_normative": false,
+      "discovery": "issue-comment-discovery",
+      "supersession": "explicit-update",
+      "may_override_accepted_specifications": false
+    },
+    "patch-plan": {
+      "description": "The ordered sequence of coherent patches within one governing issue, each with its own mutation boundary and validation requirements.",
+      "authority_role": "governing",
+      "may_become_normative": false,
+      "discovery": "issue-comment-discovery",
+      "supersession": "explicit-update",
+      "may_override_accepted_specifications": false
+    },
+    "unresolved-question-record": {
+      "description": "An explicit deferred design or governance decision with a successor boundary that will resolve it.",
+      "authority_role": "advisory",
+      "may_become_normative": false,
+      "discovery": "explicit-listing",
+      "supersession": "explicit-resolution",
+      "may_override_accepted_specifications": false
+    },
+    "validation-evidence-reference": {
+      "description": "Evidence that validation has completed for an issue, including the validation command, result, and exact revision tested.",
+      "authority_role": "evidence",
+      "may_become_normative": false,
+      "discovery": "issue-comment-discovery",
+      "supersession": "explicit-update",
+      "may_override_accepted_specifications": false
+    },
+    "review-evidence-reference": {
+      "description": "Evidence that semantic review has completed for an issue, including reviewer identity, scope, and outcome.",
+      "authority_role": "evidence",
+      "may_become_normative": false,
+      "discovery": "issue-comment-discovery",
+      "supersession": "explicit-update",
+      "may_override_accepted_specifications": false
+    }
+  },
+  "overview_model": {
+    "description": "The product overview artifact must define the following semantic aspects. Every aspect is required unless marked optional.",
+    "required_aspects": [
+      "directional-non-normative-status",
+      "intended-users-and-outcomes",
+      "constraints-and-non-goals",
+      "major-capabilities",
+      "success-conditions",
+      "unresolved-questions",
+      "relationship-to-plans",
+      "supersession-and-active-overview-discovery",
+      "prohibition-against-overriding-accepted-specifications"
+    ],
+    "aspect_semantics": {
+      "directional-non-normative-status": {
+        "description": "The overview is explicitly directional and non-normative. It may not claim normative authority over accepted specifications.",
+        "constraints": ["must-not-claim-normative-authority", "must-declare-directional-status"]
+      },
+      "intended-users-and-outcomes": {
+        "description": "The overview must identify its intended audience and the outcomes it is designed to achieve.",
+        "constraints": []
+      },
+      "constraints-and-non-goals": {
+        "description": "The overview must explicitly state constraints and capabilities that are explicitly out of scope.",
+        "constraints": []
+      },
+      "major-capabilities": {
+        "description": "The overview must describe the major capabilities of the product or framework.",
+        "constraints": []
+      },
+      "success-conditions": {
+        "description": "The overview must define measurable or assessable conditions that indicate success.",
+        "constraints": []
+      },
+      "unresolved-questions": {
+        "description": "The overview must list open design or governance questions with successor boundaries.",
+        "constraints": ["must-not-pretend-unresolved-questions-are-resolved"]
+      },
+      "relationship-to-plans": {
+        "description": "The overview must describe how it relates to implementation plans. Plans are subordinate to the overview.",
+        "constraints": ["plans-are-subordinate-to-overview"]
+      },
+      "supersession-and-active-overview-discovery": {
+        "description": "The overview must define how it is superseded and how the active overview is discovered.",
+        "constraints": ["supersession-must-be-explicit", "active-overview-discovery-must-be-deterministic"]
+      },
+      "prohibition-against-overriding-accepted-specifications": {
+        "description": "The overview must state that it does not override accepted normative specifications. This is a non-negotiable constraint.",
+        "constraints": ["non-negotiable", "must-not-be-weakened-by-product-profiles"]
+      }
+    }
+  },
+  "plan_model": {
+    "description": "The implementation plan artifact must define the following semantic aspects. Every aspect is required unless marked optional.",
+    "required_aspects": [
+      "non-normative-status",
+      "work-areas",
+      "dependency-order",
+      "construction-phases",
+      "transition-criteria",
+      "expected-artifact-families",
+      "validation-strategy",
+      "risks",
+      "unresolved-design-decisions",
+      "predecessor-evidence",
+      "supersession-and-active-plan-discovery"
+    ],
+    "aspect_semantics": {
+      "non-normative-status": {
+        "description": "The plan is explicitly non-normative. Plans cannot become normative by detail, age, or repeated reference.",
+        "constraints": ["must-not-claim-normative-authority", "cannot-become-normative-by-detail-or-age"]
+      },
+      "work-areas": {
+        "description": "The plan must define the major work areas or functional groupings that the construction addresses.",
+        "constraints": []
+      },
+      "dependency-order": {
+        "description": "The plan must define the dependency order among work areas, phases, or artifact families.",
+        "constraints": ["dependencies-must-be-acyclic"]
+      },
+      "construction-phases": {
+        "description": "The plan must define construction phases with objectives, required work, and completion criteria.",
+        "constraints": []
+      },
+      "transition-criteria": {
+        "description": "The plan must define the criteria that must be met before transitioning between phases.",
+        "constraints": []
+      },
+      "expected-artifact-families": {
+        "description": "The plan must enumerate the artifact families expected to be produced.",
+        "constraints": []
+      },
+      "validation-strategy": {
+        "description": "The plan must describe how construction artifacts are validated and what constitutes passing validation.",
+        "constraints": []
+      },
+      "risks": {
+        "description": "The plan must identify risks that could affect the construction trajectory.",
+        "constraints": []
+      },
+      "unresolved-design-decisions": {
+        "description": "The plan must list design decisions that remain unresolved with successor boundaries.",
+        "constraints": ["must-not-pretend-unresolved-decisions-are-resolved"]
+      },
+      "predecessor-evidence": {
+        "description": "The plan must reference evidence from predecessor work that informs the current plan.",
+        "constraints": []
+      },
+      "supersession-and-active-plan-discovery": {
+        "description": "The plan must define how it is superseded and how the active plan is discovered.",
+        "constraints": ["supersession-must-be-explicit", "active-plan-discovery-must-be-deterministic"]
+      }
+    }
+  },
+  "role_relationships": {
+    "product-overview-governs": {
+      "source_roles": ["product-overview"],
+      "target_roles": ["implementation-plan"],
+      "description": "The overview governs the direction of the implementation plan."
+    },
+    "plan-defines-scope": {
+      "source_roles": ["implementation-plan"],
+      "target_roles": ["governing-issue", "detailed-scope"],
+      "description": "The implementation plan defines the scope within which governing issues operate."
+    },
+    "issue-contains-scope-and-patches": {
+      "source_roles": ["governing-issue"],
+      "target_roles": ["detailed-scope", "patch-plan"],
+      "description": "A governing issue contains a detailed scope and patch plan."
+    },
+    "issue-records-evidence": {
+      "source_roles": ["governing-issue"],
+      "target_roles": ["validation-evidence-reference", "review-evidence-reference"],
+      "description": "A governing issue collects validation and review evidence."
+    },
+    "decision-supports-plan": {
+      "source_roles": ["decision-record"],
+      "target_roles": ["implementation-plan", "detailed-scope"],
+      "description": "Decision records provide rationale for plan and scope decisions."
+    },
+    "unresolved-questions-deferred": {
+      "source_roles": ["product-overview", "implementation-plan"],
+      "target_roles": ["unresolved-question-record"],
+      "description": "Unresolved questions are deferred to successor boundaries."
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["product-overview", "implementation-plan"],
+      "may_not_define": ["scratchpad", "governing-issue", "detailed-scope", "patch-plan", "validation-evidence-reference", "review-evidence-reference"]
+    },
+    "product_authority": {
+      "may_define": ["product-overview", "implementation-plan"],
+      "may_instantiate": ["scratchpad", "decision-record", "governing-issue", "detailed-scope", "patch-plan", "unresolved-question-record", "validation-evidence-reference", "review-evidence-reference"],
+      "may_not_define": []
+    },
+    "overview_governs_plan": {
+      "overview_must_precede_plan": true,
+      "plan_must_not_contradict_overview": true,
+      "plan_may_extend_overview": true,
+      "overview_may_supersede_plan": true
+    }
+  },
+  "decision_basis": {
+    "overview_and_plan_distinct": {
+      "decision": "overview-and-plan-are-distinct-artifact-roles",
+      "rationale": "The overview defines product direction and is relatively stable. The plan defines the construction trajectory and changes as work progresses. Separating them prevents plan details from being mistaken for product direction and allows plans to be revised without changing direction."
+    },
+    "cannot_become_normative": {
+      "decision": "development-artifacts-cannot-become-normative-by-detail-or-age",
+      "rationale": "Non-normative development artifacts must not acquire normative authority through repeated reference, accumulated detail, or age. Only explicitly accepted specifications under product authority may claim normative status. This preserves the distinction between directional planning and accepted specification authority."
+    },
+    "discovery_is_deterministic": {
+      "decision": "active-overview-and-plan-discovery-is-deterministic",
+      "rationale": "A fresh repository inspection must be able to discover the active overview and active plan without prior conversation history. Deterministic discovery is achieved through explicit supersession records and well-known discovery paths."
+    },
+    "supersession_is_explicit": {
+      "decision": "supersession-is-explicit",
+      "rationale": "Silently replacing an overview or plan undermines repository-first continuity. Supersession must be recorded in the artifact itself and in any superseding artifact."
+    },
+    "missing_or_conflicting_records_fail_closed": {
+      "decision": "missing-or-conflicting-records-fail-closed",
+      "rationale": "If no active overview or plan can be discovered, or if multiple conflicting active records exist, repository validation must fail rather than silently picking one."
+    }
+  },
+  "expected_relationships": [
+    "Phase 1 framework boundary entity types (product-overview, product-implementation-plan)",
+    "future repository functional-area model (Phase 3)",
+    "future governed-development model (Phase 8)"
+  ],
+  "unresolved_questions": [
+    "Concrete overview and plan file formats and discovery paths are not defined (Phase 3).",
+    "Scratchpad lifecycle and retention policy are not defined.",
+    "Decision record format and binding to governing issues are not defined.",
+    "Issue comment structure and discovery protocol are not defined (Phase 8).",
+    "Validation and review evidence format and binding are not defined (Phase 8)."
+  ]
+}
