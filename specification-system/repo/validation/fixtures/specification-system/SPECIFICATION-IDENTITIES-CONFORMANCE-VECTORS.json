@@ -1,0 +1,74 @@
+{
+  "construction_identity": "specification-identities-conformance-vector-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide fixed repository-neutral construction vectors for specification-identity profile conformance while keeping fixtures and conformance artifacts separate.",
+  "normative": false,
+  "conformance_model": "authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json",
+  "execution_order": "ascending-vector-identifier",
+  "vectors": [
+    {
+      "vector_id": "specification-identities-profile-validates",
+      "behavior_class": "specification-identity-profile",
+      "classification": "positive",
+      "input": {
+        "kind": "specification-identity-profile",
+        "value": {
+          "manifest_model": {
+            "duplicate_policy": "reject",
+            "self_participation": false
+          }
+        }
+      },
+      "expected_outcome": {
+        "status": "validated",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": null,
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_specification_identities.py",
+      "coverage_tags": [
+        "manifest-and-revision-distinction",
+        "duplicate-member-rejection",
+        "schema-binding"
+      ]
+    },
+    {
+      "vector_id": "specification-identities-duplicate-policy-rejects",
+      "behavior_class": "specification-identity-profile",
+      "classification": "negative",
+      "input": {
+        "kind": "specification-identity-profile",
+        "value": {
+          "manifest_model": {
+            "duplicate_policy": "allow",
+            "self_participation": false
+          }
+        }
+      },
+      "expected_outcome": {
+        "status": "rejected",
+        "computed_identity": null,
+        "canonical_utf8_hex": null,
+        "diagnostic": "REPO-SPEC-SPECIFICATION-IDENTITY-001",
+        "evidence": null
+      },
+      "fixture_owner": "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json",
+      "validator_owner": "validation/intrinsic/validate_specification_identities.py",
+      "coverage_tags": [
+        "duplicate-member-rejection",
+        "stale-member-rejection"
+      ]
+    }
+  ],
+  "expected_relationships": [
+    "specification-identities-conformance-construction",
+    "specification-identities-construction",
+    "repository-specification-construction-set"
+  ],
+  "unresolved_questions": [
+    "Final accepted specification-identity conformance vectors are not defined.",
+    "Final accepted manifest and sealing semantics remain separately governed."
+  ]
+}
