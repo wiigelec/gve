@@ -53,7 +53,7 @@ class FrameworkBoundaryTests(unittest.TestCase):
     def test_template_initialization_decision_is_present(self) -> None:
         value = self.read_json("authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json")
         decision = value["decision_basis"]["template_initialization"]
-        self.assertIn("initialized product repository", decision["rationale"])
+        self.assertIn("Initialized product repository creation", decision["rationale"])
         self.assertEqual(
             decision["decision"],
             "initialized-product-repositories-derive-from-the-framework-template",

@@ -195,11 +195,11 @@
     },
     "artifact_copy_semantics": {
       "decision": "template-copies-framework-generic-artifacts-and-derives-instance-local-starting-artifacts",
-      "rationale": "Phase 14 copies framework-generic validation entry points, generic schemas, and level template structure; generates initial product overview and implementation-plan stubs and initial level roots; selects hosting-platform, language, and build profiles; and omits framework-source construction artifacts, framework tests, framework development tooling, and framework governance records."
+      "rationale": "Template initialization copies framework-generic validation entry points, generic schemas, and level template structure; generates initial product overview and implementation-plan stubs and initial level roots; selects hosting-platform, language, and build profiles; and omits framework-source construction artifacts, framework tests, framework development tooling, and framework governance records."
     },
     "template_initialization": {
       "decision": "initialized-product-repositories-derive-from-the-framework-template",
-      "rationale": "Phase 14 defines initialized product repository creation from the framework using the explicit inputs, outputs, copy semantics, and standalone validation capability recorded in the construction plan. The initialized repository preserves framework provenance and selected profiles, keeps product-specific content separate from framework authority, and does not depend on maintained framework source."
+      "rationale": "Initialized product repository creation uses explicit inputs, outputs, copy semantics, and standalone validation capability. The initialized repository preserves framework provenance and selected profiles, keeps product-specific content separate from framework authority, and does not depend on maintained framework source."
     },
     "template_provenance_preserved": {
       "decision": "provenance-is-preserved",
@@ -221,10 +221,10 @@
   "expected_relationships": [
     "Phase 0 transition baseline classification",
     "future repository functional-area model (Phase 4)",
-    "future template initialization and derivation (Phase 14)"
+    "future template initialization and derivation"
   ],
   "unresolved_questions": [
-    "Concrete template packaging format is not defined (Phase 14).",
+    "Concrete template packaging format is not defined.",
     "Concrete profile declarations and selection mechanism are not defined (Phase 11-12).",
     "Framework version numbering and revision identity scheme are not defined (Phase 16).",
     "Framework-to-product update protocol and migration semantics are not defined (Phase 15)."
