@@ -200,11 +200,11 @@
     },
     {
       "path": "validation/repository/REPOSITORY-VALIDATION.json",
-      "construction_identity": "repository-validation-placeholder",
+      "construction_identity": "repository-validation",
       "construction_status": "under-construction",
-      "responsibility": "Represent future external-repository validation without defining target semantics",
+      "responsibility": "Define the repository-validation architecture for framework validation without leaking product semantics",
       "classification": "redesigned-in-place",
-      "rationale": "Explicitly identified in the construction plan (line 283) for retain-and-redesign. Must be replaced with repository-validation architecture in Phase 13."
+      "rationale": "Explicitly identified in the construction plan (line 283) for retain-and-redesign. Replaced with repository-validation architecture in Phase 13."
     },
     {
       "path": "validation/lib/VALIDATION-LIBRARY.json",

@@ -60,6 +60,7 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
             "authoritative/level-model",
             "authoritative/source-layout",
             "authoritative/platform-profile",
+            "authoritative/schemas/repository-validation",
             "authoritative/schemas",
             "authoritative/schemas/platform-profile",
             "authoritative/conformance",
@@ -73,7 +74,12 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
                 self.assertTrue(str(raised.exception).startswith("REPO-SPEC-CONSTRUCTION-PATH-001:"))
 
     def test_each_new_validation_area_is_required(self) -> None:
-        for relative in ("validation/lib", "validation/repository", "validation/fixtures"):
+        for relative in (
+            "validation/lib",
+            "validation/repository",
+            "validation/fixtures",
+            "validation/fixtures/repository-validation",
+        ):
             with self.subTest(relative=relative):
                 copy = Path(self.temporary.name) / relative.replace("/", "-")
                 shutil.copytree(self.root, copy)
@@ -104,6 +110,11 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
 
     def test_declared_missing_github_profile_artifact_fails(self) -> None:
         path = self.root / "authoritative/platform-profile/GITHUB-HOSTING-PROFILE.json"
+        path.unlink()
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-001")
+
+    def test_declared_missing_repository_validation_artifact_fails(self) -> None:
+        path = self.root / "validation/repository/REPOSITORY-VALIDATION.json"
         path.unlink()
         self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-001")
 

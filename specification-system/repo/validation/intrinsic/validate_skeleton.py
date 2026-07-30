@@ -399,6 +399,84 @@ GITHUB_HOSTING_PROFILE_DECISIONS: tuple[str, ...] = (
     "branch_protection_supports_but_does_not_replace_governance",
     "releases_bind_to_exact_tagged_commits",
 )
+REPOSITORY_VALIDATION_PATH = "validation/repository/REPOSITORY-VALIDATION.json"
+REPOSITORY_VALIDATION_SCHEMA_PATH = "authoritative/schemas/repository-validation/REPOSITORY-VALIDATION-CONSTRUCTION-SCHEMA.json"
+REPOSITORY_VALIDATION_FIXTURE_PATH = "validation/fixtures/repository-validation/REPOSITORY-VALIDATION-FIXTURES.json"
+REPOSITORY_VALIDATION_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "validation_families", "validation_principles",
+    "discovery_rules", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+REPOSITORY_VALIDATION_REQUIRED_FIELDS = (
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "validation_families", "validation_principles",
+    "discovery_rules", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+)
+REPOSITORY_VALIDATION_FORBIDDEN_CLAIM_FIELDS = (
+    "accepted", "validated", "final_authority",
+    "product_semantics", "repository_specific_targets",
+)
+REPOSITORY_VALIDATION_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+REPOSITORY_VALIDATION_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+REPOSITORY_VALIDATION_FAMILIES: tuple[str, ...] = (
+    "overview_discovery",
+    "plan_discovery",
+    "repository_functional_layout",
+    "level_structure_and_dependency_direction",
+    "specification_artifact_classes",
+    "product_artifact_roles",
+    "git_state_and_revision_evidence",
+    "ai_session_continuity_requirements",
+    "governed_development_records",
+    "normative_change_evidence",
+    "source_correspondence",
+    "profile_declarations",
+    "generated_artifact_freshness",
+    "initialization_completeness",
+    "release_structure",
+)
+REPOSITORY_VALIDATION_PRINCIPLES: tuple[str, ...] = (
+    "deterministic",
+    "repository_local_where_practical",
+    "fail_closed",
+    "product_independent",
+    "exact_revision_aware",
+    "structured_diagnostics",
+    "no_semantic_product_leakage_heuristics",
+    "no_weakening_existing_checks",
+)
+REPOSITORY_VALIDATION_DISCOVERY_RULES: tuple[str, ...] = (
+    "overview_discovery",
+    "plan_discovery",
+    "explicit_supersession",
+    "conflicting_records_fail_closed",
+)
+REPOSITORY_VALIDATION_AUTHORITIES: tuple[str, ...] = (
+    "framework_authority",
+    "repository_validation_authority",
+)
+REPOSITORY_VALIDATION_AUTHORITY_FIELDS = {
+    "framework_authority": ("may_define", "may_not_define"),
+    "repository_validation_authority": ("may_implement", "must_not_redefine"),
+}
+REPOSITORY_VALIDATION_DECISIONS: tuple[str, ...] = (
+    "validation_scope",
+    "revision_scope",
+    "diagnostic_scope",
+    "authority_scope",
+    "product_independence",
+    "fail_closed_behavior",
+)
 GOVERNED_DEVELOPMENT_BOUNDED_STAGES: tuple[str, ...] = (
     "governing-work-item", "detailed-scope", "ordered-patch-plan",
     "accepted-base", "isolated-branch", "coherent-patch",
@@ -480,6 +558,9 @@ ARTIFACT_CLASSES = (
     "github-hosting-profile-construction",
     "github-hosting-profile-construction-schema",
     "github-hosting-profile-fixture-set-construction",
+    "repository-validation-construction",
+    "repository-validation-construction-schema",
+    "repository-validation-fixture-set-construction",
     "specification-artifact-class-construction",
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
@@ -515,6 +596,9 @@ ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
     "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
+    REPOSITORY_VALIDATION_PATH,
+    REPOSITORY_VALIDATION_SCHEMA_PATH,
+    REPOSITORY_VALIDATION_FIXTURE_PATH,
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
@@ -545,7 +629,6 @@ ARTIFACT_PATHS = (
     IDENTITY_CONFORMANCE_PATH,
     CONFORMANCE_SCHEMA_PATH,
     "validation/lib/VALIDATION-LIBRARY.json",
-    "validation/repository/REPOSITORY-VALIDATION.json",
     "validation/fixtures/VALIDATION-FIXTURES.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -593,6 +676,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/repository-model/REPOSITORY-MODEL.json",
     "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
+    REPOSITORY_VALIDATION_PATH,
+    REPOSITORY_VALIDATION_SCHEMA_PATH,
+    REPOSITORY_VALIDATION_FIXTURE_PATH,
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
@@ -648,6 +734,7 @@ REQUIRED_DIRECTORIES = (
     "authoritative/platform-profile",
     "authoritative/schemas/platform-profile",
     "validation/fixtures/platform-profile",
+    "authoritative/schemas/repository-validation",
     "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
     "authoritative/schemas/specification-system",
@@ -662,6 +749,7 @@ REQUIRED_DIRECTORIES = (
     "validation/fixtures/framework-boundary",
     "validation/fixtures/development-artifacts",
     "validation/fixtures/functional-areas",
+    "validation/fixtures/repository-validation",
     "authoritative/schemas/level-model",
     "validation/fixtures/level-model",
     "authoritative/product-artifacts",
@@ -715,6 +803,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_identity_conformance_vectors.py",
     "validation/tests/test_platform_profile.py",
     "validation/tests/test_github_hosting_profile.py",
+    "validation/tests/test_repository_validation.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 FORBIDDEN_NAME_PARTS = {
@@ -2448,6 +2537,104 @@ def validate_github_hosting_profile_schema(value: dict[str, Any], label: str) ->
     return identity
 
 
+def validate_repository_validation(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, REPOSITORY_VALIDATION_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-validation":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected repository-validation identity")
+
+    if list(value["validation_families"]) != list(REPOSITORY_VALIDATION_FAMILIES):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+             f"{label}.validation_families: framework family inventory mismatch")
+    if list(value["validation_principles"]) != list(REPOSITORY_VALIDATION_PRINCIPLES):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+             f"{label}.validation_principles: framework principle inventory mismatch")
+    if list(value["discovery_rules"]) != list(REPOSITORY_VALIDATION_DISCOVERY_RULES):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+             f"{label}.discovery_rules: framework discovery inventory mismatch")
+
+    authority_separation = value["authority_separation"]
+    if not isinstance(authority_separation, dict) or not authority_separation:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+             f"{label}.authority_separation: non-empty object required")
+    exact_fields(authority_separation, set(REPOSITORY_VALIDATION_AUTHORITIES), f"{label}.authority_separation")
+    for authority_name, authority in authority_separation.items():
+        if not isinstance(authority, dict) or set(authority) != set(REPOSITORY_VALIDATION_AUTHORITY_FIELDS[authority_name]):
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                 f"{label}.authority_separation.{authority_name}: closed authority declaration required")
+        for field_name, entries in authority.items():
+            if not isinstance(entries, list) or not entries:
+                fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: non-empty array required")
+            if any(not isinstance(entry, str) or not entry for entry in entries):
+                fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: string entries required")
+
+    decision_basis = value["decision_basis"]
+    if not isinstance(decision_basis, dict) or not decision_basis:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+             f"{label}.decision_basis: non-empty object required")
+    exact_fields(decision_basis, set(REPOSITORY_VALIDATION_DECISIONS), f"{label}.decision_basis")
+    for decision_name, decision in decision_basis.items():
+        if not isinstance(decision, dict) or set(decision) != {"decision", "rationale"}:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                 f"{label}.decision_basis.{decision_name}: closed decision record required")
+        if not isinstance(decision["decision"], str) or not decision["decision"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                 f"{label}.decision_basis.{decision_name}.decision: non-empty string required")
+        if not isinstance(decision["rationale"], str) or not decision["rationale"]:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001",
+                 f"{label}.decision_basis.{decision_name}.rationale: non-empty string required")
+    return identity
+
+
+def validate_repository_validation_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, REPOSITORY_VALIDATION_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-validation-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected repository-validation schema identity")
+    if value["target_construction_identity"] != "repository-validation" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-002",
+             f"{label}: target or closed boundary mismatch")
+    if value["required_fields"] != list(REPOSITORY_VALIDATION_REQUIRED_FIELDS):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-002",
+             f"{label}.required_fields: repository-validation field inventory mismatch")
+    if value["forbidden_claim_fields"] != list(REPOSITORY_VALIDATION_FORBIDDEN_CLAIM_FIELDS):
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-002",
+             f"{label}.forbidden_claim_fields: repository-validation forbidden claim inventory mismatch")
+    return identity
+
+
+def validate_repository_validation_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, REPOSITORY_VALIDATION_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "repository-validation-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected repository-validation fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2933,6 +3120,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{GITHUB_HOSTING_PROFILE_FIXTURE_PATH}: duplicate construction identity")
     identities.add(github_hosting_profile_fixtures_identity)
+
+    repository_validation = strict_json(root / REPOSITORY_VALIDATION_PATH)
+    repository_validation_identity = validate_repository_validation(
+        repository_validation, REPOSITORY_VALIDATION_PATH
+    )
+    if repository_validation_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{REPOSITORY_VALIDATION_PATH}: duplicate construction identity")
+    identities.add(repository_validation_identity)
+
+    repository_validation_schema = strict_json(root / REPOSITORY_VALIDATION_SCHEMA_PATH)
+    repository_validation_schema_identity = validate_repository_validation_schema(
+        repository_validation_schema, REPOSITORY_VALIDATION_SCHEMA_PATH
+    )
+    if repository_validation_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{REPOSITORY_VALIDATION_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(repository_validation_schema_identity)
+
+    repository_validation_fixtures = strict_json(root / REPOSITORY_VALIDATION_FIXTURE_PATH)
+    repository_validation_fixtures_identity = validate_repository_validation_fixtures(
+        repository_validation_fixtures, REPOSITORY_VALIDATION_FIXTURE_PATH
+    )
+    if repository_validation_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{REPOSITORY_VALIDATION_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(repository_validation_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
