@@ -1,0 +1,31 @@
+{
+  "construction_identity": "specification-identities-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative validator inputs for specification identity profile construction without defining accepted manifest authority.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-specification-identity-profile",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "duplicate-member-rejection",
+      "expected": "reject",
+      "model_overrides": {
+        "manifest_model.duplicate_policy": "allow"
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-SPECIFICATION-IDENTITY-001"
+    }
+  ],
+  "expected_relationships": [
+    "specification-identities-construction",
+    "specification-identities-construction-schema",
+    "repository-specification-construction-set"
+  ],
+  "unresolved_questions": [
+    "Final accepted specification identity revision semantics are not defined.",
+    "Final accepted manifest and sealing semantics remain separately governed."
+  ]
+}
