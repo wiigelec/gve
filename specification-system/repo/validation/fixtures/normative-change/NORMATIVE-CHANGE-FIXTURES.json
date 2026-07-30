@@ -1,0 +1,46 @@
+{
+  "construction_identity": "normative-change-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the normative-change construction document against the normative-change construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-normative-change-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "empty-acceptance-concepts",
+      "expected": "reject",
+      "model_overrides": {"acceptance_concepts": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-001"
+    },
+    {
+      "name": "unknown-field-in-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative normative-change document (NORMATIVE-CHANGE.json)",
+    "normative-change construction schema (NORMATIVE-CHANGE-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for individual acceptance safeguard violations.",
+    "Fixture coverage for supersession and replay requirement failures."
+  ]
+}

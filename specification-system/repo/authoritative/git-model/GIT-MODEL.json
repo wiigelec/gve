@@ -175,16 +175,16 @@
     }
   },
   "expected_relationships": [
-    "Phase 1 framework boundary entity types (framework-source-repository, framework-revision)",
-    "Phase 4 Level model (revision evidence for specification acceptance)",
-    "Phase 5 product artifact roles (source ownership, generated provenance)",
-    "future hosting-platform profile mechanism (Phase 11)",
-    "future GitHub hosting profile (Phase 12)"
+    "framework boundary entity types (framework-source-repository, framework-revision)",
+    "Level model (revision evidence for specification acceptance)",
+    "product artifact roles (source ownership, generated provenance)",
+    "future hosting-platform profile mechanism",
+    "future hosting-platform profile (GitHub)"
   ],
   "unresolved_questions": [
     "Concrete revision evidence format and binding mechanism are not defined.",
     "Merge conflict resolution protocol is not defined.",
     "Release ref naming convention and lifecycle are not defined.",
-    "Framework revision vs product revision distinction is not defined (Phase 14)."
+    "Framework revision vs product revision distinction is not defined."
   ]
 }

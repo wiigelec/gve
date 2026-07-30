@@ -1,14 +1,145 @@
 {
-  "construction_identity": "normative-change-placeholder",
+  "construction_identity": "normative-change",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future normative-change authority without defining acceptance semantics.",
+  "responsibility": "Define how candidate normative authority becomes accepted authority, including normative change proposals, exact revision binding, acceptance safeguards, evidence requirements, supersession, withdrawal, and rejection without prescribing hosting-platform-specific acceptance mechanisms.",
   "normative": false,
+  "acceptance_concepts": {
+    "normative_change_proposal": {
+      "description": "A formal proposal to change normative content, comprising an authority interpretation, exact candidate revision, change set, review evidence, and validation evidence.",
+      "required": true,
+      "safeguards": ["exact-revision-binding", "authority-interpretation-required"]
+    },
+    "exact_candidate_revision": {
+      "description": "The specific pinned commit hash that is proposed for acceptance. Floating branch references are not sufficient for acceptance evidence.",
+      "required": true,
+      "safeguards": ["pinned-commit-hash-required", "no-floating-branch-acceptance"]
+    },
+    "authority_interpretation": {
+      "description": "A statement of which authority sources govern the proposed change and how they are interpreted. Required for every normative change proposal.",
+      "required": true,
+      "safeguards": ["authority-must-be-explicit"]
+    },
+    "change_set": {
+      "description": "The exact inventory of files added, modified, or deleted in the proposal, with their paths and change types.",
+      "required": true,
+      "safeguards": ["exact-inventory-required"]
+    },
+    "review_evidence": {
+      "description": "Evidence that semantic review has been completed, including reviewer identity, scope of review, and outcome.",
+      "required": true,
+      "safeguards": ["review-required-before-acceptance"]
+    },
+    "validation_evidence": {
+      "description": "Evidence that all required validation passes on the exact candidate revision, including validation command, output, and result.",
+      "required": true,
+      "safeguards": ["validation-required-before-acceptance", "no-self-acceptance-by-validation-alone"]
+    },
+    "acceptance_decision": {
+      "description": "The formal governance decision to accept the proposed change as normative authority. Distinct from review outcome and validation result.",
+      "required": true,
+      "safeguards": ["acceptance-is-governance-decision", "acceptance-requires-both-review-and-validation"]
+    },
+    "accepted_revision": {
+      "description": "The exact revision that has been accepted as normative authority. Recorded with its commit hash and acceptance timestamp.",
+      "required": true,
+      "safeguards": ["exact-revision-recorded"]
+    },
+    "supersession": {
+      "description": "The process by which an accepted normative authority is replaced by a subsequent accepted normative authority. Must be explicit and recorded.",
+      "required": true,
+      "safeguards": ["supersession-must-be-explicit", "no-silent-authority-replacement"]
+    },
+    "withdrawal": {
+      "description": "The voluntary retraction of a normative change proposal before acceptance. A withdrawn proposal has no authority effect.",
+      "required": false,
+      "safeguards": ["withdrawal-must-be-explicit"]
+    },
+    "rejection": {
+      "description": "The formal decision to decline a normative change proposal. A rejected proposal may be revised and resubmitted.",
+      "required": false,
+      "safeguards": ["rejection-must-be-explicit"]
+    },
+    "replay_requirements": {
+      "description": "Requirements for reproducibility: the validation and review evidence must be reproducible from the exact candidate revision.",
+      "required": true,
+      "safeguards": ["evidence-must-be-reproducible"]
+    },
+    "post_merge_verification": {
+      "description": "Validation that must pass on the target branch after the accepted change is merged. Required before issue closure.",
+      "required": true,
+      "safeguards": ["post-merge-validation-required-before-closure"]
+    }
+  },
+  "acceptance_safeguards": {
+    "exact_revision_binding": {
+      "description": "Acceptance binds to an exact pinned commit hash. Floating branch references (e.g., 'main') are not acceptable for acceptance evidence.",
+      "enforced": true,
+      "fail_condition": "floating-branch-reference-used-for-acceptance"
+    },
+    "no_floating_branch_acceptance": {
+      "description": "A branch head may not serve as an accepted revision. Only pinned commits may be accepted.",
+      "enforced": true,
+      "fail_condition": "branch-head-used-as-accepted-revision"
+    },
+    "no_acceptance_without_required_evidence": {
+      "description": "Acceptance requires both review evidence and validation evidence. Missing evidence blocks acceptance.",
+      "enforced": true,
+      "fail_condition": "acceptance-declared-without-review-or-validation-evidence"
+    },
+    "no_self_acceptance_by_validation_alone": {
+      "description": "Passing validation does not constitute acceptance. Acceptance is a separate governance decision. The validation author may not self-accept.",
+      "enforced": true,
+      "fail_condition": "validation-output-used-as-acceptance-decision"
+    },
+    "no_silent_authority_replacement": {
+      "description": "Replacing an accepted normative authority without explicit supersession record is forbidden.",
+      "enforced": true,
+      "fail_condition": "accepted-authority-replaced-without-supersession"
+    },
+    "closure_requires_accepted_main_validation": {
+      "description": "Issue closure requires post-merge accepted-main validation to pass. Closure before accepted-main validation is forbidden.",
+      "enforced": true,
+      "fail_condition": "issue-closed-before-accepted-main-validation"
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["acceptance-concepts", "acceptance-safeguards", "evidence-requirements", "supersession-model"],
+      "may_not_define": ["hosting-platform-review-interfaces", "platform-acceptance-workflows", "ci-system-configuration"]
+    },
+    "product_authority": {
+      "may_implement": ["review-workflows", "acceptance-records", "evidence-collection"],
+      "must_not_redefine": ["acceptance-safeguards", "exact-revision-binding", "evidence-requirements"]
+    }
+  },
+  "decision_basis": {
+    "exact_revision_required": {
+      "decision": "acceptance-requires-exact-pinned-revision",
+      "rationale": "Floating branch references change over time and cannot provide reproducible acceptance evidence. Only a pinned commit hash provides an immutable, auditable acceptance target."
+    },
+    "acceptance_is_governance_not_validation": {
+      "decision": "acceptance-is-separate-governance-decision",
+      "rationale": "Validation verifies technical correctness. Review evaluates semantic correctness. Acceptance is a governance decision that considers both but is not equivalent to either. This prevents validation or review from being treated as automatic acceptance."
+    },
+    "explicit_supersession": {
+      "decision": "supersession-is-explicit-not-silent",
+      "rationale": "Replacing accepted normative authority without explicit supersession breaks auditability and undermines governance. Every supersession must be recorded with its predecessor, successor, and rationale."
+    },
+    "post_merge_verification": {
+      "decision": "accepted-main-validation-required-before-closure",
+      "rationale": "The merge of accepted changes into the target branch may introduce new issues (merge conflicts, integration failures) that are not present on the working branch. Post-merge verification ensures the target branch remains valid."
+    }
+  },
   "expected_relationships": [
-    "development-process authority",
-    "validation evidence"
+    "governed-development model (acceptance stage, review stage, evidence requirements)",
+    "Git model (exact revision, integration commit, merge)",
+    "source correspondence and implementation ownership",
+    "future hosting-platform profile mechanism"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Concrete acceptance record format and storage location are not defined.",
+    "Evidence format and binding mechanism are not defined.",
+    "Supersession record format and discovery protocol are not defined.",
+    "Replay verification mechanism is not defined."
   ]
 }
