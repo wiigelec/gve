@@ -1,0 +1,30 @@
+{
+  "construction_identity": "github-hosting-profile-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative GitHub hosting-profile construction document without defining final templates, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "github-hosting-profile",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "platform_name", "concept_mappings", "fallback_behavior",
+    "authority_separation", "decision_basis", "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "platform_name": {"type": "string"},
+    "concept_mappings": {"type": "object", "closed": true, "min_properties": 13, "max_properties": 13},
+    "fallback_behavior": {"type": "object", "closed": true, "min_properties": 2, "max_properties": 2},
+    "authority_separation": {"type": "object", "closed": true, "min_properties": 2, "max_properties": 2},
+    "decision_basis": {"type": "object", "closed": true, "min_properties": 9}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative GitHub hosting-profile document"
+  ],
+  "unresolved_questions": [
+    "Final schema versioning and migration policy are not defined.",
+    "Concrete selection semantics for multiple GitHub-specific conventions are not defined.",
+    "Long-term handling of merge queues and release automation remains under separate governance."
+  ]
+}

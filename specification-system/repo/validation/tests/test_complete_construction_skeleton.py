@@ -102,6 +102,11 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
         path.unlink()
         self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-001")
 
+    def test_declared_missing_github_profile_artifact_fails(self) -> None:
+        path = self.root / "authoritative/platform-profile/GITHUB-HOSTING-PROFILE.json"
+        path.unlink()
+        self.assert_failure("REPO-SPEC-CONSTRUCTION-PATH-001")
+
     def test_undeclared_participant_fails(self) -> None:
         source = self.root / "authoritative/identity/IDENTITY-AUTHORITY.json"
         target = self.root / "authoritative/identity/EXTRA-AUTHORITY.json"
