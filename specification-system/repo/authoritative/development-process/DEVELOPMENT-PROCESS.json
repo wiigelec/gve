@@ -1,14 +1,55 @@
 {
-  "construction_identity": "development-process-placeholder",
+  "construction_identity": "development-process-construction",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future development-process authority without defining process semantics.",
+  "responsibility": "Define the repository-neutral development process authority model, establishing the boundary between non-normative planning artifacts, governed development records, and normative change acceptance without defining final hosting-platform semantics or acceptance mechanics.",
   "normative": false,
+  "process_model": {
+    "artifact_classes": [
+      "product-overview",
+      "implementation-plan",
+      "governing-issue",
+      "detailed-scope",
+      "patch-plan",
+      "accepted-specification",
+      "validation-evidence",
+      "review-record"
+    ],
+    "authority_flow": "overview-governs-plan-governs-issue-governs-mutation",
+    "governed_lifecycle": [
+      "idea",
+      "overview",
+      "plan",
+      "candidate-specification",
+      "accepted-specification",
+      "product-artifact",
+      "validation",
+      "review",
+      "acceptance",
+      "integration",
+      "release",
+      "maintenance"
+    ]
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
   "expected_relationships": [
-    "non-normative planning areas",
-    "future normative-change authority"
+    "development artifact roles construction",
+    "governed development construction",
+    "normative change construction",
+    "repository specification construction set"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final hosting-platform issue, review, and CI binding semantics are not defined.",
+    "Acceptance mechanics and sealing semantics remain separately governed."
   ]
 }
