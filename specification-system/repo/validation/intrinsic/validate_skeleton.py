@@ -248,6 +248,26 @@ GOVERNED_DEVELOPMENT_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+SOURCE_LAYOUT_PATH = "authoritative/source-layout/SOURCE-LAYOUT.json"
+SOURCE_LAYOUT_SCHEMA_PATH = "authoritative/schemas/source-layout/SOURCE-LAYOUT-CONSTRUCTION-SCHEMA.json"
+SOURCE_LAYOUT_FIXTURE_PATH = "validation/fixtures/source-layout/SOURCE-LAYOUT-FIXTURES.json"
+SOURCE_LAYOUT_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "source_correspondence_concepts",
+    "implementation_ownership_rules", "source_classification",
+    "coverage_rules", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+SOURCE_LAYOUT_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+SOURCE_LAYOUT_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
 NORMATIVE_CHANGE_PATH = "authoritative/normative-change/NORMATIVE-CHANGE.json"
 NORMATIVE_CHANGE_SCHEMA_PATH = "authoritative/schemas/normative-change/NORMATIVE-CHANGE-CONSTRUCTION-SCHEMA.json"
 NORMATIVE_CHANGE_FIXTURE_PATH = "validation/fixtures/normative-change/NORMATIVE-CHANGE-FIXTURES.json"
@@ -339,7 +359,9 @@ ARTIFACT_CLASSES = (
     "repository-vocabulary-fixture-set-construction",
     "repository-validation-placeholder",
     "schema-boundary-placeholder",
-    "source-layout-placeholder",
+    "source-correspondence-construction",
+    "source-correspondence-construction-schema",
+    "source-correspondence-fixture-set-construction",
     "specification-artifact-class-construction",
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
@@ -387,7 +409,9 @@ ARTIFACT_PATHS = (
     NORMATIVE_CHANGE_PATH,
     NORMATIVE_CHANGE_SCHEMA_PATH,
     NORMATIVE_CHANGE_FIXTURE_PATH,
-    "authoritative/source-layout/SOURCE-LAYOUT.json",
+    SOURCE_LAYOUT_PATH,
+    SOURCE_LAYOUT_SCHEMA_PATH,
+    SOURCE_LAYOUT_FIXTURE_PATH,
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
@@ -476,6 +500,9 @@ NON_PLACEHOLDER_PATHS = {
     NORMATIVE_CHANGE_PATH,
     NORMATIVE_CHANGE_SCHEMA_PATH,
     NORMATIVE_CHANGE_FIXTURE_PATH,
+    SOURCE_LAYOUT_PATH,
+    SOURCE_LAYOUT_SCHEMA_PATH,
+    SOURCE_LAYOUT_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -485,7 +512,10 @@ REQUIRED_DIRECTORIES = (
     "authoritative/schemas/normative-change",
     "validation/fixtures/normative-change",
     "authoritative/level-model",
-    "authoritative/source-layout", "authoritative/schemas",
+    "authoritative/source-layout",
+    "authoritative/schemas/source-layout",
+    "validation/fixtures/source-layout",
+    "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
     "authoritative/schemas/specification-system",
     "validation/fixtures/specification-system",
@@ -1869,6 +1899,68 @@ def validate_normative_change_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_source_layout(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SOURCE_LAYOUT_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "source-correspondence":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected source-correspondence identity")
+    for section in ("source_correspondence_concepts", "implementation_ownership_rules"):
+        if not isinstance(value[section], dict) or not value[section]:
+            fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-001",
+                 f"{label}.{section}: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_source_layout_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SOURCE_LAYOUT_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "source-correspondence-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected source-correspondence fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_source_layout_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, SOURCE_LAYOUT_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "source-correspondence-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected source-correspondence schema identity")
+    if value["target_construction_identity"] != "source-correspondence" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2273,6 +2365,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{NORMATIVE_CHANGE_FIXTURE_PATH}: duplicate construction identity")
     identities.add(normative_change_fixtures_identity)
+
+    source_layout = strict_json(root / SOURCE_LAYOUT_PATH)
+    source_layout_identity = validate_source_layout(
+        source_layout, SOURCE_LAYOUT_PATH
+    )
+    if source_layout_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{SOURCE_LAYOUT_PATH}: duplicate construction identity")
+    identities.add(source_layout_identity)
+
+    source_layout_schema = strict_json(root / SOURCE_LAYOUT_SCHEMA_PATH)
+    source_layout_schema_identity = validate_source_layout_schema(
+        source_layout_schema, SOURCE_LAYOUT_SCHEMA_PATH
+    )
+    if source_layout_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{SOURCE_LAYOUT_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(source_layout_schema_identity)
+
+    source_layout_fixtures = strict_json(root / SOURCE_LAYOUT_FIXTURE_PATH)
+    source_layout_fixtures_identity = validate_source_layout_fixtures(
+        source_layout_fixtures, SOURCE_LAYOUT_FIXTURE_PATH
+    )
+    if source_layout_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{SOURCE_LAYOUT_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(source_layout_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

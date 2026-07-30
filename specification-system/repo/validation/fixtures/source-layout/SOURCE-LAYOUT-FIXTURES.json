@@ -1,0 +1,52 @@
+{
+  "construction_identity": "source-correspondence-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the source-correspondence construction document against the source-correspondence construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-source-correspondence-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "empty-source-correspondence-concepts",
+      "expected": "reject",
+      "model_overrides": {"source_correspondence_concepts": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-001"
+    },
+    {
+      "name": "empty-implementation-ownership-rules",
+      "expected": "reject",
+      "model_overrides": {"implementation_ownership_rules": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-001"
+    },
+    {
+      "name": "unknown-field-in-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-SOURCE-CORRESPONDENCE-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative source-correspondence document (SOURCE-LAYOUT.json)",
+    "source-correspondence construction schema (SOURCE-LAYOUT-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for individual source-correspondence concept violations.",
+    "Fixture coverage for implementation ownership rule integrity failures."
+  ]
+}

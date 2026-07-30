@@ -1,14 +1,161 @@
 {
-  "construction_identity": "source-layout-placeholder",
+  "construction_identity": "source-correspondence",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future source-layout authority without defining source semantics.",
+  "responsibility": "Define how product specifications correspond to maintained implementation, including level-to-source correspondence, source ownership, maintained versus generated source, specification coverage, implementation status, test and validator ownership, product-defined source layouts, language and build profiles, generated source treatment, partial implementation, and intentionally unimplemented specification behavior.",
   "normative": false,
+  "source_correspondence_concepts": {
+    "level_to_source_correspondence": {
+      "description": "Each product specification at Level 0 through Level 3 may declare correspondence to maintained source files. Correspondence binds specification constructs to implementation artifacts.",
+      "required": true,
+      "safeguards": ["explicit-correspondence-declaration", "no-implicit-source-binding"]
+    },
+    "source_ownership": {
+      "description": "Every maintained source file must have an explicit ownership attribution identifying the specification or specification set it implements.",
+      "required": true,
+      "safeguards": ["ownership-must-be-explicit", "source-without-ownership-fails-closed"]
+    },
+    "maintained_source": {
+      "description": "Source files that are hand-authored and directly maintained in the repository. Maintained source is the primary implementation artifact.",
+      "required": true,
+      "safeguards": ["maintained-source-must-be-distinguishable"]
+    },
+    "generated_source": {
+      "description": "Source files produced by a generator from maintained inputs. Generated source must be traceable to its generator and inputs.",
+      "required": true,
+      "safeguards": ["generated-source-provenance-required", "no-hand-editing-of-generated-source"]
+    },
+    "specification_coverage": {
+      "description": "The extent to which specification constructs are implemented by maintained or generated source. Coverage may be complete, partial, or intentionally unimplemented.",
+      "required": true,
+      "safeguards": ["coverage-declaration-required", "unimplemented-behavior-must-be-explicit"]
+    },
+    "implementation_status": {
+      "description": "The status of specification implementation, which may be fully-implemented, partially-implemented, not-implemented, or intentionally-unimplemented for each specification construct.",
+      "required": true,
+      "safeguards": ["status-declaration-required", "unknown-status-fails-closed"]
+    },
+    "test_ownership": {
+      "description": "Tests are owned by the specification or specification set they validate. Test ownership is distinct from source ownership.",
+      "required": true,
+      "safeguards": ["test-ownership-must-be-explicit"]
+    },
+    "validator_ownership": {
+      "description": "Validators are owned by the specification or specification set whose rules they enforce. Validator ownership is distinct from source and test ownership.",
+      "required": true,
+      "safeguards": ["validator-ownership-must-be-explicit"]
+    },
+    "product_defined_source_layout": {
+      "description": "A product repository may define its own source layout within the framework source area. The layout must be explicitly declared.",
+      "required": false,
+      "safeguards": ["layout-must-be-declared", "layout-may-not-redefine-framework-areas"]
+    },
+    "language_profile": {
+      "description": "A product profile may declare the programming language and associated conventions for its source files. Language conventions extend but do not redefine generic source correspondence rules.",
+      "required": false,
+      "safeguards": ["language-profile-extends-generic-rules"]
+    },
+    "build_profile": {
+      "description": "A product profile may declare the build system and conventions for building its source files. Build conventions extend but do not redefine generic source correspondence rules.",
+      "required": false,
+      "safeguards": ["build-profile-extends-generic-rules"]
+    },
+    "partial_implementation": {
+      "description": "A specification may be partially implemented. Partial implementation must be explicitly declared with the implemented and unimplemented portions identified.",
+      "required": false,
+      "safeguards": ["partial-implementation-must-be-explicit"]
+    },
+    "intentionally_unimplemented_behavior": {
+      "description": "Specification behavior that is intentionally not implemented must be explicitly declared as intentionally unimplemented, with rationale.",
+      "required": false,
+      "safeguards": ["intentionally-unimplemented-must-be-declared"]
+    }
+  },
+  "implementation_ownership_rules": {
+    "specification_has_implementation_status": {
+      "description": "Every specification construct may declare an implementation status. The status indicates whether the construct is implemented, unimplemented, or intentionally unimplemented.",
+      "enforced": true,
+      "fail_condition": "specification-construct-without-status"
+    },
+    "source_file_has_ownership": {
+      "description": "Every maintained source file must declare which specification it implements. Source files without ownership declaration are invalid.",
+      "enforced": true,
+      "fail_condition": "source-without-ownership"
+    },
+    "generated_source_has_provenance": {
+      "description": "Every generated source file must declare its generator and inputs. Generated source without provenance is invalid.",
+      "enforced": true,
+      "fail_condition": "generated-source-without-provenance"
+    },
+    "test_validator_ownership_separate": {
+      "description": "Test ownership and validator ownership are distinct from source ownership. A single artifact may have different owners for source, test, and validator roles.",
+      "enforced": true,
+      "fail_condition": "source-test-validator-ownership-collapsed"
+    }
+  },
+  "source_classification": {
+    "maintained_source": {
+      "description": "Hand-authored source files that are directly edited and maintained in the repository. Maintained source is the authoritative implementation of specification constructs.",
+      "properties": ["hand-authored", "directly-edited", "specification-ownership-declared"]
+    },
+    "generated_source": {
+      "description": "Source files produced by a deterministic generator from maintained inputs. Generated source may be regenerated and must not be hand-edited.",
+      "properties": ["generator-identified", "inputs-identified", "regenerable", "not-hand-edited"]
+    }
+  },
+  "coverage_rules": {
+    "coverage_must_be_declared": true,
+    "unimplemented_must_be_explicit": true,
+    "partial_coverage_allowed_with_explicit_boundary": true,
+    "intentionally_unimplemented_requires_rationale": true,
+    "missing_coverage_declaration_fails_closed": true
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["source-correspondence-concepts", "implementation-ownership-rules", "source-classification", "coverage-rules", "profile-separation-boundaries"],
+      "may_not_define": ["one-programming-language", "one-build-system", "one-source-layout", "product-specific-source-hierarchies"]
+    },
+    "product_profile_authority": {
+      "may_implement": ["language-profile", "build-profile", "product-defined-source-layout"],
+      "must_not_redefine": ["source-correspondence-concepts", "implementation-ownership-rules", "source-classification", "coverage-rules"]
+    }
+  },
+  "decision_basis": {
+    "source_correspondence_is_explicit": {
+      "decision": "correspondence-between-specifications-and-source-must-be-explicit",
+      "rationale": "Implicit source correspondence undermines traceability and auditability. Every specification construct that has an implementation must declare its implementing source files. Every source file must declare which specification it implements."
+    },
+    "no_universal_layout": {
+      "decision": "framework-does-not-impose-one-source-layout",
+      "rationale": "Different product domains use different source layouts, languages, and build systems. The framework defines generic source correspondence rules but must not require one particular layout, language, or build system."
+    },
+    "generated_source_traceability": {
+      "decision": "generated-source-must-be-traceable-to-its-generator",
+      "rationale": "Generated source that cannot be traced to its generator and inputs is indistinguishable from hand-authored source. Traceability ensures that generated content can be regenerated and its provenance verified."
+    },
+    "ownership_separation": {
+      "decision": "source-test-validator-ownership-are-distinct",
+      "rationale": "Source ownership, test ownership, and validator ownership serve different purposes. A specification may be implemented by one source file, tested by a different file, and validated by a third. Collapsing these roles reduces accountability."
+    },
+    "profiles_extend_not_redefine": {
+      "decision": "product-profiles-extend-generic-rules-without-redefining-them",
+      "rationale": "Language and build profiles add product-specific conventions but must not override generic source correspondence rules. This prevents profile-specific semantics from leaking into the portable framework."
+    }
+  },
   "expected_relationships": [
-    "repository model",
-    "Level-model authority"
+    "Level model (Level 0-3 specification-to-source correspondence)",
+    "product-artifact roles (maintained source, test, validator)",
+    "repository model (source areas, ownership, classification)",
+    "Git model (source file revision tracking)",
+    "AI-continuity model (source context for session recovery)",
+    "governed-development model (implementation evidence, validation ownership)",
+    "normative-change model (accepted specification revision binding)",
+    "future hosting-platform profile mechanism"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Concrete source-correspondence declaration format is not defined.",
+    "Implementation status vocabulary and valid values are not defined.",
+    "Generated source provenance record format is not defined.",
+    "Language and build profile schema definitions are not defined.",
+    "Partial implementation boundary declaration format is not defined."
   ]
 }

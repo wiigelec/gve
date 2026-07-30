@@ -1,0 +1,32 @@
+{
+  "construction_identity": "source-correspondence-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative source-correspondence construction document (SOURCE-LAYOUT.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "source-correspondence",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "source_correspondence_concepts",
+    "implementation_ownership_rules", "source_classification",
+    "coverage_rules", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "source_correspondence_concepts": {"type": "object", "closed": true, "min_properties": 12, "max_properties": 12},
+    "implementation_ownership_rules": {"type": "object", "closed": true, "min_properties": 4, "max_properties": 4},
+    "source_classification": {"type": "object", "closed": true},
+    "coverage_rules": {"type": "object", "closed": true},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative source-correspondence document (SOURCE-LAYOUT.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}
