@@ -14,6 +14,9 @@ if str(CONSTRUCTION_ROOT) not in sys.path:
 MODEL_PATH = "authoritative/specification-system/SPECIFICATION-IDENTITIES.json"
 SCHEMA_PATH = "authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json"
 FIXTURE_PATH = "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json"
+CONFORMANCE_PATH = "authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json"
+CONFORMANCE_SCHEMA_PATH = "authoritative/schemas/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE-SCHEMA.json"
+CONFORMANCE_VECTOR_PATH = "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json"
 
 EXPECTED_MODEL = {
     "construction_identity": "specification-identities-construction",
@@ -222,6 +225,193 @@ EXPECTED_FIXTURES = {
     ],
 }
 
+EXPECTED_CONFORMANCE = {
+    "construction_identity": "specification-identities-conformance-construction",
+    "construction_status": "under-construction",
+    "responsibility": "Define the closed construction-only authority, participation, execution, coverage, diagnostic, and availability boundaries for repository-neutral specification identity conformance without creating accepted normative conformance.",
+    "normative": False,
+    "conformance_scope": [
+        "specification-document-identity",
+        "specification-set-revision-identity",
+        "manifest-model",
+        "revision-model",
+        "schema-binding",
+        "conformance-binding",
+        "validator-binding",
+        "self-reference-handling",
+        "template-product-manifest-separation",
+    ],
+    "vector_classes": ["positive", "negative"],
+    "execution_contract": {
+        "discovery": "manifest-declared-specification-identity-conformance-vectors",
+        "execution_count": "exactly-once-per-declared-vector",
+        "ordering": "ascending-vector-identifier",
+        "missing_duplicate_unknown_or_unexecuted": "reject",
+        "result_comparison": "closed-deterministic-expected-outcome",
+    },
+    "diagnostic_contract": {
+        "accepted-construction-diagnostics": "exact-string",
+        "otherwise": "closed-diagnostic-class-with-required-stable-evidence",
+        "structural-errors-precede-semantic-execution": True,
+    },
+    "coverage_contract": {
+        "coverage_tags_required": True,
+        "every-required-behavior-covered": True,
+        "undeclared-coverage-tag": "reject",
+    },
+    "authority_boundary": {
+        "status": "construction-only",
+        "accepted-conformance": False,
+        "accepted-specification-authority": False,
+        "accepted-product-authority": False,
+        "vectors-define-new-semantics": False,
+    },
+    "unavailable_capabilities": [
+        "final-normative-schema",
+        "accepted-conformance",
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance",
+        "cutover",
+    ],
+    "expected_relationships": [
+        "specification identity profile construction",
+        "specification identity fixture construction",
+        "specification identity vector construction",
+        "repository specification construction manifest",
+    ],
+    "unresolved_questions": [
+        "Final normative specification-identity conformance authority is not defined.",
+        "Governing revision, bootstrap, sealing, acceptance, and cutover remain separately governed.",
+    ],
+}
+
+EXPECTED_CONFORMANCE_SCHEMA = {
+    "construction_identity": "specification-identities-conformance-construction-schema",
+    "construction_status": "under-construction",
+    "responsibility": "Constrain the exact closed construction-only representation of repository-neutral specification-identity conformance without claiming final normative schema authority.",
+    "normative": False,
+    "target_construction_identity": "specification-identities-conformance-construction",
+    "required_fields": [
+        "construction_identity",
+        "construction_status",
+        "responsibility",
+        "normative",
+        "conformance_scope",
+        "vector_classes",
+        "execution_contract",
+        "diagnostic_contract",
+        "coverage_contract",
+        "authority_boundary",
+        "unavailable_capabilities",
+        "expected_relationships",
+        "unresolved_questions",
+    ],
+    "closed": True,
+    "field_constraints": {
+        "exact_policy": EXPECTED_CONFORMANCE,
+        "unknown_fields": "reject",
+        "missing_fields": "reject",
+    },
+    "forbidden_claim_fields": [
+        "accepted",
+        "complete",
+        "completed",
+        "sealed",
+        "final",
+        "digest",
+        "content_digest",
+        "revision",
+        "specification_revision",
+        "aggregate_revision",
+    ],
+    "expected_relationships": [
+        "specification identity profile construction",
+        "specification identity conformance vectors",
+        "repository specification construction manifest",
+    ],
+    "unresolved_questions": [
+        "Final normative specification-identity conformance schema is not defined.",
+        "Governing revision, bootstrap, sealing, acceptance, and cutover remain separately governed.",
+    ],
+}
+
+EXPECTED_CONFORMANCE_VECTORS = {
+    "construction_identity": "specification-identities-conformance-vector-set-construction",
+    "construction_status": "under-construction",
+    "responsibility": "Provide fixed repository-neutral construction vectors for specification-identity profile conformance while keeping fixtures and conformance artifacts separate.",
+    "normative": False,
+    "conformance_model": CONFORMANCE_PATH,
+    "execution_order": "ascending-vector-identifier",
+    "vectors": [
+        {
+            "vector_id": "specification-identities-profile-validates",
+            "behavior_class": "specification-identity-profile",
+            "classification": "positive",
+            "input": {
+                "kind": "specification-identity-profile",
+                "value": {
+                    "manifest_model": {
+                        "duplicate_policy": "reject",
+                        "self_participation": False,
+                    }
+                },
+            },
+            "expected_outcome": {
+                "status": "validated",
+                "computed_identity": None,
+                "canonical_utf8_hex": None,
+                "diagnostic": None,
+                "evidence": None,
+            },
+            "fixture_owner": CONFORMANCE_VECTOR_PATH,
+            "validator_owner": "validation/intrinsic/validate_specification_identities.py",
+            "coverage_tags": [
+                "manifest-and-revision-distinction",
+                "duplicate-member-rejection",
+                "schema-binding",
+            ],
+        },
+        {
+            "vector_id": "specification-identities-duplicate-policy-rejects",
+            "behavior_class": "specification-identity-profile",
+            "classification": "negative",
+            "input": {
+                "kind": "specification-identity-profile",
+                "value": {
+                    "manifest_model": {
+                        "duplicate_policy": "allow",
+                        "self_participation": False,
+                    }
+                },
+            },
+            "expected_outcome": {
+                "status": "rejected",
+                "computed_identity": None,
+                "canonical_utf8_hex": None,
+                "diagnostic": "REPO-SPEC-SPECIFICATION-IDENTITY-001",
+                "evidence": None,
+            },
+            "fixture_owner": CONFORMANCE_VECTOR_PATH,
+            "validator_owner": "validation/intrinsic/validate_specification_identities.py",
+            "coverage_tags": [
+                "duplicate-member-rejection",
+                "stale-member-rejection",
+            ],
+        },
+    ],
+    "expected_relationships": [
+        "specification-identities-conformance-construction",
+        "specification-identities-construction",
+        "repository-specification-construction-set",
+    ],
+    "unresolved_questions": [
+        "Final accepted specification-identity conformance vectors are not defined.",
+        "Final accepted manifest and sealing semantics remain separately governed.",
+    ],
+}
+
 
 class ValidationFailure(Exception):
     pass
@@ -369,7 +559,91 @@ def validate_fixtures(value: dict[str, Any], label: str) -> str:
     return identity
 
 
-def validate(root: Path) -> tuple[str, str, str]:
+def validate_conformance(value: dict[str, Any], label: str) -> str:
+    exact_fields(
+        value,
+        {
+            "construction_identity",
+            "construction_status",
+            "responsibility",
+            "normative",
+            "conformance_scope",
+            "vector_classes",
+            "execution_contract",
+            "diagnostic_contract",
+            "coverage_contract",
+            "authority_boundary",
+            "unavailable_capabilities",
+            "expected_relationships",
+            "unresolved_questions",
+        },
+        label,
+    )
+    identity = validate_common(value, label)
+    if value != EXPECTED_CONFORMANCE:
+        fail("REPO-SPEC-SPECIFICATION-IDENTITY-004", f"{label}: construction conformance does not match policy")
+    return identity
+
+
+def validate_conformance_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(
+        value,
+        {
+            "construction_identity",
+            "construction_status",
+            "responsibility",
+            "normative",
+            "target_construction_identity",
+            "required_fields",
+            "closed",
+            "field_constraints",
+            "forbidden_claim_fields",
+            "expected_relationships",
+            "unresolved_questions",
+        },
+        label,
+    )
+    identity = validate_common(value, label)
+    if value != EXPECTED_CONFORMANCE_SCHEMA:
+        fail("REPO-SPEC-SPECIFICATION-IDENTITY-005", f"{label}: construction schema does not match policy")
+    return identity
+
+
+def validate_conformance_vectors(value: dict[str, Any], label: str) -> str:
+    exact_fields(
+        value,
+        {
+            "construction_identity",
+            "construction_status",
+            "responsibility",
+            "normative",
+            "conformance_model",
+            "execution_order",
+            "vectors",
+            "expected_relationships",
+            "unresolved_questions",
+        },
+        label,
+    )
+    identity = validate_common(value, label)
+    if value != EXPECTED_CONFORMANCE_VECTORS:
+        fail("REPO-SPEC-SPECIFICATION-IDENTITY-006", f"{label}: construction conformance vectors do not match policy")
+    vectors = value["vectors"]
+    if not isinstance(vectors, list) or not vectors:
+        fail("REPO-SPEC-SPECIFICATION-IDENTITY-006", f"{label}.vectors: non-empty array required")
+    names = set()
+    for vector in vectors:
+        if not isinstance(vector, dict) or set(vector) != {"vector_id", "behavior_class", "classification", "input", "expected_outcome", "fixture_owner", "validator_owner", "coverage_tags"}:
+            fail("REPO-SPEC-SPECIFICATION-IDENTITY-006", f"{label}.vectors: closed vector required")
+        if not isinstance(vector["vector_id"], str) or not vector["vector_id"] or vector["vector_id"] in names:
+            fail("REPO-SPEC-SPECIFICATION-IDENTITY-006", f"{label}.vectors: unique vector ids required")
+        if vector["classification"] not in {"positive", "negative"}:
+            fail("REPO-SPEC-SPECIFICATION-IDENTITY-006", f"{label}.vectors: invalid vector classification")
+        names.add(vector["vector_id"])
+    return identity
+
+
+def validate(root: Path) -> tuple[str, str, str, str, str, str]:
     model = strict_json(root / MODEL_PATH)
     model_identity = validate_model(model, MODEL_PATH)
 
@@ -378,7 +652,24 @@ def validate(root: Path) -> tuple[str, str, str]:
 
     fixtures = strict_json(root / FIXTURE_PATH)
     fixtures_identity = validate_fixtures(fixtures, FIXTURE_PATH)
-    return model_identity, schema_identity, fixtures_identity
+
+    conformance = strict_json(root / CONFORMANCE_PATH)
+    conformance_identity = validate_conformance(conformance, CONFORMANCE_PATH)
+
+    conformance_schema = strict_json(root / CONFORMANCE_SCHEMA_PATH)
+    conformance_schema_identity = validate_conformance_schema(conformance_schema, CONFORMANCE_SCHEMA_PATH)
+
+    conformance_vectors = strict_json(root / CONFORMANCE_VECTOR_PATH)
+    conformance_vectors_identity = validate_conformance_vectors(conformance_vectors, CONFORMANCE_VECTOR_PATH)
+
+    return (
+        model_identity,
+        schema_identity,
+        fixtures_identity,
+        conformance_identity,
+        conformance_schema_identity,
+        conformance_vectors_identity,
+    )
 
 
 def main(argv: list[str] | None = None) -> int:

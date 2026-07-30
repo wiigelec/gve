@@ -1,0 +1,112 @@
+{
+  "construction_identity": "specification-identities-conformance-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact closed construction-only representation of repository-neutral specification-identity conformance without claiming final normative schema authority.",
+  "normative": false,
+  "target_construction_identity": "specification-identities-conformance-construction",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "conformance_scope",
+    "vector_classes",
+    "execution_contract",
+    "diagnostic_contract",
+    "coverage_contract",
+    "authority_boundary",
+    "unavailable_capabilities",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "exact_policy": {
+      "construction_identity": "specification-identities-conformance-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the closed construction-only authority, participation, execution, coverage, diagnostic, and availability boundaries for repository-neutral specification identity conformance without creating accepted normative conformance.",
+      "normative": false,
+      "conformance_scope": [
+        "specification-document-identity",
+        "specification-set-revision-identity",
+        "manifest-model",
+        "revision-model",
+        "schema-binding",
+        "conformance-binding",
+        "validator-binding",
+        "self-reference-handling",
+        "template-product-manifest-separation"
+      ],
+      "vector_classes": [
+        "positive",
+        "negative"
+      ],
+      "execution_contract": {
+        "discovery": "manifest-declared-specification-identity-conformance-vectors",
+        "execution_count": "exactly-once-per-declared-vector",
+        "ordering": "ascending-vector-identifier",
+        "missing_duplicate_unknown_or_unexecuted": "reject",
+        "result_comparison": "closed-deterministic-expected-outcome"
+      },
+      "diagnostic_contract": {
+        "accepted-construction-diagnostics": "exact-string",
+        "otherwise": "closed-diagnostic-class-with-required-stable-evidence",
+        "structural-errors-precede-semantic-execution": true
+      },
+      "coverage_contract": {
+        "coverage_tags_required": true,
+        "every-required-behavior-covered": true,
+        "undeclared-coverage-tag": "reject"
+      },
+      "authority_boundary": {
+        "status": "construction-only",
+        "accepted-conformance": false,
+        "accepted-specification-authority": false,
+        "accepted-product-authority": false,
+        "vectors-define-new-semantics": false
+      },
+      "unavailable_capabilities": [
+        "final-normative-schema",
+        "accepted-conformance",
+        "governing-revision-binding",
+        "manifest-bootstrap",
+        "sealing",
+        "acceptance",
+        "cutover"
+      ],
+      "expected_relationships": [
+        "specification identity profile construction",
+        "specification identity fixture construction",
+        "specification identity vector construction",
+        "repository specification construction manifest"
+      ],
+      "unresolved_questions": [
+        "Final normative specification-identity conformance authority is not defined.",
+        "Governing revision, bootstrap, sealing, acceptance, and cutover remain separately governed."
+      ]
+    },
+    "unknown_fields": "reject",
+    "missing_fields": "reject"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "specification identity profile construction",
+    "specification identity conformance vectors",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Final normative specification-identity conformance schema is not defined.",
+    "Governing revision, bootstrap, sealing, acceptance, and cutover remain separately governed."
+  ]
+}

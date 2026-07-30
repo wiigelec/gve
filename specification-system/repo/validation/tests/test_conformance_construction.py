@@ -73,12 +73,29 @@ class ConformanceConstructionTests(unittest.TestCase):
             manifest["artifact_classes"],
         )
         self.assertIn(
+            "specification-identities-conformance-construction",
+            manifest["artifact_classes"],
+        )
+        self.assertIn(
+            "specification-identities-conformance-construction-schema",
+            manifest["artifact_classes"],
+        )
+        self.assertIn(
             "authoritative/conformance/IDENTITY-CONFORMANCE.json",
             manifest["artifact_paths"],
         )
         self.assertIn(
             "authoritative/schemas/conformance/"
             "IDENTITY-CONFORMANCE-CONSTRUCTION-SCHEMA.json",
+            manifest["artifact_paths"],
+        )
+        self.assertIn(
+            "authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json",
+            manifest["artifact_paths"],
+        )
+        self.assertIn(
+            "authoritative/schemas/conformance/"
+            "SPECIFICATION-IDENTITIES-CONFORMANCE-SCHEMA.json",
             manifest["artifact_paths"],
         )
 

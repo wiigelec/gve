@@ -621,6 +621,9 @@ ARTIFACT_CLASSES = (
     "specification-artifact-fixture-set-construction",
     "specification-identities-construction",
     "specification-identities-construction-schema",
+    "specification-identities-conformance-construction",
+    "specification-identities-conformance-construction-schema",
+    "specification-identities-conformance-vector-set-construction",
     "specification-identities-fixture-set-construction",
     "validation-fixtures-placeholder",
     "validation-library-construction",
@@ -662,6 +665,9 @@ ARTIFACT_PATHS = (
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
     "authoritative/specification-system/SPECIFICATION-IDENTITIES.json",
     "authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json",
+    "authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json",
+    "authoritative/schemas/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json",
     "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json",
     "authoritative/identity/IDENTITY-AUTHORITY.json",
     "authoritative/identity/IDENTITY-MODEL.json",
@@ -745,6 +751,9 @@ NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
     "authoritative/specification-system/SPECIFICATION-IDENTITIES.json",
     "authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json",
+    "authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json",
+    "authoritative/schemas/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json",
     "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json",
     "TRANSITION-BASELINE-CLASSIFICATION.json",
     "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
@@ -2836,10 +2845,20 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json: duplicate construction identity")
     identities.add(specification_artifact_fixtures_identity)
 
-    specification_identities_model, specification_identities_schema, specification_identities_fixtures = specification_identities_validator.validate(root)
+    (
+        specification_identities_model,
+        specification_identities_schema,
+        specification_identities_fixtures,
+        specification_identities_conformance,
+        specification_identities_conformance_schema,
+        specification_identities_conformance_vectors,
+    ) = specification_identities_validator.validate(root)
     for relative, identity in (
         ("authoritative/specification-system/SPECIFICATION-IDENTITIES.json", specification_identities_model),
         ("authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json", specification_identities_schema),
+        ("authoritative/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE.json", specification_identities_conformance),
+        ("authoritative/schemas/conformance/SPECIFICATION-IDENTITIES-CONFORMANCE-SCHEMA.json", specification_identities_conformance_schema),
+        ("validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-CONFORMANCE-VECTORS.json", specification_identities_conformance_vectors),
         ("validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json", specification_identities_fixtures),
     ):
         if identity in identities:

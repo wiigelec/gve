@@ -64,6 +64,20 @@ class SpecificationIdentitiesTests(unittest.TestCase):
         self.write_json(relative, value)
         self.assert_failure("REPO-SPEC-SPECIFICATION-IDENTITY-002")
 
+    def test_conformance_boundary_must_remain_closed(self) -> None:
+        relative = VALIDATOR.CONFORMANCE_PATH
+        value = self.read_json(relative)
+        value["authority_boundary"]["accepted-conformance"] = True
+        self.write_json(relative, value)
+        self.assert_failure("REPO-SPEC-SPECIFICATION-IDENTITY-004")
+
+    def test_conformance_vector_ids_must_remain_unique(self) -> None:
+        relative = VALIDATOR.CONFORMANCE_VECTOR_PATH
+        value = self.read_json(relative)
+        value["vectors"][1]["vector_id"] = value["vectors"][0]["vector_id"]
+        self.write_json(relative, value)
+        self.assert_failure("REPO-SPEC-SPECIFICATION-IDENTITY-006")
+
 
 if __name__ == "__main__":
     unittest.main()
