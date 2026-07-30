@@ -105,6 +105,63 @@
       "description": "A ref (typically a tag) that marks a specific commit as a release candidate or release.",
       "git_native": true,
       "semantic_role": "release-binding"
+    },
+    "release_candidate": {
+      "description": "A commit or ref prepared for release verification before a release decision is finalized.",
+      "git_native": true,
+      "semantic_role": "release-preparation"
+    },
+    "release_revision": {
+      "description": "The exact commit selected as a release revision.",
+      "git_native": true,
+      "semantic_role": "release-binding"
+    },
+    "package": {
+      "description": "A distributable artifact associated with a specific release revision.",
+      "git_native": true,
+      "semantic_role": "distribution-identity"
+    },
+    "version": {
+      "description": "A human-readable label for a release or maintenance line.",
+      "git_native": true,
+      "semantic_role": "version-identifier"
+    },
+    "compatibility": {
+      "description": "A constraint describing which revisions, packages, or migrations remain interoperable.",
+      "git_native": true
+    },
+    "migration": {
+      "description": "A governed transition from one revision, package, or layout to another.",
+      "git_native": true,
+      "semantic_role": "transition-binding"
+    },
+    "maintenance_branch": {
+      "description": "A branch used to carry post-release fixes for a maintained release line.",
+      "git_native": true,
+      "semantic_role": "maintenance-line"
+    },
+    "patch_release": {
+      "description": "A release that carries maintenance fixes without redefining the accepted release line.",
+      "git_native": true,
+      "semantic_role": "maintenance-release"
+    },
+    "deprecation": {
+      "description": "A controlled signal that a revision, package, or branch is superseded and should not be used for new work.",
+      "git_native": true
+    },
+    "end_of_life": {
+      "description": "The lifecycle point at which maintenance for a release line stops.",
+      "git_native": true
+    },
+    "framework_update": {
+      "description": "A framework revision that may be consumed by initialized repositories through governed update operations.",
+      "git_native": true,
+      "semantic_role": "framework-upgrade"
+    },
+    "template_instance_migration": {
+      "description": "A governed move from one template-derived instance state to another compatible state.",
+      "git_native": true,
+      "semantic_role": "instance-migration"
     }
   },
   "identity_distinctions": {
@@ -169,6 +226,30 @@
       "decision": "acceptance-and-release-require-exact-revision-validation",
       "rationale": "Floating branch validation (against the current HEAD of a branch) is useful for development feedback but cannot serve as acceptance or release evidence. Only validation against a pinned commit hash provides reproducible, auditable evidence."
     },
+    "release_binding": {
+      "decision": "release-requires-an-exact-release-revision",
+      "rationale": "A release designates a specific commit as distributable product identity. Release refs, tags, and package identifiers point to that exact revision but do not replace it."
+    },
+    "maintenance_binding": {
+      "decision": "maintenance-branches-carry-explicit-patch-releases",
+      "rationale": "Maintenance branches exist to produce patch releases and other post-release corrections without redefining the original release revision."
+    },
+    "package_identity": {
+      "decision": "package-identity-is-distinct-from-source-revision",
+      "rationale": "A package may be produced from a revision, but the package identity is not the same thing as the source revision that generated it."
+    },
+    "migration_binding": {
+      "decision": "framework-updates-and-template-instance-migrations-are-explicit-governed-transitions",
+      "rationale": "Framework updates and template-instance migrations are separate governed actions that move an initialized repository forward without collapsing release or acceptance semantics."
+    },
+    "framework_version_identity": {
+      "decision": "framework-version-is-distinct-from-product-version",
+      "rationale": "A framework revision may be versioned for framework distribution, but that version is not the same thing as a product release version derived from it."
+    },
+    "template_provenance_authority": {
+      "decision": "template-provenance-is-distinct-from-product-authority",
+      "rationale": "Template provenance identifies the framework source revision from which an initialized repository was created. It supports audit and migration, but it does not override product authority over the initialized repository."
+    },
     "unknown_local_state": {
       "decision": "unknown-local-state-blocks-unsafe-operations",
       "rationale": "If the local repository state cannot be determined (e.g., due to merge conflicts, dirty working tree, or missing objects), unsafe operations must be blocked rather than proceeding with incomplete state information."
@@ -178,6 +259,7 @@
     "framework boundary entity types (framework-source-repository, framework-revision)",
     "Level model (revision evidence for specification acceptance)",
     "product artifact roles (source ownership, generated provenance)",
+    "release and maintenance model",
     "future hosting-platform profile mechanism",
     "future hosting-platform profile (GitHub)"
   ],

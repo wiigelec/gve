@@ -212,6 +212,46 @@ GIT_MODEL_FIELDS = {
     "identity_distinctions", "state_model", "authority_separation",
     "decision_basis", "expected_relationships", "unresolved_questions",
 }
+GIT_MODEL_CLOSED_REVISION_CONCEPTS: tuple[str, ...] = (
+    "accepted_base",
+    "merge_base",
+    "ancestry",
+    "ahead_behind",
+    "staged_paths",
+    "unstaged_paths",
+    "untracked_paths",
+    "conflicted_paths",
+    "clean_state",
+    "changed_file_inventory",
+    "diff",
+    "exact_revision_validation",
+    "integration_commit",
+    "release_ref",
+    "release_candidate",
+    "release_revision",
+    "package",
+    "version",
+    "compatibility",
+    "migration",
+    "maintenance_branch",
+    "patch_release",
+    "deprecation",
+    "end_of_life",
+    "framework_update",
+    "template_instance_migration",
+)
+GIT_MODEL_CLOSED_DECISIONS: tuple[str, ...] = (
+    "git_generic_model",
+    "identity_distinction",
+    "exact_revision_validation",
+    "release_binding",
+    "maintenance_binding",
+    "package_identity",
+    "migration_binding",
+    "framework_version_identity",
+    "template_provenance_authority",
+    "unknown_local_state",
+)
 GIT_MODEL_SCHEMA_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "target_construction_identity", "required_fields",
@@ -1868,13 +1908,43 @@ def validate_git_model(value: dict[str, Any], label: str) -> str:
     if identity != "git-model":
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
              f"{label}: unexpected git-model identity")
-    for section in ("repository_concepts", "revision_concepts", "identity_distinctions", "state_model"):
+    for section in ("repository_concepts", "identity_distinctions", "state_model"):
         if not isinstance(value[section], dict) or not value[section]:
             fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
                  f"{label}.{section}: non-empty object required")
-    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+    revision_concepts = value["revision_concepts"]
+    if not isinstance(revision_concepts, dict) or not revision_concepts:
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+             f"{label}.revision_concepts: non-empty object required")
+    exact_fields(revision_concepts, set(GIT_MODEL_CLOSED_REVISION_CONCEPTS), f"{label}.revision_concepts")
+    for concept_name, concept in revision_concepts.items():
+        if not isinstance(concept, dict) or set(concept) != {"description", "git_native"} and set(concept) != {"description", "git_native", "semantic_role"}:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.revision_concepts.{concept_name}: closed concept record required")
+        if not isinstance(concept["description"], str) or not concept["description"]:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.revision_concepts.{concept_name}.description: non-empty string required")
+        if concept.get("git_native") is not True:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.revision_concepts.{concept_name}.git_native: must be true")
+        if "semantic_role" in concept and (not isinstance(concept["semantic_role"], str) or not concept["semantic_role"]):
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.revision_concepts.{concept_name}.semantic_role: non-empty string required")
+    decision_basis = value["decision_basis"]
+    if not isinstance(decision_basis, dict) or not decision_basis:
         fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
              f"{label}.decision_basis: non-empty object required")
+    exact_fields(decision_basis, set(GIT_MODEL_CLOSED_DECISIONS), f"{label}.decision_basis")
+    for decision_name, decision in decision_basis.items():
+        if not isinstance(decision, dict) or set(decision) != {"decision", "rationale"}:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.decision_basis.{decision_name}: closed decision record required")
+        if not isinstance(decision["decision"], str) or not decision["decision"]:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.decision_basis.{decision_name}.decision: non-empty string required")
+        if not isinstance(decision["rationale"], str) or not decision["rationale"]:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.decision_basis.{decision_name}.rationale: non-empty string required")
     return identity
 
 

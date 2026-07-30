@@ -23,6 +23,12 @@
       "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
     },
     {
+      "name": "unknown-revision-concept",
+      "expected": "reject",
+      "model_overrides": {"revision_concepts.unknown-concept": {"description": "not allowed", "git_native": true}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
       "name": "missing-identity-distinctions",
       "expected": "reject",
       "model_overrides": {"identity_distinctions": {}},
@@ -50,6 +56,12 @@
       "name": "empty-decision-basis",
       "expected": "reject",
       "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    },
+    {
+      "name": "empty-release-binding-decision",
+      "expected": "reject",
+      "model_overrides": {"decision_basis.release_binding": {}},
       "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
     }
   ],
