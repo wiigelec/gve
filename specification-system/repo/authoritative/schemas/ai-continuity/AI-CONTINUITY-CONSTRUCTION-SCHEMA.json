@@ -1,0 +1,30 @@
+{
+  "construction_identity": "ai-continuity-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative AI-continuity construction document (AI-CONTINUITY.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "ai-continuity",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "discovery_sequence", "session_behavior",
+    "orientation_protocol", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "discovery_sequence": {"type": "array", "min_items": 10, "max_items": 10, "item_type": "string", "items_unique": true},
+    "session_behavior": {"type": "object", "closed": true, "min_properties": 10, "max_properties": 10},
+    "orientation_protocol": {"type": "object", "closed": true, "min_properties": 2, "max_properties": 2},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative ai-continuity document (AI-CONTINUITY.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "construction_identity": "ai-continuity",
+  "construction_status": "under-construction",
+  "responsibility": "Define the repository-first AI-session continuity model, enabling independent chatbot sessions to orient from durable repository records, discover authority and governing work, report conflicts, and produce successor evidence without depending on prior conversation memory.",
+  "normative": false,
+  "discovery_sequence": [
+    "repository-readme",
+    "active-overview",
+    "active-implementation-plan",
+    "normative-authority-roots",
+    "governing-work-item",
+    "predecessor-evidence",
+    "local-git-state",
+    "current-bounded-action",
+    "mutation-boundary",
+    "returned-evidence-and-successor-decision"
+  ],
+  "session_behavior": {
+    "smallest_sufficient_context_recovery": {
+      "description": "A session must recover the smallest set of repository records needed to determine current state and next action. It must not require the full repository history.",
+      "required": true
+    },
+    "deterministic_authority_discovery": {
+      "description": "Authority discovery must follow a fixed deterministic sequence. Given the same repository state, every session must discover the same active authorities.",
+      "required": true
+    },
+    "explicit_conflict_reporting": {
+      "description": "Conflicting authority (multiple active overviews, multiple active plans, contradictory governing work) must be reported explicitly rather than silently resolved by picking one.",
+      "required": true
+    },
+    "no_conversation_memory_dependence": {
+      "description": "A session must not depend on prior conversation history to determine product purpose, authority roots, active plans, governing work, accepted base, current branch, mutation boundaries, validation requirements, or successor boundaries.",
+      "required": true
+    },
+    "no_remote_state_inference_from_local_state": {
+      "description": "A session must not infer unknown local state from remote state. If local state cannot be determined from Git objects and working tree, unsafe operations must be blocked.",
+      "required": true
+    },
+    "exact_artifact_and_mutation_boundaries": {
+      "description": "Every mutation must have an exact artifact inventory, an explicit accepted base commit, and a defined mutation scope. Approximate or inferred boundaries are forbidden.",
+      "required": true
+    },
+    "evidence_driven_continuation": {
+      "description": "Successor actions must derive from observed results of predecessor work. A session must reference predecessor evidence before initiating successor work.",
+      "required": true
+    },
+    "durable_unresolved_questions": {
+      "description": "Unresolved design or governance questions must be recorded in durable repository artifacts. They must not be maintained solely in session memory.",
+      "required": true
+    },
+    "durable_successor_boundaries": {
+      "description": "Successor boundaries (issues, phases, or work items that follow the current work) must be recorded in durable repository artifacts. They must not be maintained solely in session memory.",
+      "required": true
+    },
+    "human_decision_points": {
+      "description": "Decisions that affect authority, acceptance, or product direction must be presented to a human. A session must not self-authorize mutations that change normative content, accept work, or redefine scope.",
+      "required": true
+    }
+  },
+  "orientation_protocol": {
+    "steps": [
+      {
+        "step": 1,
+        "action": "read-repository-readme",
+        "description": "Read the repository README to determine product purpose, repository role, and initial navigation pointers.",
+        "discover": ["product-purpose", "repository-role", "navigation-pointers"]
+      },
+      {
+        "step": 2,
+        "action": "discover-active-overview",
+        "description": "Discover the active product overview via deterministic discovery path. If none or multiple, report conflict.",
+        "discover": ["active-overview", "overview-conflicts"]
+      },
+      {
+        "step": 3,
+        "action": "discover-active-plan",
+        "description": "Discover the active implementation plan via deterministic discovery path. If none or multiple, report conflict.",
+        "discover": ["active-plan", "plan-conflicts"]
+      },
+      {
+        "step": 4,
+        "action": "discover-normative-authority-roots",
+        "description": "Identify normative authority roots: accepted specifications, construction manifests, and schema authorities.",
+        "discover": ["normative-roots", "authority-hierarchy"]
+      },
+      {
+        "step": 5,
+        "action": "discover-governing-work-item",
+        "description": "Discover the current governing work item (issue) that defines mutation scope. If none is active, report that no work is in progress.",
+        "discover": ["governing-issue", "issue-scope", "issue-authority"]
+      },
+      {
+        "step": 6,
+        "action": "examine-predecessor-evidence",
+        "description": "Examine validation evidence, review evidence, and closure records from predecessor work items.",
+        "discover": ["validation-evidence", "review-evidence", "predecessor-outcomes"]
+      },
+      {
+        "step": 7,
+        "action": "assess-local-git-state",
+        "description": "Assess local Git state: current branch, HEAD commit, staged/unstaged/untracked paths, merge status.",
+        "discover": ["current-branch", "head-commit", "working-tree-state", "merge-status"]
+      },
+      {
+        "step": 8,
+        "action": "identify-current-bounded-action",
+        "description": "Identify the current bounded action within the governing work item: patch, validation, review, or closure.",
+        "discover": ["current-action", "action-scope", "action-dependencies"]
+      },
+      {
+        "step": 9,
+        "action": "determine-mutation-boundary",
+        "description": "Determine the exact mutation boundary: accepted base commit, artifact inventory, and exclusions.",
+        "discover": ["accepted-base", "artifact-inventory", "exclusions"]
+      },
+      {
+        "step": 10,
+        "action": "record-returned-evidence-and-successor",
+        "description": "Record evidence of completed work and identify the successor action or boundary.",
+        "discover": ["completion-evidence", "successor-action", "successor-boundary"]
+      }
+    ],
+    "conflict_handling": {
+      "no_active_overview": "block-mutation",
+      "multiple_active_overviews": "report-conflict-block-mutation",
+      "no_active_plan": "block-mutation",
+      "multiple_active_plans": "report-conflict-block-mutation",
+      "no_governing_issue": "report-no-work-in-progress",
+      "multiple_governing_issues": "report-conflict-block-mutation",
+      "unknown_local_state": "block-unsafe-operations",
+      "dirty_working_tree": "report-working-tree-state-require-confirmation"
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["continuity-model", "discovery-sequence", "orientation-protocol", "session-behavior-rules", "conflict-handling"],
+      "may_not_define": ["chatbot-implementation", "runtime-execution", "hosting-platform-ai-features", "conversation-storage-format"]
+    },
+    "product_authority": {
+      "may_implement": ["chatbot-integration", "session-recovery-tools"],
+      "must_not_redefine": ["discovery-sequence", "authority-priority", "conflict-handling-rules"]
+    }
+  },
+  "decision_basis": {
+    "repository_first_continuity": {
+      "decision": "continuity-is-repository-first-not-conversation-first",
+      "rationale": "Durable repository records must be the primary source of session orientation. Prior conversation memory is ephemeral and must not be required for correct operation. This ensures that any session can recover from repository state alone."
+    },
+    "deterministic_discovery": {
+      "decision": "authority-discovery-is-deterministic",
+      "rationale": "A fixed ordered discovery sequence ensures that every session produces the same authority interpretation from the same repository state. Non-deterministic discovery would produce inconsistent results across sessions."
+    },
+    "conflict_reporting_over_silent_resolution": {
+      "decision": "conflicts-are-reported-not-silently-resolved",
+      "rationale": "Silent conflict resolution hides governance problems. When multiple active overviews, plans, or governing issues exist, the session must report the conflict and block mutation rather than picking one arbitrarily."
+    },
+    "no_remote_state_inference": {
+      "decision": "unknown-local-state-is-not-inferred-from-remote-state",
+      "rationale": "Inferring local state from remote state produces incorrect results when the local repository has diverged, has uncommitted changes, or is in a conflicted state. Unsafe operations must be blocked when local state cannot be determined."
+    },
+    "human_decision_points": {
+      "decision": "authority-affecting-decisions-require-human-approval",
+      "rationale": "Mutations that change normative content, accept work, redefine scope, or affect product direction require human decision. An AI session must not self-authorize these actions."
+    }
+  },
+  "expected_relationships": [
+    "Phase 2 development artifact roles (governing-issue, detailed-scope, patch-plan)",
+    "Phase 6 Git model (local state, revision evidence, accepted base)",
+    "future governed-development model (Phase 8)",
+    "future normative-change and acceptance model (Phase 9)"
+  ],
+  "unresolved_questions": [
+    "Concrete README format and required discovery fields are not defined.",
+    "Orientation protocol file format and storage location are not defined.",
+    "Conflict resolution protocol (beyond blocking) is not defined.",
+    "Session evidence format and binding to governing issues are not defined (Phase 8)."
+  ]
+}

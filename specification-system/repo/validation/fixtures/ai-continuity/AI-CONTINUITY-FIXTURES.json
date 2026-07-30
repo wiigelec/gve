@@ -1,0 +1,52 @@
+{
+  "construction_identity": "ai-continuity-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the AI-continuity construction document against the AI-continuity construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-ai-continuity-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-discovery-sequence",
+      "expected": "reject",
+      "model_overrides": {"discovery_sequence": []},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001"
+    },
+    {
+      "name": "empty-session-behavior",
+      "expected": "reject",
+      "model_overrides": {"session_behavior": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001"
+    },
+    {
+      "name": "unknown-field-in-ai-continuity-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative ai-continuity document (AI-CONTINUITY.json)",
+    "ai-continuity construction schema (AI-CONTINUITY-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for orientation protocol step violations.",
+    "Fixture coverage for conflict handling rule violations."
+  ]
+}
