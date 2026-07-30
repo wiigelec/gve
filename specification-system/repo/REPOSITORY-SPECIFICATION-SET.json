@@ -32,7 +32,8 @@
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
     "validation-fixtures-placeholder",
-    "validation-library-construction"
+    "validation-library-construction",
+    "transition-baseline-classification"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -63,7 +64,8 @@
     "validation/fixtures/VALIDATION-FIXTURES.json",
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
-    "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json"
+    "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+    "TRANSITION-BASELINE-CLASSIFICATION.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",

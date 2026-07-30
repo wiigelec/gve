@@ -1,0 +1,574 @@
+{
+  "document_identity": "transition-baseline-classification",
+  "document_status": "under-construction",
+  "normative": false,
+  "governing_issue": 133,
+  "governing_phase": "Phase 0 — Transition baseline",
+  "classification_categories": [
+    "retained",
+    "retained-and-extended",
+    "redesigned-in-place",
+    "deferred",
+    "separated-into-future-product",
+    "superseded",
+    "removed-only-after-replacement"
+  ],
+  "artifacts": [
+    {
+      "path": "REPOSITORY-SPECIFICATION-SET.json",
+      "construction_identity": "repository-specification-construction-set",
+      "construction_status": "under-construction",
+      "responsibility": "Root construction manifest for the repository-specification construction set",
+      "classification": "retained",
+      "rationale": "Serves as the authoritative inventory and manifest for the construction tree. Will require updates when artifact classes or manifest semantics are finalized."
+    },
+    {
+      "path": "validate",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Shell entry point for repository-specification validation",
+      "classification": "retained",
+      "rationale": "Provides deterministic local validation. Shell wrapper may be superseded by the framework validation entry point in later phases."
+    },
+    {
+      "path": "authoritative/repository-model/REPOSITORY-MODEL.json",
+      "construction_identity": "repository-model",
+      "construction_status": "under-construction",
+      "responsibility": "Define the minimum repository-neutral vocabulary for later repository-specification profiles",
+      "classification": "retained",
+      "rationale": "Accepted construction from issue #127. Defines repository area kinds, authority and lifecycle classifications, tree entry kinds, ownership roles, path grammar, containment, and dependency rules."
+    },
+    {
+      "path": "authoritative/schemas/repository-model/REPOSITORY-VOCABULARY-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for repository-model vocabulary",
+      "classification": "retained",
+      "rationale": "Schema paired with REPOSITORY-MODEL.json. Accepted from issue #127."
+    },
+    {
+      "path": "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
+      "construction_identity": "specification-artifacts",
+      "construction_status": "under-construction",
+      "responsibility": "Define the repository-neutral construction classes and relationship vocabulary for specification artifacts",
+      "classification": "retained",
+      "rationale": "Accepted construction from issue #128. Defines closed artifact classes, class constraints, and relationship vocabulary."
+    },
+    {
+      "path": "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for specification-artifact classes",
+      "classification": "retained",
+      "rationale": "Schema paired with SPECIFICATION-ARTIFACTS.json. Accepted from issue #128."
+    },
+    {
+      "path": "authoritative/identity/IDENTITY-MODEL.json",
+      "construction_identity": "identity-model-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the repository-neutral semantic identity construction kernel",
+      "classification": "retained",
+      "rationale": "Accepted generic identity construction. Defines semantic identity, reference, aggregate, cycle, and verification boundaries."
+    },
+    {
+      "path": "authoritative/identity/CANONICAL-JSON.json",
+      "construction_identity": "canonical-json-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the repository-neutral canonical JSON construction boundary",
+      "classification": "retained",
+      "rationale": "Accepted canonical JSON construction. Provides deterministic serialization rules for identity preimages."
+    },
+    {
+      "path": "authoritative/identity/IDENTITY-FAMILY-MODEL.json",
+      "construction_identity": "identity-family-model-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the closed repository-neutral construction representation for identity-family declarations",
+      "classification": "retained",
+      "rationale": "Accepted identity-family construction model. Defines family declarations, own-identity modes, reference modes, and aggregate semantics."
+    },
+    {
+      "path": "authoritative/identity/IDENTITY-VERIFICATION.json",
+      "construction_identity": "identity-verification-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define closed repository-neutral construction behavior for identity derivation and verification",
+      "classification": "retained",
+      "rationale": "Accepted identity verification construction. Defines supplied-versus-computed verification, reference verification, and aggregate verification."
+    },
+    {
+      "path": "authoritative/conformance/IDENTITY-CONFORMANCE.json",
+      "construction_identity": "identity-conformance-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the closed repository-neutral construction representation for deterministic identity conformance vectors",
+      "classification": "retained",
+      "rationale": "Accepted identity conformance construction. Defines vector envelope, behavior classes, and coverage boundaries."
+    },
+    {
+      "path": "authoritative/conformance/CONFORMANCE-BOUNDARY.json",
+      "construction_identity": "conformance-boundary-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the closed construction-only authority, participation, execution, and coverage boundaries for identity conformance",
+      "classification": "retained",
+      "rationale": "Accepted conformance boundary construction. Defines conformance scope, vector classes, and fixture-vs-conformance distinctions."
+    },
+    {
+      "path": "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for canonical JSON",
+      "classification": "retained",
+      "rationale": "Schema paired with CANONICAL-JSON.json. Accepted from issue #114."
+    },
+    {
+      "path": "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for identity model",
+      "classification": "retained",
+      "rationale": "Schema paired with IDENTITY-MODEL.json. Accepted from issue #112."
+    },
+    {
+      "path": "authoritative/schemas/identity/IDENTITY-FAMILY-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for identity family declarations",
+      "classification": "retained",
+      "rationale": "Schema paired with IDENTITY-FAMILY-MODEL.json. Accepted from issue #118."
+    },
+    {
+      "path": "authoritative/schemas/identity/IDENTITY-VERIFICATION-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for identity verification",
+      "classification": "retained",
+      "rationale": "Schema paired with IDENTITY-VERIFICATION.json. Accepted from issue #120."
+    },
+    {
+      "path": "authoritative/schemas/conformance/IDENTITY-CONFORMANCE-CONSTRUCTION-SCHEMA.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Construction schema for identity conformance vectors",
+      "classification": "retained",
+      "rationale": "Schema paired with IDENTITY-CONFORMANCE.json. Accepted from issue #126."
+    },
+    {
+      "path": "authoritative/identity/IDENTITY-AUTHORITY.json",
+      "construction_identity": "identity-authority-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future portable identity authority without defining identity semantics",
+      "classification": "deferred",
+      "rationale": "Structural placeholder awaiting identity-profile reassessment in Phase 16. No substantive semantics are defined here."
+    },
+    {
+      "path": "authoritative/development-process/DEVELOPMENT-PROCESS.json",
+      "construction_identity": "development-process-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future development-process authority without defining process semantics",
+      "classification": "redesigned-in-place",
+      "rationale": "Explicitly identified in the construction plan (line 279) for retain-and-redesign. Current placeholder must be replaced with substantive development-process authority in a later phase."
+    },
+    {
+      "path": "authoritative/normative-change/NORMATIVE-CHANGE.json",
+      "construction_identity": "normative-change-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future normative-change authority without defining acceptance semantics",
+      "classification": "redesigned-in-place",
+      "rationale": "Explicitly identified in the construction plan (line 280) for retain-and-redesign. Current placeholder must be replaced with normative-change and acceptance model in Phase 9."
+    },
+    {
+      "path": "authoritative/level-model/LEVEL-MODEL.json",
+      "construction_identity": "level-model-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future Level-model authority without defining Level semantics",
+      "classification": "redesigned-in-place",
+      "rationale": "Explicitly identified in the construction plan (line 281) for retain-and-redesign. Current placeholder must be replaced with Level 0-3 specification model in Phase 4."
+    },
+    {
+      "path": "authoritative/source-layout/SOURCE-LAYOUT.json",
+      "construction_identity": "source-layout-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future source-layout authority without defining source semantics",
+      "classification": "redesigned-in-place",
+      "rationale": "Explicitly identified in the construction plan (line 282) for retain-and-redesign. Current placeholder must be replaced with source-layout authority in Phase 10."
+    },
+    {
+      "path": "authoritative/schemas/SCHEMA-BOUNDARY.json",
+      "construction_identity": "schema-boundary-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent the future schema authority boundary without defining final schemas",
+      "classification": "redesigned-in-place",
+      "rationale": "Placeholder identified in the construction baseline as general schema boundary. Will be replaced when schema and conformance are hardened in Phase 18."
+    },
+    {
+      "path": "validation/repository/REPOSITORY-VALIDATION.json",
+      "construction_identity": "repository-validation-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent future external-repository validation without defining target semantics",
+      "classification": "redesigned-in-place",
+      "rationale": "Explicitly identified in the construction plan (line 283) for retain-and-redesign. Must be replaced with repository-validation architecture in Phase 13."
+    },
+    {
+      "path": "validation/lib/VALIDATION-LIBRARY.json",
+      "construction_identity": "validation-library-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define the closed construction-only boundaries for reusable repository-specification validation mechanisms",
+      "classification": "retained",
+      "rationale": "Accepted validation library construction from issue #124. Defines module API, diagnostic, dependency, and integration boundaries."
+    },
+    {
+      "path": "validation/lib/__init__.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Python package initialization for validation library",
+      "classification": "retained",
+      "rationale": "Package init for validation.lib module tree."
+    },
+    {
+      "path": "validation/lib/strict_json.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Strict JSON parsing with UTF-8, malformed-json, duplicate-member, and non-standard-constant rejection",
+      "classification": "retained",
+      "rationale": "Core reusable validation library module. Provides strict JSON loading used by canonical JSON and identity construction."
+    },
+    {
+      "path": "validation/lib/canonical_json.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON v1 serialization implementation",
+      "classification": "retained",
+      "rationale": "Core reusable validation library module. Implements canonical-json-v1 value validation, ordering, and output."
+    },
+    {
+      "path": "validation/lib/identity.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity construction logic for semantic identity, reference, aggregate, and verification",
+      "classification": "retained",
+      "rationale": "Core reusable validation library module. Implements family resolution, identity derivation, and verification behavior."
+    },
+    {
+      "path": "validation/lib/contracts.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Contract validation for construction schema constraints",
+      "classification": "retained",
+      "rationale": "Core reusable validation library module. Implements record contract validation and schema enforcement."
+    },
+    {
+      "path": "validation/intrinsic/validate_skeleton.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Main intrinsic repository-specification skeleton validator",
+      "classification": "retained",
+      "rationale": "Central validator entry point. Orchestrates all intrinsic validation checks. Accepted from issue #108 and extended through multiple subsequent issues."
+    },
+    {
+      "path": "validation/intrinsic/validate_canonical_json.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON intrinsic validator",
+      "classification": "retained",
+      "rationale": "Validation module for canonical JSON construction conformance."
+    },
+    {
+      "path": "validation/intrinsic/validate_identity_construction.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity construction intrinsic validator",
+      "classification": "retained",
+      "rationale": "Validation module for identity model, family, and verification construction rules."
+    },
+    {
+      "path": "validation/intrinsic/identity_behavior_adapter.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity behavior adapter for conformance vector execution",
+      "classification": "retained",
+      "rationale": "Adapter layer between conformance vectors and identity construction logic."
+    },
+    {
+      "path": "validation/tests/test_construction_skeleton.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for the construction skeleton validator",
+      "classification": "retained",
+      "rationale": "Focused permanent tests from issue #108 and subsequent extensions."
+    },
+    {
+      "path": "validation/tests/test_complete_construction_skeleton.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Complete construction skeleton validation tests",
+      "classification": "retained",
+      "rationale": "Comprehensive tests for the complete construction skeleton."
+    },
+    {
+      "path": "validation/tests/test_repository_vocabulary.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for repository vocabulary construction",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #127 for repository vocabulary rules."
+    },
+    {
+      "path": "validation/tests/test_specification_artifacts.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for specification artifact classes and relationships",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #128 for artifact classification and relationship rules."
+    },
+    {
+      "path": "validation/tests/test_canonical_json.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for canonical JSON construction",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #114 for canonical JSON serialization rules."
+    },
+    {
+      "path": "validation/tests/test_identity_construction.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for identity model construction",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #112 for generic identity construction."
+    },
+    {
+      "path": "validation/tests/test_identity_family.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for identity-family construction",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #118 for identity-family declaration rules."
+    },
+    {
+      "path": "validation/tests/test_identity_behavior.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for identity behavior construction",
+      "classification": "retained",
+      "rationale": "Focused tests for identity behavior adapter and fixture execution."
+    },
+    {
+      "path": "validation/tests/test_identity_conformance_vectors.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for identity conformance vector execution",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #126 for conformance vector validation."
+    },
+    {
+      "path": "validation/tests/test_validation_library.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for validation library module contracts",
+      "classification": "retained",
+      "rationale": "Focused tests from issue #124 for validation library boundaries."
+    },
+    {
+      "path": "validation/tests/test_validation_library_integration.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Integration tests for validation library modules",
+      "classification": "retained",
+      "rationale": "Integration tests from issue #124 for cross-module validation library behavior."
+    },
+    {
+      "path": "validation/tests/test_repository_validation_entrypoint.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for the repository validation entry point",
+      "classification": "retained",
+      "rationale": "Tests for the validate script and validation orchestration."
+    },
+    {
+      "path": "validation/tests/test_conformance_construction.py",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Tests for conformance construction boundaries",
+      "classification": "retained",
+      "rationale": "Tests for conformance boundary, vector envelope, and fixture-vs-conformance distinctions."
+    },
+    {
+      "path": "validation/fixtures/VALIDATION-FIXTURES.json",
+      "construction_identity": "validation-fixtures-placeholder",
+      "construction_status": "under-construction",
+      "responsibility": "Represent synthetic validator-test fixtures that are not conformance authority",
+      "classification": "redesigned-in-place",
+      "rationale": "Placeholder for overall validation fixture registry. Will be replaced when fixture and conformance hardening occurs in Phase 18."
+    },
+    {
+      "path": "validation/fixtures/repository-model/REPOSITORY-VOCABULARY-FIXTURES.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Fixtures for repository vocabulary validation",
+      "classification": "retained",
+      "rationale": "Fixture set paired with repository-vocabulary tests from issue #127."
+    },
+    {
+      "path": "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Fixtures for specification artifact class validation",
+      "classification": "retained",
+      "rationale": "Fixture set paired with specification-artifact tests from issue #128."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/duplicate-key.input.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON negative fixture: duplicate key rejection",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/floating-point.input.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON negative fixture: floating-point rejection",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/object-reordered.canonical.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON positive fixture: expected canonical output for reordered input",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/object-reordered.input.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON positive fixture: reordered object input",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/surrogate.input.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON negative fixture: surrogate character rejection",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/unicode.canonical.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON positive fixture: expected canonical output for unicode input",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/canonical-json/unicode.input.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Canonical JSON positive fixture: unicode input",
+      "classification": "retained",
+      "rationale": "Fixture for canonical JSON construction testing."
+    },
+    {
+      "path": "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity conformance vector set for canonical JSON, identity family, and verification testing",
+      "classification": "retained",
+      "rationale": "Conformance fixture set from issue #126. Contains positive and negative conformance vectors."
+    },
+    {
+      "path": "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity behavior fixtures for adapter-driven testing",
+      "classification": "retained",
+      "rationale": "Fixture set for identity behavior adapter and conformance vector execution."
+    },
+    {
+      "path": "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Identity family declaration fixtures for positive and negative validation",
+      "classification": "retained",
+      "rationale": "Fixture set from issue #118 for identity-family declaration rules."
+    },
+    {
+      "path": "authoritative/schemas/conformance/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for conformance schema directory",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for the conformance schemas area."
+    },
+    {
+      "path": "authoritative/schemas/identity/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for identity schema directory",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for the identity schemas area."
+    },
+    {
+      "path": "derived/markdown/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for derived markdown output directory",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for the derived artifacts area."
+    },
+    {
+      "path": "derived/markdown/conformance/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for derived conformance markdown",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for conformance-derived projections."
+    },
+    {
+      "path": "derived/markdown/identity/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for derived identity markdown",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for identity-derived projections."
+    },
+    {
+      "path": "validation/fixtures/identity/README.md",
+      "construction_identity": null,
+      "construction_status": null,
+      "responsibility": "Documentation for identity fixture directory",
+      "classification": "retained",
+      "rationale": "Directory-level documentation for the identity fixtures area."
+    }
+  ],
+  "retained_generic_foundations": [
+    "Canonical JSON construction (CANONICAL-JSON.json + canonical_json.py)",
+    "Generic semantic identity model (IDENTITY-MODEL.json + identity.py)",
+    "Identity-family declarations (IDENTITY-FAMILY-MODEL.json)",
+    "Identity verification and aggregate construction (IDENTITY-VERIFICATION.json)",
+    "Repository-neutral path normalization and area vocabulary (REPOSITORY-MODEL.json)",
+    "Authority and lifecycle classifications (REPOSITORY-MODEL.json)",
+    "Containment, ownership, and dependency direction rules (REPOSITORY-MODEL.json)",
+    "Specification artifact classes and relationships (SPECIFICATION-ARTIFACTS.json)",
+    "Schema, conformance, validator, fixture, and projection relationships (SPECIFICATION-ARTIFACTS.json)",
+    "Construction manifest inventory (REPOSITORY-SPECIFICATION-SET.json)",
+    "Repository-local fail-closed validation (validate, validate_skeleton.py)",
+    "Product-independent validation library (strict_json, contracts, canonical_json, identity modules)"
+  ],
+  "placeholder_artifacts_requiring_redesign": [
+    "authoritative/development-process/DEVELOPMENT-PROCESS.json — Phase 8/9",
+    "authoritative/normative-change/NORMATIVE-CHANGE.json — Phase 9",
+    "authoritative/level-model/LEVEL-MODEL.json — Phase 4",
+    "authoritative/source-layout/SOURCE-LAYOUT.json — Phase 10",
+    "validation/repository/REPOSITORY-VALIDATION.json — Phase 13",
+    "authoritative/schemas/SCHEMA-BOUNDARY.json — Phase 18",
+    "validation/fixtures/VALIDATION-FIXTURES.json — Phase 18"
+  ],
+  "gve_product_semantics_noted_for_separation": [
+    "specs/ levels 0-3 contain GVE-specific product semantics (governed execution, workflows, operations, plugins, effects, evidence, results). These belong to the future GVE product, not the reusable framework template.",
+    "src/scf_governed_executor/ contains the bootstrap executor implementation. It remains as bootstrap development infrastructure.",
+    "src/gve/ contains the GVE product CLI. It belongs to the future GVE product."
+  ]
+}

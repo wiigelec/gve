@@ -109,6 +109,7 @@ ARTIFACT_CLASSES = (
     "specification-artifact-fixture-set-construction",
     "validation-fixtures-placeholder",
     "validation-library-construction",
+    "transition-baseline-classification",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -140,6 +141,7 @@ ARTIFACT_PATHS = (
     "validation/fixtures/identity/identity-family/IDENTITY-FAMILY-FIXTURES.json",
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
     "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
+    "TRANSITION-BASELINE-CLASSIFICATION.json",
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -161,6 +163,7 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
+    "TRANSITION-BASELINE-CLASSIFICATION.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
