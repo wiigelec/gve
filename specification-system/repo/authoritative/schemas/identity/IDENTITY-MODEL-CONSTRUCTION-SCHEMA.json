@@ -51,7 +51,31 @@
           "identity-only-and-identity-plus-value-reference-values",
           "unordered-members-sorted-by-semantic-identity",
           "construction-only-verification-evidence"
-        ]
+        ],
+        "semantic_identity_scope": {
+          "decision": "semantic-identity-requirements-are-artifact-specific",
+          "rationale": "Semantic identity is required for specification document identities, specification-set revisions, overview revision identities, plan revision identities, template revision identities, initialized instance identities, repository-layout revision identities, validation evidence identities, release identities, package identities, generated artifact identities, governing revision bindings, and Git identity bindings."
+        },
+        "no_raw_digest_fallback": {
+          "decision": "raw-digest-fallback-is-disallowed",
+          "rationale": "Identity selection must be explicit and family-qualified; raw digests are not a substitute for a declared semantic identity profile."
+        },
+        "git_object_identity_distinct": {
+          "decision": "git-object-identities-remain-distinct",
+          "rationale": "Git object identities are revision-specific content addresses and must remain distinct from semantic identities and their revision bindings."
+        },
+        "path_inputs_only": {
+          "decision": "paths-are-inputs-only-when-explicitly-declared",
+          "rationale": "A repository path may participate in identity construction only when a family declaration explicitly says it is part of the semantic preimage."
+        },
+        "closed_family_declarations": {
+          "decision": "family-declarations-remain-closed",
+          "rationale": "Identity family declarations must enumerate their applicable fields and behavior explicitly; open-ended family discovery is not an identity rule."
+        },
+        "bootstrap_self_reference_separate": {
+          "decision": "bootstrap-and-self-reference-remain-separately-resolved",
+          "rationale": "Bootstrap identity selection and self-reference resolution are separate concerns and must not be collapsed into an implicit fallback."
+        }
       },
       "identifier_distinction": {
         "semantic_identity": "family-qualified-content-derived-identity",
