@@ -1,0 +1,31 @@
+{
+  "construction_identity": "platform-profile-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative platform-profile construction document (PLATFORM-PROFILE.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "platform-profile",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "profile_concepts", "profile_rules",
+    "concept_map_framework", "fallback_behavior", "authority_separation",
+    "decision_basis", "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "profile_concepts": {"type": "object", "closed": true, "min_properties": 12, "max_properties": 12},
+    "profile_rules": {"type": "object", "closed": true, "min_properties": 5, "max_properties": 5},
+    "concept_map_framework": {"type": "object", "closed": true},
+    "fallback_behavior": {"type": "object", "closed": true},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative platform-profile document (PLATFORM-PROFILE.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}
