@@ -1,0 +1,230 @@
+{
+  "construction_identity": "framework-boundary",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed repository-neutral construction model for framework, template, instance, and product boundaries without defining final identities, manifests, transport, or hosting-platform semantics.",
+  "normative": false,
+  "entity_types": [
+    "framework-source-repository",
+    "distributable-template",
+    "initialized-product-repository",
+    "product-overview",
+    "product-implementation-plan",
+    "product-level-specification",
+    "product-artifact",
+    "framework-revision",
+    "template-provenance",
+    "instance-local-customization",
+    "framework-update",
+    "product-derivation"
+  ],
+  "entity_constraints": {
+    "framework-source-repository": {
+      "description": "The repository that maintains the reusable framework definition and template.",
+      "authority_role": "normative-source",
+      "is_template_provenance_origin": true,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "distributable-template": {
+      "description": "A distributable form of the framework used to initialize new product repositories.",
+      "authority_role": "derived-from-framework",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": true,
+      "may_be_initialized_from_template": false
+    },
+    "initialized-product-repository": {
+      "description": "A repository created from the framework template for a specific product.",
+      "authority_role": "instance",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": true
+    },
+    "product-overview": {
+      "description": "The non-normative product-direction document for an initialized product repository.",
+      "authority_role": "instance-local",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "product-implementation-plan": {
+      "description": "The non-normative implementation planning document for an initialized product repository.",
+      "authority_role": "instance-local",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "product-level-specification": {
+      "description": "A normative Level 0-3 specification document within an initialized product repository.",
+      "authority_role": "instance-authoritative",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "product-artifact": {
+      "description": "A maintained product file (source, test, schema, configuration, etc.) implementing product specifications.",
+      "authority_role": "instance-local",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "framework-revision": {
+      "description": "An identified state of the framework source repository at a point in time.",
+      "authority_role": "normative-source",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "template-provenance": {
+      "description": "The trace from an initialized product repository back to the framework revision from which it was created.",
+      "authority_role": "derived",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "instance-local-customization": {
+      "description": "A modification to an initialized product repository that does not affect the framework template.",
+      "authority_role": "instance-local",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "framework-update": {
+      "description": "A change to the framework that may be propagated to initialized product repositories.",
+      "authority_role": "normative-source",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    },
+    "product-derivation": {
+      "description": "A product that is separated from the framework into its own independent repository.",
+      "authority_role": "instance",
+      "is_template_provenance_origin": false,
+      "may_receive_updates": false,
+      "may_be_initialized_from_template": false
+    }
+  },
+  "relationship_types": [
+    "initializes",
+    "is-initialized-from",
+    "derives",
+    "is-derived-from",
+    "depends-on",
+    "traces-to",
+    "customizes",
+    "updates",
+    "separates-into"
+  ],
+  "relationship_rules": {
+    "initializes": {
+      "source_types": ["distributable-template"],
+      "target_types": ["initialized-product-repository"],
+      "cardinality": "one-template-many-products",
+      "acyclic": true
+    },
+    "is-initialized-from": {
+      "source_types": ["initialized-product-repository"],
+      "target_types": ["distributable-template"],
+      "cardinality": "one-product-one-template",
+      "acyclic": true
+    },
+    "derives": {
+      "source_types": ["framework-source-repository"],
+      "target_types": ["distributable-template"],
+      "cardinality": "one-source-one-template",
+      "acyclic": true
+    },
+    "is-derived-from": {
+      "source_types": ["distributable-template"],
+      "target_types": ["framework-source-repository"],
+      "cardinality": "one-template-one-source",
+      "acyclic": true
+    },
+    "depends-on": {
+      "source_types": ["initialized-product-repository"],
+      "target_types": ["framework-source-repository", "distributable-template"],
+      "cardinality": "one-product-depends-on-one-framework",
+      "acyclic": true
+    },
+    "traces-to": {
+      "source_types": ["template-provenance"],
+      "target_types": ["framework-revision"],
+      "cardinality": "one-provenance-one-revision",
+      "acyclic": true
+    },
+    "customizes": {
+      "source_types": ["instance-local-customization"],
+      "target_types": ["initialized-product-repository"],
+      "cardinality": "many-customizations-one-product",
+      "acyclic": true
+    },
+    "updates": {
+      "source_types": ["framework-update"],
+      "target_types": ["distributable-template"],
+      "cardinality": "many-updates-one-template",
+      "acyclic": true
+    },
+    "separates-into": {
+      "source_types": ["initialized-product-repository"],
+      "target_types": ["product-derivation"],
+      "cardinality": "one-product-many-derivations",
+      "acyclic": true
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "entity_types": ["framework-source-repository", "distributable-template", "framework-revision", "framework-update"],
+      "may_modify": ["framework-source-repository"],
+      "may_not_modify": ["initialized-product-repository", "product-overview", "product-implementation-plan", "product-level-specification", "product-artifact"]
+    },
+    "product_authority": {
+      "entity_types": ["initialized-product-repository", "product-overview", "product-implementation-plan", "product-level-specification", "product-artifact", "instance-local-customization"],
+      "may_modify": ["initialized-product-repository", "product-overview", "product-implementation-plan", "product-level-specification", "product-artifact", "instance-local-customization"],
+      "may_not_modify": ["framework-source-repository", "distributable-template", "framework-revision"]
+    },
+    "template_provenance": {
+      "preserved_in_initialized_repository": true,
+      "identifies_framework_revision": true,
+      "is_not_authoritative_for_product_specifications": true,
+      "is_not_modifiable_by_product_authority": true
+    }
+  },
+  "decision_basis": {
+    "framework_source_and_template_identity": {
+      "decision": "framework-source-and-distributable-template-are-distinct",
+      "rationale": "The framework source repository includes development tooling, tests, and construction artifacts that are not part of the distributable template. The template is a derived subset."
+    },
+    "artifact_copy_semantics": {
+      "copied": ["framework-generic-validation-entry-points", "framework-generic-schemas", "level-template-structure"],
+      "generated": ["initial-product-overview-stub", "initial-implementation-plan-stub", "initial-level-roots"],
+      "selected": ["hosting-platform-profile", "language-profile", "build-profile"],
+      "omitted": ["framework-source-construction-artifacts", "framework-tests", "framework-development-tooling", "framework-governance-records"]
+    },
+    "template_provenance_preserved": {
+      "decision": "provenance-is-preserved",
+      "rationale": "Every initialized repository must be able to identify the framework revision from which it was created to support audit, update, and separation workflows."
+    },
+    "framework_update_consumption": {
+      "decision": "product-repositories-may-consume-framework-updates",
+      "rationale": "An initialized product repository may receive framework improvements through explicit governed update operations. The product repository retains authority over its product-specific content and may accept or defer framework updates through its own governed process."
+    },
+    "product_profile_selection": {
+      "decision": "profiles-are-selected-during-initialization",
+      "rationale": "Hosting-platform, language, and build profiles are selected when a product repository is initialized from the template. Profile selection is recorded in template provenance."
+    },
+    "authority_separation_principle": {
+      "decision": "framework-authority-and-product-authority-remain-separate",
+      "rationale": "Framework authority controls framework source, template definition, and template revisions. Product authority controls product overview, plan, specifications, artifacts, and local customizations. Neither may silently override the other. Product specifications must be explicitly accepted under product authority; framework revisions must be explicitly accepted under framework authority."
+    }
+  },
+  "expected_relationships": [
+    "Phase 0 transition baseline classification",
+    "future repository functional-area model (Phase 4)",
+    "future template initialization and derivation (Phase 14)"
+  ],
+  "unresolved_questions": [
+    "Concrete template packaging format is not defined (Phase 14).",
+    "Concrete profile declarations and selection mechanism are not defined (Phase 11-12).",
+    "Framework version numbering and revision identity scheme are not defined (Phase 16).",
+    "Framework-to-product update protocol and migration semantics are not defined (Phase 15)."
+  ]
+}

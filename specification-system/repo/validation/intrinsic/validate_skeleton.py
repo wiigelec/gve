@@ -78,6 +78,26 @@ IDENTITY_CONFORMANCE_FIELDS = PLACEHOLDER_FIELDS | {
     "failure_precedence", "fixture_integration", "product_independence",
     "unavailable_capabilities",
 }
+FRAMEWORK_BOUNDARY_PATH = "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json"
+FRAMEWORK_BOUNDARY_SCHEMA_PATH = "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json"
+FRAMEWORK_BOUNDARY_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "entity_types", "entity_constraints",
+    "relationship_types", "relationship_rules",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+FRAMEWORK_BOUNDARY_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+FRAMEWORK_BOUNDARY_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+FRAMEWORK_BOUNDARY_FIXTURE_PATH = "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json"
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
     "canonical-json-construction",
@@ -110,6 +130,9 @@ ARTIFACT_CLASSES = (
     "validation-fixtures-placeholder",
     "validation-library-construction",
     "transition-baseline-classification",
+    "framework-boundary",
+    "framework-boundary-construction-schema",
+    "framework-boundary-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -142,6 +165,9 @@ ARTIFACT_PATHS = (
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
     "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
     "TRANSITION-BASELINE-CLASSIFICATION.json",
+    "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
+    "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -164,6 +190,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
     "TRANSITION-BASELINE-CLASSIFICATION.json",
+    "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
+    "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -175,6 +204,9 @@ REQUIRED_DIRECTORIES = (
     "authoritative/schemas/specification-system",
     "validation/fixtures/specification-system",
     "authoritative/schemas/repository-model",
+    "authoritative/framework-boundary",
+    "authoritative/schemas/framework-boundary",
+    "validation/fixtures/framework-boundary",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -767,6 +799,129 @@ def validate_focused_identity(root: Path) -> None:
     except module.ValidationFailure as exc:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-CONSTRUCTION-001", str(exc))
 
+FRAMEWORK_BOUNDARY_CLOSED_ENTITY_TYPES: tuple[str, ...] = (
+    "framework-source-repository",
+    "distributable-template",
+    "initialized-product-repository",
+    "product-overview",
+    "product-implementation-plan",
+    "product-level-specification",
+    "product-artifact",
+    "framework-revision",
+    "template-provenance",
+    "instance-local-customization",
+    "framework-update",
+    "product-derivation",
+)
+
+FRAMEWORK_BOUNDARY_CLOSED_RELATIONSHIP_TYPES: tuple[str, ...] = (
+    "initializes",
+    "is-initialized-from",
+    "derives",
+    "is-derived-from",
+    "depends-on",
+    "traces-to",
+    "customizes",
+    "updates",
+    "separates-into",
+)
+
+
+def validate_framework_boundary(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FRAMEWORK_BOUNDARY_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "framework-boundary":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected framework-boundary identity")
+    if value["entity_types"] != list(FRAMEWORK_BOUNDARY_CLOSED_ENTITY_TYPES):
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+             f"{label}.entity_types: closed set violation")
+    if value["relationship_types"] != list(FRAMEWORK_BOUNDARY_CLOSED_RELATIONSHIP_TYPES):
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+             f"{label}.relationship_types: closed set violation")
+    if not isinstance(value["relationship_rules"], dict) or not value["relationship_rules"]:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+             f"{label}.relationship_rules: non-empty object required")
+    for rel_name, rel_rule in value["relationship_rules"].items():
+        if rel_name not in FRAMEWORK_BOUNDARY_CLOSED_RELATIONSHIP_TYPES:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.relationship_rules.{rel_name}: unknown relationship type")
+        exact_fields(rel_rule, {"source_types", "target_types", "cardinality", "acyclic"},
+                     f"{label}.relationship_rules.{rel_name}")
+        if not isinstance(rel_rule["source_types"], list) or not rel_rule["source_types"]:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.relationship_rules.{rel_name}.source_types: non-empty array required")
+        if not isinstance(rel_rule["target_types"], list) or not rel_rule["target_types"]:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.relationship_rules.{rel_name}.target_types: non-empty array required")
+        for src in rel_rule["source_types"]:
+            if src not in FRAMEWORK_BOUNDARY_CLOSED_ENTITY_TYPES:
+                fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                     f"{label}.relationship_rules.{rel_name}.source_types: unknown entity type '{src}'")
+        for tgt in rel_rule["target_types"]:
+            if tgt not in FRAMEWORK_BOUNDARY_CLOSED_ENTITY_TYPES:
+                fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                     f"{label}.relationship_rules.{rel_name}.target_types: unknown entity type '{tgt}'")
+        if rel_rule["acyclic"] is not True:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.relationship_rules.{rel_name}.acyclic: must be true")
+    if isinstance(value.get("entity_constraints"), dict):
+        for entity_name in value["entity_constraints"]:
+            if entity_name not in FRAMEWORK_BOUNDARY_CLOSED_ENTITY_TYPES:
+                fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                     f"{label}.entity_constraints.{entity_name}: unknown entity type")
+    if not isinstance(value["authority_separation"], dict) or not value["authority_separation"]:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+             f"{label}.authority_separation: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+def validate_framework_boundary_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FRAMEWORK_BOUNDARY_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "framework-boundary-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected framework-boundary fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+def validate_framework_boundary_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FRAMEWORK_BOUNDARY_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "framework-boundary-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected framework-boundary schema identity")
+    if value["target_construction_identity"] != "framework-boundary" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -929,6 +1084,32 @@ def validate(root: Path) -> None:
     if validation_library_identity in identities:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{VALIDATION_LIBRARY_PATH}: duplicate construction identity")
+
+    framework_boundary = strict_json(root / FRAMEWORK_BOUNDARY_PATH)
+    framework_boundary_identity = validate_framework_boundary(
+        framework_boundary, FRAMEWORK_BOUNDARY_PATH
+    )
+    if framework_boundary_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FRAMEWORK_BOUNDARY_PATH}: duplicate construction identity")
+    identities.add(framework_boundary_identity)
+
+    framework_boundary_schema = strict_json(root / FRAMEWORK_BOUNDARY_SCHEMA_PATH)
+    framework_boundary_schema_identity = validate_framework_boundary_schema(
+        framework_boundary_schema, FRAMEWORK_BOUNDARY_SCHEMA_PATH
+    )
+    if framework_boundary_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FRAMEWORK_BOUNDARY_SCHEMA_PATH}: duplicate construction identity")
+
+    framework_boundary_fixtures = strict_json(root / FRAMEWORK_BOUNDARY_FIXTURE_PATH)
+    framework_boundary_fixtures_identity = validate_framework_boundary_fixtures(
+        framework_boundary_fixtures, FRAMEWORK_BOUNDARY_FIXTURE_PATH
+    )
+    if framework_boundary_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FRAMEWORK_BOUNDARY_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(framework_boundary_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

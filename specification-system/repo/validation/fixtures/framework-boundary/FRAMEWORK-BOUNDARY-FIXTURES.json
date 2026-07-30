@@ -1,0 +1,110 @@
+{
+  "construction_identity": "framework-boundary-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative construction inputs for the framework boundary model without defining accepted conformance.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-boundary-declaration",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unknown-entity-type",
+      "expected": "reject",
+      "model_overrides": {
+        "entity_types": ["framework-source-repository", "distributable-template", "unknown-type"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "unknown-relationship-type-in-entity",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_types": ["initializes", "is-initialized-from", "unknown-relationship"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "empty-entity-types",
+      "expected": "reject",
+      "model_overrides": {
+        "entity_types": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "empty-relationship-types",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_types": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "unknown-source-entity-in-relationship-rule",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_rules.initializes.source_types": ["unknown-entity"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "unknown-target-entity-in-relationship-rule",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_rules.initializes.target_types": ["unknown-entity"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "missing-relationship-rule",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_rules": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "empty-authority-separation",
+      "expected": "reject",
+      "model_overrides": {
+        "authority_separation": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {
+        "decision_basis": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "duplicate-entity-type",
+      "expected": "reject",
+      "model_overrides": {
+        "entity_types": ["framework-source-repository", "framework-source-repository"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
+      "name": "duplicate-relationship-type",
+      "expected": "reject",
+      "model_overrides": {
+        "relationship_types": ["initializes", "initializes"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    }
+  ],
+  "expected_relationships": [
+    "framework boundary model",
+    "framework boundary validation",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Complete repository profiles, fixture execution contracts, accepted conformance, revisions, acceptance, sealing, and cutover are not defined."
+  ]
+}
