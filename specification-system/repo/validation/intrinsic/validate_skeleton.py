@@ -97,6 +97,15 @@ FRAMEWORK_BOUNDARY_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+FRAMEWORK_BOUNDARY_DECISIONS: tuple[str, ...] = (
+    "framework_source_and_template_identity",
+    "artifact_copy_semantics",
+    "template_initialization",
+    "template_provenance_preserved",
+    "framework_update_consumption",
+    "product_profile_selection",
+    "authority_separation_principle",
+)
 FRAMEWORK_BOUNDARY_FIXTURE_PATH = "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json"
 DEVELOPMENT_ARTIFACT_PATH = "authoritative/development-artifacts/DEVELOPMENT-ARTIFACTS.json"
 DEVELOPMENT_ARTIFACT_SCHEMA_PATH = "authoritative/schemas/development-artifacts/DEVELOPMENT-ARTIFACT-CONSTRUCTION-SCHEMA.json"
@@ -1433,9 +1442,21 @@ def validate_framework_boundary(value: dict[str, Any], label: str) -> str:
     if not isinstance(value["authority_separation"], dict) or not value["authority_separation"]:
         fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
              f"{label}.authority_separation: non-empty object required")
-    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+    decision_basis = value["decision_basis"]
+    if not isinstance(decision_basis, dict) or not decision_basis:
         fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
              f"{label}.decision_basis: non-empty object required")
+    exact_fields(decision_basis, set(FRAMEWORK_BOUNDARY_DECISIONS), f"{label}.decision_basis")
+    for decision_name, decision in decision_basis.items():
+        if not isinstance(decision, dict) or set(decision) != {"decision", "rationale"}:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.decision_basis.{decision_name}: closed decision record required")
+        if not isinstance(decision["decision"], str) or not decision["decision"]:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.decision_basis.{decision_name}.decision: non-empty string required")
+        if not isinstance(decision["rationale"], str) or not decision["rationale"]:
+            fail("REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001",
+                 f"{label}.decision_basis.{decision_name}.rationale: non-empty string required")
     return identity
 
 def validate_framework_boundary_fixtures(value: dict[str, Any], label: str) -> str:

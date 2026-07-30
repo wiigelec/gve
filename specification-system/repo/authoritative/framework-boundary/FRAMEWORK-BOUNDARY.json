@@ -194,10 +194,12 @@
       "rationale": "The framework source repository includes development tooling, tests, and construction artifacts that are not part of the distributable template. The template is a derived subset."
     },
     "artifact_copy_semantics": {
-      "copied": ["framework-generic-validation-entry-points", "framework-generic-schemas", "level-template-structure"],
-      "generated": ["initial-product-overview-stub", "initial-implementation-plan-stub", "initial-level-roots"],
-      "selected": ["hosting-platform-profile", "language-profile", "build-profile"],
-      "omitted": ["framework-source-construction-artifacts", "framework-tests", "framework-development-tooling", "framework-governance-records"]
+      "decision": "template-copies-framework-generic-artifacts-and-derives-instance-local-starting-artifacts",
+      "rationale": "Phase 14 copies framework-generic validation entry points, generic schemas, and level template structure; generates initial product overview and implementation-plan stubs and initial level roots; selects hosting-platform, language, and build profiles; and omits framework-source construction artifacts, framework tests, framework development tooling, and framework governance records."
+    },
+    "template_initialization": {
+      "decision": "initialized-product-repositories-derive-from-the-framework-template",
+      "rationale": "Phase 14 defines initialized product repository creation from the framework using the explicit inputs, outputs, copy semantics, and standalone validation capability recorded in the construction plan. The initialized repository preserves framework provenance and selected profiles, keeps product-specific content separate from framework authority, and does not depend on maintained framework source."
     },
     "template_provenance_preserved": {
       "decision": "provenance-is-preserved",
