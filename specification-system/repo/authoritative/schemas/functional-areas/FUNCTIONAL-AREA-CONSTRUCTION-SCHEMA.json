@@ -1,0 +1,52 @@
+{
+  "construction_identity": "functional-area-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed construction schema for the functional-area layout model without defining final path mappings, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "functional-areas",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "repository_vocabulary_identity",
+    "functional_areas",
+    "area_semantics",
+    "kernel_classifications",
+    "extension_rules",
+    "placement_rules",
+    "authority_separation",
+    "decision_basis",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "functional_areas": "non-empty-unique-strings",
+    "area_semantics": "non-empty-object-with-closed-area-entries",
+    "kernel_classifications": "non-empty-object-with-closed-classification-entries",
+    "extension_rules": "non-empty-object-with-may-and-may-not-sections",
+    "placement_rules": "non-empty-object-with-kind-placement-and-forbidden-placements",
+    "authority_separation": "non-empty-object-with-framework-and-product-sections",
+    "decision_basis": "non-empty-object-with-closed-decision-entries"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "functional-area model"
+  ],
+  "unresolved_questions": [
+    "Final schema form may evolve as construction phases progress.",
+    "Concrete field-level constraints are implemented in the intrinsic validator."
+  ]
+}

@@ -39,7 +39,10 @@
     "framework-boundary-fixture-set-construction",
     "development-artifact-construction",
     "development-artifact-construction-schema",
-    "development-artifact-fixture-set-construction"
+    "development-artifact-fixture-set-construction",
+    "functional-area-construction",
+    "functional-area-construction-schema",
+    "functional-area-fixture-set-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -77,7 +80,10 @@
     "validation/fixtures/framework-boundary/FRAMEWORK-BOUNDARY-FIXTURES.json",
     "authoritative/development-artifacts/DEVELOPMENT-ARTIFACTS.json",
     "authoritative/schemas/development-artifacts/DEVELOPMENT-ARTIFACT-CONSTRUCTION-SCHEMA.json",
-    "validation/fixtures/development-artifacts/DEVELOPMENT-ARTIFACT-FIXTURES.json"
+    "validation/fixtures/development-artifacts/DEVELOPMENT-ARTIFACT-FIXTURES.json",
+    "authoritative/functional-areas/FUNCTIONAL-AREAS.json",
+    "authoritative/schemas/functional-areas/FUNCTIONAL-AREA-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/functional-areas/FUNCTIONAL-AREA-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",

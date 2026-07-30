@@ -1,0 +1,295 @@
+{
+  "construction_identity": "functional-areas",
+  "construction_status": "under-construction",
+  "responsibility": "Extend the minimal repository vocabulary into a generic functional layout model with closed functional areas, per-area semantics, and product-neutral extension rules without defining final identities, transport, or hosting-platform semantics.",
+  "normative": false,
+  "repository_vocabulary_identity": "repository-model",
+  "functional_areas": [
+    "overview-documentation",
+    "implementation-planning",
+    "repository-specifications",
+    "product-specifications",
+    "maintained-product-source",
+    "tests",
+    "schemas",
+    "conformance",
+    "generated-artifacts",
+    "validation",
+    "repository-tooling",
+    "packaging-and-release",
+    "temporary-development-state"
+  ],
+  "area_semantics": {
+    "overview-documentation": {
+      "description": "Product-direction documents (product-overview) that define intended users, outcomes, capabilities, and constraints.",
+      "kind": "authority",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-other-functional-areas",
+      "dependency": "none",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": true,
+      "product_profile_extensible": false
+    },
+    "implementation-planning": {
+      "description": "Construction planning documents (implementation-plan) that define work areas, dependency order, and construction phases.",
+      "kind": "authority",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-other-functional-areas",
+      "dependency": "depends-on-overview-documentation",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": true,
+      "product_profile_extensible": false
+    },
+    "repository-specifications": {
+      "description": "Repository-level construction and specification artifacts that define the framework's own construction model.",
+      "kind": "authority",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "none",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": true,
+      "product_profile_extensible": false
+    },
+    "product-specifications": {
+      "description": "Product-specific Level 0-3 specification documents that define normative product semantics.",
+      "kind": "authority",
+      "authority_classification": "normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-repository-specifications",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "maintained-product-source": {
+      "description": "Hand-authored product source code, resources, and configuration that implement product specifications.",
+      "kind": "support",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-product-specifications",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "tests": {
+      "description": "Automated tests for product source code and specifications, including both unit and integration tests.",
+      "kind": "validation",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-maintained-product-source",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "schemas": {
+      "description": "JSON and other schema definitions that constrain the structure of specification and configuration files.",
+      "kind": "authority",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-product-specifications",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": false
+    },
+    "conformance": {
+      "description": "Conformance vectors, vectorsets, and test fixtures that validate specification conformance.",
+      "kind": "validation",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-schemas",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": false
+    },
+    "generated-artifacts": {
+      "description": "Deterministically derived files with explicit provenance, such as compiled output, derived schemas, and generated documentation.",
+      "kind": "derived",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "generated",
+      "ownership_role": "artifact-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-multiple-upstream-areas",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "validation": {
+      "description": "Repository-local validation tooling, including intrinsic validators, focused tests, and validation scripts.",
+      "kind": "validation",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-repository-specifications",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": true,
+      "product_profile_extensible": false
+    },
+    "repository-tooling": {
+      "description": "Build, packaging, and development tooling including scripts, configuration, and automation.",
+      "kind": "support",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "none",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "packaging-and-release": {
+      "description": "Release configuration, packaging metadata, version declarations, and distribution configuration.",
+      "kind": "support",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "maintained",
+      "ownership_role": "area-owner",
+      "containment": "may-contain-sub-areas",
+      "dependency": "depends-on-repository-tooling",
+      "path_significance": "well-known-root",
+      "ignored_content": false,
+      "required": false,
+      "product_profile_extensible": true
+    },
+    "temporary-development-state": {
+      "description": "Scratchpad files, transient state, generated caches, and other non-durable content that is not committed to version control.",
+      "kind": "temporary",
+      "authority_classification": "non-normative",
+      "lifecycle_classification": "temporary",
+      "ownership_role": "artifact-owner",
+      "containment": "may-not-contain-functional-areas",
+      "dependency": "none",
+      "path_significance": "well-known-root",
+      "ignored_content": true,
+      "required": false,
+      "product_profile_extensible": false
+    }
+  },
+  "kernel_classifications": {
+    "area_kinds": ["authority", "derived", "validation", "support", "temporary"],
+    "authority_classifications": ["normative", "non-normative"],
+    "lifecycle_classifications": ["maintained", "generated", "temporary"],
+    "non_redefinable_by_product_profiles": {
+      "area_kinds": true,
+      "authority_classifications": true,
+      "lifecycle_classifications": true
+    }
+  },
+  "extension_rules": {
+    "product_profiles_may": {
+      "add_new_functional_areas": true,
+      "refine_existing_area_constraints": true,
+      "add_path_significance_overrides": true,
+      "add_ownership_role_refinements": true,
+      "redefine_required_status": false,
+      "redefine_kernel_classifications": false
+    },
+    "product_profiles_may_not": {
+      "remove_required_functional_areas": true,
+      "change_kind_of_required_area": true,
+      "change_authority_of_normative_area": true,
+      "alter_dependency_direction": true,
+      "make_ignored_content_authoritative": true
+    },
+    "minimum_initialized_repository": {
+      "required_areas": ["overview-documentation", "implementation-planning", "repository-specifications", "validation"],
+      "optional_areas_by_profile": ["product-specifications", "maintained-product-source", "tests", "schemas", "conformance", "generated-artifacts", "repository-tooling", "packaging-and-release"]
+    }
+  },
+  "placement_rules": {
+    "area_kind_placement": {
+      "authority": "at-repository-root",
+      "derived": "at-repository-root-or-under-authority",
+      "validation": "at-repository-root-or-under-authority",
+      "support": "at-repository-root-or-under-authority",
+      "temporary": "anywhere-or-ignored"
+    },
+    "forbidden_placements": [
+      "normative-area-under-non-normative-parent",
+      "temporary-area-under-authority-area",
+      "product-profile-area-under-framework-kernel-area"
+    ],
+    "path_significance": {
+      "well-known-roots": [
+        "overview-documentation",
+        "implementation-planning",
+        "repository-specifications",
+        "product-specifications",
+        "maintained-product-source",
+        "tests",
+        "schemas",
+        "conformance",
+        "validation",
+        "repository-tooling"
+      ],
+      "path_component_must_match_area_name": false,
+      "path_uniqueness": "functional-area-paths-must-be-disjoint"
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["overview-documentation", "implementation-planning", "repository-specifications", "validation", "repository-tooling"],
+      "may_define_extension": false
+    },
+    "product_authority": {
+      "may_define": ["product-specifications", "maintained-product-source", "tests", "schemas", "conformance", "generated-artifacts", "packaging-and-release"],
+      "may_define_extension": true
+    }
+  },
+  "decision_basis": {
+    "functional_areas_are_closed": {
+      "decision": "functional-areas-are-closed-for-kernel-extensible-by-product-profile",
+      "rationale": "The 13 functional areas defined here form the closed kernel of the repository functional layout model. Product profiles may add new functional areas but may not redefine or remove kernel areas."
+    },
+    "classifications_are_kernel": {
+      "decision": "area-kind-authority-and-lifecycle-classifications-are-kernel-non-redefinable",
+      "rationale": "The area kinds (authority, derived, validation, support, temporary), authority classifications (normative, non-normative), and lifecycle classifications (maintained, generated, temporary) are kernel concepts that product profiles may not redefine."
+    },
+    "required_areas_for_minimal_repository": {
+      "decision": "minimal-initialized-repository-requires-four-functional-areas",
+      "rationale": "A minimal initialized repository must contain at minimum: overview-documentation, implementation-planning, repository-specifications, and validation. Product profiles determine which optional areas are included."
+    },
+    "product_profile_extension_boundary": {
+      "decision": "product-profiles-may-extend-but-not-redefine-kernel",
+      "rationale": "Product profiles may add new functional areas, refine constraints on existing areas, and add path significance overrides. They may not remove required areas, change area kinds, change authority classifications, alter dependency direction, or make ignored content authoritative."
+    }
+  },
+  "expected_relationships": [
+    "Phase 0 repository vocabulary (REPOSITORY-MODEL.json)",
+    "Phase 1 framework boundary entity types",
+    "Phase 2 development artifact roles",
+    "future Level 0-3 specification model (Phase 4)",
+    "future product artifact roles (Phase 5)"
+  ],
+  "unresolved_questions": [
+    "Concrete path mapping from functional areas to repository paths is not defined.",
+    "Repository-layout validation implementation is deferred.",
+    "Hosting-platform profile path conventions are not defined (Phase 11-12).",
+    "Initialization template area selection is not defined (Phase 14)."
+  ]
+}
