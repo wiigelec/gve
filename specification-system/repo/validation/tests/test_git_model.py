@@ -53,6 +53,17 @@ class GitModelTests(unittest.TestCase):
     def test_closed_git_model_passes(self) -> None:
         VALIDATOR.validate(self.root)
 
+    def test_release_and_maintenance_concepts_are_present(self) -> None:
+        value = self.read_json(GIT_MODEL_PATH)
+        self.assertIn("maintenance_branch", value["revision_concepts"])
+        self.assertIn("release_binding", value["decision_basis"])
+        self.assertIn("framework_version_identity", value["decision_basis"])
+        self.assertIn("template_provenance_authority", value["decision_basis"])
+        self.assertEqual(
+            value["decision_basis"]["package_identity"]["decision"],
+            "package-identity-is-distinct-from-source-revision",
+        )
+
     def test_unknown_git_model_field_fails_closed(self) -> None:
         path = GIT_MODEL_PATH
         value = self.read_json(path)

@@ -227,6 +227,6 @@
     "Concrete template packaging format is not defined.",
     "Concrete profile declarations and selection mechanism are not defined (Phase 11-12).",
     "Framework version numbering and revision identity scheme are not defined (Phase 16).",
-    "Framework-to-product update protocol and migration semantics are not defined (Phase 15)."
+    "Framework-to-product update protocol and migration semantics are not defined."
   ]
 }
