@@ -209,6 +209,37 @@ GIT_MODEL_SCHEMA_FIELDS = {
     "closed", "field_constraints", "forbidden_claim_fields",
     "expected_relationships", "unresolved_questions",
 }
+AI_CONTINUITY_PATH = "authoritative/ai-continuity/AI-CONTINUITY.json"
+AI_CONTINUITY_SCHEMA_PATH = "authoritative/schemas/ai-continuity/AI-CONTINUITY-CONSTRUCTION-SCHEMA.json"
+AI_CONTINUITY_FIXTURE_PATH = "validation/fixtures/ai-continuity/AI-CONTINUITY-FIXTURES.json"
+AI_CONTINUITY_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "discovery_sequence", "session_behavior",
+    "orientation_protocol", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+AI_CONTINUITY_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+AI_CONTINUITY_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+AI_CONTINUITY_DISCOVERY_STEPS: tuple[str, ...] = (
+    "repository-readme",
+    "active-overview",
+    "active-implementation-plan",
+    "normative-authority-roots",
+    "governing-work-item",
+    "predecessor-evidence",
+    "local-git-state",
+    "current-bounded-action",
+    "mutation-boundary",
+    "returned-evidence-and-successor-decision",
+)
 GIT_MODEL_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
@@ -284,6 +315,9 @@ ARTIFACT_CLASSES = (
     "git-model-construction",
     "git-model-construction-schema",
     "git-model-fixture-set-construction",
+    "ai-continuity-construction",
+    "ai-continuity-construction-schema",
+    "ai-continuity-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -333,6 +367,9 @@ ARTIFACT_PATHS = (
     GIT_MODEL_PATH,
     GIT_MODEL_SCHEMA_PATH,
     GIT_MODEL_FIXTURE_PATH,
+    AI_CONTINUITY_PATH,
+    AI_CONTINUITY_SCHEMA_PATH,
+    AI_CONTINUITY_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -373,6 +410,9 @@ NON_PLACEHOLDER_PATHS = {
     GIT_MODEL_PATH,
     GIT_MODEL_SCHEMA_PATH,
     GIT_MODEL_FIXTURE_PATH,
+    AI_CONTINUITY_PATH,
+    AI_CONTINUITY_SCHEMA_PATH,
+    AI_CONTINUITY_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -401,6 +441,9 @@ REQUIRED_DIRECTORIES = (
     "authoritative/git-model",
     "authoritative/schemas/git-model",
     "validation/fixtures/git-model",
+    "authoritative/ai-continuity",
+    "authoritative/schemas/ai-continuity",
+    "validation/fixtures/ai-continuity",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -1537,6 +1580,83 @@ def validate_git_model_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_ai_continuity(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, AI_CONTINUITY_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "ai-continuity":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected ai-continuity identity")
+    seq = value["discovery_sequence"]
+    if (
+        not isinstance(seq, list)
+        or len(seq) != len(AI_CONTINUITY_DISCOVERY_STEPS)
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001",
+             f"{label}.discovery_sequence: exactly {len(AI_CONTINUITY_DISCOVERY_STEPS)} steps required")
+    seen_steps = set()
+    for step in seq:
+        if not isinstance(step, str) or step not in AI_CONTINUITY_DISCOVERY_STEPS:
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001",
+                 f"{label}.discovery_sequence: unknown step '{step}'")
+        if step in seen_steps:
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001",
+                 f"{label}.discovery_sequence: duplicate step '{step}'")
+        seen_steps.add(step)
+    if not isinstance(value["session_behavior"], dict) or not value["session_behavior"]:
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001",
+             f"{label}.session_behavior: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_ai_continuity_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, AI_CONTINUITY_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "ai-continuity-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected ai-continuity fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_ai_continuity_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, AI_CONTINUITY_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "ai-continuity-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected ai-continuity schema identity")
+    if value["target_construction_identity"] != "ai-continuity" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-AI-CONTINUITY-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -1860,6 +1980,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{GIT_MODEL_FIXTURE_PATH}: duplicate construction identity")
     identities.add(git_model_fixtures_identity)
+
+    ai_continuity = strict_json(root / AI_CONTINUITY_PATH)
+    ai_continuity_identity = validate_ai_continuity(
+        ai_continuity, AI_CONTINUITY_PATH
+    )
+    if ai_continuity_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{AI_CONTINUITY_PATH}: duplicate construction identity")
+    identities.add(ai_continuity_identity)
+
+    ai_continuity_schema = strict_json(root / AI_CONTINUITY_SCHEMA_PATH)
+    ai_continuity_schema_identity = validate_ai_continuity_schema(
+        ai_continuity_schema, AI_CONTINUITY_SCHEMA_PATH
+    )
+    if ai_continuity_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{AI_CONTINUITY_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(ai_continuity_schema_identity)
+
+    ai_continuity_fixtures = strict_json(root / AI_CONTINUITY_FIXTURE_PATH)
+    ai_continuity_fixtures_identity = validate_ai_continuity_fixtures(
+        ai_continuity_fixtures, AI_CONTINUITY_FIXTURE_PATH
+    )
+    if ai_continuity_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{AI_CONTINUITY_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(ai_continuity_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

@@ -51,7 +51,10 @@
     "product-artifact-fixture-set-construction",
     "git-model-construction",
     "git-model-construction-schema",
-    "git-model-fixture-set-construction"
+    "git-model-fixture-set-construction",
+    "ai-continuity-construction",
+    "ai-continuity-construction-schema",
+    "ai-continuity-fixture-set-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -100,7 +103,10 @@
     "validation/fixtures/product-artifacts/PRODUCT-ARTIFACT-FIXTURES.json",
     "authoritative/git-model/GIT-MODEL.json",
     "authoritative/schemas/git-model/GIT-MODEL-CONSTRUCTION-SCHEMA.json",
-    "validation/fixtures/git-model/GIT-MODEL-FIXTURES.json"
+    "validation/fixtures/git-model/GIT-MODEL-FIXTURES.json",
+    "authoritative/ai-continuity/AI-CONTINUITY.json",
+    "authoritative/schemas/ai-continuity/AI-CONTINUITY-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/ai-continuity/AI-CONTINUITY-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
