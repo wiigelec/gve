@@ -1,0 +1,58 @@
+{
+  "construction_identity": "github-hosting-profile-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the GitHub hosting-profile construction document against its construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-github-hosting-profile-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "empty-concept-mappings",
+      "expected": "reject",
+      "model_overrides": {"concept_mappings": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001"
+    },
+    {
+      "name": "empty-fallback-behavior",
+      "expected": "reject",
+      "model_overrides": {"fallback_behavior": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001"
+    },
+    {
+      "name": "invalid-pull-request-binding-target",
+      "expected": "reject",
+      "model_overrides": {"concept_mappings.pull_request.binding_target": "pull-request-number"},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001"
+    },
+    {
+      "name": "unknown-field-in-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative GitHub hosting-profile document (GITHUB-HOSTING-PROFILE.json)",
+    "GitHub hosting-profile construction schema (GITHUB-HOSTING-PROFILE-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional binding-target edge cases for review and CI evidence are not yet exhaustively enumerated.",
+    "Fixture coverage for optional release usage and branch-protection absence is not yet complete."
+  ]
+}

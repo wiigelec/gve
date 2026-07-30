@@ -1,0 +1,172 @@
+{
+  "construction_identity": "github-hosting-profile",
+  "construction_status": "under-construction",
+  "responsibility": "Define the GitHub hosting-profile implementation of the framework's platform-profile boundary, mapping issues, issue comments, pull requests, reviews, checks, workflow runs, merge results, branch protection, labels, releases, platform identities, and API evidence references to explicit GitHub mechanisms and exact binding targets.",
+  "normative": false,
+  "platform_name": "GitHub",
+  "concept_mappings": {
+    "issue": {
+      "generic_concept": "governing_work_item",
+      "github_mechanism": "issue",
+      "mapping_required": true,
+      "binding_target": "issue-number",
+      "notes": "A GitHub issue records one governed work item and anchors the issue-local authority record."
+    },
+    "issue_comment_scope": {
+      "generic_concept": "detailed_scope_record",
+      "github_mechanism": "issue-comment",
+      "mapping_required": true,
+      "binding_target": "issue-comment-id",
+      "notes": "Issue comments carry the detailed scope record for the governing work item."
+    },
+    "issue_comment_patch_plan": {
+      "generic_concept": "patch_plan_record",
+      "github_mechanism": "issue-comment",
+      "mapping_required": true,
+      "binding_target": "issue-comment-id",
+      "notes": "Issue comments carry the ordered patch-plan record for the governing work item."
+    },
+    "pull_request": {
+      "generic_concept": "review_proposal",
+      "github_mechanism": "pull-request",
+      "mapping_required": true,
+      "binding_target": "pull-request-head-sha",
+      "notes": "A pull request is a review proposal bound to an exact head commit and explicit base branch."
+    },
+    "review_comment_submission": {
+      "generic_concept": "review_evidence",
+      "github_mechanism": "pull-request-review",
+      "mapping_required": true,
+      "binding_target": "pull-request-review-id",
+      "notes": "Review comments and review submissions are the review evidence for a specific pull request head."
+    },
+    "check_run": {
+      "generic_concept": "ci_evidence",
+      "github_mechanism": "check-run",
+      "mapping_required": true,
+      "binding_target": "check-run-commit-sha",
+      "notes": "Check runs provide CI evidence for an exact commit."
+    },
+    "workflow_run": {
+      "generic_concept": "ci_evidence",
+      "github_mechanism": "workflow-run",
+      "mapping_required": true,
+      "binding_target": "workflow-run-commit-sha",
+      "notes": "Workflow runs provide CI evidence for an exact commit."
+    },
+    "merge_result": {
+      "generic_concept": "integration_evidence",
+      "github_mechanism": "merge-result",
+      "mapping_required": true,
+      "binding_target": "merge-commit-sha",
+      "notes": "The merge result is the integration evidence for the accepted pull request."
+    },
+    "branch_protection": {
+      "generic_concept": "branch_control",
+      "github_mechanism": "branch-protection-rule",
+      "mapping_required": true,
+      "binding_target": "protected-branch-ref",
+      "notes": "Branch protection constrains branch operations but does not replace governance decisions."
+    },
+    "label": {
+      "generic_concept": "classification",
+      "github_mechanism": "label",
+      "mapping_required": false,
+      "binding_target": "label-name",
+      "notes": "Labels are classification aids only and do not make governance decisions."
+    },
+    "release": {
+      "generic_concept": "release_record",
+      "github_mechanism": "release",
+      "mapping_required": false,
+      "binding_target": "release-tag-and-commit-sha",
+      "notes": "GitHub releases bind a release record to an exact tagged commit where releases are used."
+    },
+    "platform_identity": {
+      "generic_concept": "platform_identity",
+      "github_mechanism": "github-actor-or-app-identity",
+      "mapping_required": true,
+      "binding_target": "github-actor-or-app-id",
+      "notes": "GitHub users, bots, and apps provide attributable platform identity."
+    },
+    "api_evidence_reference": {
+      "generic_concept": "api_evidence_reference",
+      "github_mechanism": "github-api-artifact",
+      "mapping_required": true,
+      "binding_target": "github-api-artifact",
+      "notes": "API evidence references bind repository state records to an exact point in time."
+    }
+  },
+  "fallback_behavior": {
+    "unimplemented_capability": {
+      "description": "When a GitHub repository or installation lacks a capability, dependent governance stages must treat the evidence as unavailable and fail closed.",
+      "default": "evidence-unavailable"
+    },
+    "partial_implementation": {
+      "description": "A GitHub profile may implement some capabilities and omit others, but omitted capabilities must be named and their governance impact declared.",
+      "requirement": "partial-implementation-must-be-declared"
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["profile-declaration-rules", "concept-mappings", "fallback-behavior", "evidence-binding-rules", "identifier-separation"],
+      "may_not_define": ["github-api-behavior", "github-authentication", "github-workflow-configuration", "repository-specific-label-taxonomy"]
+    },
+    "github_profile_authority": {
+      "may_implement": ["issue-tracking", "pull-request-review", "check-and-workflow-evidence", "merge-integration", "branch-protection", "release-records"],
+      "must_not_redefine": ["git-semantics", "review-acceptance-distinction", "evidence-binding-requirements", "identifier-separation-rules"]
+    }
+  },
+  "decision_basis": {
+    "issue_governing_work_item": {
+      "decision": "github-issues-are-governing-work-items",
+      "rationale": "A GitHub issue is the bounded work item for one governed mutation and provides the durable issue-local record."
+    },
+    "issue_comments_capture_detailed_scope": {
+      "decision": "issue-comments-capture-detailed-scope",
+      "rationale": "Detailed scope records belong in issue comments so they remain attached to the governing work item."
+    },
+    "issue_comments_capture_patch_plan": {
+      "decision": "issue-comments-capture-patch-plan",
+      "rationale": "The ordered patch plan belongs in issue comments so the implementation sequence remains visible in the governing record."
+    },
+    "pull_requests_bind_review_proposals_to_exact_heads": {
+      "decision": "pull-requests-bind-review-proposals-to-exact-heads",
+      "rationale": "A pull request must identify an exact head commit and base branch so review is tied to a precise revision."
+    },
+    "reviews_bind_to_pull_request_heads": {
+      "decision": "review-comments-and-submissions-bind-to-pull-request-heads",
+      "rationale": "Review comments and submissions are review evidence only when bound to a specific pull request head."
+    },
+    "checks_and_workflow_runs_bind_to_exact_commits": {
+      "decision": "checks-and-workflow-runs-bind-to-exact-commits",
+      "rationale": "CI evidence must identify the exact commit that was checked so evidence cannot drift across revisions."
+    },
+    "merge_results_bind_to_exact_merge_commits": {
+      "decision": "merge-results-bind-to-exact-merge-commits",
+      "rationale": "Integration evidence must identify the merge commit produced by the accepted integration step."
+    },
+    "branch_protection_supports_but_does_not_replace_governance": {
+      "decision": "branch-protection-supports-governance-but-does-not-replace-it",
+      "rationale": "Branch protection enforces policy on protected refs, but it is not itself a governance decision."
+    },
+    "releases_bind_to_exact_tagged_commits": {
+      "decision": "github-releases-bind-to-exact-tagged-commits",
+      "rationale": "A GitHub release is only meaningful as a release record when it binds to an exact tagged commit."
+    }
+  },
+  "expected_relationships": [
+    "generic platform-profile model",
+    "Git model",
+    "governed-development model",
+    "normative-change model",
+    "source-correspondence model",
+    "framework-boundary model",
+    "future additional hosting-platform profiles"
+  ],
+  "unresolved_questions": [
+    "Merge-queue usage and policy are not yet standardized for GitHub repositories.",
+    "Repository-level installation scope and evidence retention policy are not yet defined.",
+    "How product repositories should layer additional GitHub-specific conventions is not yet defined."
+  ]
+}

@@ -346,6 +346,59 @@ PLATFORM_PROFILE_AUTHORITY_SEPARATION: tuple[str, ...] = (
     "framework_authority",
     "platform_profile_authority",
 )
+GITHUB_HOSTING_PROFILE_PATH = "authoritative/platform-profile/GITHUB-HOSTING-PROFILE.json"
+GITHUB_HOSTING_PROFILE_SCHEMA_PATH = "authoritative/schemas/platform-profile/GITHUB-HOSTING-PROFILE-CONSTRUCTION-SCHEMA.json"
+GITHUB_HOSTING_PROFILE_FIXTURE_PATH = "validation/fixtures/platform-profile/GITHUB-HOSTING-PROFILE-FIXTURES.json"
+GITHUB_HOSTING_PROFILE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "platform_name", "concept_mappings", "fallback_behavior",
+    "authority_separation", "decision_basis", "expected_relationships",
+    "unresolved_questions",
+}
+GITHUB_HOSTING_PROFILE_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+GITHUB_HOSTING_PROFILE_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+GITHUB_HOSTING_PROFILE_MAPPINGS: tuple[str, ...] = (
+    "issue",
+    "issue_comment_scope",
+    "issue_comment_patch_plan",
+    "pull_request",
+    "review_comment_submission",
+    "check_run",
+    "workflow_run",
+    "merge_result",
+    "branch_protection",
+    "label",
+    "release",
+    "platform_identity",
+    "api_evidence_reference",
+)
+GITHUB_HOSTING_PROFILE_FALLBACKS: tuple[str, ...] = (
+    "unimplemented_capability",
+    "partial_implementation",
+)
+GITHUB_HOSTING_PROFILE_AUTHORITIES: tuple[str, ...] = (
+    "framework_authority",
+    "github_profile_authority",
+)
+GITHUB_HOSTING_PROFILE_DECISIONS: tuple[str, ...] = (
+    "issue_governing_work_item",
+    "issue_comments_capture_detailed_scope",
+    "issue_comments_capture_patch_plan",
+    "pull_requests_bind_review_proposals_to_exact_heads",
+    "reviews_bind_to_pull_request_heads",
+    "checks_and_workflow_runs_bind_to_exact_commits",
+    "merge_results_bind_to_exact_merge_commits",
+    "branch_protection_supports_but_does_not_replace_governance",
+    "releases_bind_to_exact_tagged_commits",
+)
 GOVERNED_DEVELOPMENT_BOUNDED_STAGES: tuple[str, ...] = (
     "governing-work-item", "detailed-scope", "ordered-patch-plan",
     "accepted-base", "isolated-branch", "coherent-patch",
@@ -424,6 +477,9 @@ ARTIFACT_CLASSES = (
     "platform-profile-construction",
     "platform-profile-construction-schema",
     "platform-profile-fixture-set-construction",
+    "github-hosting-profile-construction",
+    "github-hosting-profile-construction-schema",
+    "github-hosting-profile-fixture-set-construction",
     "specification-artifact-class-construction",
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
@@ -477,6 +533,9 @@ ARTIFACT_PATHS = (
     PLATFORM_PROFILE_PATH,
     PLATFORM_PROFILE_SCHEMA_PATH,
     PLATFORM_PROFILE_FIXTURE_PATH,
+    GITHUB_HOSTING_PROFILE_PATH,
+    GITHUB_HOSTING_PROFILE_SCHEMA_PATH,
+    GITHUB_HOSTING_PROFILE_FIXTURE_PATH,
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
@@ -562,6 +621,9 @@ NON_PLACEHOLDER_PATHS = {
     PLATFORM_PROFILE_PATH,
     PLATFORM_PROFILE_SCHEMA_PATH,
     PLATFORM_PROFILE_FIXTURE_PATH,
+    GITHUB_HOSTING_PROFILE_PATH,
+    GITHUB_HOSTING_PROFILE_SCHEMA_PATH,
+    GITHUB_HOSTING_PROFILE_FIXTURE_PATH,
     GOVERNED_DEVELOPMENT_PATH,
     GOVERNED_DEVELOPMENT_SCHEMA_PATH,
     GOVERNED_DEVELOPMENT_FIXTURE_PATH,
@@ -652,6 +714,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_conformance_construction.py",
     "validation/tests/test_identity_conformance_vectors.py",
     "validation/tests/test_platform_profile.py",
+    "validation/tests/test_github_hosting_profile.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 FORBIDDEN_NAME_PARTS = {
@@ -2213,6 +2276,178 @@ def validate_platform_profile_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_github_hosting_profile(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GITHUB_HOSTING_PROFILE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "github-hosting-profile":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected github-hosting-profile identity")
+    if value["platform_name"] != "GitHub":
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+             f"{label}.platform_name: GitHub required")
+
+    concept_mappings = value["concept_mappings"]
+    if not isinstance(concept_mappings, dict) or not concept_mappings:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+             f"{label}.concept_mappings: non-empty object required")
+    exact_fields(concept_mappings, set(GITHUB_HOSTING_PROFILE_MAPPINGS), f"{label}.concept_mappings")
+    expected_binding_targets = {
+        "issue": "issue-number",
+        "issue_comment_scope": "issue-comment-id",
+        "issue_comment_patch_plan": "issue-comment-id",
+        "pull_request": "pull-request-head-sha",
+        "review_comment_submission": "pull-request-review-id",
+        "check_run": "check-run-commit-sha",
+        "workflow_run": "workflow-run-commit-sha",
+        "merge_result": "merge-commit-sha",
+        "branch_protection": "protected-branch-ref",
+        "label": "label-name",
+        "release": "release-tag-and-commit-sha",
+        "platform_identity": "github-actor-or-app-id",
+        "api_evidence_reference": "github-api-artifact",
+    }
+    for mapping_name, mapping in concept_mappings.items():
+        if not isinstance(mapping, dict) or set(mapping) != {
+            "generic_concept", "github_mechanism", "mapping_required",
+            "binding_target", "notes",
+        }:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}: closed mapping required")
+        if not isinstance(mapping["generic_concept"], str) or not mapping["generic_concept"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.generic_concept: non-empty string required")
+        if not isinstance(mapping["github_mechanism"], str) or not mapping["github_mechanism"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.github_mechanism: non-empty string required")
+        if not isinstance(mapping["mapping_required"], bool):
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.mapping_required: boolean required")
+        if not isinstance(mapping["binding_target"], str) or not mapping["binding_target"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.binding_target: non-empty string required")
+        if mapping["binding_target"] != expected_binding_targets[mapping_name]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.binding_target: unexpected binding target")
+        if not isinstance(mapping["notes"], str) or not mapping["notes"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.concept_mappings.{mapping_name}.notes: non-empty string required")
+
+    fallback_behavior = value["fallback_behavior"]
+    if not isinstance(fallback_behavior, dict) or not fallback_behavior:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+             f"{label}.fallback_behavior: non-empty object required")
+    exact_fields(fallback_behavior, set(GITHUB_HOSTING_PROFILE_FALLBACKS), f"{label}.fallback_behavior")
+    for fallback_name, fallback in fallback_behavior.items():
+        if not isinstance(fallback, dict):
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.fallback_behavior.{fallback_name}: object required")
+        if fallback_name == "unimplemented_capability":
+            if set(fallback) != {"description", "default"}:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}: closed fallback declaration required")
+            if not isinstance(fallback["default"], str) or not fallback["default"]:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}.default: non-empty string required")
+        else:
+            if set(fallback) != {"description", "requirement"}:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}: closed fallback declaration required")
+            if not isinstance(fallback["requirement"], str) or not fallback["requirement"]:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}.requirement: non-empty string required")
+        if not isinstance(fallback["description"], str) or not fallback["description"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.fallback_behavior.{fallback_name}.description: non-empty string required")
+
+    authority_separation = value["authority_separation"]
+    if not isinstance(authority_separation, dict) or not authority_separation:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+             f"{label}.authority_separation: non-empty object required")
+    exact_fields(authority_separation, set(GITHUB_HOSTING_PROFILE_AUTHORITIES), f"{label}.authority_separation")
+    for authority_name, authority in authority_separation.items():
+        if not isinstance(authority, dict):
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.authority_separation.{authority_name}: object required")
+        if authority_name == "framework_authority":
+            if set(authority) != {"may_define", "may_not_define"}:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}: closed authority declaration required")
+        else:
+            if set(authority) != {"may_implement", "must_not_redefine"}:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}: closed authority declaration required")
+        for field_name, items in authority.items():
+            if not isinstance(items, list) or not items:
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: non-empty array required")
+            if any(not isinstance(item, str) or not item for item in items):
+                fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: string entries required")
+
+    decision_basis = value["decision_basis"]
+    if not isinstance(decision_basis, dict) or not decision_basis:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+             f"{label}.decision_basis: non-empty object required")
+    exact_fields(decision_basis, set(GITHUB_HOSTING_PROFILE_DECISIONS), f"{label}.decision_basis")
+    for decision_name, decision in decision_basis.items():
+        if not isinstance(decision, dict) or set(decision) != {"decision", "rationale"}:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}: closed decision record required")
+        if not isinstance(decision["decision"], str) or not decision["decision"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}.decision: non-empty string required")
+        if not isinstance(decision["rationale"], str) or not decision["rationale"]:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}.rationale: non-empty string required")
+    return identity
+
+
+def validate_github_hosting_profile_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GITHUB_HOSTING_PROFILE_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "github-hosting-profile-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected github-hosting-profile fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_github_hosting_profile_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GITHUB_HOSTING_PROFILE_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "github-hosting-profile-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected github-hosting-profile schema identity")
+    if value["target_construction_identity"] != "github-hosting-profile" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-GITHUB-HOSTING-PROFILE-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2671,6 +2906,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{PLATFORM_PROFILE_FIXTURE_PATH}: duplicate construction identity")
     identities.add(platform_profile_fixtures_identity)
+
+    github_hosting_profile = strict_json(root / GITHUB_HOSTING_PROFILE_PATH)
+    github_hosting_profile_identity = validate_github_hosting_profile(
+        github_hosting_profile, GITHUB_HOSTING_PROFILE_PATH
+    )
+    if github_hosting_profile_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GITHUB_HOSTING_PROFILE_PATH}: duplicate construction identity")
+    identities.add(github_hosting_profile_identity)
+
+    github_hosting_profile_schema = strict_json(root / GITHUB_HOSTING_PROFILE_SCHEMA_PATH)
+    github_hosting_profile_schema_identity = validate_github_hosting_profile_schema(
+        github_hosting_profile_schema, GITHUB_HOSTING_PROFILE_SCHEMA_PATH
+    )
+    if github_hosting_profile_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GITHUB_HOSTING_PROFILE_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(github_hosting_profile_schema_identity)
+
+    github_hosting_profile_fixtures = strict_json(root / GITHUB_HOSTING_PROFILE_FIXTURE_PATH)
+    github_hosting_profile_fixtures_identity = validate_github_hosting_profile_fixtures(
+        github_hosting_profile_fixtures, GITHUB_HOSTING_PROFILE_FIXTURE_PATH
+    )
+    if github_hosting_profile_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GITHUB_HOSTING_PROFILE_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(github_hosting_profile_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
