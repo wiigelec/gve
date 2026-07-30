@@ -869,6 +869,7 @@ REQUIRED_PATHS = (
     "validation/intrinsic/validate_identity_construction.py",
     "validation/intrinsic/validate_canonical_json.py",
     "validation/intrinsic/validate_projection_freshness.py",
+    "validation/intrinsic/validate_repository_completeness.py",
     "validation/lib/__init__.py",
     "validation/lib/render_projection.py",
     "validation/lib/strict_json.py",

@@ -19,4 +19,6 @@ fi
 #"$PYTHON" -m specs.tooling.validate --specs-root specs
 #"$PYTHON" -m specs.tooling.validate_identity
 specification-system/repo/validate
+"$PYTHON" specification-system/repo/validation/intrinsic/validate_repository_completeness.py \
+    --root specification-system/repo
 git diff --check
