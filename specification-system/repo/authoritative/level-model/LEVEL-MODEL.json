@@ -1,14 +1,138 @@
 {
-  "construction_identity": "level-model-placeholder",
+  "construction_identity": "level-model",
   "construction_status": "under-construction",
-  "responsibility": "Represent the future Level-model authority without defining Level semantics.",
+  "responsibility": "Define the fixed product specification Level 0-3 format with closed Level inventory, per-Level semantics, dependency rules, artifact placement constraints, and completeness criteria without introducing product-specific Level content or defining final identities, manifests, or hosting-platform semantics.",
   "normative": false,
+  "level_definitions": [
+    {
+      "id": "level-0",
+      "name": "kernel",
+      "position": 0,
+      "responsibility": "Define core terminology, universal invariants, authority and precedence, identity and versioning foundations, common data constraints, error and failure principles, lifecycle foundations, and extension boundaries.",
+      "allowed_content": ["core-terminology", "universal-invariants", "authority-and-precedence", "identity-and-versioning", "data-constraints", "error-and-failure", "lifecycle-foundations", "extension-boundaries"],
+      "dependency_levels": []
+    },
+    {
+      "id": "level-1",
+      "name": "primitives",
+      "position": 1,
+      "responsibility": "Define entities, values, records, interfaces, elementary operations, state definitions, validation primitives, and reusable atomic concepts.",
+      "allowed_content": ["entities", "values", "records", "interfaces", "elementary-operations", "state-definitions", "validation-primitives", "reusable-atomic-concepts"],
+      "dependency_levels": ["level-0"]
+    },
+    {
+      "id": "level-2",
+      "name": "components",
+      "position": 2,
+      "responsibility": "Define services, processors, validators, adapters, repositories, subsystems, coordinated state machines, and reusable component contracts.",
+      "allowed_content": ["services", "processors", "validators", "adapters", "repositories", "subsystems", "state-machines", "component-contracts"],
+      "dependency_levels": ["level-0", "level-1"]
+    },
+    {
+      "id": "level-3",
+      "name": "orchestrations",
+      "position": 3,
+      "responsibility": "Define end-to-end use cases, multi-component workflows, user-facing operations, lifecycle orchestrations, cross-system coordination, release or deployment flows, and complete product interactions.",
+      "allowed_content": ["use-cases", "multi-component-workflows", "user-facing-operations", "lifecycle-orchestrations", "cross-system-coordination", "release-and-deployment", "product-interactions"],
+      "dependency_levels": ["level-0", "level-1", "level-2"]
+    }
+  ],
+  "level_root_artifacts": {
+    "naming_pattern": "LEVEL-<N>.json",
+    "naming_description": "Each Level has a root specification artifact named LEVEL-<N>.json where N is the level number (0-3).",
+    "required_fields": ["specification_identity", "schema_version", "level", "level_name", "dependency_declarations", "document_set"],
+    "closed": true
+  },
+  "subordinate_artifacts": {
+    "naming_pattern": "LEVEL-<N>-<SUBJECT>.json",
+    "naming_description": "Subordinate specification artifacts within a Level are named LEVEL-<N>-<SUBJECT>.json where SUBJECT is a descriptive hyphenated identifier.",
+    "permitted_relationships": ["subordinate-to-level-root"],
+    "must_be_declared_in_root_document_set": true
+  },
+  "dependency_rules": {
+    "hierarchy": [
+      {"level": "level-0", "may_depend_on": []},
+      {"level": "level-1", "may_depend_on": ["level-0"]},
+      {"level": "level-2", "may_depend_on": ["level-0", "level-1"]},
+      {"level": "level-3", "may_depend_on": ["level-0", "level-1", "level-2"]}
+    ],
+    "forbidden_patterns": [
+      "lower-level-depend-on-higher-level",
+      "circular-dependency",
+      "higher-level-redefine-lower-level-semantic",
+      "orchestration-invent-missing-primitive",
+      "implementation-become-undocumented-specification-source"
+    ],
+    "same_level_dependency_rule": "explicit-and-acyclic"
+  },
+  "cross_level_references": {
+    "permitted": true,
+    "reference_format": "level-<N>-<artifact-identity>",
+    "must_resolve_within_specification_set": true,
+    "canonical_format_required": true
+  },
+  "manifest_requirements": {
+    "level_in_specification_set_manifest": true,
+    "manifest_lists_every_document": true,
+    "document_identities_must_be_unique": true,
+    "manifest_participant_class": "manifest-participant"
+  },
+  "schema_requirements": {
+    "each_level_root_requires_schema": true,
+    "schema_closed": true,
+    "schema_rejects_unknown_fields": true
+  },
+  "conformance_requirements": {
+    "each_level_participates": true,
+    "minimum_positive_vectors": 1,
+    "minimum_negative_vectors": 1
+  },
+  "derived_projection_rules": {
+    "derived_projections_permitted": true,
+    "projection_source_is_authoritative_json": true,
+    "projection_must_be_deterministic": true,
+    "projection_must_identify_source": true,
+    "hand_editing_projection_forbidden": true
+  },
+  "completeness_criteria": {
+    "fixed_level_inventory_closed": true,
+    "dependency_validation_fail_closed": true,
+    "cycles_and_upward_dependencies_rejected": true,
+    "level_artifact_placement_deterministic": true,
+    "no_product_specific_level_content": true,
+    "minimal_positive_and_negative_fixtures_exist": true
+  },
+  "authority_separation": {
+    "framework_may_define": ["level-model", "level-schemas", "level-validation-rules"],
+    "framework_may_not_define": ["product-specific-level-content"],
+    "product_may_instantiate": ["level-0-content", "level-1-content", "level-2-content", "level-3-content"],
+    "product_may_extend": ["level-schemas", "level-conformance-vectors"]
+  },
+  "decision_basis": {
+    "fixed_level_inventory": {
+      "decision": "four-fixed-levels-0-3",
+      "rationale": "The product overview defines four fixed specification Levels (kernel, primitives, components, orchestrations) that form a strict dependency hierarchy. This closed set ensures deterministic Level discovery and prevents ad-hoc Level creation."
+    },
+    "dependency_direction": {
+      "decision": "dependency-flows-upward-only",
+      "rationale": "Dependencies must flow upward through the Level hierarchy (Level 0 -> Level 1 -> Level 2 -> Level 3). Lower Levels must not depend on higher Levels. This prevents circular authority and ensures foundational stability."
+    },
+    "no_product_semantics": {
+      "decision": "level-model-is-framework-generic",
+      "rationale": "The Level model defines only the format, dependency rules, and completeness criteria for product specifications. Product-specific Level content (operation, effect, execution-record semantics) belongs to a separate future product derived from this framework."
+    }
+  },
   "expected_relationships": [
-    "repository model",
-    "source-layout authority"
+    "Phase 1 framework boundary entity types (product-level-specification)",
+    "Phase 3 repository functional-area model (product-specifications area)",
+    "current product-level placeholder (superseded LEVEL-MODEL.json)",
+    "future product artifact roles (Phase 5)",
+    "future Git repository and revision model (Phase 6)"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final schema and identity bindings for Level artifacts are not defined.",
+    "Derived projection format and generation mechanism are not defined.",
+    "Source correspondence ownership granularity is not defined (Phase 10).",
+    "Level completion certification and acceptance boundary is not defined (Phase 9)."
   ]
 }

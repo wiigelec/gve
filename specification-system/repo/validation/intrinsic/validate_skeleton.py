@@ -150,6 +150,31 @@ FUNCTIONAL_AREA_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+LEVEL_MODEL_PATH = "authoritative/level-model/LEVEL-MODEL.json"
+LEVEL_MODEL_SCHEMA_PATH = "authoritative/schemas/level-model/LEVEL-MODEL-CONSTRUCTION-SCHEMA.json"
+LEVEL_MODEL_FIXTURE_PATH = "validation/fixtures/level-model/LEVEL-MODEL-FIXTURES.json"
+LEVEL_MODEL_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "level_definitions", "level_root_artifacts",
+    "subordinate_artifacts", "dependency_rules", "cross_level_references",
+    "manifest_requirements", "schema_requirements", "conformance_requirements",
+    "derived_projection_rules", "completeness_criteria",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+LEVEL_MODEL_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+LEVEL_MODEL_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+LEVEL_MODEL_CLOSED_LEVELS: tuple[str, ...] = (
+    "level-0", "level-1", "level-2", "level-3",
+)
 FUNCTIONAL_AREA_CLOSED_AREAS: tuple[str, ...] = (
     "overview-documentation",
     "implementation-planning",
@@ -206,6 +231,9 @@ ARTIFACT_CLASSES = (
     "functional-area-construction",
     "functional-area-construction-schema",
     "functional-area-fixture-set-construction",
+    "level-model-construction",
+    "level-model-construction-schema",
+    "level-model-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -221,7 +249,6 @@ ARTIFACT_PATHS = (
     "authoritative/identity/IDENTITY-VERIFICATION.json",
     "authoritative/development-process/DEVELOPMENT-PROCESS.json",
     "authoritative/normative-change/NORMATIVE-CHANGE.json",
-    "authoritative/level-model/LEVEL-MODEL.json",
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
@@ -247,6 +274,9 @@ ARTIFACT_PATHS = (
     FUNCTIONAL_AREA_PATH,
     FUNCTIONAL_AREA_SCHEMA_PATH,
     FUNCTIONAL_AREA_FIXTURE_PATH,
+    LEVEL_MODEL_PATH,
+    LEVEL_MODEL_SCHEMA_PATH,
+    LEVEL_MODEL_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -278,6 +308,9 @@ NON_PLACEHOLDER_PATHS = {
     FUNCTIONAL_AREA_PATH,
     FUNCTIONAL_AREA_SCHEMA_PATH,
     FUNCTIONAL_AREA_FIXTURE_PATH,
+    LEVEL_MODEL_PATH,
+    LEVEL_MODEL_SCHEMA_PATH,
+    LEVEL_MODEL_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -298,6 +331,8 @@ REQUIRED_DIRECTORIES = (
     "validation/fixtures/framework-boundary",
     "validation/fixtures/development-artifacts",
     "validation/fixtures/functional-areas",
+    "authoritative/schemas/level-model",
+    "validation/fixtures/level-model",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -1183,6 +1218,109 @@ def validate_functional_area_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_level_model(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, LEVEL_MODEL_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "level-model":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected level-model identity")
+    definitions = value["level_definitions"]
+    if not isinstance(definitions, list) or len(definitions) != 4:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+             f"{label}.level_definitions: exactly 4 levels required")
+    seen_ids = set()
+    for definition in definitions:
+        exact_fields(definition, {"id", "name", "position", "responsibility",
+                                   "allowed_content", "dependency_levels"},
+                     f"{label}.level_definitions")
+        level_id = definition["id"]
+        if (
+            not isinstance(level_id, str)
+            or level_id not in LEVEL_MODEL_CLOSED_LEVELS
+            or level_id in seen_ids
+        ):
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                 f"{label}.level_definitions: invalid or duplicate level id")
+        seen_ids.add(level_id)
+        if definition["name"] not in ("kernel", "primitives", "components", "orchestrations"):
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                 f"{label}.level_definitions: unexpected level name")
+        if not isinstance(definition["position"], int) or definition["position"] < 0:
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                 f"{label}.level_definitions: position must be a non-negative integer")
+        deps = definition["dependency_levels"]
+        if not isinstance(deps, list):
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                 f"{label}.level_definitions: dependency_levels must be a list")
+        for dep in deps:
+            if dep not in LEVEL_MODEL_CLOSED_LEVELS:
+                fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                     f"{label}.level_definitions: unknown dependency level '{dep}'")
+            if LEVEL_MODEL_CLOSED_LEVELS.index(dep) >= LEVEL_MODEL_CLOSED_LEVELS.index(level_id):
+                fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                     f"{label}.level_definitions: forbidden upward dependency from {level_id} to {dep}")
+    for field in ("level_root_artifacts", "subordinate_artifacts", "dependency_rules",
+                   "cross_level_references", "manifest_requirements", "schema_requirements",
+                   "conformance_requirements", "derived_projection_rules",
+                   "completeness_criteria"):
+        if not isinstance(value[field], dict) or not value[field]:
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+                 f"{label}.{field}: non-empty object required")
+    if not isinstance(value["authority_separation"], dict) or not value["authority_separation"]:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+             f"{label}.authority_separation: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_level_model_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, LEVEL_MODEL_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "level-model-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected level-model fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_level_model_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, LEVEL_MODEL_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "level-model-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected level-model schema identity")
+    if value["target_construction_identity"] != "level-model" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -1425,6 +1563,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{FUNCTIONAL_AREA_FIXTURE_PATH}: duplicate construction identity")
     identities.add(functional_area_fixtures_identity)
+
+    level_model = strict_json(root / LEVEL_MODEL_PATH)
+    level_model_identity = validate_level_model(
+        level_model, LEVEL_MODEL_PATH
+    )
+    if level_model_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{LEVEL_MODEL_PATH}: duplicate construction identity")
+    identities.add(level_model_identity)
+
+    level_model_schema = strict_json(root / LEVEL_MODEL_SCHEMA_PATH)
+    level_model_schema_identity = validate_level_model_schema(
+        level_model_schema, LEVEL_MODEL_SCHEMA_PATH
+    )
+    if level_model_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{LEVEL_MODEL_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(level_model_schema_identity)
+
+    level_model_fixtures = strict_json(root / LEVEL_MODEL_FIXTURE_PATH)
+    level_model_fixtures_identity = validate_level_model_fixtures(
+        level_model_fixtures, LEVEL_MODEL_FIXTURE_PATH
+    )
+    if level_model_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{LEVEL_MODEL_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(level_model_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
