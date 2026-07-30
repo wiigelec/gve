@@ -1,0 +1,114 @@
+{
+  "construction_identity": "functional-area-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Provide repository-neutral positive and negative construction inputs for the functional-area model without defining accepted conformance.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-functional-area-declaration",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "unknown-functional-area",
+      "expected": "reject",
+      "model_overrides": {
+        "functional_areas": ["overview-documentation", "implementation-planning", "unknown-area"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "empty-functional-areas",
+      "expected": "reject",
+      "model_overrides": {
+        "functional_areas": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "duplicate-functional-area",
+      "expected": "reject",
+      "model_overrides": {
+        "functional_areas": ["overview-documentation", "overview-documentation"]
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "missing-area-semantics",
+      "expected": "reject",
+      "model_overrides": {
+        "area_semantics": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "missing-kernel-classifications",
+      "expected": "reject",
+      "model_overrides": {
+        "kernel_classifications": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "missing-extension-rules",
+      "expected": "reject",
+      "model_overrides": {
+        "extension_rules": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "missing-placement-rules",
+      "expected": "reject",
+      "model_overrides": {
+        "placement_rules": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "empty-authority-separation",
+      "expected": "reject",
+      "model_overrides": {
+        "authority_separation": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {
+        "decision_basis": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    },
+    {
+      "name": "unknown-area-in-semantics",
+      "expected": "reject",
+      "model_overrides": {
+        "area_semantics.unknown-area": {
+          "description": "not a valid area",
+          "kind": "temporary",
+          "authority_classification": "non-normative",
+          "lifecycle_classification": "temporary",
+          "ownership_role": "artifact-owner",
+          "containment": "may-not-contain-functional-areas",
+          "dependency": "none",
+          "path_significance": "well-known-root",
+          "ignored_content": true,
+          "required": false,
+          "product_profile_extensible": false
+        }
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001"
+    }
+  ],
+  "expected_relationships": [
+    "functional area model",
+    "functional area validation",
+    "repository specification construction manifest"
+  ],
+  "unresolved_questions": [
+    "Complete repository profiles, fixture execution contracts, accepted conformance, revisions, acceptance, sealing, and cutover are not defined."
+  ]
+}

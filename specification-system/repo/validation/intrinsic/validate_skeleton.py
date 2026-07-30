@@ -130,6 +130,41 @@ DEVELOPMENT_ARTIFACT_CLOSED_ROLES: tuple[str, ...] = (
     "validation-evidence-reference",
     "review-evidence-reference",
 )
+FUNCTIONAL_AREA_PATH = "authoritative/functional-areas/FUNCTIONAL-AREAS.json"
+FUNCTIONAL_AREA_SCHEMA_PATH = "authoritative/schemas/functional-areas/FUNCTIONAL-AREA-CONSTRUCTION-SCHEMA.json"
+FUNCTIONAL_AREA_FIXTURE_PATH = "validation/fixtures/functional-areas/FUNCTIONAL-AREA-FIXTURES.json"
+FUNCTIONAL_AREA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "repository_vocabulary_identity", "functional_areas",
+    "area_semantics", "kernel_classifications", "extension_rules",
+    "placement_rules", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+FUNCTIONAL_AREA_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+FUNCTIONAL_AREA_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+FUNCTIONAL_AREA_CLOSED_AREAS: tuple[str, ...] = (
+    "overview-documentation",
+    "implementation-planning",
+    "repository-specifications",
+    "product-specifications",
+    "maintained-product-source",
+    "tests",
+    "schemas",
+    "conformance",
+    "generated-artifacts",
+    "validation",
+    "repository-tooling",
+    "packaging-and-release",
+    "temporary-development-state",
+)
 MANIFEST_PATH = "REPOSITORY-SPECIFICATION-SET.json"
 ARTIFACT_CLASSES = (
     "canonical-json-construction",
@@ -168,6 +203,9 @@ ARTIFACT_CLASSES = (
     "development-artifact-construction",
     "development-artifact-construction-schema",
     "development-artifact-fixture-set-construction",
+    "functional-area-construction",
+    "functional-area-construction-schema",
+    "functional-area-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -206,6 +244,9 @@ ARTIFACT_PATHS = (
     DEVELOPMENT_ARTIFACT_PATH,
     DEVELOPMENT_ARTIFACT_SCHEMA_PATH,
     DEVELOPMENT_ARTIFACT_FIXTURE_PATH,
+    FUNCTIONAL_AREA_PATH,
+    FUNCTIONAL_AREA_SCHEMA_PATH,
+    FUNCTIONAL_AREA_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -234,6 +275,9 @@ NON_PLACEHOLDER_PATHS = {
     DEVELOPMENT_ARTIFACT_PATH,
     DEVELOPMENT_ARTIFACT_SCHEMA_PATH,
     DEVELOPMENT_ARTIFACT_FIXTURE_PATH,
+    FUNCTIONAL_AREA_PATH,
+    FUNCTIONAL_AREA_SCHEMA_PATH,
+    FUNCTIONAL_AREA_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -249,8 +293,11 @@ REQUIRED_DIRECTORIES = (
     "authoritative/schemas/framework-boundary",
     "authoritative/development-artifacts",
     "authoritative/schemas/development-artifacts",
+    "authoritative/functional-areas",
+    "authoritative/schemas/functional-areas",
     "validation/fixtures/framework-boundary",
     "validation/fixtures/development-artifacts",
+    "validation/fixtures/functional-areas",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -1050,6 +1097,92 @@ def validate_development_artifact_schema(value: dict[str, Any], label: str) -> s
     return identity
 
 
+def validate_functional_area(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FUNCTIONAL_AREA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "functional-areas":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected functional-area identity")
+    if value["functional_areas"] != list(FUNCTIONAL_AREA_CLOSED_AREAS):
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.functional_areas: closed set violation")
+    if not isinstance(value["area_semantics"], dict) or not value["area_semantics"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.area_semantics: non-empty object required")
+    for area_name in value["area_semantics"]:
+        if area_name not in FUNCTIONAL_AREA_CLOSED_AREAS:
+            fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+                 f"{label}.area_semantics.{area_name}: unknown area")
+        exact_fields(value["area_semantics"][area_name],
+                     {"description", "kind", "authority_classification",
+                      "lifecycle_classification", "ownership_role", "containment",
+                      "dependency", "path_significance", "ignored_content",
+                      "required", "product_profile_extensible"},
+                     f"{label}.area_semantics.{area_name}")
+    if not isinstance(value["kernel_classifications"], dict) or not value["kernel_classifications"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.kernel_classifications: non-empty object required")
+    if not isinstance(value["extension_rules"], dict) or not value["extension_rules"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.extension_rules: non-empty object required")
+    if not isinstance(value["placement_rules"], dict) or not value["placement_rules"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.placement_rules: non-empty object required")
+    if not isinstance(value["authority_separation"], dict) or not value["authority_separation"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.authority_separation: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_functional_area_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FUNCTIONAL_AREA_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "functional-area-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected functional-area fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_functional_area_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, FUNCTIONAL_AREA_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "functional-area-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected functional-area schema identity")
+    if value["target_construction_identity"] != "functional-areas" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-FUNCTIONAL-AREA-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -1265,6 +1398,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{DEVELOPMENT_ARTIFACT_FIXTURE_PATH}: duplicate construction identity")
     identities.add(development_artifact_fixtures_identity)
+
+    functional_area = strict_json(root / FUNCTIONAL_AREA_PATH)
+    functional_area_identity = validate_functional_area(
+        functional_area, FUNCTIONAL_AREA_PATH
+    )
+    if functional_area_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FUNCTIONAL_AREA_PATH}: duplicate construction identity")
+    identities.add(functional_area_identity)
+
+    functional_area_schema = strict_json(root / FUNCTIONAL_AREA_SCHEMA_PATH)
+    functional_area_schema_identity = validate_functional_area_schema(
+        functional_area_schema, FUNCTIONAL_AREA_SCHEMA_PATH
+    )
+    if functional_area_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FUNCTIONAL_AREA_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(functional_area_schema_identity)
+
+    functional_area_fixtures = strict_json(root / FUNCTIONAL_AREA_FIXTURE_PATH)
+    functional_area_fixtures_identity = validate_functional_area_fixtures(
+        functional_area_fixtures, FUNCTIONAL_AREA_FIXTURE_PATH
+    )
+    if functional_area_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{FUNCTIONAL_AREA_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(functional_area_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
