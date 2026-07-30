@@ -1,0 +1,40 @@
+{
+  "construction_identity": "level-model-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative Level model construction document (LEVEL-MODEL.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "level-model",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "level_definitions", "level_root_artifacts",
+    "subordinate_artifacts", "dependency_rules", "cross_level_references",
+    "manifest_requirements", "schema_requirements", "conformance_requirements",
+    "derived_projection_rules", "completeness_criteria",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "level_definitions": {"type": "array", "min_items": 4, "max_items": 4, "item_type": "object", "item_fields_closed": true, "item_required_fields": ["id", "name", "position", "responsibility", "allowed_content", "dependency_levels"]},
+    "level_root_artifacts": {"type": "object", "closed": true},
+    "subordinate_artifacts": {"type": "object", "closed": true},
+    "dependency_rules": {"type": "object", "closed": true},
+    "cross_level_references": {"type": "object", "closed": true},
+    "manifest_requirements": {"type": "object", "closed": true},
+    "schema_requirements": {"type": "object", "closed": true},
+    "conformance_requirements": {"type": "object", "closed": true},
+    "derived_projection_rules": {"type": "object", "closed": true},
+    "completeness_criteria": {"type": "object", "closed": true},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative level-model document (LEVEL-MODEL.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}

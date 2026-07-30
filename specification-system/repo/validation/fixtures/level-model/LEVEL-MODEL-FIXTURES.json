@@ -1,0 +1,63 @@
+{
+  "construction_identity": "level-model-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the Level model construction document against the Level model construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-level-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-level-definitions",
+      "expected": "reject",
+      "model_overrides": {"level_definitions": []},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001"
+    },
+    {
+      "name": "extra-level",
+      "expected": "reject",
+      "model_overrides": {"level_definitions": [
+        {"id": "level-0", "name": "kernel", "position": 0, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": []},
+        {"id": "level-1", "name": "primitives", "position": 1, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0"]},
+        {"id": "level-2", "name": "components", "position": 2, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0", "level-1"]},
+        {"id": "level-3", "name": "orchestrations", "position": 3, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0", "level-1", "level-2"]},
+        {"id": "level-4", "name": "extra", "position": 4, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": []}
+      ]},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001"
+    },
+    {
+      "name": "unknown-field-in-level-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "upward-level-dependency",
+      "expected": "reject",
+      "model_overrides": {"level_definitions": [
+        {"id": "level-0", "name": "kernel", "position": 0, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-1"]},
+        {"id": "level-1", "name": "primitives", "position": 1, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0"]},
+        {"id": "level-2", "name": "components", "position": 2, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0", "level-1"]},
+        {"id": "level-3", "name": "orchestrations", "position": 3, "responsibility": "test", "allowed_content": ["x"], "dependency_levels": ["level-0", "level-1", "level-2"]}
+      ]},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-LEVEL-MODEL-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative level-model document (LEVEL-MODEL.json)",
+    "level-model construction schema (LEVEL-MODEL-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for subordinate artifact naming violations.",
+    "Fixture coverage for cross-level reference resolution failures."
+  ]
+}

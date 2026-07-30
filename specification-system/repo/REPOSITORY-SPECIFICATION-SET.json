@@ -42,7 +42,10 @@
     "development-artifact-fixture-set-construction",
     "functional-area-construction",
     "functional-area-construction-schema",
-    "functional-area-fixture-set-construction"
+    "functional-area-fixture-set-construction",
+    "level-model-construction",
+    "level-model-construction-schema",
+    "level-model-fixture-set-construction"
   ],
   "artifact_paths": [
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -58,7 +61,6 @@
     "authoritative/identity/IDENTITY-VERIFICATION.json",
     "authoritative/development-process/DEVELOPMENT-PROCESS.json",
     "authoritative/normative-change/NORMATIVE-CHANGE.json",
-    "authoritative/level-model/LEVEL-MODEL.json",
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
@@ -83,7 +85,10 @@
     "validation/fixtures/development-artifacts/DEVELOPMENT-ARTIFACT-FIXTURES.json",
     "authoritative/functional-areas/FUNCTIONAL-AREAS.json",
     "authoritative/schemas/functional-areas/FUNCTIONAL-AREA-CONSTRUCTION-SCHEMA.json",
-    "validation/fixtures/functional-areas/FUNCTIONAL-AREA-FIXTURES.json"
+    "validation/fixtures/functional-areas/FUNCTIONAL-AREA-FIXTURES.json",
+    "authoritative/level-model/LEVEL-MODEL.json",
+    "authoritative/schemas/level-model/LEVEL-MODEL-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/level-model/LEVEL-MODEL-FIXTURES.json"
   ],
   "unresolved_questions": [
     "Final normative manifest schema is not defined.",
