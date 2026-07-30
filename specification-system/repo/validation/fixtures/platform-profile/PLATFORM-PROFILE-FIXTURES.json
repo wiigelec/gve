@@ -1,0 +1,52 @@
+{
+  "construction_identity": "platform-profile-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the platform-profile construction document against the platform-profile construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-platform-profile-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "empty-profile-concepts",
+      "expected": "reject",
+      "model_overrides": {"profile_concepts": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001"
+    },
+    {
+      "name": "empty-profile-rules",
+      "expected": "reject",
+      "model_overrides": {"profile_rules": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001"
+    },
+    {
+      "name": "unknown-field-in-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative platform-profile document (PLATFORM-PROFILE.json)",
+    "platform-profile construction schema (PLATFORM-PROFILE-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for individual profile concept violations.",
+    "Fixture coverage for profile rule integrity failures."
+  ]
+}

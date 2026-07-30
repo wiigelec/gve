@@ -287,6 +287,65 @@ NORMATIVE_CHANGE_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+PLATFORM_PROFILE_PATH = "authoritative/platform-profile/PLATFORM-PROFILE.json"
+PLATFORM_PROFILE_SCHEMA_PATH = "authoritative/schemas/platform-profile/PLATFORM-PROFILE-CONSTRUCTION-SCHEMA.json"
+PLATFORM_PROFILE_FIXTURE_PATH = "validation/fixtures/platform-profile/PLATFORM-PROFILE-FIXTURES.json"
+PLATFORM_PROFILE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "profile_concepts", "profile_rules",
+    "concept_map_framework", "fallback_behavior", "authority_separation",
+    "decision_basis", "expected_relationships", "unresolved_questions",
+}
+PLATFORM_PROFILE_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+PLATFORM_PROFILE_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+PLATFORM_PROFILE_CONCEPTS: tuple[str, ...] = (
+    "platform_profile",
+    "work_item",
+    "review_proposal",
+    "comment",
+    "review",
+    "label",
+    "branch_protection",
+    "ci_check",
+    "merge_queue",
+    "release",
+    "platform_identity",
+    "api_evidence_reference",
+)
+PLATFORM_PROFILE_RULES: tuple[str, ...] = (
+    "profiles_declare_concept_implementation",
+    "profiles_may_not_redefine_git_semantics",
+    "missing_capability_has_explicit_fallback",
+    "evidence_binds_to_exact_revision",
+    "profile_identifiers_are_not_semantic_identities",
+)
+PLATFORM_PROFILE_CONCEPT_MAP: tuple[str, ...] = (
+    "governing_work_item",
+    "review_proposal",
+    "review_evidence",
+    "planning_record",
+    "ci_evidence",
+    "classification",
+    "integration_control",
+    "branch_control",
+    "release_record",
+)
+PLATFORM_PROFILE_FALLBACK_BEHAVIOR: tuple[str, ...] = (
+    "unimplemented_concept",
+    "partial_implementation",
+)
+PLATFORM_PROFILE_AUTHORITY_SEPARATION: tuple[str, ...] = (
+    "framework_authority",
+    "platform_profile_authority",
+)
 GOVERNED_DEVELOPMENT_BOUNDED_STAGES: tuple[str, ...] = (
     "governing-work-item", "detailed-scope", "ordered-patch-plan",
     "accepted-base", "isolated-branch", "coherent-patch",
@@ -362,6 +421,9 @@ ARTIFACT_CLASSES = (
     "source-correspondence-construction",
     "source-correspondence-construction-schema",
     "source-correspondence-fixture-set-construction",
+    "platform-profile-construction",
+    "platform-profile-construction-schema",
+    "platform-profile-fixture-set-construction",
     "specification-artifact-class-construction",
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
@@ -412,6 +474,9 @@ ARTIFACT_PATHS = (
     SOURCE_LAYOUT_PATH,
     SOURCE_LAYOUT_SCHEMA_PATH,
     SOURCE_LAYOUT_FIXTURE_PATH,
+    PLATFORM_PROFILE_PATH,
+    PLATFORM_PROFILE_SCHEMA_PATH,
+    PLATFORM_PROFILE_FIXTURE_PATH,
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
     "authoritative/schemas/identity/IDENTITY-MODEL-CONSTRUCTION-SCHEMA.json",
@@ -494,6 +559,9 @@ NON_PLACEHOLDER_PATHS = {
     AI_CONTINUITY_PATH,
     AI_CONTINUITY_SCHEMA_PATH,
     AI_CONTINUITY_FIXTURE_PATH,
+    PLATFORM_PROFILE_PATH,
+    PLATFORM_PROFILE_SCHEMA_PATH,
+    PLATFORM_PROFILE_FIXTURE_PATH,
     GOVERNED_DEVELOPMENT_PATH,
     GOVERNED_DEVELOPMENT_SCHEMA_PATH,
     GOVERNED_DEVELOPMENT_FIXTURE_PATH,
@@ -515,6 +583,9 @@ REQUIRED_DIRECTORIES = (
     "authoritative/source-layout",
     "authoritative/schemas/source-layout",
     "validation/fixtures/source-layout",
+    "authoritative/platform-profile",
+    "authoritative/schemas/platform-profile",
+    "validation/fixtures/platform-profile",
     "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
     "authoritative/schemas/specification-system",
@@ -580,6 +651,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_canonical_json.py",
     "validation/tests/test_conformance_construction.py",
     "validation/tests/test_identity_conformance_vectors.py",
+    "validation/tests/test_platform_profile.py",
 )
 IDENTITY = re.compile(r"^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$")
 FORBIDDEN_NAME_PARTS = {
@@ -1961,6 +2033,186 @@ def validate_source_layout_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_platform_profile(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, PLATFORM_PROFILE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "platform-profile":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected platform-profile identity")
+
+    profile_concepts = value["profile_concepts"]
+    if not isinstance(profile_concepts, dict) or not profile_concepts:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.profile_concepts: non-empty object required")
+    exact_fields(profile_concepts, set(PLATFORM_PROFILE_CONCEPTS), f"{label}.profile_concepts")
+    for concept_name, concept in profile_concepts.items():
+        if not isinstance(concept, dict) or set(concept) != {"description", "required", "safeguards"}:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_concepts.{concept_name}: closed concept declaration required")
+        if not isinstance(concept["description"], str) or not concept["description"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_concepts.{concept_name}.description: non-empty string required")
+        if not isinstance(concept["required"], bool):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_concepts.{concept_name}.required: boolean required")
+        safeguards = concept["safeguards"]
+        if not isinstance(safeguards, list) or not safeguards:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_concepts.{concept_name}.safeguards: non-empty array required")
+        if any(not isinstance(safeguard, str) or not safeguard for safeguard in safeguards):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_concepts.{concept_name}.safeguards: string safeguards required")
+
+    profile_rules = value["profile_rules"]
+    if not isinstance(profile_rules, dict) or not profile_rules:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.profile_rules: non-empty object required")
+    exact_fields(profile_rules, set(PLATFORM_PROFILE_RULES), f"{label}.profile_rules")
+    for rule_name, rule in profile_rules.items():
+        if not isinstance(rule, dict) or set(rule) != {"description", "enforced", "fail_condition"}:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_rules.{rule_name}: closed rule declaration required")
+        if not isinstance(rule["description"], str) or not rule["description"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_rules.{rule_name}.description: non-empty string required")
+        if not isinstance(rule["enforced"], bool):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_rules.{rule_name}.enforced: boolean required")
+        if not isinstance(rule["fail_condition"], str) or not rule["fail_condition"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.profile_rules.{rule_name}.fail_condition: non-empty string required")
+
+    concept_map = value["concept_map_framework"]
+    if not isinstance(concept_map, dict) or not concept_map:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.concept_map_framework: non-empty object required")
+    exact_fields(concept_map, set(PLATFORM_PROFILE_CONCEPT_MAP), f"{label}.concept_map_framework")
+    for concept_name, mapping in concept_map.items():
+        if not isinstance(mapping, dict) or set(mapping) != {"platform_concept", "mapping_required"}:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.concept_map_framework.{concept_name}: closed mapping required")
+        if mapping["platform_concept"] not in PLATFORM_PROFILE_CONCEPTS:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.concept_map_framework.{concept_name}.platform_concept: unknown platform concept")
+        if not isinstance(mapping["mapping_required"], bool):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.concept_map_framework.{concept_name}.mapping_required: boolean required")
+
+    fallback_behavior = value["fallback_behavior"]
+    if not isinstance(fallback_behavior, dict) or not fallback_behavior:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.fallback_behavior: non-empty object required")
+    exact_fields(fallback_behavior, set(PLATFORM_PROFILE_FALLBACK_BEHAVIOR), f"{label}.fallback_behavior")
+    for fallback_name, fallback in fallback_behavior.items():
+        if not isinstance(fallback, dict):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.fallback_behavior.{fallback_name}: object required")
+        if fallback_name == "unimplemented_concept":
+            if set(fallback) != {"description", "default"}:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}: closed fallback declaration required")
+            if not isinstance(fallback["default"], str) or not fallback["default"]:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}.default: non-empty string required")
+        else:
+            if set(fallback) != {"description", "requirement"}:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}: closed fallback declaration required")
+            if not isinstance(fallback["requirement"], str) or not fallback["requirement"]:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.fallback_behavior.{fallback_name}.requirement: non-empty string required")
+        if not isinstance(fallback["description"], str) or not fallback["description"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.fallback_behavior.{fallback_name}.description: non-empty string required")
+
+    authority_separation = value["authority_separation"]
+    if not isinstance(authority_separation, dict) or not authority_separation:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.authority_separation: non-empty object required")
+    exact_fields(authority_separation, set(PLATFORM_PROFILE_AUTHORITY_SEPARATION), f"{label}.authority_separation")
+    for authority_name, authority in authority_separation.items():
+        if not isinstance(authority, dict):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.authority_separation.{authority_name}: object required")
+        if authority_name == "framework_authority":
+            if set(authority) != {"may_define", "may_not_define"}:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}: closed authority declaration required")
+        else:
+            if set(authority) != {"may_implement", "must_not_redefine"}:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}: closed authority declaration required")
+        for field_name, items in authority.items():
+            if not isinstance(items, list) or not items:
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: non-empty array required")
+            if any(not isinstance(item, str) or not item for item in items):
+                fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                     f"{label}.authority_separation.{authority_name}.{field_name}: string entries required")
+
+    decision_basis = value["decision_basis"]
+    if not isinstance(decision_basis, dict) or not decision_basis:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+             f"{label}.decision_basis: non-empty object required")
+    for decision_name, decision in decision_basis.items():
+        if not isinstance(decision, dict) or set(decision) != {"decision", "rationale"}:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}: closed decision record required")
+        if not isinstance(decision["decision"], str) or not decision["decision"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}.decision: non-empty string required")
+        if not isinstance(decision["rationale"], str) or not decision["rationale"]:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-001",
+                 f"{label}.decision_basis.{decision_name}.rationale: non-empty string required")
+    return identity
+
+
+def validate_platform_profile_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, PLATFORM_PROFILE_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "platform-profile-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected platform-profile fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_platform_profile_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, PLATFORM_PROFILE_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "platform-profile-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected platform-profile schema identity")
+    if value["target_construction_identity"] != "platform-profile" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-PLATFORM-PROFILE-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2392,6 +2644,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{SOURCE_LAYOUT_FIXTURE_PATH}: duplicate construction identity")
     identities.add(source_layout_fixtures_identity)
+
+    platform_profile = strict_json(root / PLATFORM_PROFILE_PATH)
+    platform_profile_identity = validate_platform_profile(
+        platform_profile, PLATFORM_PROFILE_PATH
+    )
+    if platform_profile_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{PLATFORM_PROFILE_PATH}: duplicate construction identity")
+    identities.add(platform_profile_identity)
+
+    platform_profile_schema = strict_json(root / PLATFORM_PROFILE_SCHEMA_PATH)
+    platform_profile_schema_identity = validate_platform_profile_schema(
+        platform_profile_schema, PLATFORM_PROFILE_SCHEMA_PATH
+    )
+    if platform_profile_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{PLATFORM_PROFILE_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(platform_profile_schema_identity)
+
+    platform_profile_fixtures = strict_json(root / PLATFORM_PROFILE_FIXTURE_PATH)
+    platform_profile_fixtures_identity = validate_platform_profile_fixtures(
+        platform_profile_fixtures, PLATFORM_PROFILE_FIXTURE_PATH
+    )
+    if platform_profile_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{PLATFORM_PROFILE_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(platform_profile_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

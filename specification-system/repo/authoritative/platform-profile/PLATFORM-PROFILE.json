@@ -1,0 +1,160 @@
+{
+  "construction_identity": "platform-profile",
+  "construction_status": "under-construction",
+  "responsibility": "Define how platform-specific development behavior extends the Git-generic core, including profile declaration, concept mapping, fallback behavior, evidence binding, and identifier separation without prescribing any specific hosting-platform profile.",
+  "normative": false,
+  "profile_concepts": {
+    "platform_profile": {
+      "description": "A named declaration that maps a specific hosting platform's capabilities to the Git-generic concepts defined in phases 6-10. A profile identifies its target platform and declares which generic concepts it implements.",
+      "required": true,
+      "safeguards": ["profile-declaration-required", "profile-must-name-platform"]
+    },
+    "work_item": {
+      "description": "A platform-specific representation of a governing work item (e.g., GitHub issue). Work items track bounded work through its lifecycle stages.",
+      "required": true,
+      "safeguards": ["work-item-must-reference-governing-issue"]
+    },
+    "review_proposal": {
+      "description": "A platform-specific representation of a review proposal (e.g., GitHub pull request). Review proposals present a set of changes for semantic review.",
+      "required": true,
+      "safeguards": ["review-proposal-must-bind-to-exact-head"]
+    },
+    "comment": {
+      "description": "A platform-specific discussion or annotation on a work item, review proposal, or specific change. Comments capture review evidence and planning records.",
+      "required": true,
+      "safeguards": ["comment-must-be-attributable"]
+    },
+    "review": {
+      "description": "A platform-specific structured review of a change proposal, including reviewer identity, scope, and outcome. Review evidence is required for acceptance.",
+      "required": true,
+      "safeguards": ["review-must-identify-reviewer", "review-scope-must-be-explicit"]
+    },
+    "label": {
+      "description": "A platform-specific classification tag applied to work items or review proposals for organization, filtering, or workflow state tracking.",
+      "required": false,
+      "safeguards": ["label-must-not-replace-governance-decision"]
+    },
+    "branch_protection": {
+      "description": "A platform-specific mechanism enforcing rules on branch operations, such as requiring reviews, passing checks, or limiting who can push to protected branches.",
+      "required": false,
+      "safeguards": ["branch-protection-must-not-replace-governance"]
+    },
+    "ci_check": {
+      "description": "A platform-specific automated check that validates code changes against defined criteria. CI results provide mechanical evidence for a specific commit.",
+      "required": true,
+      "safeguards": ["ci-check-binds-to-exact-revision", "ci-check-is-not-review-or-acceptance"]
+    },
+    "merge_queue": {
+      "description": "A platform-specific mechanism for ordering and managing the integration of multiple change proposals into a target branch.",
+      "required": false,
+      "safeguards": ["merge-queue-must-not-skip-review-or-acceptance"]
+    },
+    "release": {
+      "description": "A platform-specific representation of a software release, typically tagging a specific commit with a version identifier and release artifacts.",
+      "required": false,
+      "safeguards": ["release-must-bind-to-exact-revision"]
+    },
+    "platform_identity": {
+      "description": "A platform-specific user or actor identity used for attribution of work items, comments, reviews, and other platform actions.",
+      "required": true,
+      "safeguards": ["platform-identity-must-be-traceable"]
+    },
+    "api_evidence_reference": {
+      "description": "A reference to platform API artifacts that serve as evidence of platform state at a specific point in time, such as issue state, PR head, check run result, or merge commit.",
+      "required": true,
+      "safeguards": ["api-evidence-must-bind-to-exact-revision"]
+    }
+  },
+  "profile_rules": {
+    "profiles_declare_concept_implementation": {
+      "description": "A hosting-platform profile must explicitly declare which Git-generic concepts it implements. Implemented concepts may be mapped to platform-specific mechanisms.",
+      "enforced": true,
+      "fail_condition": "profile-without-concept-declaration"
+    },
+    "profiles_may_not_redefine_git_semantics": {
+      "description": "A platform profile may extend or map Git-generic concepts but must not redefine core Git semantics such as commit, tree, branch, merge, or revision identity.",
+      "enforced": true,
+      "fail_condition": "profile-redefines-git-semantics"
+    },
+    "missing_capability_has_explicit_fallback": {
+      "description": "When a hosting platform lacks a capability expected by a generic concept, the profile must declare explicit fallback behavior. Silent omission is not permitted.",
+      "enforced": true,
+      "fail_condition": "missing-capability-without-fallback"
+    },
+    "evidence_binds_to_exact_revision": {
+      "description": "All platform-provided evidence (CI results, review approvals, merge records) must bind to exact repository revisions. Floating-branch or non-revision-bound evidence is not acceptable.",
+      "enforced": true,
+      "fail_condition": "evidence-without-exact-revision-binding"
+    },
+    "profile_identifiers_are_not_semantic_identities": {
+      "description": "Platform-specific identifiers (issue numbers, PR numbers, check run IDs) are not automatically semantic identities under the framework identity model. Explicit mapping is required for identity participation.",
+      "enforced": true,
+      "fail_condition": "platform-identifier-used-as-semantic-identity-without-mapping"
+    }
+  },
+  "concept_map_framework": {
+    "governing_work_item": {"platform_concept": "work_item", "mapping_required": true},
+    "review_proposal": {"platform_concept": "review_proposal", "mapping_required": true},
+    "review_evidence": {"platform_concept": "review", "mapping_required": true},
+    "planning_record": {"platform_concept": "comment", "mapping_required": true},
+    "ci_evidence": {"platform_concept": "ci_check", "mapping_required": true},
+    "classification": {"platform_concept": "label", "mapping_required": false},
+    "integration_control": {"platform_concept": "merge_queue", "mapping_required": false},
+    "branch_control": {"platform_concept": "branch_protection", "mapping_required": false},
+    "release_record": {"platform_concept": "release", "mapping_required": false}
+  },
+  "fallback_behavior": {
+    "unimplemented_concept": {
+      "description": "When a profile does not declare implementation of a generic concept, the framework must treat that concept's evidence as unavailable. Missing evidence blocks dependent stages.",
+      "default": "evidence-unavailable"
+    },
+    "partial_implementation": {
+      "description": "A profile may implement a concept partially. Partial implementation must declare which aspects are implemented and which are unavailable, with rationale.",
+      "requirement": "partial-implementation-must-be-declared"
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["profile-concepts", "profile-rules", "concept-map-framework", "fallback-behavior", "evidence-binding-rules", "identifier-separation"],
+      "may_not_define": ["any-specific-platform-profile", "platform-api-behavior", "platform-authentication", "platform-workflow-automation"]
+    },
+    "platform_profile_authority": {
+      "may_implement": ["concept-mappings", "platform-specific-identifiers", "api-evidence-collection"],
+      "must_not_redefine": ["profile-rules", "git-semantics", "evidence-binding-requirements", "identifier-separation-rules"]
+    }
+  },
+  "decision_basis": {
+    "platform_profiles_extend_generic_core": {
+      "decision": "profiles-extend-generic-core-without-redefining-it",
+      "rationale": "The framework defines Git-generic development concepts. Hosting-platform profiles map these concepts to platform-specific mechanisms. Profiles extend but must not redefine the generic core, ensuring portability across platforms."
+    },
+    "evidence_binds_to_exact_revision": {
+      "decision": "all-platform-evidence-binds-to-exact-revision",
+      "rationale": "Platform evidence (CI results, review approvals, merge commits) must be pinned to exact repository revisions. Floating references lose auditability and undermine reproducibility."
+    },
+    "fallback_must_be_explicit": {
+      "decision": "missing-capability-fallback-must-be-explicit-not-silent",
+      "rationale": "When a platform lacks a capability, silent omission creates an incomplete evidence trail. Explicit fallback behavior ensures that missing capabilities are visible and their impact on governance stages is understood."
+    },
+    "identifiers_are_not_semantic_identities": {
+      "decision": "platform-identifiers-require-explicit-mapping-for-identity-participation",
+      "rationale": "A GitHub issue number or PR number is a platform-specific identifier, not a framework semantic identity. Using platform identifiers as semantic identities without explicit mapping undermines the framework's platform-independent identity model."
+    }
+  },
+  "expected_relationships": [
+    "Git model (exact revision, branch, merge, commit semantics)",
+    "governed-development model (review proposal, acceptance, integration stages)",
+    "normative-change model (evidence binding, acceptance revision)",
+    "AI-continuity model (work item discovery, evidence-driven continuation)",
+    "source-correspondence model (implementation ownership, test/validator ownership)",
+    "future GitHub hosting profile",
+    "future additional hosting-platform profiles"
+  ],
+  "unresolved_questions": [
+    "Concrete profile declaration format and required fields are not defined.",
+    "Concept mapping serialization and validation rules are not defined.",
+    "API evidence reference format and resolution mechanism are not defined.",
+    "Fallback behavior encoding and discovery are not defined.",
+    "Multiple-profile coordination and profile layering are not defined."
+  ]
+}

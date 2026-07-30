@@ -59,7 +59,9 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
             "authoritative/normative-change",
             "authoritative/level-model",
             "authoritative/source-layout",
+            "authoritative/platform-profile",
             "authoritative/schemas",
+            "authoritative/schemas/platform-profile",
             "authoritative/conformance",
         ):
             with self.subTest(relative=relative):
@@ -72,6 +74,15 @@ class CompleteConstructionSkeletonTests(unittest.TestCase):
 
     def test_each_new_validation_area_is_required(self) -> None:
         for relative in ("validation/lib", "validation/repository", "validation/fixtures"):
+            with self.subTest(relative=relative):
+                copy = Path(self.temporary.name) / relative.replace("/", "-")
+                shutil.copytree(self.root, copy)
+                shutil.rmtree(copy / relative)
+                with self.assertRaises(VALIDATOR.ValidationFailure) as raised:
+                    VALIDATOR.validate(copy)
+                self.assertTrue(str(raised.exception).startswith("REPO-SPEC-CONSTRUCTION-PATH-001:"))
+
+        for relative in ("validation/fixtures/platform-profile",):
             with self.subTest(relative=relative):
                 copy = Path(self.temporary.name) / relative.replace("/", "-")
                 shutil.copytree(self.root, copy)
