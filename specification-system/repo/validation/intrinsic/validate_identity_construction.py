@@ -67,7 +67,6 @@ BEHAVIOR_FIXTURE_PATH = "validation/fixtures/identity/identity-behavior/IDENTITY
 CONFORMANCE_VECTOR_PATH = "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json"
 SUPPORTING_PATHS = (
     "authoritative/schemas/identity/README.md",
-    "derived/markdown/identity/README.md",
     "validation/fixtures/identity/README.md",
     SCHEMA_PATH, MODEL_SCHEMA_PATH, FAMILY_SCHEMA_PATH, VERIFICATION_SCHEMA_PATH, FIXTURE_PATH, BEHAVIOR_FIXTURE_PATH, CONFORMANCE_VECTOR_PATH,
     "validation/intrinsic/validate_canonical_json.py",

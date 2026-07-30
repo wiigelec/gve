@@ -15,6 +15,7 @@ if str(CONSTRUCTION_ROOT) not in sys.path:
     sys.path.insert(0, str(CONSTRUCTION_ROOT))
 
 from validation.intrinsic import validate_specification_identities as specification_identities_validator  # noqa: E402
+from validation.intrinsic import validate_projection_freshness as projection_freshness_validator  # noqa: E402
 
 MANIFEST_FIELDS = {
     "construction_identity", "construction_status", "normative",
@@ -839,8 +840,10 @@ REQUIRED_DIRECTORIES = (
     "validation/fixtures/governed-development",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
-    "derived/markdown", "derived/markdown/identity",
-    "derived/markdown/conformance", "validation/lib",
+    "derived/markdown", "derived/markdown/conformance",
+    "derived/markdown/repository-model", "derived/markdown/framework-boundary",
+    "derived/markdown/functional-areas", "derived/markdown/level-model",
+    "derived/markdown/specification-system", "validation/lib",
     "validation/intrinsic", "validation/repository", "validation/tests",
     "validation/fixtures", "validation/fixtures/identity",
     "validation/fixtures/identity/canonical-json",
@@ -851,16 +854,23 @@ REQUIRED_PATHS = (
     MANIFEST_PATH, "validate", *ARTIFACT_PATHS,
     "derived/markdown/README.md",
     "authoritative/schemas/identity/README.md",
-    "derived/markdown/identity/README.md",
     "authoritative/schemas/conformance/README.md",
     "derived/markdown/conformance/README.md",
+    "derived/markdown/repository-model/REPOSITORY-MODEL.md",
+    "derived/markdown/framework-boundary/FRAMEWORK-BOUNDARY.md",
+    "derived/markdown/functional-areas/FUNCTIONAL-AREAS.md",
+    "derived/markdown/level-model/LEVEL-MODEL.md",
+    "derived/markdown/specification-system/SPECIFICATION-ARTIFACTS.md",
+    "derived/markdown/specification-system/SPECIFICATION-IDENTITIES.md",
     "validation/fixtures/identity/README.md",
     "validation/fixtures/identity/conformance/IDENTITY-CONFORMANCE-VECTORS.json",
     "validation/intrinsic/identity_behavior_adapter.py",
     "validation/intrinsic/validate_skeleton.py",
     "validation/intrinsic/validate_identity_construction.py",
     "validation/intrinsic/validate_canonical_json.py",
+    "validation/intrinsic/validate_projection_freshness.py",
     "validation/lib/__init__.py",
+    "validation/lib/render_projection.py",
     "validation/lib/strict_json.py",
     "validation/lib/canonical_json.py",
     "validation/lib/contracts.py",
@@ -874,6 +884,7 @@ REQUIRED_PATHS = (
     "validation/tests/test_canonical_json.py",
     "validation/tests/test_conformance_construction.py",
     "validation/tests/test_identity_conformance_vectors.py",
+    "validation/tests/test_projection_freshness.py",
     "validation/tests/test_platform_profile.py",
     "validation/tests/test_github_hosting_profile.py",
     "validation/tests/test_repository_validation.py",
@@ -3285,6 +3296,10 @@ def validate(root: Path) -> None:
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
+    try:
+        projection_freshness_validator.validate(root)
+    except projection_freshness_validator.ValidationFailure as exc:
+        fail("REPO-SPEC-CONSTRUCTION-PROJECTION-001", str(exc))
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()

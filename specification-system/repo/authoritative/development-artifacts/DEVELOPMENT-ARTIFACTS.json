@@ -283,15 +283,15 @@
     }
   },
   "expected_relationships": [
-    "Phase 1 framework boundary entity types (product-overview, product-implementation-plan)",
-    "future repository functional-area model (Phase 3)",
-    "future governed-development model (Phase 8)"
+    "Framework boundary entity types (product-overview, product-implementation-plan)",
+    "Repository functional-area model",
+    "Governed-development model"
   ],
   "unresolved_questions": [
-    "Concrete overview and plan file formats and discovery paths are not defined (Phase 3).",
+    "Concrete overview and plan file formats and discovery paths are not defined.",
     "Scratchpad lifecycle and retention policy are not defined.",
     "Decision record format and binding to governing issues are not defined.",
-    "Issue comment structure and discovery protocol are not defined (Phase 8).",
-    "Validation and review evidence format and binding are not defined (Phase 8)."
+    "Issue comment structure and discovery protocol are not defined.",
+    "Validation and review evidence format and binding are not defined."
   ]
 }

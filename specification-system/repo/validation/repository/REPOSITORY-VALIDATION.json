@@ -94,7 +94,7 @@
     "framework boundary authority is explicit",
     "validation library remains reusable",
     "manifest inventory stays closed",
-    "phase 13 validation architecture is self-describing"
+    "validation architecture is self-describing"
   ],
   "unresolved_questions": [
     "Final release-freeze criteria are governed separately.",
