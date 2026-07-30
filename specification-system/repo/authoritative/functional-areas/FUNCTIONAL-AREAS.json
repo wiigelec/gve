@@ -290,6 +290,6 @@
     "Concrete path mapping from functional areas to repository paths is not defined.",
     "Repository-layout validation implementation is deferred.",
     "Hosting-platform profile path conventions are not defined (Phase 11-12).",
-    "Initialization template area selection is not defined (Phase 14)."
+    "Initialization template area selection is not defined."
   ]
 }

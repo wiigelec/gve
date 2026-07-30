@@ -11,6 +11,14 @@
       "expected_diagnostic": null
     },
     {
+      "name": "empty-template-initialization-decision",
+      "expected": "reject",
+      "model_overrides": {
+        "decision_basis.template_initialization": {}
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FRAMEWORK-BOUNDARY-001"
+    },
+    {
       "name": "unknown-entity-type",
       "expected": "reject",
       "model_overrides": {
