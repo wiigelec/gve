@@ -1,0 +1,249 @@
+{
+  "construction_identity": "governed-development",
+  "construction_status": "under-construction",
+  "responsibility": "Define the portable hosting-platform-generic governed-development workflow, lifecycle, bounded-work stages, stage role semantics, distinction rules, and evidence requirements without prescribing hosting-platform API behavior.",
+  "normative": false,
+  "lifecycle_stages": [
+    "idea",
+    "overview",
+    "plan",
+    "candidate-specification",
+    "accepted-specification",
+    "product-artifact",
+    "validation",
+    "review",
+    "acceptance",
+    "integration",
+    "release",
+    "maintenance"
+  ],
+  "bounded_work_stages": [
+    "governing-work-item",
+    "detailed-scope",
+    "ordered-patch-plan",
+    "accepted-base",
+    "isolated-branch",
+    "coherent-patch",
+    "focused-validation",
+    "complete-validation",
+    "commit",
+    "exact-head-validation",
+    "publication",
+    "review-proposal",
+    "semantic-review",
+    "acceptance",
+    "integration",
+    "accepted-main-validation",
+    "closure"
+  ],
+  "stage_semantics": {
+    "governing-work-item": {
+      "description": "A bounded work boundary for one governed mutation, defining authority interpretation, dependency boundary, artifact inventory, exclusions, and validation requirements.",
+      "inputs": ["active-plan", "predecessor-evidence"],
+      "outputs": ["governing-issue", "authority-interpretation"],
+      "authority_role": "governing",
+      "evidence_required": ["issue-body", "authority-interpretation"],
+      "transition_to": "detailed-scope"
+    },
+    "detailed-scope": {
+      "description": "The exact artifact inventory and mutation boundaries of a governing issue, derived from the issue governing comment.",
+      "inputs": ["governing-issue"],
+      "outputs": ["artifact-inventory", "mutation-boundaries"],
+      "authority_role": "governing",
+      "evidence_required": ["scope-comment", "artifact-table", "exclusions"],
+      "transition_to": "ordered-patch-plan"
+    },
+    "ordered-patch-plan": {
+      "description": "The ordered sequence of coherent patches within one governing issue, each with its own mutation boundary and validation requirements.",
+      "inputs": ["detailed-scope"],
+      "outputs": ["patch-sequence", "validation-requirements"],
+      "authority_role": "governing",
+      "evidence_required": ["patch-plan-comment", "accepted-base-commit"],
+      "transition_to": "accepted-base"
+    },
+    "accepted-base": {
+      "description": "The specific commit against which the mutation is defined. The authoritative starting point for all patches in the issue.",
+      "inputs": ["patch-plan", "default-branch"],
+      "outputs": ["base-commit", "starting-revision"],
+      "authority_role": "governing",
+      "evidence_required": ["base-commit-hash", "base-commit-validation"],
+      "transition_to": "isolated-branch"
+    },
+    "isolated-branch": {
+      "description": "A branch created from the accepted base that isolates the mutation from concurrent work on the default branch.",
+      "inputs": ["accepted-base"],
+      "outputs": ["working-branch", "branch-commit"],
+      "authority_role": "implementation",
+      "evidence_required": ["branch-name", "branch-point-commit"],
+      "transition_to": "coherent-patch"
+    },
+    "coherent-patch": {
+      "description": "A single focused change within the isolated branch that implements one aspect of the detailed scope. Each patch is independently validatable.",
+      "inputs": ["isolated-branch", "patch-plan"],
+      "outputs": ["patch-content", "patch-description"],
+      "authority_role": "implementation",
+      "evidence_required": ["patch-files", "patch-commit-message"],
+      "transition_to": "focused-validation"
+    },
+    "focused-validation": {
+      "description": "Validation of a single coherent patch against its specific requirements before proceeding to the next patch.",
+      "inputs": ["coherent-patch"],
+      "outputs": ["focused-validation-result", "focused-evidence"],
+      "authority_role": "validation",
+      "evidence_required": ["validation-command", "validation-output", "pass-fail-result"],
+      "transition_to": "complete-validation"
+    },
+    "complete-validation": {
+      "description": "Full repository validation of the entire branch state, including all patches applied so far, against the complete validation suite.",
+      "inputs": ["focused-validation", "branch-state"],
+      "outputs": ["complete-validation-result", "complete-evidence"],
+      "authority_role": "validation",
+      "evidence_required": ["full-validation-command", "full-validation-output", "all-tests-pass"],
+      "transition_to": "commit"
+    },
+    "commit": {
+      "description": "The Git commit that records the patch content with a descriptive message. The commit is the durable record of the mutation.",
+      "inputs": ["complete-validation", "staged-changes"],
+      "outputs": ["commit-hash", "commit-message"],
+      "authority_role": "implementation",
+      "evidence_required": ["commit-hash", "commit-message"],
+      "transition_to": "exact-head-validation"
+    },
+    "exact-head-validation": {
+      "description": "Validation of the exact HEAD commit of the working branch, confirming the complete branch state passes all validation.",
+      "inputs": ["commit", "branch-head"],
+      "outputs": ["head-validation-result", "head-commit-evidence"],
+      "authority_role": "validation",
+      "evidence_required": ["head-validation-command", "head-validation-output", "head-commit-hash"],
+      "transition_to": "publication"
+    },
+    "publication": {
+      "description": "Pushing the working branch to the remote repository, making the branch available for review proposal.",
+      "inputs": ["exact-head-validation", "local-branch"],
+      "outputs": ["remote-branch", "branch-url"],
+      "authority_role": "implementation",
+      "evidence_required": ["push-confirmation", "branch-url"],
+      "transition_to": "review-proposal"
+    },
+    "review-proposal": {
+      "description": "A proposal for semantic review of the branch content. On supported platforms this is a pull request.",
+      "inputs": ["published-branch", "change-summary"],
+      "outputs": ["review-proposal-url", "proposal-body"],
+      "authority_role": "governing",
+      "evidence_required": ["proposal-url", "proposal-body", "change-description"],
+      "transition_to": "semantic-review"
+    },
+    "semantic-review": {
+      "description": "Human review of the proposed changes for semantic correctness, authority alignment, and completeness.",
+      "inputs": ["review-proposal", "change-content"],
+      "outputs": ["review-evidence", "review-outcome"],
+      "authority_role": "review",
+      "evidence_required": ["review-comments", "reviewer-identity", "review-outcome"],
+      "transition_to": "acceptance"
+    },
+    "acceptance": {
+      "description": "Formal acceptance of the proposed changes as meeting all requirements. Acceptance is a governance decision, not a technical merge.",
+      "inputs": ["review-evidence", "validation-evidence"],
+      "outputs": ["acceptance-record", "accepted-revision"],
+      "authority_role": "governing",
+      "evidence_required": ["acceptance-decision", "acceptance-authority", "accepted-commit-hash"],
+      "transition_to": "integration"
+    },
+    "integration": {
+      "description": "Merging the accepted changes into the target branch. The merge produces an integration commit on the target branch.",
+      "inputs": ["acceptance", "working-branch", "target-branch"],
+      "outputs": ["integration-commit", "merged-branch-state"],
+      "authority_role": "implementation",
+      "evidence_required": ["merge-commit-hash", "merge-method", "merge-evidence"],
+      "transition_to": "accepted-main-validation"
+    },
+    "accepted-main-validation": {
+      "description": "Validation of the target branch after integration, confirming that the merge produces a valid repository state.",
+      "inputs": ["integration-commit", "target-branch-head"],
+      "outputs": ["post-merge-validation-result", "post-merge-evidence"],
+      "authority_role": "validation",
+      "evidence_required": ["post-merge-validation-command", "post-merge-output", "post-merge-pass"],
+      "transition_to": "closure"
+    },
+    "closure": {
+      "description": "Formal closure of the governing work item. Closure records the completed work and successor boundaries.",
+      "inputs": ["accepted-main-validation", "completion-evidence"],
+      "outputs": ["closure-record", "successor-boundaries"],
+      "authority_role": "governing",
+      "evidence_required": ["closure-comment", "successor-boundaries", "unresolved-questions"],
+      "transition_to": "governing-work-item"
+    }
+  },
+  "distinction_rules": {
+    "validation_not_review": {
+      "description": "Validation verifies technical correctness against deterministic criteria. Review evaluates semantic correctness against authority interpretation. A passing validation does not constitute a review.",
+      "fail_condition": "validation-acceptance-without-review"
+    },
+    "review_not_acceptance": {
+      "description": "Review produces evidence and recommendations. Acceptance is a governance decision based on review evidence and validation evidence. A positive review does not automatically constitute acceptance.",
+      "fail_condition": "review-acceptance-without-governance-decision"
+    },
+    "acceptance_not_integration": {
+      "description": "Acceptance is a governance decision recorded in the issue. Integration is the technical merge. An accepted change may not be immediately integrated.",
+      "fail_condition": "integration-without-explicit-acceptance"
+    },
+    "integration_not_release": {
+      "description": "Integration merges changes into the target branch. Release is a governance decision to designate a specific commit as distributable. An integrated change is not automatically released.",
+      "fail_condition": "release-declaration-without-governance-decision"
+    },
+    "closure_not_successor_authorization": {
+      "description": "Issue closure records that the work item is complete. Closure does not authorize successor work. Successor work requires its own governing issue.",
+      "fail_condition": "closure-implied-successor-authorization"
+    }
+  },
+  "evidence_requirements": {
+    "incomplete_evidence_fails_closed": true,
+    "missing_validation_evidence_blocks_review": true,
+    "missing_review_evidence_blocks_acceptance": true,
+    "missing_acceptance_record_blocks_integration": true,
+    "missing_validation_after_integration_blocks_closure": true,
+    "evidence_must_bind_to_exact_revision": true
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["lifecycle-stages", "bounded-work-stages", "stage-semantics", "distinction-rules", "evidence-requirements"],
+      "may_not_define": ["hosting-platform-issue-tracking", "pull-request-apis", "ci-system-config", "merge-queue-implementation", "review-platform-apis"]
+    },
+    "platform_profile_authority": {
+      "may_implement": ["issue-tracking", "review-proposal-mechanism", "ci-integration", "merge-integration"],
+      "must_not_redefine": ["stage-roles", "distinction-rules", "evidence-requirements"]
+    }
+  },
+  "decision_basis": {
+    "workflow_is_portable": {
+      "decision": "governed-development-workflow-is-portable-not-platform-specific",
+      "rationale": "The development workflow must be defined in hosting-platform-generic terms. GitHub issues, pull requests, CI checks, and merge queues are profile implementations of these generic stages."
+    },
+    "stages_have_distinct_roles": {
+      "decision": "every-bounded-work-stage-has-a-distinct-role",
+      "rationale": "Each stage in the bounded-work sequence serves a distinct purpose with specific authority role, inputs, outputs, and evidence requirements. Blurring stage boundaries undermines governance and auditability."
+    },
+    "evidence_gates_stage_transition": {
+      "decision": "incomplete-evidence-blocks-stage-transition",
+      "rationale": "Each stage requires specific evidence before transition to the next stage. Missing validation evidence blocks review. Missing review evidence blocks acceptance. Missing acceptance record blocks integration. This ensures governance gates are enforced."
+    },
+    "closure_is_not_successor_authorization": {
+      "decision": "issue-closure-is-not-successor-authorization",
+      "rationale": "Closing a governing issue records that the work is complete. Successor work requires its own governing issue with its own authority interpretation, scope, and validation requirements. Closure must not imply blanket successor authorization."
+    }
+  },
+  "expected_relationships": [
+    "Phase 2 development artifact roles (governing-issue, detailed-scope, patch-plan, validation/review evidence)",
+    "Phase 6 Git model (branch, commit, accepted base, integration commit)",
+    "Phase 7 AI-continuity (successor boundaries, evidence-driven continuation)",
+    "Phase 9 normative-change and acceptance model",
+    "future hosting-platform profile mechanism (Phase 11)",
+    "future GitHub hosting profile (Phase 12)"
+  ],
+  "unresolved_questions": [
+    "Concrete review proposal format and required fields are not defined (Phase 11).",
+    "CI integration and check evidence format are not defined (Phase 11).",
+    "Merge method and integration evidence format are not defined.",
+    "Release stage mechanics are not fully defined (Phase 15)."
+  ]
+}

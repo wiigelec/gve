@@ -1,0 +1,58 @@
+{
+  "construction_identity": "governed-development-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the governed-development construction document against the governed-development construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-governed-development-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-lifecycle-stages",
+      "expected": "reject",
+      "model_overrides": {"lifecycle_stages": []},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001"
+    },
+    {
+      "name": "missing-bounded-work-stages",
+      "expected": "reject",
+      "model_overrides": {"bounded_work_stages": []},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001"
+    },
+    {
+      "name": "unknown-field-in-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-stage-semantics",
+      "expected": "reject",
+      "model_overrides": {"stage_semantics": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative governed-development document (GOVERNED-DEVELOPMENT.json)",
+    "governed-development construction schema (GOVERNED-DEVELOPMENT-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for individual stage semantic violations.",
+    "Fixture coverage for distinction rule integrity failures."
+  ]
+}

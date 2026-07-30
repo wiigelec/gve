@@ -1,0 +1,33 @@
+{
+  "construction_identity": "governed-development-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative governed-development construction document (GOVERNED-DEVELOPMENT.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "governed-development",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "lifecycle_stages", "bounded_work_stages",
+    "stage_semantics", "distinction_rules", "evidence_requirements",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "lifecycle_stages": {"type": "array", "min_items": 12, "max_items": 12, "item_type": "string", "items_unique": true},
+    "bounded_work_stages": {"type": "array", "min_items": 17, "max_items": 17, "item_type": "string", "items_unique": true},
+    "stage_semantics": {"type": "object", "closed": true, "min_properties": 17, "max_properties": 17},
+    "distinction_rules": {"type": "object", "closed": true, "min_properties": 5, "max_properties": 5},
+    "evidence_requirements": {"type": "object", "closed": true},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative governed-development document (GOVERNED-DEVELOPMENT.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}

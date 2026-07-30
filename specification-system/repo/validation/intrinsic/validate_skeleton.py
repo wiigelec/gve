@@ -228,6 +228,34 @@ AI_CONTINUITY_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+GOVERNED_DEVELOPMENT_PATH = "authoritative/governed-development/GOVERNED-DEVELOPMENT.json"
+GOVERNED_DEVELOPMENT_SCHEMA_PATH = "authoritative/schemas/governed-development/GOVERNED-DEVELOPMENT-CONSTRUCTION-SCHEMA.json"
+GOVERNED_DEVELOPMENT_FIXTURE_PATH = "validation/fixtures/governed-development/GOVERNED-DEVELOPMENT-FIXTURES.json"
+GOVERNED_DEVELOPMENT_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "lifecycle_stages", "bounded_work_stages",
+    "stage_semantics", "distinction_rules", "evidence_requirements",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+GOVERNED_DEVELOPMENT_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+GOVERNED_DEVELOPMENT_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
+GOVERNED_DEVELOPMENT_BOUNDED_STAGES: tuple[str, ...] = (
+    "governing-work-item", "detailed-scope", "ordered-patch-plan",
+    "accepted-base", "isolated-branch", "coherent-patch",
+    "focused-validation", "complete-validation", "commit",
+    "exact-head-validation", "publication", "review-proposal",
+    "semantic-review", "acceptance", "integration",
+    "accepted-main-validation", "closure",
+)
 AI_CONTINUITY_DISCOVERY_STEPS: tuple[str, ...] = (
     "repository-readme",
     "active-overview",
@@ -318,6 +346,9 @@ ARTIFACT_CLASSES = (
     "ai-continuity-construction",
     "ai-continuity-construction-schema",
     "ai-continuity-fixture-set-construction",
+    "governed-development-construction",
+    "governed-development-construction-schema",
+    "governed-development-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -370,6 +401,9 @@ ARTIFACT_PATHS = (
     AI_CONTINUITY_PATH,
     AI_CONTINUITY_SCHEMA_PATH,
     AI_CONTINUITY_FIXTURE_PATH,
+    GOVERNED_DEVELOPMENT_PATH,
+    GOVERNED_DEVELOPMENT_SCHEMA_PATH,
+    GOVERNED_DEVELOPMENT_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -413,6 +447,9 @@ NON_PLACEHOLDER_PATHS = {
     AI_CONTINUITY_PATH,
     AI_CONTINUITY_SCHEMA_PATH,
     AI_CONTINUITY_FIXTURE_PATH,
+    GOVERNED_DEVELOPMENT_PATH,
+    GOVERNED_DEVELOPMENT_SCHEMA_PATH,
+    GOVERNED_DEVELOPMENT_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -444,6 +481,9 @@ REQUIRED_DIRECTORIES = (
     "authoritative/ai-continuity",
     "authoritative/schemas/ai-continuity",
     "validation/fixtures/ai-continuity",
+    "authoritative/governed-development",
+    "authoritative/schemas/governed-development",
+    "validation/fixtures/governed-development",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -1657,6 +1697,87 @@ def validate_ai_continuity_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_governed_development(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GOVERNED_DEVELOPMENT_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "governed-development":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected governed-development identity")
+    stages = value["bounded_work_stages"]
+    if (
+        not isinstance(stages, list)
+        or len(stages) != len(GOVERNED_DEVELOPMENT_BOUNDED_STAGES)
+    ):
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+             f"{label}.bounded_work_stages: exactly {len(GOVERNED_DEVELOPMENT_BOUNDED_STAGES)} stages required")
+    seen_stages = set()
+    for stage in stages:
+        if not isinstance(stage, str) or stage not in GOVERNED_DEVELOPMENT_BOUNDED_STAGES:
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+                 f"{label}.bounded_work_stages: unknown stage '{stage}'")
+        if stage in seen_stages:
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+                 f"{label}.bounded_work_stages: duplicate stage '{stage}'")
+        seen_stages.add(stage)
+    lifecycle = value["lifecycle_stages"]
+    if not isinstance(lifecycle, list) or not lifecycle:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+             f"{label}.lifecycle_stages: non-empty array required")
+    if not isinstance(value["stage_semantics"], dict) or not value["stage_semantics"]:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+             f"{label}.stage_semantics: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_governed_development_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GOVERNED_DEVELOPMENT_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "governed-development-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected governed-development fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_governed_development_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GOVERNED_DEVELOPMENT_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "governed-development-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected governed-development schema identity")
+    if value["target_construction_identity"] != "governed-development" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-GOVERNED-DEVELOPMENT-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2007,6 +2128,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{AI_CONTINUITY_FIXTURE_PATH}: duplicate construction identity")
     identities.add(ai_continuity_fixtures_identity)
+
+    governed_development = strict_json(root / GOVERNED_DEVELOPMENT_PATH)
+    governed_development_identity = validate_governed_development(
+        governed_development, GOVERNED_DEVELOPMENT_PATH
+    )
+    if governed_development_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GOVERNED_DEVELOPMENT_PATH}: duplicate construction identity")
+    identities.add(governed_development_identity)
+
+    governed_development_schema = strict_json(root / GOVERNED_DEVELOPMENT_SCHEMA_PATH)
+    governed_development_schema_identity = validate_governed_development_schema(
+        governed_development_schema, GOVERNED_DEVELOPMENT_SCHEMA_PATH
+    )
+    if governed_development_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GOVERNED_DEVELOPMENT_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(governed_development_schema_identity)
+
+    governed_development_fixtures = strict_json(root / GOVERNED_DEVELOPMENT_FIXTURE_PATH)
+    governed_development_fixtures_identity = validate_governed_development_fixtures(
+        governed_development_fixtures, GOVERNED_DEVELOPMENT_FIXTURE_PATH
+    )
+    if governed_development_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GOVERNED_DEVELOPMENT_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(governed_development_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)
