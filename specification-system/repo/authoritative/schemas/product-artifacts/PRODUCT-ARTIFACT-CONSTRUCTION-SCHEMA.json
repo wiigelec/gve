@@ -1,0 +1,30 @@
+{
+  "construction_identity": "product-artifact-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative Product Artifact construction document (PRODUCT-ARTIFACTS.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "product-artifacts",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "artifact_roles", "role_constraints",
+    "role_relationships", "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "artifact_roles": {"type": "array", "min_items": 14, "max_items": 14, "item_type": "string", "items_closed_set": true},
+    "role_constraints": {"type": "object", "closed": true, "min_properties": 14, "max_properties": 14},
+    "role_relationships": {"type": "object", "closed": true, "min_properties": 9, "max_properties": 9},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative product-artifact document (PRODUCT-ARTIFACTS.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}

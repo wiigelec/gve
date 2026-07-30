@@ -1,0 +1,234 @@
+{
+  "construction_identity": "product-artifacts",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed repository-neutral product artifact roles, role constraints, and role relationships that are instantiated in an initialized product repository without prescribing one product architecture, programming language, build system, or hosting platform.",
+  "normative": false,
+  "artifact_roles": [
+    "maintained-source",
+    "product-test",
+    "configuration",
+    "schema",
+    "template",
+    "generator",
+    "generated-artifact",
+    "command-line-executable",
+    "library",
+    "service",
+    "package",
+    "user-documentation",
+    "release-automation",
+    "repository-maintenance-tooling"
+  ],
+  "role_constraints": {
+    "maintained-source": {
+      "description": "Hand-authored source files that implement product behavior defined by Level 0-3 specifications. The authoritative implementation of specification semantics.",
+      "authority_role": "implementation",
+      "may_become_normative": false,
+      "specification_implementation": "required",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "product-test": {
+      "description": "Automated tests that validate product behavior against Level 0-3 specifications. Tests do not define specification semantics unless specifications explicitly assign that role.",
+      "authority_role": "implementation",
+      "may_become_normative": false,
+      "specification_implementation": "optional",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "configuration": {
+      "description": "Product configuration files that control build, deployment, or runtime behavior without defining specification semantics.",
+      "authority_role": "support",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "schema": {
+      "description": "Structural constraint documents that define valid formats for product data, configuration, or interchange. Schemas are derived from or consistent with Level specifications.",
+      "authority_role": "implementation",
+      "may_become_normative": false,
+      "specification_implementation": "optional",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "template": {
+      "description": "Reusable file skeletons used by generators or initialization processes to produce product artifacts from parameterized inputs.",
+      "authority_role": "support",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "generator": {
+      "description": "A program or script that produces generated artifacts from source inputs, templates, or configuration. The generator itself is a maintained artifact.",
+      "authority_role": "implementation",
+      "may_become_normative": false,
+      "specification_implementation": "optional",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "generated-artifact": {
+      "description": "An artifact produced by a generator from declared source inputs. Generated artifacts have deterministic provenance and must not be hand-edited.",
+      "authority_role": "derived",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": true,
+      "deprecation": "generator-deprecation"
+    },
+    "command-line-executable": {
+      "description": "A packaged executable that provides a command-line interface to product functionality. Built from maintained-source or library artifacts.",
+      "authority_role": "derived",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": true,
+      "deprecation": "explicit-deprecation"
+    },
+    "library": {
+      "description": "A reusable collection of maintained source intended for consumption by other product artifacts or external dependents.",
+      "authority_role": "implementation",
+      "may_become_normative": false,
+      "specification_implementation": "optional",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "service": {
+      "description": "A long-running process that exposes product functionality over a network or IPC interface. Built from maintained-source or library artifacts.",
+      "authority_role": "derived",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": true,
+      "deprecation": "explicit-deprecation"
+    },
+    "package": {
+      "description": "A distributable archive containing product artifacts for release, deployment, or installation. Built from maintained-source, library, or derived artifacts.",
+      "authority_role": "derived",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": true,
+      "deprecation": "explicit-deprecation"
+    },
+    "user-documentation": {
+      "description": "End-user documentation including guides, references, tutorials, and API documentation. May be hand-authored or generated from specification sources.",
+      "authority_role": "support",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "release-automation": {
+      "description": "Scripts, workflows, and configuration that automate the build, test, packaging, and deployment of product releases.",
+      "authority_role": "governing",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    },
+    "repository-maintenance-tooling": {
+      "description": "Scripts and tooling that support repository maintenance, validation, migration, or other operational tasks without defining product behavior.",
+      "authority_role": "governing",
+      "may_become_normative": false,
+      "specification_implementation": "none",
+      "generated": false,
+      "deprecation": "explicit-deprecation"
+    }
+  },
+  "role_relationships": {
+    "specification-implementation": {
+      "source_roles": ["maintained-source", "product-test", "schema", "generator", "library"],
+      "target_roles": ["product-level-specification"],
+      "description": "A product artifact implements or validates behavior defined by a Level specification."
+    },
+    "source-ownership": {
+      "source_roles": ["maintained-source", "configuration", "template", "generator", "library", "user-documentation", "release-automation", "repository-maintenance-tooling"],
+      "target_roles": ["product-artifact"],
+      "description": "A maintained artifact is owned by the product and tracked in version control."
+    },
+    "test-target": {
+      "source_roles": ["product-test"],
+      "target_roles": ["maintained-source", "library", "command-line-executable", "service"],
+      "description": "A test validates the behavior of a specific product artifact."
+    },
+    "generator-source": {
+      "source_roles": ["template", "configuration", "maintained-source"],
+      "target_roles": ["generator"],
+      "description": "A generator consumes source artifacts to produce generated output."
+    },
+    "generated-output": {
+      "source_roles": ["generator"],
+      "target_roles": ["generated-artifact", "command-line-executable", "service", "package"],
+      "description": "A generator produces derived artifacts from source inputs."
+    },
+    "packaging-membership": {
+      "source_roles": ["maintained-source", "library", "generated-artifact", "command-line-executable"],
+      "target_roles": ["package"],
+      "description": "A product artifact is included in a distributable package."
+    },
+    "release-participation": {
+      "source_roles": ["package", "command-line-executable", "user-documentation"],
+      "target_roles": ["release-artifact"],
+      "description": "A product artifact participates in a release as a deliverable artifact."
+    },
+    "validation-ownership": {
+      "source_roles": ["product-test", "schema"],
+      "target_roles": ["maintained-source", "generated-artifact", "package"],
+      "description": "A test or schema owns validation responsibility for a product artifact."
+    },
+    "deprecation-or-replacement": {
+      "source_roles": ["maintained-source", "library", "command-line-executable", "service", "package"],
+      "target_roles": ["maintained-source", "library", "command-line-executable", "service", "package"],
+      "description": "A product artifact may be deprecated and replaced by another artifact of the same or different role."
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["product-artifact-roles", "role-constraints", "role-relationships"],
+      "may_not_define": ["product-specific-source-layouts", "language-specific-build-rules", "platform-specific-deployment-config"]
+    },
+    "product_authority": {
+      "may_instantiate": ["maintained-source", "product-test", "configuration", "schema", "template", "generator", "generated-artifact", "command-line-executable", "library", "service", "package", "user-documentation", "release-automation", "repository-maintenance-tooling"],
+      "may_extend": ["role-constraints", "role-relationships"],
+      "may_not_define": []
+    },
+    "specification_artifact_distinction": {
+      "artifacts_must_not_become_specifications": true,
+      "code_cannot_become_normative_by_age": true,
+      "generated_content_has_deterministic_provenance": true,
+      "tests_do_not_define_semantics_unless_assigned": true
+    }
+  },
+  "decision_basis": {
+    "artifact_specification_distinction": {
+      "decision": "product-artifacts-remain-distinct-from-specifications",
+      "rationale": "Product artifacts implement, test, configure, or support the behavior defined by Level 0-3 specifications. They must not become specifications through repeated reference, accumulated detail, or age. Only accepted specifications under product authority may claim normative status."
+    },
+    "code_cannot_become_normative": {
+      "decision": "code-cannot-silently-become-normative",
+      "rationale": "Maintained source code implements specification semantics but does not define them. A code change that alters product behavior must be preceded by a corresponding specification change unless the specification explicitly delegates to implementation."
+    },
+    "generated_provenance": {
+      "decision": "generated-content-has-deterministic-provenance",
+      "rationale": "Generated artifacts are produced by declared generators from declared source inputs. Every generated artifact must be traceable to its generator and source inputs. Hand-editing generated artifacts is forbidden because it breaks deterministic provenance."
+    },
+    "test_semantics_boundary": {
+      "decision": "tests-do-not-define-semantics-unless-assigned",
+      "rationale": "Tests validate behavior but do not define specification semantics. A passing test suite does not constitute a specification. Specifications may explicitly assign semantic definition authority to tests only when the specification cannot fully describe valid behavior."
+    },
+    "profile_defined_behavior": {
+      "decision": "language-and-build-system-behavior-is-profile-defined",
+      "rationale": "The framework defines generic product artifact roles. Specific programming language conventions, build system rules, packaging formats, and deployment configurations belong to product profiles. This prevents the framework from imposing universal language-specific constraints."
+    }
+  },
+  "expected_relationships": [
+    "Phase 1 framework boundary entity types (product-artifact, product-level-specification)",
+    "Phase 3 repository functional-area model (maintained-product-source, tests, schemas, generated-artifacts areas)",
+    "Phase 4 Level model (specification-implementation correspondence)",
+    "future Git repository and revision model (Phase 6)"
+  ],
+  "unresolved_questions": [
+    "Concrete source correspondence mapping between Level specifications and maintained source is not defined (Phase 10).",
+    "Deprecation lifecycle mechanics and replacement tracking are not defined.",
+    "Generated artifact freshness validation and regeneration triggers are not defined.",
+    "Product profile extension mechanism for language-specific roles is not defined (Phase 11)."
+  ]
+}

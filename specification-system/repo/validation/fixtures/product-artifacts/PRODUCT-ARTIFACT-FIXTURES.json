@@ -1,0 +1,63 @@
+{
+  "construction_identity": "product-artifact-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the Product Artifact construction document against the Product Artifact construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-product-artifact-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-artifact-roles",
+      "expected": "reject",
+      "model_overrides": {"artifact_roles": []},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PRODUCT-ARTIFACT-001"
+    },
+    {
+      "name": "extra-artifact-role",
+      "expected": "reject",
+      "model_overrides": {"artifact_roles": [
+        "maintained-source", "product-test", "configuration", "schema",
+        "template", "generator", "generated-artifact", "command-line-executable",
+        "library", "service", "package", "user-documentation",
+        "release-automation", "repository-maintenance-tooling", "extra-role"
+      ]},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PRODUCT-ARTIFACT-001"
+    },
+    {
+      "name": "unknown-field-in-product-artifact-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "missing-role-constraint",
+      "expected": "reject",
+      "model_overrides": {"role_constraints": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PRODUCT-ARTIFACT-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-PRODUCT-ARTIFACT-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative product-artifact document (PRODUCT-ARTIFACTS.json)",
+    "product-artifact construction schema (PRODUCT-ARTIFACT-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for role constraint field violations.",
+    "Fixture coverage for role relationship integrity failures."
+  ]
+}
