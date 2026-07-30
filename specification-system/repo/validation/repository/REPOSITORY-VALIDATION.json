@@ -1,14 +1,103 @@
 {
-  "construction_identity": "repository-validation-placeholder",
+  "construction_identity": "repository-validation",
   "construction_status": "under-construction",
-  "responsibility": "Represent future external-repository validation without defining target semantics.",
+  "responsibility": "Define deterministic, repository-local validation architecture for framework validation without product leakage.",
   "normative": false,
+  "validation_families": [
+    "overview_discovery",
+    "plan_discovery",
+    "repository_functional_layout",
+    "level_structure_and_dependency_direction",
+    "specification_artifact_classes",
+    "product_artifact_roles",
+    "git_state_and_revision_evidence",
+    "ai_session_continuity_requirements",
+    "governed_development_records",
+    "normative_change_evidence",
+    "source_correspondence",
+    "profile_declarations",
+    "generated_artifact_freshness",
+    "initialization_completeness",
+    "release_structure"
+  ],
+  "validation_principles": [
+    "deterministic",
+    "repository_local_where_practical",
+    "fail_closed",
+    "product_independent",
+    "exact_revision_aware",
+    "structured_diagnostics",
+    "no_semantic_product_leakage_heuristics",
+    "no_weakening_existing_checks"
+  ],
+  "discovery_rules": [
+    "overview_discovery",
+    "plan_discovery",
+    "explicit_supersession",
+    "conflicting_records_fail_closed"
+  ],
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": [
+        "validation families",
+        "validation principles",
+        "discovery rules",
+        "decision basis"
+      ],
+      "may_not_define": [
+        "product semantics",
+        "release naming",
+        "host-provider behavior"
+      ]
+    },
+    "repository_validation_authority": {
+      "may_implement": [
+        "repository-local checks",
+        "exact-revision validation",
+        "structured diagnostics",
+        "fixture execution"
+      ],
+      "must_not_redefine": [
+        "framework authority",
+        "product semantics",
+        "history rewriting"
+      ]
+    }
+  },
+  "decision_basis": {
+    "validation_scope": {
+      "decision": "validate framework and repository structure only",
+      "rationale": "The validator must stay portable and avoid product-specific semantics."
+    },
+    "revision_scope": {
+      "decision": "bind validation to the exact checked-in revision",
+      "rationale": "The construction set must report the current repository state without inference from remote systems."
+    },
+    "diagnostic_scope": {
+      "decision": "emit structured closed diagnostics",
+      "rationale": "Consumers need deterministic failure codes for governed construction and review."
+    },
+    "authority_scope": {
+      "decision": "separate framework authority from repository-local implementation",
+      "rationale": "Validation logic can implement the framework without redefining it."
+    },
+    "product_independence": {
+      "decision": "avoid semantic product leakage heuristics",
+      "rationale": "The framework must apply to future repositories, not only the current GVE product."
+    },
+    "fail_closed_behavior": {
+      "decision": "reject unknown, missing, or conflicting records",
+      "rationale": "Validation must not silently accept partial or ambiguous repository state."
+    }
+  },
   "expected_relationships": [
-    "repository model",
-    "source-layout authority"
+    "framework boundary authority is explicit",
+    "validation library remains reusable",
+    "manifest inventory stays closed",
+    "phase 13 validation architecture is self-describing"
   ],
   "unresolved_questions": [
-    "Substantive semantics require a separately governed issue.",
-    "Final schema and identity bindings are not defined."
+    "Final release-freeze criteria are governed separately.",
+    "Additional product repositories may require more fixture coverage."
   ]
 }

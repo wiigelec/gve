@@ -1,0 +1,38 @@
+{
+  "construction_identity": "repository-validation-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define closed fixture cases for repository-validation construction.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "baseline-passes",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "empty-validation-families",
+      "expected": "reject",
+      "model_overrides": {
+        "validation_families": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001"
+    },
+    {
+      "name": "empty-authority-array",
+      "expected": "reject",
+      "model_overrides": {
+        "authority_separation.repository_validation_authority.must_not_redefine": []
+      },
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-REPOSITORY-VALIDATION-001"
+    }
+  ],
+  "expected_relationships": [
+    "fixture cases cover passing baseline and closed failures",
+    "fixture cases exercise repository-validation invariants"
+  ],
+  "unresolved_questions": [
+    "Future fixture expansion will be governed by separate repository issues.",
+    "No extra case families are defined in this phase."
+  ]
+}

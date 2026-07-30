@@ -1,0 +1,44 @@
+{
+  "construction_identity": "repository-validation-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed schema boundary for repository-validation construction artifacts.",
+  "normative": false,
+  "target_construction_identity": "repository-validation",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "validation_families",
+    "validation_principles",
+    "discovery_rules",
+    "authority_separation",
+    "decision_basis",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "validation_families": "ordered closed inventory of framework validation families",
+    "validation_principles": "ordered closed inventory of validation principles",
+    "discovery_rules": "ordered closed inventory of discovery rules",
+    "authority_separation": "closed authority map",
+    "decision_basis": "closed decision records"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "validated",
+    "final_authority",
+    "product_semantics",
+    "repository_specific_targets"
+  ],
+  "expected_relationships": [
+    "framework boundary authority is explicit",
+    "validation artifact fields stay closed",
+    "repository-validation remains revision aware"
+  ],
+  "unresolved_questions": [
+    "Final sealing criteria are governed separately.",
+    "No additional target identities are defined here."
+  ]
+}
