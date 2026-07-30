@@ -10,6 +10,12 @@ import sys
 from pathlib import Path, PurePosixPath
 from typing import Any
 
+CONSTRUCTION_ROOT = Path(__file__).resolve().parents[2]
+if str(CONSTRUCTION_ROOT) not in sys.path:
+    sys.path.insert(0, str(CONSTRUCTION_ROOT))
+
+from validation.intrinsic import validate_specification_identities as specification_identities_validator  # noqa: E402
+
 MANIFEST_FIELDS = {
     "construction_identity", "construction_status", "normative",
     "validation_entry_point", "artifact_classes", "artifact_paths",
@@ -613,6 +619,9 @@ ARTIFACT_CLASSES = (
     "specification-artifact-class-construction",
     "specification-artifact-class-construction-schema",
     "specification-artifact-fixture-set-construction",
+    "specification-identities-construction",
+    "specification-identities-construction-schema",
+    "specification-identities-fixture-set-construction",
     "validation-fixtures-placeholder",
     "validation-library-construction",
     "transition-baseline-classification",
@@ -651,6 +660,9 @@ ARTIFACT_PATHS = (
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
+    "authoritative/specification-system/SPECIFICATION-IDENTITIES.json",
+    "authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json",
     "authoritative/identity/IDENTITY-AUTHORITY.json",
     "authoritative/identity/IDENTITY-MODEL.json",
     "authoritative/identity/CANONICAL-JSON.json",
@@ -731,6 +743,9 @@ NON_PLACEHOLDER_PATHS = {
     "authoritative/specification-system/SPECIFICATION-ARTIFACTS.json",
     "authoritative/schemas/specification-system/SPECIFICATION-ARTIFACT-CLASS-CONSTRUCTION-SCHEMA.json",
     "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json",
+    "authoritative/specification-system/SPECIFICATION-IDENTITIES.json",
+    "authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json",
+    "validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json",
     "TRANSITION-BASELINE-CLASSIFICATION.json",
     "authoritative/framework-boundary/FRAMEWORK-BOUNDARY.json",
     "authoritative/schemas/framework-boundary/FRAMEWORK-BOUNDARY-CONSTRUCTION-SCHEMA.json",
@@ -2820,6 +2835,16 @@ def validate(root: Path) -> None:
     if specification_artifact_fixtures_identity in identities:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", "validation/fixtures/specification-system/SPECIFICATION-ARTIFACT-FIXTURES.json: duplicate construction identity")
     identities.add(specification_artifact_fixtures_identity)
+
+    specification_identities_model, specification_identities_schema, specification_identities_fixtures = specification_identities_validator.validate(root)
+    for relative, identity in (
+        ("authoritative/specification-system/SPECIFICATION-IDENTITIES.json", specification_identities_model),
+        ("authoritative/schemas/specification-system/SPECIFICATION-IDENTITIES-CONSTRUCTION-SCHEMA.json", specification_identities_schema),
+        ("validation/fixtures/specification-system/SPECIFICATION-IDENTITIES-FIXTURES.json", specification_identities_fixtures),
+    ):
+        if identity in identities:
+            fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003", f"{relative}: duplicate construction identity")
+        identities.add(identity)
 
     repository_vocabulary = strict_json(root / "authoritative/repository-model/REPOSITORY-MODEL.json")
     repository_vocabulary_identity = validate_repository_vocabulary(

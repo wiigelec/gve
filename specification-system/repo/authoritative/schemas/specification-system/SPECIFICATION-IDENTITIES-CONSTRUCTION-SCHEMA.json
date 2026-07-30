@@ -1,0 +1,193 @@
+{
+  "construction_identity": "specification-identities-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Constrain the exact construction-only shape of the repository specification identity profile without claiming final normative schema authority.",
+  "normative": false,
+  "target_construction_identity": "specification-identities-construction",
+  "required_fields": [
+    "construction_identity",
+    "construction_status",
+    "responsibility",
+    "normative",
+    "decision_basis",
+    "candidate_families",
+    "family_bindings",
+    "manifest_model",
+    "revision_model",
+    "binding_model",
+    "manifest_separation",
+    "expected_relationships",
+    "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "exact_policy": {
+      "construction_identity": "specification-identities-construction",
+      "construction_status": "under-construction",
+      "responsibility": "Define candidate identity families and manifest/revision rules for repository specification documents, manifests, schemas, projections, conformance artifacts, validation artifacts, and sealed specification sets without defining final authority or acceptance behavior.",
+      "normative": false,
+      "decision_basis": {
+        "portable_behavior": [
+          "specification-document-identity",
+          "specification-set-revision-identity",
+          "direct-member-manifest-closure",
+          "explicit-self-reference-handling",
+          "deterministic-binding-order",
+          "duplicate-member-rejection",
+          "stale-member-rejection",
+          "incomplete-membership-rejection"
+        ],
+        "repository_generic_decisions": [
+          "candidate-family-inventory",
+          "schema-projection-conformance-validator-binding",
+          "governing-revision-attribution",
+          "manifest-and-revision-distinction",
+          "template-and-product-manifest-separation",
+          "own-identity-omission-or-canonical-reference"
+        ]
+      },
+      "candidate_families": [
+        "specification-document",
+        "specification-set-revision",
+        "manifest",
+        "schema",
+        "projection",
+        "conformance-artifact",
+        "validation-artifact",
+        "sealed-specification-set"
+      ],
+      "family_bindings": {
+        "specification-document": {
+          "kind": "document",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "canonicalization_reference",
+            "digest_declaration"
+          ]
+        },
+        "specification-set-revision": {
+          "kind": "aggregate",
+          "membership": "direct",
+          "self_reference": "canonical-reference",
+          "binding_targets": [
+            "manifest_model",
+            "revision_model"
+          ]
+        },
+        "manifest": {
+          "kind": "aggregate",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "binding_model"
+          ]
+        },
+        "schema": {
+          "kind": "document",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "manifest_binding"
+          ]
+        },
+        "projection": {
+          "kind": "document",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "freshness_binding"
+          ]
+        },
+        "conformance-artifact": {
+          "kind": "document",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "revision_binding",
+            "validator_binding"
+          ]
+        },
+        "validation-artifact": {
+          "kind": "document",
+          "membership": "direct",
+          "self_reference": "omit-own-identity",
+          "binding_targets": [
+            "validator_binding",
+            "governing_revision_binding"
+          ]
+        },
+        "sealed-specification-set": {
+          "kind": "aggregate",
+          "membership": "derived",
+          "self_reference": "external-seal-envelope",
+          "binding_targets": [
+            "governing_revision_binding",
+            "parent_manifest_binding"
+          ]
+        }
+      },
+      "manifest_model": {
+        "self_participation": false,
+        "own_identity_handling": "omit-own-identity",
+        "ordering": "ascending-by-stable-specification-identity",
+        "duplicate_policy": "reject",
+        "stale_member_policy": "reject",
+        "incomplete_membership_policy": "reject"
+      },
+      "revision_model": {
+        "derivation": "direct-member-aggregate-revision",
+        "member_scope": "direct",
+        "governing_revision_binding": "required",
+        "self_reference_handling": "explicit",
+        "revision_attribution": "retained",
+        "stale_revision_policy": "reject",
+        "incomplete_revision_policy": "reject"
+      },
+      "binding_model": {
+        "schema_binding": "required",
+        "projection_binding": "required",
+        "conformance_binding": "required",
+        "validator_binding": "required"
+      },
+      "manifest_separation": {
+        "template_manifest": "separate",
+        "product_manifest": "separate"
+      },
+      "expected_relationships": [
+        "specification-artifact-class-construction",
+        "specification-artifact-class-construction-schema",
+        "identity-model-construction",
+        "repository-specification-construction-set"
+      ],
+      "unresolved_questions": [
+        "Final accepted specification identity string syntax is not defined.",
+        "Final accepted revision identity syntax and sealing model remain separately governed."
+      ]
+    },
+    "unknown_fields": "reject",
+    "missing_fields": "reject"
+  },
+  "forbidden_claim_fields": [
+    "accepted",
+    "complete",
+    "completed",
+    "sealed",
+    "final",
+    "digest",
+    "content_digest",
+    "revision",
+    "specification_revision",
+    "aggregate_revision"
+  ],
+  "expected_relationships": [
+    "specification-artifact-class-construction",
+    "specification-artifact-class-construction-schema",
+    "identity-model-construction",
+    "repository-specification-construction-set"
+  ],
+  "unresolved_questions": [
+    "Final normative specification identity profile is not defined.",
+    "Final accepted revision and sealing authority remain separately governed."
+  ]
+}
