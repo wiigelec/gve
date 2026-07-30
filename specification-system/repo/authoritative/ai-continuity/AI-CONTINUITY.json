@@ -164,15 +164,15 @@
     }
   },
   "expected_relationships": [
-    "Phase 2 development artifact roles (governing-issue, detailed-scope, patch-plan)",
-    "Phase 6 Git model (local state, revision evidence, accepted base)",
-    "future governed-development model (Phase 8)",
-    "future normative-change and acceptance model (Phase 9)"
+    "development artifact roles (governing-issue, detailed-scope, patch-plan)",
+    "Git model (local state, revision evidence, accepted base)",
+    "future governed-development model",
+    "future normative-change and acceptance model"
   ],
   "unresolved_questions": [
     "Concrete README format and required discovery fields are not defined.",
     "Orientation protocol file format and storage location are not defined.",
     "Conflict resolution protocol (beyond blocking) is not defined.",
-    "Session evidence format and binding to governing issues are not defined (Phase 8)."
+    "Session evidence format and binding to governing issues are not defined."
   ]
 }

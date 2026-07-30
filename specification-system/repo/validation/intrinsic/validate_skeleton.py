@@ -248,6 +248,25 @@ GOVERNED_DEVELOPMENT_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+NORMATIVE_CHANGE_PATH = "authoritative/normative-change/NORMATIVE-CHANGE.json"
+NORMATIVE_CHANGE_SCHEMA_PATH = "authoritative/schemas/normative-change/NORMATIVE-CHANGE-CONSTRUCTION-SCHEMA.json"
+NORMATIVE_CHANGE_FIXTURE_PATH = "validation/fixtures/normative-change/NORMATIVE-CHANGE-FIXTURES.json"
+NORMATIVE_CHANGE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "acceptance_concepts", "acceptance_safeguards",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions",
+}
+NORMATIVE_CHANGE_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+NORMATIVE_CHANGE_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
 GOVERNED_DEVELOPMENT_BOUNDED_STAGES: tuple[str, ...] = (
     "governing-work-item", "detailed-scope", "ordered-patch-plan",
     "accepted-base", "isolated-branch", "coherent-patch",
@@ -312,7 +331,9 @@ ARTIFACT_CLASSES = (
     "identity-verification-construction",
     "identity-verification-construction-schema",
     "level-model-placeholder",
-    "normative-change-placeholder",
+    "normative-change-construction",
+    "normative-change-construction-schema",
+    "normative-change-fixture-set-construction",
     "repository-vocabulary-construction",
     "repository-vocabulary-construction-schema",
     "repository-vocabulary-fixture-set-construction",
@@ -363,7 +384,9 @@ ARTIFACT_PATHS = (
     "authoritative/identity/IDENTITY-FAMILY-MODEL.json",
     "authoritative/identity/IDENTITY-VERIFICATION.json",
     "authoritative/development-process/DEVELOPMENT-PROCESS.json",
-    "authoritative/normative-change/NORMATIVE-CHANGE.json",
+    NORMATIVE_CHANGE_PATH,
+    NORMATIVE_CHANGE_SCHEMA_PATH,
+    NORMATIVE_CHANGE_FIXTURE_PATH,
     "authoritative/source-layout/SOURCE-LAYOUT.json",
     "authoritative/schemas/SCHEMA-BOUNDARY.json",
     "authoritative/schemas/identity/CANONICAL-JSON-CONSTRUCTION-SCHEMA.json",
@@ -450,12 +473,18 @@ NON_PLACEHOLDER_PATHS = {
     GOVERNED_DEVELOPMENT_PATH,
     GOVERNED_DEVELOPMENT_SCHEMA_PATH,
     GOVERNED_DEVELOPMENT_FIXTURE_PATH,
+    NORMATIVE_CHANGE_PATH,
+    NORMATIVE_CHANGE_SCHEMA_PATH,
+    NORMATIVE_CHANGE_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
     "authoritative/identity", "authoritative/repository-model",
     "authoritative/specification-system", "authoritative/development-process",
-    "authoritative/normative-change", "authoritative/level-model",
+    "authoritative/normative-change",
+    "authoritative/schemas/normative-change",
+    "validation/fixtures/normative-change",
+    "authoritative/level-model",
     "authoritative/source-layout", "authoritative/schemas",
     "authoritative/schemas/identity", "authoritative/schemas/conformance",
     "authoritative/schemas/specification-system",
@@ -1778,6 +1807,68 @@ def validate_governed_development_schema(value: dict[str, Any], label: str) -> s
     return identity
 
 
+def validate_normative_change(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, NORMATIVE_CHANGE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "normative-change":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected normative-change identity")
+    for section in ("acceptance_concepts", "acceptance_safeguards"):
+        if not isinstance(value[section], dict) or not value[section]:
+            fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-001",
+                 f"{label}.{section}: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_normative_change_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, NORMATIVE_CHANGE_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "normative-change-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected normative-change fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_normative_change_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, NORMATIVE_CHANGE_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "normative-change-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected normative-change schema identity")
+    if value["target_construction_identity"] != "normative-change" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-NORMATIVE-CHANGE-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -2155,6 +2246,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{GOVERNED_DEVELOPMENT_FIXTURE_PATH}: duplicate construction identity")
     identities.add(governed_development_fixtures_identity)
+
+    normative_change = strict_json(root / NORMATIVE_CHANGE_PATH)
+    normative_change_identity = validate_normative_change(
+        normative_change, NORMATIVE_CHANGE_PATH
+    )
+    if normative_change_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{NORMATIVE_CHANGE_PATH}: duplicate construction identity")
+    identities.add(normative_change_identity)
+
+    normative_change_schema = strict_json(root / NORMATIVE_CHANGE_SCHEMA_PATH)
+    normative_change_schema_identity = validate_normative_change_schema(
+        normative_change_schema, NORMATIVE_CHANGE_SCHEMA_PATH
+    )
+    if normative_change_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{NORMATIVE_CHANGE_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(normative_change_schema_identity)
+
+    normative_change_fixtures = strict_json(root / NORMATIVE_CHANGE_FIXTURE_PATH)
+    normative_change_fixtures_identity = validate_normative_change_fixtures(
+        normative_change_fixtures, NORMATIVE_CHANGE_FIXTURE_PATH
+    )
+    if normative_change_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{NORMATIVE_CHANGE_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(normative_change_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

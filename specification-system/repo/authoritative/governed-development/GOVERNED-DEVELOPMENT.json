@@ -233,17 +233,17 @@
     }
   },
   "expected_relationships": [
-    "Phase 2 development artifact roles (governing-issue, detailed-scope, patch-plan, validation/review evidence)",
-    "Phase 6 Git model (branch, commit, accepted base, integration commit)",
-    "Phase 7 AI-continuity (successor boundaries, evidence-driven continuation)",
-    "Phase 9 normative-change and acceptance model",
-    "future hosting-platform profile mechanism (Phase 11)",
-    "future GitHub hosting profile (Phase 12)"
+    "development artifact roles (governing-issue, detailed-scope, patch-plan, validation/review evidence)",
+    "Git model (branch, commit, accepted base, integration commit)",
+    "AI-continuity model (successor boundaries, evidence-driven continuation)",
+    "normative-change and acceptance model",
+    "future hosting-platform profile mechanism",
+    "future hosting-platform profile (GitHub)"
   ],
   "unresolved_questions": [
-    "Concrete review proposal format and required fields are not defined (Phase 11).",
-    "CI integration and check evidence format are not defined (Phase 11).",
+    "Concrete review proposal format and required fields are not defined.",
+    "CI integration and check evidence format are not defined.",
     "Merge method and integration evidence format are not defined.",
-    "Release stage mechanics are not fully defined (Phase 15)."
+    "Release stage mechanics are not fully defined."
   ]
 }

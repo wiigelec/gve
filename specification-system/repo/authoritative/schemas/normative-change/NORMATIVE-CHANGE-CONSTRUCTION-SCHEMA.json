@@ -1,0 +1,29 @@
+{
+  "construction_identity": "normative-change-construction-schema",
+  "construction_status": "under-construction",
+  "responsibility": "Define the closed field set and constraints for the authoritative normative-change construction document (NORMATIVE-CHANGE.json) without defining final schemas, identities, or acceptance semantics.",
+  "normative": false,
+  "target_construction_identity": "normative-change",
+  "required_fields": [
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "acceptance_concepts", "acceptance_safeguards",
+    "authority_separation", "decision_basis",
+    "expected_relationships", "unresolved_questions"
+  ],
+  "closed": true,
+  "field_constraints": {
+    "acceptance_concepts": {"type": "object", "closed": true, "min_properties": 13, "max_properties": 13},
+    "acceptance_safeguards": {"type": "object", "closed": true, "min_properties": 6, "max_properties": 6},
+    "authority_separation": {"type": "object", "closed": true},
+    "decision_basis": {"type": "object", "min_properties": 1}
+  },
+  "forbidden_claim_fields": ["accepted", "complete", "completed", "sealed", "final", "digest", "content_digest", "revision", "specification_revision", "aggregate_revision"],
+  "expected_relationships": [
+    "authoritative normative-change document (NORMATIVE-CHANGE.json)"
+  ],
+  "unresolved_questions": [
+    "Final schema format and validation mechanism are not defined.",
+    "Field-level constraint granularity and reusable constraint model are not defined.",
+    "Schema versioning and migration are not defined."
+  ]
+}

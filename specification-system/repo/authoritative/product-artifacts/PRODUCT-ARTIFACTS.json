@@ -220,15 +220,15 @@
     }
   },
   "expected_relationships": [
-    "Phase 1 framework boundary entity types (product-artifact, product-level-specification)",
-    "Phase 3 repository functional-area model (maintained-product-source, tests, schemas, generated-artifacts areas)",
-    "Phase 4 Level model (specification-implementation correspondence)",
-    "future Git repository and revision model (Phase 6)"
+    "framework boundary entity types (product-artifact, product-level-specification)",
+    "repository functional-area model (maintained-product-source, tests, schemas, generated-artifacts areas)",
+    "Level model (specification-implementation correspondence)",
+    "future Git repository and revision model"
   ],
   "unresolved_questions": [
-    "Concrete source correspondence mapping between Level specifications and maintained source is not defined (Phase 10).",
+    "Concrete source correspondence mapping between Level specifications and maintained source is not defined.",
     "Deprecation lifecycle mechanics and replacement tracking are not defined.",
     "Generated artifact freshness validation and regeneration triggers are not defined.",
-    "Product profile extension mechanism for language-specific roles is not defined (Phase 11)."
+    "Product profile extension mechanism for language-specific roles is not defined."
   ]
 }
