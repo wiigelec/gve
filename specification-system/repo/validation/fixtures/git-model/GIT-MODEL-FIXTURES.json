@@ -1,0 +1,64 @@
+{
+  "construction_identity": "git-model-fixture-set-construction",
+  "construction_status": "under-construction",
+  "responsibility": "Define positive and negative fixture cases for validating the Git model construction document against the Git model construction schema.",
+  "normative": false,
+  "cases": [
+    {
+      "name": "valid-git-model",
+      "expected": "pass",
+      "model_overrides": {},
+      "expected_diagnostic": null
+    },
+    {
+      "name": "missing-repository-concepts",
+      "expected": "reject",
+      "model_overrides": {"repository_concepts": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    },
+    {
+      "name": "missing-revision-concepts",
+      "expected": "reject",
+      "model_overrides": {"revision_concepts": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    },
+    {
+      "name": "missing-identity-distinctions",
+      "expected": "reject",
+      "model_overrides": {"identity_distinctions": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    },
+    {
+      "name": "unknown-field-in-git-model",
+      "expected": "reject",
+      "model_overrides": {"unknown_field": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "forbidden-claim-field",
+      "expected": "reject",
+      "model_overrides": {"accepted": true},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-FIELD-001"
+    },
+    {
+      "name": "empty-state-model",
+      "expected": "reject",
+      "model_overrides": {"state_model": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    },
+    {
+      "name": "empty-decision-basis",
+      "expected": "reject",
+      "model_overrides": {"decision_basis": {}},
+      "expected_diagnostic": "REPO-SPEC-CONSTRUCTION-GIT-MODEL-001"
+    }
+  ],
+  "expected_relationships": [
+    "authoritative git-model document (GIT-MODEL.json)",
+    "git-model construction schema (GIT-MODEL-CONSTRUCTION-SCHEMA.json)"
+  ],
+  "unresolved_questions": [
+    "Additional edge cases for individual concept field violations.",
+    "Fixture coverage for identity distinction integrity failures."
+  ]
+}

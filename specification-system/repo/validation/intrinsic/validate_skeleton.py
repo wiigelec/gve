@@ -194,6 +194,25 @@ PRODUCT_ARTIFACT_FIXTURE_FIELDS = {
     "construction_identity", "construction_status", "responsibility",
     "normative", "cases", "expected_relationships", "unresolved_questions",
 }
+GIT_MODEL_PATH = "authoritative/git-model/GIT-MODEL.json"
+GIT_MODEL_SCHEMA_PATH = "authoritative/schemas/git-model/GIT-MODEL-CONSTRUCTION-SCHEMA.json"
+GIT_MODEL_FIXTURE_PATH = "validation/fixtures/git-model/GIT-MODEL-FIXTURES.json"
+GIT_MODEL_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "repository_concepts", "revision_concepts",
+    "identity_distinctions", "state_model", "authority_separation",
+    "decision_basis", "expected_relationships", "unresolved_questions",
+}
+GIT_MODEL_SCHEMA_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "target_construction_identity", "required_fields",
+    "closed", "field_constraints", "forbidden_claim_fields",
+    "expected_relationships", "unresolved_questions",
+}
+GIT_MODEL_FIXTURE_FIELDS = {
+    "construction_identity", "construction_status", "responsibility",
+    "normative", "cases", "expected_relationships", "unresolved_questions",
+}
 PRODUCT_ARTIFACT_CLOSED_ROLES: tuple[str, ...] = (
     "maintained-source", "product-test", "configuration", "schema",
     "template", "generator", "generated-artifact", "command-line-executable",
@@ -262,6 +281,9 @@ ARTIFACT_CLASSES = (
     "product-artifact-construction",
     "product-artifact-construction-schema",
     "product-artifact-fixture-set-construction",
+    "git-model-construction",
+    "git-model-construction-schema",
+    "git-model-fixture-set-construction",
 )
 ARTIFACT_PATHS = (
     "authoritative/repository-model/REPOSITORY-MODEL.json",
@@ -308,6 +330,9 @@ ARTIFACT_PATHS = (
     PRODUCT_ARTIFACT_PATH,
     PRODUCT_ARTIFACT_SCHEMA_PATH,
     PRODUCT_ARTIFACT_FIXTURE_PATH,
+    GIT_MODEL_PATH,
+    GIT_MODEL_SCHEMA_PATH,
+    GIT_MODEL_FIXTURE_PATH,
 )
 NON_PLACEHOLDER_PATHS = {
     "validation/fixtures/identity/identity-behavior/IDENTITY-BEHAVIOR-FIXTURES.json",
@@ -345,6 +370,9 @@ NON_PLACEHOLDER_PATHS = {
     PRODUCT_ARTIFACT_PATH,
     PRODUCT_ARTIFACT_SCHEMA_PATH,
     PRODUCT_ARTIFACT_FIXTURE_PATH,
+    GIT_MODEL_PATH,
+    GIT_MODEL_SCHEMA_PATH,
+    GIT_MODEL_FIXTURE_PATH,
 }
 PLACEHOLDER_PATHS = tuple(path for path in ARTIFACT_PATHS if path not in NON_PLACEHOLDER_PATHS)
 REQUIRED_DIRECTORIES = (
@@ -370,6 +398,9 @@ REQUIRED_DIRECTORIES = (
     "authoritative/product-artifacts",
     "authoritative/schemas/product-artifacts",
     "validation/fixtures/product-artifacts",
+    "authoritative/git-model",
+    "authoritative/schemas/git-model",
+    "validation/fixtures/git-model",
     "validation/fixtures/repository-model",
     "authoritative/conformance",
     "derived/markdown", "derived/markdown/identity",
@@ -1444,6 +1475,68 @@ def validate_product_artifact_schema(value: dict[str, Any], label: str) -> str:
     return identity
 
 
+def validate_git_model(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GIT_MODEL_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "git-model":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected git-model identity")
+    for section in ("repository_concepts", "revision_concepts", "identity_distinctions", "state_model"):
+        if not isinstance(value[section], dict) or not value[section]:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+                 f"{label}.{section}: non-empty object required")
+    if not isinstance(value["decision_basis"], dict) or not value["decision_basis"]:
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-001",
+             f"{label}.decision_basis: non-empty object required")
+    return identity
+
+
+def validate_git_model_fixtures(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GIT_MODEL_FIXTURE_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "git-model-fixture-set-construction":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected git-model fixture identity")
+    cases = value["cases"]
+    if not isinstance(cases, list) or not cases:
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-003",
+             f"{label}.cases: non-empty array required")
+    names = []
+    for case in cases:
+        if not isinstance(case, dict) or set(case) != {"name", "expected", "model_overrides", "expected_diagnostic"}:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-003",
+                 f"{label}.cases: closed case required")
+        if not isinstance(case["name"], str) or case["name"] in names:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-003",
+                 f"{label}.cases: unique names required")
+        if case["expected"] not in {"pass", "reject"} or not isinstance(case["model_overrides"], dict):
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-003",
+                 f"{label}.cases: invalid case declaration")
+        if case["expected"] == "pass" and case["expected_diagnostic"] is not None:
+            fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-003",
+                 f"{label}.cases: passing case diagnostic must be null")
+        names.append(case["name"])
+    return identity
+
+
+def validate_git_model_schema(value: dict[str, Any], label: str) -> str:
+    exact_fields(value, GIT_MODEL_SCHEMA_FIELDS, label)
+    identity = validate_common(value, label)
+    if identity != "git-model-construction-schema":
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-002",
+             f"{label}: unexpected git-model schema identity")
+    if value["target_construction_identity"] != "git-model" or value["closed"] is not True:
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-002",
+             f"{label}: target or closed boundary mismatch")
+    if not isinstance(value["required_fields"], list) or not value["required_fields"]:
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-002",
+             f"{label}.required_fields: non-empty array required")
+    if not isinstance(value["forbidden_claim_fields"], list):
+        fail("REPO-SPEC-CONSTRUCTION-GIT-MODEL-002",
+             f"{label}.forbidden_claim_fields: array required")
+    return identity
+
+
 def validate(root: Path) -> None:
     for relative in REQUIRED_DIRECTORIES:
         if not contained_path(root, relative, relative).is_dir():
@@ -1740,6 +1833,33 @@ def validate(root: Path) -> None:
         fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
              f"{PRODUCT_ARTIFACT_FIXTURE_PATH}: duplicate construction identity")
     identities.add(product_artifact_fixtures_identity)
+
+    git_model = strict_json(root / GIT_MODEL_PATH)
+    git_model_identity = validate_git_model(
+        git_model, GIT_MODEL_PATH
+    )
+    if git_model_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GIT_MODEL_PATH}: duplicate construction identity")
+    identities.add(git_model_identity)
+
+    git_model_schema = strict_json(root / GIT_MODEL_SCHEMA_PATH)
+    git_model_schema_identity = validate_git_model_schema(
+        git_model_schema, GIT_MODEL_SCHEMA_PATH
+    )
+    if git_model_schema_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GIT_MODEL_SCHEMA_PATH}: duplicate construction identity")
+    identities.add(git_model_schema_identity)
+
+    git_model_fixtures = strict_json(root / GIT_MODEL_FIXTURE_PATH)
+    git_model_fixtures_identity = validate_git_model_fixtures(
+        git_model_fixtures, GIT_MODEL_FIXTURE_PATH
+    )
+    if git_model_fixtures_identity in identities:
+        fail("REPO-SPEC-CONSTRUCTION-IDENTITY-003",
+             f"{GIT_MODEL_FIXTURE_PATH}: duplicate construction identity")
+    identities.add(git_model_fixtures_identity)
 
     validate_python_dependencies(root)
     validate_focused_identity(root)

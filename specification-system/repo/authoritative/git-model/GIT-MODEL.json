@@ -1,0 +1,190 @@
+{
+  "construction_identity": "git-model",
+  "construction_status": "under-construction",
+  "responsibility": "Define the Git-compatible repository state and revision evidence model, distinguishing Git object identity from semantic identity, branch existence from authorization, commit existence from acceptance, merge from release, local state from remote orientation, and exact revision validation from floating branch validation without prescribing hosting-platform API behavior.",
+  "normative": false,
+  "repository_concepts": {
+    "repository": {
+      "description": "A Git repository containing an object database, refs, and a working tree.",
+      "git_native": true
+    },
+    "object_database": {
+      "description": "The Git object store containing commits, trees, and blobs addressed by content hash.",
+      "git_native": true
+    },
+    "commit": {
+      "description": "A snapshot of the repository state at a point in time, identified by a content-addressed hash.",
+      "git_native": true
+    },
+    "tree": {
+      "description": "A directory listing within a commit, mapping pathnames to blob or tree object hashes.",
+      "git_native": true
+    },
+    "blob": {
+      "description": "A file content object stored in the object database, identified by content hash.",
+      "git_native": true
+    },
+    "ref": {
+      "description": "A named pointer to a commit, used to track branches, tags, and other named states.",
+      "git_native": true
+    },
+    "branch": {
+      "description": "A movable ref pointing to the latest commit on a line of development.",
+      "git_native": true
+    },
+    "tag": {
+      "description": "A ref pointing to a specific commit, optionally annotated with a message and signature.",
+      "git_native": true
+    },
+    "default_branch": {
+      "description": "The branch that serves as the primary integration target for the repository.",
+      "git_native": true
+    },
+    "remote": {
+      "description": "A named reference to another repository, used for fetch and push operations.",
+      "git_native": true
+    }
+  },
+  "revision_concepts": {
+    "accepted_base": {
+      "description": "The specific commit against which a mutation is defined. Represents the authoritative starting point for bounded work.",
+      "git_native": true,
+      "semantic_role": "accepted-authority-state"
+    },
+    "merge_base": {
+      "description": "The common ancestor commit of two branches, used to determine divergent changes.",
+      "git_native": true
+    },
+    "ancestry": {
+      "description": "The directed acyclic graph of parent relationships among commits.",
+      "git_native": true
+    },
+    "ahead_behind": {
+      "description": "The count of commits by which one branch leads or trails another relative to their merge base.",
+      "git_native": true
+    },
+    "staged_paths": {
+      "description": "Paths in the index that have been added or modified and are ready for the next commit.",
+      "git_native": true
+    },
+    "unstaged_paths": {
+      "description": "Paths in the working tree that have been modified but not yet staged in the index.",
+      "git_native": true
+    },
+    "untracked_paths": {
+      "description": "Paths in the working tree that are not tracked in the index and not ignored.",
+      "git_native": true
+    },
+    "conflicted_paths": {
+      "description": "Paths where concurrent modifications have produced merge conflicts that must be resolved.",
+      "git_native": true
+    },
+    "clean_state": {
+      "description": "A repository state where the index matches the HEAD commit and the working tree matches the index.",
+      "git_native": true
+    },
+    "changed_file_inventory": {
+      "description": "The set of files added, modified, deleted, renamed, or copied between two commits or between HEAD and the working tree.",
+      "git_native": true
+    },
+    "diff": {
+      "description": "A representation of the differences between two commits, trees, or between the index and working tree.",
+      "git_native": true
+    },
+    "exact_revision_validation": {
+      "description": "Validation performed against a specific pinned commit, ensuring reproducibility and auditability.",
+      "git_native": true,
+      "semantic_role": "validation-evidence-binding"
+    },
+    "integration_commit": {
+      "description": "A commit that merges changes from one branch into another, typically the target branch.",
+      "git_native": true,
+      "semantic_role": "merge-result"
+    },
+    "release_ref": {
+      "description": "A ref (typically a tag) that marks a specific commit as a release candidate or release.",
+      "git_native": true,
+      "semantic_role": "release-binding"
+    }
+  },
+  "identity_distinctions": {
+    "git_object_identity": {
+      "description": "A content-addressed hash (SHA-1 or SHA-256) that uniquely identifies a Git object. Distinct from semantic identity which identifies the conceptual entity across revisions.",
+      "git_native": true,
+      "comparison_to_semantic_identity": "git-object-identity-is-content-addressed-revision-specific; semantic-identity-is-authoritative-revision-independent"
+    },
+    "branch_existence_vs_authorization": {
+      "description": "A branch may exist in the object database without being authorized for mutation or integration. Existence is a Git fact; authorization is a governance fact.",
+      "git_native": true
+    },
+    "commit_existence_vs_acceptance": {
+      "description": "A commit may exist in the object database without being accepted as normative authority. Existence is a Git fact; acceptance is a governance fact.",
+      "git_native": true
+    },
+    "merge_vs_release": {
+      "description": "A merge integrates changes from one branch into another. A release is a governance decision to designate a specific commit as a distributable product version. Merges do not automatically constitute releases.",
+      "git_native": true
+    },
+    "local_vs_remote_orientation": {
+      "description": "Local repository state (HEAD, index, working tree) is distinct from remote repository state. Validation must specify whether it operates on local or remote state.",
+      "git_native": true
+    },
+    "exact_revision_vs_floating_branch": {
+      "description": "Exact revision validation pins to a specific commit hash. Floating branch validation validates against the current HEAD of a branch. Acceptance and release must use exact revision validation.",
+      "git_native": true
+    }
+  },
+  "state_model": {
+    "local_state_properties": {
+      "can_represent_deterministically": true,
+      "unknown_local_state_blocks_unsafe_operations": true,
+      "unsafe_inference_from_remote_state_forbidden": true
+    },
+    "validation_binding": {
+      "evidence_binds_to_exact_revision": true,
+      "floating_branch_validation_not_acceptance_evidence": true,
+      "validation_must_record_commit_hash": true
+    }
+  },
+  "authority_separation": {
+    "framework_authority": {
+      "may_define": ["git-model", "revision-concepts", "identity-distinctions", "state-model", "validation-binding"],
+      "may_not_define": ["hosting-platform-apis", "branch-protection-rules", "ci-workflow-config", "merge-queue-behavior", "release-api-behavior"]
+    },
+    "platform_profile_authority": {
+      "may_implement": ["pull-requests", "reviews", "checks", "branch-protection", "merge-queues", "releases"],
+      "must_not_redefine": ["git-semantics", "commit-identity", "revision-evidence-binding"]
+    }
+  },
+  "decision_basis": {
+    "git_generic_model": {
+      "decision": "git-model-is-git-generic-not-platform-specific",
+      "rationale": "Git provides a portable object model (commits, trees, blobs, refs) that is independent of hosting platform. The core framework must define only Git-native concepts. Platform-specific behaviors (pull requests, CI, branch protection) belong to hosting-platform profiles."
+    },
+    "identity_distinction": {
+      "decision": "git-identity-and-semantic-identity-are-distinct",
+      "rationale": "Git object identity (content-addressed hash) identifies a specific revision. Semantic identity identifies the conceptual artifact across revisions. Confusing these two undermines revision evidence and acceptance authority."
+    },
+    "exact_revision_validation": {
+      "decision": "acceptance-and-release-require-exact-revision-validation",
+      "rationale": "Floating branch validation (against the current HEAD of a branch) is useful for development feedback but cannot serve as acceptance or release evidence. Only validation against a pinned commit hash provides reproducible, auditable evidence."
+    },
+    "unknown_local_state": {
+      "decision": "unknown-local-state-blocks-unsafe-operations",
+      "rationale": "If the local repository state cannot be determined (e.g., due to merge conflicts, dirty working tree, or missing objects), unsafe operations must be blocked rather than proceeding with incomplete state information."
+    }
+  },
+  "expected_relationships": [
+    "Phase 1 framework boundary entity types (framework-source-repository, framework-revision)",
+    "Phase 4 Level model (revision evidence for specification acceptance)",
+    "Phase 5 product artifact roles (source ownership, generated provenance)",
+    "future hosting-platform profile mechanism (Phase 11)",
+    "future GitHub hosting profile (Phase 12)"
+  ],
+  "unresolved_questions": [
+    "Concrete revision evidence format and binding mechanism are not defined.",
+    "Merge conflict resolution protocol is not defined.",
+    "Release ref naming convention and lifecycle are not defined.",
+    "Framework revision vs product revision distinction is not defined (Phase 14)."
+  ]
+}
