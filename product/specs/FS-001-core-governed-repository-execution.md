@@ -28,8 +28,6 @@ FS-001 Planning shall identify exact consumed Product Design revision
 
 **Classification: B**
 
-**State: Inactive**
-
 FS-001 shall realize the Product Design execution model as declarative JSON
 input selecting ordered registered `plugin.task` invocations and structured JSON
 output reporting their observed execution results.
@@ -44,8 +42,6 @@ define or replace executable task implementations.
 ### FS-001-NR-004 — Initial Plugin Domains
 
 **Classification: M**
-
-**State: Inactive**
 
 FS-001 shall provide registered plugin namespaces `filesystem`, `git`,
 `execute`, and `github`.
@@ -109,8 +105,6 @@ authority under which that capability may be exercised.
 ### FS-001-NR-013 — Authority Non-Expansion
 
 **Classification: B**
-
-**State: Inactive**
 
 Payload values and task-result references may narrow active execution authority
 where supported but shall not widen it.
@@ -252,8 +246,6 @@ captured stdout/stderr information.
 
 **Classification: M**
 
-**State: Inactive**
-
 FS-001 shall register and implement `github.issue-read`,
 `github.issue-create`, `github.issue-modify`, `github.pull-request-read`,
 `github.pull-request-create`, and `github.pull-request-modify`.
@@ -262,16 +254,12 @@ FS-001 shall register and implement `github.issue-read`,
 
 **Classification: B**
 
-**State: Inactive**
-
 FS-001 GitHub tasks shall expose designed issue and pull-request fields and
 shall not expose a generic HTTP or arbitrary GitHub API request interface.
 
 ### FS-001-NR-033 — GitHub Repository Authority
 
 **Classification: B**
-
-**State: Inactive**
 
 GitHub task execution shall remain within the GitHub repository scope granted by
 the active GVE authority regardless of broader capability of the host
@@ -280,8 +268,6 @@ credentials.
 ### FS-001-NR-034 — GitHub Mutation Evidence
 
 **Classification: B**
-
-**State: Inactive**
 
 A successful GitHub mutation task shall return the stable remote object identity
 and observed resulting state needed for later governed work.
@@ -322,16 +308,12 @@ verification.
 
 **Classification: B**
 
-**State: Inactive**
-
 The authoritative FS-001 execution result shall be machine-readable JSON.
 Human-oriented output may supplement but shall not contradict or replace it.
 
 ### FS-001-NR-040 — CLI Execution
 
 **Classification: M**
-
-**State: Inactive**
 
 FS-001 shall provide a local command-line entry point that accepts a payload
 file and emits the authoritative workflow result.
@@ -340,16 +322,12 @@ file and emits the authoritative workflow result.
 
 **Classification: M**
 
-**State: Inactive**
-
 The FS-001 CLI shall return a non-success process exit status when the workflow
 result is unsuccessful or the payload cannot be executed.
 
 ### FS-001-NR-042 — Static Product-Owned Registry
 
 **Classification: B**
-
-**State: Inactive**
 
 FS-001 task registration shall be product-owned and shall not permit a payload
 to install, load, or define arbitrary runtime plugins.

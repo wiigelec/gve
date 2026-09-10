@@ -11,6 +11,9 @@ from core_engine import validate_core_engine, validate_planning_binding
 from filesystem import validate_filesystem_plugin
 from git import validate_git_plugin
 from execute import validate_execute
+from github import validate_github
+from cli import validate_cli
+from registry import validate_registry
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -20,6 +23,9 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "filesystem": validate_filesystem_plugin,
     "git": validate_git_plugin,
     "execute": validate_execute,
+    "github": validate_github,
+    "cli": validate_cli,
+    "registry": validate_registry,
 }
 
 

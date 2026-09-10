@@ -8,15 +8,30 @@
       ]
     },
     {
+      "requirement": "FS-001-NR-002",
+      "tasks": [
+        "cli",
+        "registry"
+      ]
+    },
+    {
       "requirement": "FS-001-NR-003",
       "tasks": [
-        "core-engine"
+        "core-engine",
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-004",
+      "tasks": [
+        "registry"
       ]
     },
     {
       "requirement": "FS-001-NR-005",
       "tasks": [
-        "core-engine"
+        "core-engine",
+        "registry"
       ]
     },
     {
@@ -53,6 +68,16 @@
       "requirement": "FS-001-NR-011",
       "tasks": [
         "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-013",
+      "tasks": [
+        "filesystem",
+        "git",
+        "execute",
+        "github",
+        "cli"
       ]
     },
     {
@@ -146,6 +171,30 @@
       ]
     },
     {
+      "requirement": "FS-001-NR-031",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-032",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-033",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-034",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
       "requirement": "FS-001-NR-035",
       "tasks": [
         "core-engine"
@@ -161,6 +210,30 @@
       "requirement": "FS-001-NR-038",
       "tasks": [
         "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-039",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-040",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-041",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-042",
+      "tasks": [
+        "registry"
       ]
     }
   ]
