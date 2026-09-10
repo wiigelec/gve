@@ -2,7 +2,7 @@
 functional_set: FS-001
 artifact: normative-specification
 title: Core Governed Repository Execution Specification
-design_revision: 8ede712d83a3376911dfb561b0173b7b7fd66cfe
+design_revision: 6cc46250b8aac3934663be906acd41601791c04f
 ---
 
 # FS-001 — Normative Specification
@@ -15,11 +15,18 @@ Evaluation classifications:
 
 Purely semantic requirements are active during Planning. Requirements classified M or B are initially inactive until Build realizes the mechanical implementation and exact requirement-to-validation-task bindings, after which Planning may reactivate them without changing their identities or normative text.
 
+This Planning revision supersedes the earlier exact Design binding
+`8ede712d83a3376911dfb561b0173b7b7fd66cfe` with `6cc46250b8aac3934663be906acd41601791c04f`. Existing normative requirement text is
+preserved; superseded mechanical bindings are made inactive and replacement
+requirements receive new identities.
+
 ## Requirements
 
 ### FS-001-NR-001 — Exact Design Binding
 
 **Classification: M**
+
+**State: Inactive**
 
 FS-001 Planning shall identify exact consumed Product Design revision
 `8ede712d83a3376911dfb561b0173b7b7fd66cfe`.
@@ -360,6 +367,8 @@ alone shall not be treated as an implementation of validation.
 
 **Classification: M**
 
+**State: Inactive**
+
 All active mechanically evaluated FS-001 requirements shall have applicable
 mechanical enforcement and all required repository Validation shall pass before
 FS-001 is eligible for Acceptance.
@@ -378,3 +387,25 @@ Design before Acceptance.
 
 FS-001 Acceptance shall be represented by intentional integration of the
 satisfactory `fs1` development candidate into `main`.
+
+### FS-001-NR-049 — Revised Exact Design Binding
+
+**Classification: M**
+
+**State: Inactive**
+
+This FS-001 Planning revision shall identify exact consumed Product Design
+revision `6cc46250b8aac3934663be906acd41601791c04f`.
+
+### FS-001-NR-050 — Execute Host Portability
+
+**Classification: B**
+
+**State: Inactive**
+
+`execute.script` shall preserve its governed invocation, finite process-control,
+runaway-tree termination, and result-capture contract on both native Linux and
+Cygwin hosts. Process accounting used for total-spawned-process or spawn-rate
+enforcement shall not rely on a mechanism that can miss short-lived governed
+descendants. If required process supervision cannot be established on a
+supported host, the task shall fail closed before launching the selected script.

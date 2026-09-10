@@ -2,10 +2,19 @@
 functional_set: FS-001
 artifact: plan
 title: Core Governed Repository Execution Plan
-design_revision: 8ede712d83a3376911dfb561b0173b7b7fd66cfe
+design_revision: 6cc46250b8aac3934663be906acd41601791c04f
 ---
 
 # FS-001 — Plan
+
+## Design binding revision
+
+This Planning revision consumes Product Design at exact Git revision
+`6cc46250b8aac3934663be906acd41601791c04f`.
+
+It supersedes the prior Planning baseline bound to
+`8ede712d83a3376911dfb561b0173b7b7fd66cfe` specifically because PD-030 now makes native Linux and Cygwin
+supported `execute.script` hosts.
 
 ## Technical intent
 
@@ -241,6 +250,27 @@ silently enlarging or weakening runaway-process protection.
 The OS-specific mechanism for host-policy discovery, process-tree discovery,
 accounting, and termination is a Build decision. A host with no separately
 discoverable policy still remains bounded by the FS-001 hard ceilings.
+
+FS-001 supports `execute.script` on both native Linux and Cygwin. Build may use
+different process-supervision backends for those hosts, but both backends must
+provide the same task contract and the same finite process-control guarantees.
+
+For both supported hosts:
+
+- every governed descendant creation must be accountably observable for purposes
+  of total-spawn and spawn-rate enforcement, including short-lived descendants;
+- concurrent governed process count must remain enforceable for the life of the
+  task;
+- timeout or any process-limit violation must trigger governed-tree termination;
+- inability to establish the required process-control backend must fail before
+  the selected repository script is launched;
+- script path, argument, executable, and working-directory behavior must retain
+  the native semantics expected by that host;
+- Cygwin support must preserve Cygwin path and executable semantics even when
+  native Windows process-control facilities are used underneath.
+
+A sampling mechanism that can miss short-lived descendants is insufficient for
+the total-spawn or spawn-rate limits.
 
 The behavioral contract is not a Build decision: timeout, concurrent-count
 excess, total-spawn excess, spawn-rate excess, or inability to perform required

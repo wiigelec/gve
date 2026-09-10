@@ -2,12 +2,6 @@
   "version": 1,
   "bindings": [
     {
-      "requirement": "FS-001-NR-001",
-      "tasks": [
-        "planning-binding"
-      ]
-    },
-    {
       "requirement": "FS-001-NR-002",
       "tasks": [
         "cli",
@@ -234,20 +228,6 @@
       "requirement": "FS-001-NR-042",
       "tasks": [
         "registry"
-      ]
-    },
-    {
-      "requirement": "FS-001-NR-046",
-      "tasks": [
-        "planning-binding",
-        "core-engine",
-        "filesystem",
-        "git",
-        "execute",
-        "github",
-        "cli",
-        "registry",
-        "workflow"
       ]
     }
   ]

@@ -2,7 +2,7 @@
 functional_set: FS-001
 artifact: functional-set
 title: Core Governed Repository Execution
-design_revision: 8ede712d83a3376911dfb561b0173b7b7fd66cfe
+design_revision: 6cc46250b8aac3934663be906acd41601791c04f
 ---
 
 # FS-001 — Core Governed Repository Execution
@@ -12,8 +12,11 @@ design_revision: 8ede712d83a3376911dfb561b0173b7b7fd66cfe
 FS-001 Planning consumes Product Design exactly as accepted at Git revision:
 
 ```text
-8ede712d83a3376911dfb561b0173b7b7fd66cfe
+6cc46250b8aac3934663be906acd41601791c04f
 ```
+
+This supersedes the earlier FS-001 Planning binding to
+`8ede712d83a3376911dfb561b0173b7b7fd66cfe` after Product Design added the execute host-portability contract.
 
 The selected Design scope is:
 
@@ -66,7 +69,7 @@ FS-001 includes:
 - the initial filesystem task set;
 - the initial Git task set;
 - `execute.script` with repository-local script selection and bounded
-  process-tree runaway protection;
+  process-tree runaway protection on native Linux and Cygwin hosts;
 - the initial GitHub issue and pull-request task set;
 - command-line invocation suitable for local repository workflows;
 - mechanical validation sufficient to enforce FS-001's mechanically decidable
