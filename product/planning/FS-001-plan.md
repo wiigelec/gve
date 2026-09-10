@@ -194,7 +194,7 @@ branches, remotes, or objects inside these grants. They may not expand them.
 
 ## Execute resource policy
 
-FS-001 default execute maxima are:
+FS-001 defines these product hard ceilings:
 
 ```text
 wall-clock runtime:          600 seconds
@@ -203,8 +203,26 @@ total spawned process count: 1024
 spawn rate:                  64 processes/second
 ```
 
-The CLI authority options may replace these defaults with other positive finite
-integer maxima for the current GVE invocation.
+These values are upper bounds for FS-001 execution, not caller-replaceable
+defaults.
+
+Host policy may impose a stricter maximum. The CLI authority options may also
+request stricter positive finite integer maxima for the current GVE invocation,
+but they may not raise any limit above the applicable FS-001 hard ceiling or a
+stricter host-policy ceiling.
+
+For each resource, authority is established as:
+
+```text
+authority maximum =
+    min(
+        FS-001 hard ceiling,
+        host-policy ceiling when present,
+        CLI-requested maximum when present
+    )
+```
+
+An omitted CLI value contributes no additional narrowing.
 
 An `execute.script` task may optionally request stricter values through its
 `limits` parameter. For each supplied task limit:
@@ -215,12 +233,17 @@ effective limit = min(authority maximum, task-requested limit)
 
 An omitted task limit uses the authority maximum.
 
-Zero, negative, non-integer, or otherwise unmonitorable limits are invalid.
+A CLI or task value that is zero, negative, non-integer, above the ceiling it is
+allowed to narrow, or otherwise unmonitorable is invalid. It fails rather than
+silently enlarging or weakening runaway-process protection.
 
-The OS-specific mechanism for process-tree discovery, accounting, and
-termination is a Build decision. The behavioral contract is not: timeout,
-concurrent-count excess, total-spawn excess, spawn-rate excess, or inability to
-perform required process-tree termination is task failure.
+The OS-specific mechanism for host-policy discovery, process-tree discovery,
+accounting, and termination is a Build decision. A host with no separately
+discoverable policy still remains bounded by the FS-001 hard ceilings.
+
+The behavioral contract is not a Build decision: timeout, concurrent-count
+excess, total-spawn excess, spawn-rate excess, or inability to perform required
+process-tree termination is task failure.
 
 ## Task registry
 
@@ -358,10 +381,33 @@ path parameter.
 
 ### `git.repository`
 
-Parameters may contain optional `expected_root`.
+Parameters may contain optional `expected_root` and optional
+`expected_remotes`.
 
-The task reports the canonical repository root and configured remotes. An
-explicit root mismatch fails.
+`expected_remotes`, when supplied, is an object mapping remote names to exact
+configured remote URL strings:
+
+```json
+{
+  "expected_root": "/repo",
+  "expected_remotes": {
+    "origin": "https://github.com/wiigelec/gve.git"
+  }
+}
+```
+
+The task reports `result.root` and `result.remotes`, where `result.remotes` is
+an object mapping every configured remote name to its observed configured URL.
+
+An explicit `expected_root` mismatch fails. For `expected_remotes`, every
+supplied remote name must exist and its observed URL must equal the supplied
+string exactly; missing or mismatched remotes fail after the observed repository
+state is recorded.
+
+`expected_remotes` is an assertion over repository identity. It does not grant
+Git remote mutation authority. A remote may therefore be observed or asserted
+here while still being unavailable to `git.fetch`, `git.remote-head`, or
+`git.push` unless separately granted by the active Git authority.
 
 ### `git.branch`
 
@@ -753,9 +799,11 @@ Testing shall cover:
 - static task registration;
 - every plugin task's accepted/rejected parameter boundary;
 - filesystem traversal and symlink escape rejection;
+- repository-root and exact configured-remote identity observation/assertion;
 - Git status fixed-width parsing;
 - normal/non-force Git publication and remote-race guards;
-- execute timeout, spawn/count limits, process-tree termination, and evidence;
+- execute hard-ceiling enforcement, CLI/task narrowing, timeout, spawn/count
+  limits, process-tree termination, and evidence;
 - GitHub repository authority and semantic-field restriction;
 - task/workflow result envelopes;
 - the reference development workflow expressed only through registered tasks.
