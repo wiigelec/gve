@@ -31,7 +31,7 @@ The engine owns orchestration semantics. Plugins own capability semantics.
 
 ## Package structure
 
-Build shall use a project-native Python package under `src/` with clear
+Build shall use a project-native Python package under `product/src/` with clear
 separation between:
 
 - engine/workflow orchestration;
@@ -826,7 +826,7 @@ entry point.
 A practical Build sequence is:
 
 ```text
-payload/result/authority models
+payload/result/authority models under `product/src/`
   -> registry + engine
   -> filesystem plugin
   -> git plugin
