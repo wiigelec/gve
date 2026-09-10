@@ -4,85 +4,121 @@
     {
       "requirement": "FS-001-NR-001",
       "tasks": [
-        "fs001-planning-binding"
+        "planning-binding"
       ]
     },
     {
       "requirement": "FS-001-NR-003",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-005",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-006",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-007",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-008",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-009",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-010",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-011",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-015",
       "tasks": [
-        "fs001-filesystem"
+        "filesystem"
       ]
     },
     {
       "requirement": "FS-001-NR-016",
       "tasks": [
-        "fs001-filesystem"
+        "filesystem"
       ]
     },
     {
       "requirement": "FS-001-NR-017",
       "tasks": [
-        "fs001-filesystem"
+        "filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-018",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-019",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-020",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-021",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-022",
+      "tasks": [
+        "git"
       ]
     },
     {
       "requirement": "FS-001-NR-035",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
       ]
     },
     {
       "requirement": "FS-001-NR-036",
       "tasks": [
-        "fs001-core-engine"
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-038",
+      "tasks": [
+        "git"
       ]
     }
   ]

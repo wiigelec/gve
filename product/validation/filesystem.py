@@ -11,7 +11,8 @@ def h(s): return hashlib.sha256(s.encode()).hexdigest()
 
 def validate_filesystem_plugin():
     expected={"filesystem.list","filesystem.file-read","filesystem.file-stat","filesystem.file-hash","filesystem.file-create","filesystem.file-modify","filesystem.file-delete"}
-    if set(product_registry().identities())!=expected: raise AssertionError("filesystem registry mismatch")
+    identities=set(product_registry().identities())
+    if not expected.issubset(identities): raise AssertionError("filesystem registry mismatch")
     with tempfile.TemporaryDirectory() as td:
         r=Path(td).resolve(); a=Authority.for_repository(r)
         (r/"alpha.txt").write_text("alpha"); (r/"dir").mkdir(); (r/"dir"/"beta.txt").write_text("beta")

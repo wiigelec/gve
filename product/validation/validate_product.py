@@ -7,15 +7,17 @@ import sys
 from pathlib import Path
 from typing import Callable
 
-from fs001_core import validate_core_engine, validate_planning_binding
-from fs001_filesystem import validate_filesystem_plugin
+from core_engine import validate_core_engine, validate_planning_binding
+from filesystem import validate_filesystem_plugin
+from git import validate_git_plugin
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
 TASKS: dict[str, Callable[[], bool | None]] = {
-    "fs001-planning-binding": validate_planning_binding,
-    "fs001-core-engine": validate_core_engine,
-    "fs001-filesystem": validate_filesystem_plugin,
+    "planning-binding": validate_planning_binding,
+    "core-engine": validate_core_engine,
+    "filesystem": validate_filesystem_plugin,
+    "git": validate_git_plugin,
 }
 
 

@@ -152,8 +152,6 @@ failure.
 
 **Classification: M**
 
-**State: Inactive**
-
 FS-001 shall register and implement `git.repository`, `git.branch`, `git.head`,
 `git.status`, `git.diff`, `git.diff-check`, `git.branch-create`,
 `git.branch-switch`, `git.add`, `git.commit`, `git.fetch`,
@@ -163,16 +161,12 @@ FS-001 shall register and implement `git.repository`, `git.branch`, `git.head`,
 
 **Classification: B**
 
-**State: Inactive**
-
 FS-001 Git tasks shall expose semantic task parameters and shall not provide an
 unrestricted raw Git argument forwarding interface.
 
 ### FS-001-NR-020 — Git Observation and Assertion
 
 **Classification: B**
-
-**State: Inactive**
 
 A state-oriented Git task shall return its observed state and may fail on an
 explicit expected-state mismatch, but shall not infer an unstated expectation.
@@ -181,16 +175,12 @@ explicit expected-state mismatch, but shall not infer an unstated expectation.
 
 **Classification: B**
 
-**State: Inactive**
-
 `git.push` shall implement normal non-force publication and shall not permit
 caller parameters to enable force push or history rewrite.
 
 ### FS-001-NR-022 — Git Status Parsing Integrity
 
 **Classification: M**
-
-**State: Inactive**
 
 Any FS-001 parsing of fixed-width Git porcelain status output shall preserve the
 status columns before path extraction and shall not remove leading status
@@ -337,8 +327,6 @@ not be represented as authoritative evidence that an effect occurred.
 ### FS-001-NR-038 — Publication Evidence Separation
 
 **Classification: B**
-
-**State: Inactive**
 
 Git publication results shall permit callers to distinguish local commit
 creation, push attempt/completion, observed remote state, and exact remote-state
