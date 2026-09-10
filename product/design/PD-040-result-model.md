@@ -26,14 +26,30 @@ plugin.task
 Each task returns a structured result whose meaning is owned by GVE.
 
 At minimum, the result model must be able to communicate task identity,
-completion status, relevant observations, effects performed, resulting state
-identifiers where applicable, and errors or conflicts.
+workflow-local invocation identity where present, completion status, relevant
+observations, effects performed, resulting state identifiers where applicable,
+and errors or conflicts.
 
 Different task domains may add task-specific evidence.
 
 Examples include file hashes, repository HEADs, changed paths, commit IDs,
-remote branch state, process exit status, issue numbers, and pull-request
-numbers.
+remote branch state, process exit status, process-limit failures, issue numbers,
+and pull-request numbers.
+
+## Addressable result values
+
+A task result may expose specifically addressable values for use by later tasks
+in the same workflow.
+
+Result addressing must be unambiguous and limited to earlier task invocations.
+
+A reference resolves an observed value; it does not confer new authority.
+
+If a reference cannot be resolved, is incompatible with the consuming
+parameter, or depends on a task that did not produce the required successful
+result, the consuming task must not execute.
+
+The exact JSON reference syntax belongs to later schema work.
 
 ## Workflow result
 
@@ -41,8 +57,9 @@ For a payload containing multiple tasks, the engine aggregates task results in
 execution order.
 
 The workflow result records enough information to determine what payload
-execution was attempted, which tasks ran, which task failed if any, what effects
-occurred before termination, and what final observations were established.
+execution was attempted, which tasks ran, which task failed if any, which tasks
+were not run because execution terminated, what effects occurred before
+termination, and what final observations were established.
 
 The workflow result must not erase partial execution merely because a later task
 failed.
@@ -52,8 +69,8 @@ failed.
 Result JSON is produced from GVE observations.
 
 The caller does not supply authoritative output facts such as successful
-publication, resulting commit identity, resulting file hash, or remote object
-identity.
+publication, resulting commit identity, resulting file hash, process outcome, or
+remote object identity.
 
 Expected values may appear as task inputs or guards, but observed values belong
 to results.
@@ -64,9 +81,34 @@ Failure is a first-class result.
 
 When possible, failure output should preserve the task that failed, the reason
 for failure, observations established before failure, effects already
-completed, conflicts or races, and the safest known execution-boundary state.
+completed, conflicts or races, resource-limit violations, and the safest known
+execution-boundary state.
 
 A failed workflow is not equivalent to "nothing happened."
+
+Because the default workflow model is fail-fast, the aggregate result should
+also distinguish tasks that failed from later tasks that were never attempted.
+
+## Execute evidence
+
+Execute-task results should make process behavior inspectable enough to explain
+normal completion or governed termination.
+
+Where relevant this includes:
+
+```text
+admitted executable identity
+effective timeout
+effective process ceilings
+exit status
+timeout occurrence
+process-limit occurrence
+termination outcome
+captured stdout/stderr metadata or content
+```
+
+The result must not claim successful containment when the governed process tree
+could not be terminated as required.
 
 ## Publication evidence
 

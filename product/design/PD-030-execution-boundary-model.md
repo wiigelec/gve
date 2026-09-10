@@ -16,14 +16,38 @@ caller inside approved capabilities.
 
 ## Authority location
 
-Executable authority resides in GVE plugin tasks.
+Executable capability resides in GVE plugin tasks.
 
-A payload is a request to exercise those capabilities. Possession or generation
-of a payload does not create a new executable capability.
+Execution authority is a separate constraint describing where and under what
+limits those capabilities may be exercised.
+
+A payload is a request to exercise registered capabilities within existing
+authority. Possession or generation of a payload does not create a new
+capability or enlarge authority.
 
 This is particularly important for AI-generated workflows. An AI may construct
 JSON that composes approved tasks, but the JSON must not become a carrier for
-arbitrary Python, shell, Git, filesystem, or remote-API behavior.
+arbitrary Python, shell, Git, filesystem, remote-API, or process behavior.
+
+## Effective execution boundary
+
+A task invocation is permitted only where all three layers agree:
+
+```text
+registered capability
+        intersect
+active execution authority
+        intersect
+validated task parameters
+        =
+permitted invocation
+```
+
+A payload may narrow execution where the task model permits. It may not enlarge
+the active execution authority.
+
+Host credentials, filesystem permissions, Git credentials, environment
+variables, or network reachability do not themselves constitute GVE authority.
 
 ## Closed executable surface
 
@@ -45,31 +69,80 @@ preservation of unrelated work are task/plugin responsibilities.
 The payload may identify a target allowed by that scope but cannot redefine the
 scope itself merely by supplying a path.
 
+Path containment applies intrinsically to every filesystem task. It is not an
+optional verification step.
+
 ## Git boundary
 
 Git tasks expose semantic repository operations rather than arbitrary Git
 command execution.
 
 Repository identity, branch state, exact HEAD, worktree state, remote state,
-staging scope, commit creation, and publication are independently observable or
-executable capabilities.
+branch creation, branch switching, staging scope, commit creation, and
+publication are independently observable or executable capabilities.
 
 Normal publication must not silently become history rewrite because of
 caller-supplied raw flags.
+
+Git authority constrains which repository, refs, remotes, and publication
+effects are admitted for an execution.
 
 ## Execute boundary
 
 The execute domain has the greatest potential to bypass other boundaries.
 
-`execute.script` therefore means governed execution of admitted executable
-behavior, not unrestricted evaluation of caller-provided program text.
+`execute.script` means governed execution of admitted executable behavior, not
+unrestricted evaluation of caller-provided program text.
 
-If executable behavior can itself mutate repository or external state, the
-design must account for those effects rather than assuming the filesystem and
-Git plugins remain the only possible sources of mutation.
+The execute plugin must establish a governed process tree before execution and
+must apply finite resource limits for the life of that task.
 
-The exact execution-admission and containment model remains an explicit Design
-question for refinement.
+At minimum, the governed execution boundary includes:
+
+```text
+finite wall-clock timeout
+finite maximum concurrent process count
+finite maximum total spawned process count
+bounded process-spawn rate or burst
+governed process-tree ownership
+termination of the governed process tree on limit violation
+working-directory boundary
+environment exposure rules
+stdout and stderr capture
+exit-status observation
+```
+
+The exact numeric ceilings may vary by configuration or authority, but an
+execute task may never be unbounded.
+
+The effective limit for any parameterizable resource is no broader than the
+GVE- or host-granted maximum.
+
+Conceptually:
+
+```text
+GVE/host maximum
+        intersect
+payload-requested limit
+        =
+effective limit
+```
+
+A caller may request a stricter timeout or process ceiling when supported. It
+may not raise the ceiling.
+
+Timeout, process-limit exhaustion, spawn-limit exhaustion, or failure to
+terminate the governed process tree is a governed task failure.
+
+The process-tree limits exist both to protect host stability and to prevent GVE
+from unintentionally exhibiting uncontrolled process-spawning patterns that
+reasonable endpoint or malware protection systems may treat as hostile.
+
+Because admitted scripts may themselves mutate files, Git state, or external
+systems, process admission is not sufficient by itself to prove that all
+side-effects are contained. The exact model for admitting scripts with
+side-effects remains a consequential Design question if workflows require those
+scripts to perform effects outside their explicitly governed execution scope.
 
 ## GitHub boundary
 
@@ -81,6 +154,9 @@ head, or other fields specifically designed for a task.
 The caller must not gain a generic HTTP or GitHub API escape hatch through those
 parameters.
 
+GitHub authority constrains which repository and remote objects may be read or
+mutated. Credentials available to the host do not enlarge that authority.
+
 ## Fail-closed behavior
 
 Boundary violations are execution failures.
@@ -88,7 +164,10 @@ Boundary violations are execution failures.
 Examples include unknown task identity, invalid parameter, path outside
 permitted scope, expected Git state mismatch, unacceptable worktree conflict,
 remote-state race, unauthorized mutation, failed validation where continuation
-depends on it, or unsupported remote object mutation.
+depends on it, process-resource exhaustion, or unsupported remote object
+mutation.
+
+A failure terminates later workflow execution by default.
 
 A failure must not be weakened automatically so that a workflow can continue.
 

@@ -54,8 +54,8 @@ shell fragments, raw Git argument lists, or arbitrary API requests.
 ### Engine
 
 The engine accepts and validates payloads, resolves task identities, dispatches
-tasks, applies workflow failure semantics, collects task results, and emits the
-workflow result.
+tasks, applies workflow failure semantics, resolves permitted task-result
+references, collects task results, and emits the workflow result.
 
 The engine is not itself a filesystem, Git, process-execution, or GitHub
 implementation. Those capabilities are supplied through plugins.
@@ -96,8 +96,10 @@ github.issue-create
 
 A payload is a declarative composition of task invocations.
 
-It may order tasks and supply task parameters. It may not define executable
-implementation logic or extend the task vocabulary.
+It may order tasks, supply task parameters, and refer to results produced by
+prior tasks where the consuming task permits that value.
+
+It may not define executable implementation logic or extend the task vocabulary.
 
 ### Result
 
@@ -106,6 +108,35 @@ task results into a workflow result.
 
 Results describe what GVE observed and what GVE did. A caller does not get to
 declare execution successful merely by requesting success.
+
+### Capability
+
+Capability describes what GVE knows how to do.
+
+The registered plugin-task vocabulary is the set of executable capabilities
+implemented by the active GVE product.
+
+### Authority
+
+Authority describes where, to what resources, and within what limits an
+available capability may be exercised for a particular execution.
+
+Capability and authority are separate concepts.
+
+A registered task does not imply unrestricted permission to use that task
+against every repository, path, remote, process, issue, or pull request
+accessible to the host.
+
+Effective permission is the intersection of:
+
+```text
+registered capability
+  + execution authority
+  + task parameters
+```
+
+A payload may narrow an already granted authority when a task permits it. A
+payload may not widen authority.
 
 ## Capability boundary
 
@@ -139,6 +170,8 @@ One payload may describe:
 git.repository
 git.branch
 git.head
+git.branch-create
+git.branch-switch
 filesystem.file-modify
 execute.script
 git.diff-check
@@ -186,12 +219,14 @@ The handoff transport itself is not GVE's product interface.
 The maintained GVE interface is JSON payload input, governed plugin-task
 execution, and JSON result output.
 
-## Design invariant
+## Design invariants
 
-The governing invariant for the product is:
+The governing invariants for the product are:
 
 > The caller may compose approved executable capabilities, but may not create
 > executable capabilities.
 
+> The caller may narrow granted execution authority, but may not widen it.
+
 All later Product Design, Planning, implementation, and validation should
-preserve that boundary.
+preserve those boundaries.
