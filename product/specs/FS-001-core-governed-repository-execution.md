@@ -21,8 +21,6 @@ Purely semantic requirements are active during Planning. Requirements classified
 
 **Classification: M**
 
-**State: Inactive**
-
 FS-001 Planning shall identify exact consumed Product Design revision
 `8ede712d83a3376911dfb561b0173b7b7fd66cfe`.
 
@@ -40,8 +38,6 @@ output reporting their observed execution results.
 
 **Classification: B**
 
-**State: Inactive**
-
 A payload shall invoke only task identities registered by GVE and shall not
 define or replace executable task implementations.
 
@@ -58,8 +54,6 @@ FS-001 shall provide registered plugin namespaces `filesystem`, `git`,
 
 **Classification: B**
 
-**State: Inactive**
-
 Every executable task exposed by FS-001 shall have one fully-qualified
 `plugin.task` identity that resolves to exactly one active implementation.
 
@@ -67,15 +61,11 @@ Every executable task exposed by FS-001 shall have one fully-qualified
 
 **Classification: M**
 
-**State: Inactive**
-
 The engine shall attempt task invocations in declared payload order.
 
 ### FS-001-NR-007 — Workflow-Local Invocation Identity
 
 **Classification: M**
-
-**State: Inactive**
 
 Every invocation in a multi-task FS-001 workflow shall be uniquely addressable
 within that workflow.
@@ -83,8 +73,6 @@ within that workflow.
 ### FS-001-NR-008 — Prior Result References
 
 **Classification: B**
-
-**State: Inactive**
 
 FS-001 shall permit a later invocation parameter to consume an explicitly
 exposed compatible result value from an earlier invocation without allowing the
@@ -94,8 +82,6 @@ reference to expand execution authority.
 
 **Classification: M**
 
-**State: Inactive**
-
 A forward, unresolved, unavailable, or incompatible task-result reference shall
 fail closed before the consuming task executes.
 
@@ -103,16 +89,12 @@ fail closed before the consuming task executes.
 
 **Classification: B**
 
-**State: Inactive**
-
 When a task invocation fails, FS-001 shall stop execution of later invocations
 by default while preserving results of invocations already attempted.
 
 ### FS-001-NR-011 — No Generic Continue-on-Error
 
 **Classification: M**
-
-**State: Inactive**
 
 FS-001 shall not expose a generic caller-controlled continuation-after-failure
 mechanism.
@@ -338,8 +320,6 @@ and observed resulting state needed for later governed work.
 
 **Classification: B**
 
-**State: Inactive**
-
 Every attempted task shall return structured result data sufficient to identify
 the invocation, task identity, completion status, relevant observations,
 GVE-owned effects, resulting identifiers where applicable, and errors or
@@ -348,8 +328,6 @@ conflicts when present.
 ### FS-001-NR-036 — Workflow Result Contract
 
 **Classification: B**
-
-**State: Inactive**
 
 A multi-task workflow result shall preserve invocation order, overall status,
 results already produced before failure, and unambiguous indication of later

@@ -7,9 +7,14 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from fs001_core import validate_core_engine, validate_planning_binding
+
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
-TASKS: dict[str, Callable[[], bool | None]] = {}
+TASKS: dict[str, Callable[[], bool | None]] = {
+    "fs001-planning-binding": validate_planning_binding,
+    "fs001-core-engine": validate_core_engine,
+}
 
 
 def fail(message: str) -> int:
@@ -50,8 +55,14 @@ def execute(task: str) -> int:
     fn = TASKS.get(task)
     if fn is None:
         return fail(f"unknown product Validation task: {task}")
-    result = fn()
-    return 1 if result is False else 0
+    try:
+        result = fn()
+    except Exception as exc:
+        return fail(f"{task}: {exc}")
+    if result is False:
+        return fail(f"{task}: returned failure")
+    print(f"PASS {task}")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -1,4 +1,71 @@
 {
   "version": 1,
-  "bindings": []
+  "bindings": [
+    {
+      "requirement": "FS-001-NR-001",
+      "tasks": [
+        "fs001-planning-binding"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-003",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-005",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-006",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-007",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-008",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-009",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-010",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-011",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-035",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-036",
+      "tasks": [
+        "fs001-core-engine"
+      ]
+    }
+  ]
 }
