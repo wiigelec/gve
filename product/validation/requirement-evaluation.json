@@ -229,6 +229,12 @@
       "tasks": [
         "registry"
       ]
+    },
+    {
+      "requirement": "FS-001-NR-049",
+      "tasks": [
+        "planning-binding"
+      ]
     }
   ]
 }

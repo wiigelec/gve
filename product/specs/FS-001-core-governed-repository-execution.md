@@ -392,8 +392,6 @@ satisfactory `fs1` development candidate into `main`.
 
 **Classification: M**
 
-**State: Inactive**
-
 This FS-001 Planning revision shall identify exact consumed Product Design
 revision `6cc46250b8aac3934663be906acd41601791c04f`.
 

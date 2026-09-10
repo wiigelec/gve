@@ -15,7 +15,7 @@ from gve.engine import Engine
 from gve.errors import GVEError
 from gve.registry import Registry, TaskDefinition
 
-DESIGN_REVISION = "8ede712d83a3376911dfb561b0173b7b7fd66cfe"
+DESIGN_REVISION = "6cc46250b8aac3934663be906acd41601791c04f"
 
 
 def _identity(parameters: dict[str, Any], authority: Authority) -> dict[str, Any]:
