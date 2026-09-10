@@ -56,6 +56,24 @@
       ]
     },
     {
+      "requirement": "FS-001-NR-015",
+      "tasks": [
+        "fs001-filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-016",
+      "tasks": [
+        "fs001-filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-017",
+      "tasks": [
+        "fs001-filesystem"
+      ]
+    },
+    {
       "requirement": "FS-001-NR-035",
       "tasks": [
         "fs001-core-engine"

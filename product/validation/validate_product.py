@@ -8,12 +8,14 @@ from pathlib import Path
 from typing import Callable
 
 from fs001_core import validate_core_engine, validate_planning_binding
+from fs001_filesystem import validate_filesystem_plugin
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
 TASKS: dict[str, Callable[[], bool | None]] = {
     "fs001-planning-binding": validate_planning_binding,
     "fs001-core-engine": validate_core_engine,
+    "fs001-filesystem": validate_filesystem_plugin,
 }
 
 

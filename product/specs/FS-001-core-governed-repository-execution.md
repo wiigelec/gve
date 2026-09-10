@@ -127,8 +127,6 @@ themselves constitute GVE execution authority.
 
 **Classification: M**
 
-**State: Inactive**
-
 FS-001 shall register and implement `filesystem.list`,
 `filesystem.file-read`, `filesystem.file-stat`, `filesystem.file-hash`,
 `filesystem.file-create`, `filesystem.file-modify`, and
@@ -138,8 +136,6 @@ FS-001 shall register and implement `filesystem.list`,
 
 **Classification: B**
 
-**State: Inactive**
-
 Every FS-001 filesystem task shall interpret paths within its active authorized
 filesystem scope and shall reject caller path resolution that escapes that
 scope, including escape through path traversal or symlink resolution.
@@ -147,8 +143,6 @@ scope, including escape through path traversal or symlink resolution.
 ### FS-001-NR-017 — Filesystem Mutation Evidence
 
 **Classification: B**
-
-**State: Inactive**
 
 A filesystem mutation task shall report the path or paths it actually mutated
 and enough resulting state to distinguish successful intended mutation from
