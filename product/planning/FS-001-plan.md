@@ -9,18 +9,19 @@ design_revision: 8ede712d83a3376911dfb561b0173b7b7fd66cfe
 
 ## Technical intent
 
-FS-001 will implement GVE as a small Python application with a stable engine
+FS-001 implements GVE as a small Python application with a stable engine
 boundary and plugin-owned task implementations.
 
 The runtime path is:
 
 ```text
 JSON document
-  -> payload parser / schema validation
+  -> payload schema validation
   -> workflow model
   -> authority context
   -> task registry
-  -> plugin.task dispatch
+  -> result-reference resolution
+  -> plugin.task validation and dispatch
   -> ordered task execution
   -> task result records
   -> workflow result JSON
@@ -30,7 +31,7 @@ The engine owns orchestration semantics. Plugins own capability semantics.
 
 ## Package structure
 
-Build should use a project-native Python package under `src/` with clear
+Build shall use a project-native Python package under `src/` with clear
 separation between:
 
 - engine/workflow orchestration;
@@ -40,234 +41,728 @@ separation between:
 - plugin implementations for `filesystem`, `git`, `execute`, and `github`;
 - CLI entry point.
 
-Exact module and class names are Build decisions unless needed to preserve these
-boundaries.
+Exact module, function, and class names are Build decisions unless needed to
+preserve these boundaries.
 
-## Payload contract
+## FS-001 payload contract
 
-FS-001 shall define one concrete payload schema version.
+FS-001 payload schema version is integer `1`.
 
-The payload shall contain:
+A payload has exactly this top-level structure:
 
-- schema version;
-- workflow identity;
-- ordered task invocations;
-- a workflow-local identity for each invocation;
-- fully-qualified `plugin.task` identity;
-- task-specific parameters;
-- optional task-result references where accepted by the consuming parameter;
-- optional narrowing authority values where the task contract supports them.
+```json
+{
+  "schema_version": 1,
+  "workflow_id": "example-workflow",
+  "tasks": [
+    {
+      "id": "head",
+      "task": "git.head",
+      "parameters": {}
+    }
+  ]
+}
+```
 
-Payload validation occurs before an invocation executes. Unknown top-level
-fields, unknown task identities, malformed task parameters, invalid references,
-and authority-widening requests fail closed.
+Top-level fields are:
 
-The concrete JSON spelling and schema representation may be selected during
-Build provided they preserve the normative requirements.
+- `schema_version` — required integer and exactly `1`;
+- `workflow_id` — required non-empty string;
+- `tasks` — required non-empty array of task invocation objects.
 
-## Task-result references
+Each task invocation contains exactly:
 
-A task-result reference identifies a value produced by an earlier invocation in
-the same workflow.
+- `id` — required workflow-local invocation identity;
+- `task` — required registered fully-qualified `plugin.task` identity;
+- `parameters` — required JSON object interpreted by that task.
 
-Reference resolution occurs immediately before the consuming invocation is
-validated for execution.
+Unknown top-level or invocation fields fail payload validation.
 
-A reference must:
+Invocation `id` values must be unique within the workflow and match:
 
-- name an earlier workflow-local invocation identity;
-- identify an exposed result value;
-- resolve to a value compatible with the receiving parameter;
-- never grant authority that the receiving task did not already possess.
+```text
+[A-Za-z][A-Za-z0-9_-]{0,63}
+```
 
-Forward references and references to unavailable results are failures.
+The payload does not carry executable implementation code or an authority grant.
 
-## Failure model
+Schema validation of the top-level document and invocation envelope occurs
+before any task executes. Task-specific parameter validation occurs after
+permitted prior-result references for that invocation have been resolved and
+before that task executes.
+
+## Result-reference contract
+
+A result reference is a JSON object containing exactly one key, `$ref`, whose
+value is a string:
+
+```json
+{
+  "$ref": "commit.result.commit"
+}
+```
+
+The string syntax is:
+
+```text
+<prior-invocation-id>.<result|observations>.<field>[.<field>...]
+```
+
+The first component names an earlier invocation in the same workflow. The
+second component is either `result` or `observations`. Remaining components
+address object fields by exact key name.
+
+References may appear recursively anywhere inside task `parameters`.
+
+A reference is resolved immediately before the consuming task's parameter
+validation. Resolution substitutes the referenced JSON value into the
+consumer's parameter value.
+
+A reference fails closed when:
+
+- the invocation identity is unknown;
+- the referenced invocation is not earlier in workflow order;
+- the referenced invocation did not complete successfully;
+- the selected field path does not exist;
+- traversal encounters a non-object before the path is exhausted;
+- the substituted value does not satisfy the consuming parameter contract.
+
+References never alter active authority. A referenced string that happens to be
+a path, remote, branch, repository, issue, or other resource identifier is still
+validated against the consuming task's authority after substitution.
+
+## Workflow execution and failure
 
 Execution is sequential and fail-fast.
 
+For each invocation in payload order, the engine:
+
+1. resolves permitted result references;
+2. validates task parameters;
+3. intersects requested resources with active authority;
+4. executes the registered task;
+5. records the task result before considering the next invocation.
+
 If an invocation fails, the engine records its failure, stops dispatching later
-tasks, preserves all earlier results, marks later invocations as not executed or
-otherwise makes their non-execution unambiguous, and returns a failed workflow
-result.
+tasks, preserves all earlier results, appends `not-executed` records for later
+declared invocations, and returns a failed workflow result.
 
-FS-001 contains no caller-controlled continuation-after-failure mechanism.
+FS-001 exposes no caller-controlled continuation-after-failure mechanism.
 
-## Authority model
+## Authority establishment
 
-The engine constructs an active authority context outside the payload's ability
-to enlarge it.
+FS-001 authority is established by the local CLI invocation, outside the
+payload.
 
-For FS-001 the authority context is repository-centered. It identifies the
-active repository and the capability/resource bounds applicable to the current
-execution.
+The command surface is:
 
-Each plugin interprets that authority for its domain.
+```text
+gve execute
+  --repository PATH
+  [--git-remote NAME ...]
+  [--github-repository OWNER/NAME]
+  [--execute-max-wall-seconds N]
+  [--execute-max-concurrent N]
+  [--execute-max-total-spawned N]
+  [--execute-max-spawns-per-second N]
+  PAYLOAD.json
+```
 
-Task parameters may narrow an authorized resource selection but may not widen
-it. Host filesystem permissions, Git credentials, environment variables,
-network reachability, or GitHub credentials are implementation capabilities,
-not implicit GVE authority.
+`--repository` is required. GVE resolves it to one canonical repository root
+before loading the workflow.
+
+If no `--git-remote` option is supplied, Git remote authority is limited to
+`origin` when that remote exists; otherwise no remote Git mutation authority is
+granted. Repeated `--git-remote` options grant only the named existing remotes.
+
+GitHub authority is absent unless `--github-repository OWNER/NAME` is supplied.
+That option grants only the named GitHub repository. Authentication material may
+be discovered by the implementation, but credentials do not enlarge the
+repository grant.
+
+Filesystem authority is the canonical active repository tree.
+
+Git authority is the active repository plus local branch/ref operations and the
+explicitly granted Git remotes. FS-001 does not grant force/history-rewrite
+publication.
+
+Execute authority is repository-local script selection and repository-local
+working directory plus the finite process limits established below.
+
+Task parameters and resolved result references may select narrower paths,
+branches, remotes, or objects inside these grants. They may not expand them.
+
+## Execute resource policy
+
+FS-001 default execute maxima are:
+
+```text
+wall-clock runtime:          600 seconds
+concurrent governed process: 32
+total spawned process count: 1024
+spawn rate:                  64 processes/second
+```
+
+The CLI authority options may replace these defaults with other positive finite
+integer maxima for the current GVE invocation.
+
+An `execute.script` task may optionally request stricter values through its
+`limits` parameter. For each supplied task limit:
+
+```text
+effective limit = min(authority maximum, task-requested limit)
+```
+
+An omitted task limit uses the authority maximum.
+
+Zero, negative, non-integer, or otherwise unmonitorable limits are invalid.
+
+The OS-specific mechanism for process-tree discovery, accounting, and
+termination is a Build decision. The behavioral contract is not: timeout,
+concurrent-count excess, total-spawn excess, spawn-rate excess, or inability to
+perform required process-tree termination is task failure.
 
 ## Task registry
 
 The registry maps each supported fully-qualified task identity to exactly one
-implementation for the active FS-001 product version.
+implementation for FS-001.
 
-Unknown task identities fail before execution of that invocation.
+The registry is static and product-owned. Payloads cannot install, load,
+replace, alias, or define runtime plugins or tasks.
 
-The registry is static/product-owned in FS-001. Runtime third-party plugin
-loading is out of scope.
+Unknown task identities fail closed before execution.
 
-## Filesystem plugin
+## Common task conventions
 
-FS-001 shall implement:
+Unless a task contract below says otherwise:
 
-```text
-filesystem.list
-filesystem.file-read
-filesystem.file-stat
-filesystem.file-hash
-filesystem.file-create
-filesystem.file-modify
-filesystem.file-delete
+- unknown parameter fields are invalid;
+- repository-relative paths use `/` as the JSON path separator and may not be
+  absolute;
+- a SHA-256 digest is a lowercase 64-character hexadecimal string;
+- a Git commit identity is a lowercase 40-character hexadecimal object ID for
+  the FS-001 Git implementation;
+- an optional `expected` parameter means observe current state and fail when it
+  differs from the supplied expected value;
+- mutation tasks return their direct resulting identifiers under `result` and
+  describe performed GVE-owned mutation under `effects`;
+- state tasks place current state under `observations` and duplicate only values
+  intentionally exposed for later task references under `result`.
+
+Exact diagnostic wording is a Build decision.
+
+## Filesystem plugin task contracts
+
+### `filesystem.list`
+
+Parameters:
+
+```json
+{
+  "path": ".",
+  "recursive": false
+}
 ```
 
-Filesystem task paths are interpreted relative to the active repository unless
-the task contract explicitly provides another representation that still resolves
-inside the authorized repository scope.
+- `path` is optional and defaults to repository root `.`.
+- `recursive` is optional boolean and defaults to `false`.
 
-Containment is intrinsic to every filesystem task. Symlink and path
-canonicalization handling must prevent a caller-provided path from escaping the
-authorized filesystem boundary.
+Result exposes `result.entries`, an ordered array of repository-relative paths.
+Each entry observation identifies at least path and kind (`file`, `directory`,
+or `symlink`).
 
-Mutation tasks should support sufficiently explicit expected-state checks to
-avoid silently overwriting unrelated work.
+### `filesystem.file-read`
 
-## Git plugin
+Parameters:
 
-FS-001 shall implement:
-
-```text
-git.repository
-git.branch
-git.head
-git.status
-git.diff
-git.diff-check
-git.branch-create
-git.branch-switch
-git.add
-git.commit
-git.fetch
-git.remote-head
-git.push
+```json
+{
+  "path": "README.md",
+  "encoding": "utf-8"
+}
 ```
 
-Git tasks expose semantic parameters, not raw argument arrays.
+- `path` is required.
+- `encoding` is optional; FS-001 supports only `utf-8`.
 
-State-oriented tasks may accept an expected value; absent an expectation they
-observe and return current state.
+The task fails if the resolved target is not an existing regular file inside the
+authorized repository boundary.
 
-`git.push` implements normal non-force publication only.
+Result exposes `result.content` and `result.sha256`.
 
-Git output parsing must preserve the semantics of the underlying format.
-In particular, porcelain status handling must preserve fixed-width status
-columns rather than stripping leading status characters before interpretation.
+### `filesystem.file-stat`
 
-## Execute plugin
+Parameters contain required `path`.
 
-FS-001 shall implement:
+Result exposes at least `result.path`, `result.kind`, `result.size`, and, for an
+existing regular file, `result.sha256`. Missing paths are reported as
+`result.kind = "missing"` rather than being treated as an execution error.
 
-```text
-execute.script
+### `filesystem.file-hash`
+
+Parameters contain required `path`.
+
+The resolved target must be an existing regular file. FS-001 uses SHA-256.
+Result exposes `result.sha256`.
+
+### `filesystem.file-create`
+
+Parameters:
+
+```json
+{
+  "path": "path/to/file",
+  "content": "complete UTF-8 content"
+}
 ```
 
-The selected script and invocation working directory must resolve inside the
+Both fields are required. Parent directories may be created as necessary inside
+the authorized repository. The task fails if the target already exists.
+
+Result exposes `result.path` and `result.sha256`.
+
+### `filesystem.file-modify`
+
+Parameters:
+
+```json
+{
+  "path": "path/to/file",
+  "expected_sha256": "lowercase-sha256",
+  "content": "complete replacement UTF-8 content"
+}
+```
+
+All fields are required. The target must be an existing regular file and its
+current digest must equal `expected_sha256` immediately before replacement.
+
+Result exposes `result.path`, `result.previous_sha256`, and
+`result.sha256`.
+
+### `filesystem.file-delete`
+
+Parameters contain required `path` and required `expected_sha256`.
+
+The target must be an existing regular file whose current digest matches the
+expectation. FS-001 does not recursively delete directories.
+
+Result exposes the deleted path and previous digest.
+
+All filesystem paths are canonicalized and checked for containment after
+symlink resolution before access or mutation.
+
+## Git plugin task contracts
+
+All Git tasks operate on the active repository. They do not accept a repository
+path parameter.
+
+### `git.repository`
+
+Parameters may contain optional `expected_root`.
+
+The task reports the canonical repository root and configured remotes. An
+explicit root mismatch fails.
+
+### `git.branch`
+
+Parameters may contain optional `expected`.
+
+The task reports `result.branch`. Detached HEAD is represented by JSON `null`.
+An explicit expectation mismatch fails.
+
+### `git.head`
+
+Parameters may contain optional `expected`.
+
+The task reports `result.commit`. An explicit expectation mismatch fails.
+
+### `git.status`
+
+Parameters may contain optional boolean `expected_clean` and optional boolean
+`include_untracked`, which defaults to `true`.
+
+Result exposes `result.clean` and `result.entries`. Each entry retains the exact
+two-character porcelain status code separately from its path. Fixed-width Git
+status columns are parsed before any trimming of path material.
+
+An explicit `expected_clean` mismatch fails after recording the observation.
+
+### `git.diff`
+
+Parameters:
+
+```json
+{
+  "cached": false,
+  "paths": []
+}
+```
+
+Both fields are optional. `cached` defaults to `false`; an empty or omitted
+`paths` array means all authorized repository paths.
+
+Result exposes the unified diff as `result.diff`.
+
+### `git.diff-check`
+
+Accepts the same `cached` and `paths` selection as `git.diff`.
+
+It performs Git whitespace/error checking for the selected diff and exposes
+`result.clean` plus diagnostic text. A detected diff-check error is task failure.
+
+### `git.branch-create`
+
+Parameters contain required `name` and optional `start`.
+
+`start` defaults to current HEAD and may be a commit identity supplied directly
+or by result reference. The task fails if the branch already exists.
+
+Result exposes `result.branch` and `result.commit`.
+
+### `git.branch-switch`
+
+Parameters contain required `name`.
+
+The named local branch must already exist. The task fails rather than silently
+creating it.
+
+Result exposes the resulting current branch and HEAD.
+
+### `git.add`
+
+Parameters contain required non-empty `paths`.
+
+Each selected path must resolve inside the repository. The task stages exactly
+the selected paths and exposes the staged path set under `result.paths`.
+
+### `git.commit`
+
+Parameters:
+
+```json
+{
+  "message": "commit message"
+}
+```
+
+`message` is required and non-empty. FS-001 does not create empty commits.
+
+The task commits the currently staged index and exposes `result.commit` and
+`result.parent`.
+
+### `git.fetch`
+
+Parameters contain required `remote` and optional `branches`.
+
+`remote` must be inside active Git remote authority. `branches`, when supplied,
+is an array of branch names to fetch. Omission means normal fetch of the
+authorized remote using its configured fetch mapping; arbitrary caller-provided
+refspec strings are not accepted.
+
+Result reports the remote and observed fetched refs relevant to the request.
+
+### `git.remote-head`
+
+Parameters contain required `remote`, required `branch`, and optional
+`expected`.
+
+The remote must be authorized. The task observes exactly
+`refs/heads/<branch>`. A missing branch is represented by `result.commit = null`.
+An explicit expectation mismatch is task failure.
+
+### `git.push`
+
+Parameters:
+
+```json
+{
+  "remote": "origin",
+  "local_branch": "fs1",
+  "remote_branch": "fs1",
+  "expected_remote_head": null
+}
+```
+
+`remote`, `local_branch`, and `remote_branch` are required.
+`expected_remote_head` is optional and may be a commit identity or JSON `null`
+to assert that the remote branch must not exist.
+
+Immediately before push, when `expected_remote_head` is present, GVE observes
+the remote branch and fails on mismatch.
+
+Publication is equivalent to a normal non-force update of the selected local
+branch to `refs/heads/<remote_branch>`. Caller-controlled raw Git flags,
+refspecs, deletion, tags, force, and history-rewrite modes are not accepted.
+
+Result exposes the local commit selected for publication and the push command's
+transport outcome. Remote verification remains an explicit later
+`git.remote-head` task.
+
+## Execute plugin task contract
+
+### `execute.script`
+
+Parameters:
+
+```json
+{
+  "script": "scripts/validate",
+  "args": [],
+  "working_directory": ".",
+  "limits": {
+    "wall_seconds": 300,
+    "max_concurrent": 16,
+    "max_total_spawned": 256,
+    "max_spawns_per_second": 32
+  }
+}
+```
+
+- `script` is required repository-relative path to an existing regular file;
+- `args` is optional array of strings and defaults to empty;
+- `working_directory` is optional repository-relative directory and defaults to
+  repository root;
+- `limits` is optional and may contain only the four keys shown above.
+
+The script and working directory are canonicalized and must resolve inside the
 active repository.
 
-Arguments are represented structurally and are passed without exposing a generic
+GVE invokes the selected repository-owned script directly according to the
+host's executable semantics; the payload does not supply shell source or a raw
 shell command string.
 
-GVE does not sandbox or govern the script's own filesystem, Git, network,
-credential, or other side effects.
+Result exposes at least:
 
-GVE does govern the process-tree runaway envelope. FS-001 shall have finite
-configured maxima for:
+- `result.exit_code` when obtained;
+- `result.stdout`;
+- `result.stderr`;
+- `result.effective_limits`;
+- `result.timed_out`;
+- `result.process_limit`;
+- `result.termination`.
 
-- wall-clock duration;
-- concurrent governed process count;
-- total spawned governed process count;
-- process-spawn rate or burst.
+A non-zero script exit status is task failure. Timeout, process-limit violation,
+or inability to complete required process-tree termination is task failure.
 
-GVE must own enough of the launched process tree to terminate it when a governed
-limit is exceeded. Timeout or process-runaway enforcement failure is reported as
-task failure.
+GVE does not interpret the script's filesystem, Git, network, credential, or
+other script-internal side effects as GVE-governed effects.
 
-Exact numeric defaults and OS-specific monitoring/termination mechanisms are
-Build decisions, but they must be finite, testable, and configurable within
-GVE-defined maxima.
+## GitHub plugin task contracts
 
-## GitHub plugin
+All GitHub tasks operate only on the repository granted by
+`--github-repository`. The tasks fail for absent GitHub authority.
 
-FS-001 shall implement:
+### `github.issue-read`
 
-```text
-github.issue-read
-github.issue-create
-github.issue-modify
-github.pull-request-read
-github.pull-request-create
-github.pull-request-modify
+Parameters contain required positive integer `number`.
+
+Result exposes issue number, URL, title, body, state, and labels.
+
+### `github.issue-create`
+
+Parameters:
+
+```json
+{
+  "title": "title",
+  "body": "body",
+  "labels": []
+}
 ```
 
-GitHub tasks use semantic fields rather than generic API requests.
+`title` is required and non-empty. `body` and `labels` are optional.
 
-The active authority identifies the GitHub repository scope. Available host
-credentials may authenticate an operation but do not enlarge that scope.
+Result exposes the created issue number, URL, and observed resulting state.
 
-Mutation results return stable remote identities and enough observed state for
-later invocations or successor workflows.
+### `github.issue-modify`
 
-## Result contract
+Parameters contain required positive integer `number` plus at least one of
+`title`, `body`, `labels`, or `state`.
 
-Every task result shall identify:
+`labels`, when supplied, is the complete desired label-name set.
+`state`, when supplied, is `open` or `closed`.
 
-- workflow-local invocation identity;
-- fully-qualified task identity;
-- completion status;
-- relevant observations;
-- GVE-owned effects;
-- task-specific resulting identifiers;
-- errors or conflicts when present.
+Result exposes issue number, URL, and observed resulting state.
 
-The workflow result shall preserve task-result order, identify overall status,
-retain partial results after failure, and make non-executed later tasks
-unambiguous.
+### `github.pull-request-read`
 
-`execute.script` results concern invocation and runaway-process control only;
-they must not claim exhaustive knowledge of script-internal side effects.
+Parameters contain required positive integer `number`.
 
-## CLI
+Result exposes pull-request number, URL, title, body, state, base branch, head
+branch, draft state, and merge state when available.
 
-FS-001 shall provide a local CLI that accepts a payload file and emits the
-authoritative workflow result as JSON.
+### `github.pull-request-create`
 
-Human-oriented progress or diagnostics may be written separately, but they must
-not replace or contradict the JSON result.
+Parameters:
 
-A non-successful workflow must produce a process exit status suitable for local
-automation.
+```json
+{
+  "title": "title",
+  "body": "body",
+  "base": "main",
+  "head": "fs1",
+  "draft": false
+}
+```
+
+`title`, `base`, and `head` are required. `body` is optional and `draft`
+defaults to `false`.
+
+Result exposes the created pull-request number, URL, and observed resulting
+state.
+
+### `github.pull-request-modify`
+
+Parameters contain required positive integer `number` plus at least one of
+`title`, `body`, `base`, or `state`.
+
+`state`, when supplied, is `open` or `closed`. FS-001 does not expose merge as a
+generic pull-request modification field.
+
+Result exposes pull-request number, URL, and observed resulting state.
+
+## FS-001 task result envelope
+
+Every declared invocation receives exactly one workflow result record.
+
+A successful task record has this structure:
+
+```json
+{
+  "id": "commit",
+  "task": "git.commit",
+  "status": "success",
+  "observations": {},
+  "effects": {},
+  "result": {},
+  "error": null,
+  "reason": null
+}
+```
+
+A failed task uses `status = "failure"` and `error`:
+
+```json
+{
+  "code": "stable-machine-code",
+  "message": "human-readable diagnostic",
+  "details": {}
+}
+```
+
+`details` is a JSON object and may be empty.
+
+A later declared invocation skipped because of fail-fast termination uses
+`status = "not-executed"`, empty `observations`, `effects`, and `result`, null
+`error`, and `reason = "prior-task-failure"`.
+
+`observations` contains state established by GVE without claiming mutation.
+`effects` contains effects directly performed by the GVE task itself.
+`result` contains task-specific stable values intentionally exposed to callers
+and task-result references.
+
+Task-specific contracts may populate the same observed identifier in both
+`observations` and `result` when it is both evidence and an intentionally
+addressable value.
+
+## FS-001 workflow result envelope
+
+The authoritative workflow result is:
+
+```json
+{
+  "schema_version": 1,
+  "workflow_id": "example-workflow",
+  "status": "success",
+  "tasks": []
+}
+```
+
+`status` is `success` only when every declared task succeeds. It is `failure`
+when payload execution cannot complete successfully.
+
+For a structurally invalid payload that cannot establish a trustworthy
+invocation list, the CLI emits:
+
+```json
+{
+  "schema_version": 1,
+  "workflow_id": null,
+  "status": "failure",
+  "tasks": [],
+  "error": {
+    "code": "invalid-payload",
+    "message": "human-readable diagnostic",
+    "details": {}
+  }
+}
+```
+
+For a parsed workflow, top-level `error` is omitted and failure is represented
+by the failing task record plus `not-executed` successor records.
+
+The task array remains in declared workflow order.
+
+## Error-code stability
+
+FS-001 error codes are machine-readable lowercase kebab-case strings.
+
+Build may refine the complete code vocabulary, but distinct failure classes that
+a caller must reason about shall not be collapsed into an undifferentiated
+success/failure boolean. At minimum the implementation distinguishes payload
+validation, unknown task, result-reference, authority, state/precondition,
+task execution, process-limit, process-termination, and remote/API failures.
+
+Human diagnostic wording is not a compatibility surface in FS-001.
+
+## CLI result and exit contract
+
+The local executable command is:
+
+```text
+gve execute [authority options] PAYLOAD.json
+```
+
+The authoritative workflow result is written as one JSON document to stdout.
+
+Human progress and diagnostics, if any, are written to stderr and must not
+contradict the JSON result.
+
+Exit status is:
+
+```text
+0  workflow status success
+1  validly reported workflow/payload failure
+2  CLI invocation failure before a workflow result can be constructed
+```
+
+When stdout contains an authoritative workflow result, exit status must agree
+with that result.
 
 ## Validation strategy
 
-Build owns exact mechanical validation tasks and requirement-to-validation
-bindings.
+Build owns exact mechanical validation task implementations and exact
+requirement-to-validation-task bindings.
 
-Testing should cover the engine in isolation and each plugin domain with
-temporary repositories or controlled fakes where appropriate.
+Testing shall cover:
 
-External GitHub mutation tests should not require destructive operations against
+- payload envelope validation and rejection of unknown fields;
+- result-reference success and every defined failure class;
+- ordered execution and fail-fast `not-executed` records;
+- authority non-expansion;
+- static task registration;
+- every plugin task's accepted/rejected parameter boundary;
+- filesystem traversal and symlink escape rejection;
+- Git status fixed-width parsing;
+- normal/non-force Git publication and remote-race guards;
+- execute timeout, spawn/count limits, process-tree termination, and evidence;
+- GitHub repository authority and semantic-field restriction;
+- task/workflow result envelopes;
+- the reference development workflow expressed only through registered tasks.
+
+Tests may use temporary repositories and controlled fakes where appropriate.
+
+External GitHub mutation tests shall not require destructive operations against
 unrelated repositories. Build may use mocked/fake transport for deterministic
 mechanical tests while preserving semantic task behavior.
 
@@ -286,8 +781,20 @@ payload/result/authority models
   -> execute plugin
   -> github plugin
   -> CLI
-  -> mechanical validation bindings
+  -> mechanical validation tasks and bindings
   -> end-to-end reference workflow tests
 ```
 
 This sequence is advisory except where dependencies make the order consequential.
+
+## Build implementation freedom
+
+Build owns ordinary code-level realization choices not fixed by this Plan,
+including Python module/class decomposition, library selection, subprocess
+mechanics, Git command construction, GitHub transport implementation,
+process-tree monitoring mechanism, test-helper organization, and exact
+validation-task implementation.
+
+Those choices may not alter the payload/result contracts, task semantics,
+authority model, plugin boundaries, failure behavior, or Product Design
+established above without returning to Planning or Design as appropriate.
