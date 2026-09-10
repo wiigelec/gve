@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 import json
-import os
-import urllib.error
-import urllib.request
+import subprocess
 from typing import Any
 
 from ..authority import Authority
@@ -65,50 +63,66 @@ def _labels(value: Any) -> list[str]:
     return list(value)
 
 
-def _token() -> str:
-    value = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
-    if not value:
-        raise GitHubTransportError("GitHub credentials are unavailable")
-    return value
-
-
 def _transport(method: str, path: str, body: dict[str, Any] | None) -> dict[str, Any]:
-    data = None if body is None else json.dumps(body).encode("utf-8")
-    request = urllib.request.Request(
-        "https://api.github.com" + path,
-        data=data,
-        method=method,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "Authorization": f"Bearer {_token()}",
-            "X-GitHub-Api-Version": "2022-11-28",
-            "User-Agent": "gve",
-            "Content-Type": "application/json",
-        },
-    )
+    args = [
+        "gh",
+        "api",
+        "--method",
+        method,
+        "--header",
+        "Accept: application/vnd.github+json",
+        "--header",
+        "X-GitHub-Api-Version: 2022-11-28",
+        path,
+    ]
+    input_text = None
+    if body is not None:
+        args.extend(["--input", "-"])
+        input_text = json.dumps(body)
+
     try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            payload = response.read().decode("utf-8")
-    except urllib.error.HTTPError as exc:
-        try:
-            detail = exc.read().decode("utf-8")
-        except Exception:
-            detail = ""
+        completed = subprocess.run(
+            args,
+            input=input_text,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=30,
+        )
+    except FileNotFoundError as exc:
         raise GitHubTransportError(
-            "GitHub API request failed",
-            details={"status": exc.code, "response": detail},
+            "GitHub CLI is unavailable",
+            details={"executable": "gh"},
+        ) from exc
+    except subprocess.TimeoutExpired as exc:
+        raise GitHubTransportError(
+            "GitHub CLI request timed out",
+            details={"timeout_seconds": 30},
         ) from exc
     except OSError as exc:
         raise GitHubTransportError(
-            "GitHub API transport failed",
+            "GitHub CLI transport failed",
             details={"error": str(exc)},
         ) from exc
+
+    if completed.returncode != 0:
+        raise GitHubTransportError(
+            "GitHub CLI request failed",
+            details={
+                "exit_code": completed.returncode,
+                "stderr": completed.stderr.rstrip("\r\n"),
+            },
+        )
+
     try:
-        parsed = json.loads(payload)
+        parsed = json.loads(completed.stdout)
     except json.JSONDecodeError as exc:
-        raise GitHubTransportError("GitHub API returned invalid JSON") from exc
+        raise GitHubTransportError(
+            "GitHub CLI returned invalid JSON",
+            details={"stdout": completed.stdout.rstrip("\r\n")},
+        ) from exc
     if not isinstance(parsed, dict):
-        raise GitHubTransportError("GitHub API returned a non-object response")
+        raise GitHubTransportError("GitHub CLI returned a non-object response")
     return parsed
 
 

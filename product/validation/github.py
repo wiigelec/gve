@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -26,10 +28,10 @@ def validate_github() -> bool:
     if not expected.issubset(identities):
         raise AssertionError("GitHub registry incomplete")
 
-    calls = []
+    transport_calls = []
 
     def fake_transport(method, path, body):
-        calls.append((method, path, body))
+        transport_calls.append((method, path, body))
         if path.endswith("/issues") and method == "POST":
             return {
                 "number": 7, "html_url": "https://example/issue/7", "title": body["title"],
@@ -64,14 +66,18 @@ def validate_github() -> bool:
                 "merged": False, "mergeable": True,
             }
             if method == "PATCH":
-                if "title" in body: data["title"] = body["title"]
-                if "body" in body: data["body"] = body["body"]
-                if "state" in body: data["state"] = body["state"]
-                if "base" in body: data["base"] = {"ref": body["base"]}
+                if "title" in body:
+                    data["title"] = body["title"]
+                if "body" in body:
+                    data["body"] = body["body"]
+                if "state" in body:
+                    data["state"] = body["state"]
+                if "base" in body:
+                    data["base"] = {"ref": body["base"]}
             return data
         raise AssertionError((method, path, body))
 
-    old = github_plugin._transport
+    old_transport = github_plugin._transport
     github_plugin._transport = fake_transport
     try:
         auth = Authority.for_repository(ROOT)
@@ -96,15 +102,16 @@ def validate_github() -> bool:
         else:
             raise AssertionError("issue-read accepted pull-request object")
 
-        before = len(calls)
+        before = len(transport_calls)
         try:
             call("github.issue-modify", {"number": 99, "labels": ["blocked"]})
         except Exception as exc:
             assert getattr(exc, "code", None) == "github"
         else:
             raise AssertionError("issue-modify accepted pull-request object")
-        pr_issue_calls = calls[before:]
-        assert pr_issue_calls == [("GET", "/repos/wiigelec/gve/issues/99", None)]
+        assert transport_calls[before:] == [
+            ("GET", "/repos/wiigelec/gve/issues/99", None)
+        ]
 
         assert call("github.pull-request-read", {"number": 3})["result"]["base"] == "main"
         pr = call(
@@ -121,7 +128,7 @@ def validate_github() -> bool:
         assert changed["result"]["title"] == "new"
         assert changed["result"]["base"] == "release"
 
-        for method, path, body in calls:
+        for method, path, body in transport_calls:
             assert path.startswith("/repos/wiigelec/gve/")
             assert "http" not in path
 
@@ -150,6 +157,49 @@ def validate_github() -> bool:
         else:
             raise AssertionError("pull-request-modify accepted merge escape hatch")
     finally:
-        github_plugin._transport = old
+        github_plugin._transport = old_transport
+
+    gh_calls = []
+    old_run = github_plugin.subprocess.run
+
+    def fake_run(args, **kwargs):
+        gh_calls.append((list(args), dict(kwargs)))
+        return subprocess.CompletedProcess(
+            args=args,
+            returncode=0,
+            stdout=json.dumps({"number": 12, "html_url": "https://example/12"}),
+            stderr="",
+        )
+
+    github_plugin.subprocess.run = fake_run
+    try:
+        observed = github_plugin._transport(
+            "POST",
+            "/repos/wiigelec/gve/issues",
+            {"title": "x"},
+        )
+        assert observed["number"] == 12
+        assert len(gh_calls) == 1
+        args, kwargs = gh_calls[0]
+        assert args == [
+            "gh",
+            "api",
+            "--method",
+            "POST",
+            "--header",
+            "Accept: application/vnd.github+json",
+            "--header",
+            "X-GitHub-Api-Version: 2022-11-28",
+            "/repos/wiigelec/gve/issues",
+            "--input",
+            "-",
+        ]
+        assert json.loads(kwargs["input"]) == {"title": "x"}
+        assert kwargs["text"] is True
+        assert kwargs["stdout"] == subprocess.PIPE
+        assert kwargs["stderr"] == subprocess.PIPE
+        assert kwargs["timeout"] == 30
+    finally:
+        github_plugin.subprocess.run = old_run
 
     return True
