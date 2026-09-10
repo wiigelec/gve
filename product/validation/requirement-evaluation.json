@@ -104,6 +104,48 @@
       ]
     },
     {
+      "requirement": "FS-001-NR-023",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-024",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-025",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-027",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-028",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-029",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-030",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
       "requirement": "FS-001-NR-035",
       "tasks": [
         "core-engine"

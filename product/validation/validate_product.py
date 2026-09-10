@@ -10,6 +10,7 @@ from typing import Callable
 from core_engine import validate_core_engine, validate_planning_binding
 from filesystem import validate_filesystem_plugin
 from git import validate_git_plugin
+from execute import validate_execute
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -18,6 +19,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "core-engine": validate_core_engine,
     "filesystem": validate_filesystem_plugin,
     "git": validate_git_plugin,
+    "execute": validate_execute,
 }
 
 

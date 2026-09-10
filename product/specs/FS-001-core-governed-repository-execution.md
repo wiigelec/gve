@@ -190,8 +190,6 @@ characters through whole-line trimming.
 
 **Classification: B**
 
-**State: Inactive**
-
 `execute.script` shall invoke only an existing script whose resolved path is
 inside the active repository, and its invocation working directory shall resolve
 inside the active repository.
@@ -200,16 +198,12 @@ inside the active repository.
 
 **Classification: M**
 
-**State: Inactive**
-
 `execute.script` shall not accept caller-supplied script source as executable
 content and shall not expose a generic raw shell command interface.
 
 ### FS-001-NR-025 — Structured Execute Arguments
 
 **Classification: M**
-
-**State: Inactive**
 
 `execute.script` arguments shall be represented structurally rather than as an
 unrestricted shell command string.
@@ -226,8 +220,6 @@ side effects.
 
 **Classification: B**
 
-**State: Inactive**
-
 Every `execute.script` invocation shall be subject to finite GVE-defined maxima
 for wall-clock runtime, concurrent governed processes, total spawned governed
 processes, and process-spawn rate or burst behavior.
@@ -236,16 +228,12 @@ processes, and process-spawn rate or burst behavior.
 
 **Classification: M**
 
-**State: Inactive**
-
 A payload may request stricter execute resource limits when supported but shall
 not raise an effective limit above the GVE- or host-granted maximum.
 
 ### FS-001-NR-029 — Runaway Process Termination
 
 **Classification: B**
-
-**State: Inactive**
 
 When an execute timeout or governed process-spawn limit is exceeded, GVE shall
 attempt termination of the governed launched process tree and shall report
@@ -254,8 +242,6 @@ failure if required runaway-process control cannot be completed.
 ### FS-001-NR-030 — Execute Evidence
 
 **Classification: B**
-
-**State: Inactive**
 
 `execute.script` shall report invocation identity, script identity, working
 directory, effective relevant limits, exit status where available, timeout or
