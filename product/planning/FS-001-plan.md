@@ -105,12 +105,13 @@ value is a string:
 The string syntax is:
 
 ```text
-<prior-invocation-id>.<result|observations>.<field>[.<field>...]
+<prior-invocation-id>.result.<field>[.<field>...]
 ```
 
-The first component names an earlier invocation in the same workflow. The
-second component is either `result` or `observations`. Remaining components
-address object fields by exact key name.
+The first component names an earlier invocation in the same workflow.
+References address only fields intentionally exposed beneath that task's
+`result` object. `observations` and `effects` are evidence surfaces and are not
+directly addressable by task-result references.
 
 References may appear recursively anywhere inside task `parameters`.
 
@@ -270,7 +271,9 @@ Unless a task contract below says otherwise:
 - mutation tasks return their direct resulting identifiers under `result` and
   describe performed GVE-owned mutation under `effects`;
 - state tasks place current state under `observations` and duplicate only values
-  intentionally exposed for later task references under `result`.
+  intentionally exposed for later task references under `result`;
+- only fields beneath `result` are addressable by `$ref`; `observations` and
+  `effects` remain non-addressable evidence.
 
 Exact diagnostic wording is a Build decision.
 
@@ -793,7 +796,8 @@ requirement-to-validation-task bindings.
 Testing shall cover:
 
 - payload envelope validation and rejection of unknown fields;
-- result-reference success and every defined failure class;
+- result-reference success, rejection of references outside the intentional
+  `result` namespace, and every defined failure class;
 - ordered execution and fail-fast `not-executed` records;
 - authority non-expansion;
 - static task registration;
