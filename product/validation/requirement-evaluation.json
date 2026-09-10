@@ -1,4 +1,260 @@
 {
   "version": 1,
-  "bindings": []
+  "bindings": [
+    {
+      "requirement": "FS-001-NR-002",
+      "tasks": [
+        "cli",
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-003",
+      "tasks": [
+        "core-engine",
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-004",
+      "tasks": [
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-005",
+      "tasks": [
+        "core-engine",
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-006",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-007",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-008",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-009",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-010",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-011",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-013",
+      "tasks": [
+        "filesystem",
+        "git",
+        "execute",
+        "github",
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-015",
+      "tasks": [
+        "filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-016",
+      "tasks": [
+        "filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-017",
+      "tasks": [
+        "filesystem"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-018",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-019",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-020",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-021",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-022",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-023",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-024",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-025",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-027",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-028",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-029",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-030",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-031",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-032",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-033",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-034",
+      "tasks": [
+        "github"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-035",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-036",
+      "tasks": [
+        "core-engine"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-038",
+      "tasks": [
+        "git"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-039",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-040",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-041",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-042",
+      "tasks": [
+        "registry"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-049",
+      "tasks": [
+        "planning-binding"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-050",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-046",
+      "tasks": [
+        "planning-binding",
+        "core-engine",
+        "filesystem",
+        "git",
+        "execute",
+        "github",
+        "cli",
+        "registry",
+        "workflow"
+      ]
+    }
+  ]
 }

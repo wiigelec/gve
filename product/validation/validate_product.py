@@ -7,9 +7,28 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+from core_engine import validate_core_engine, validate_planning_binding
+from filesystem import validate_filesystem_plugin
+from git import validate_git_plugin
+from execute import validate_execute
+from github import validate_github
+from cli import validate_cli
+from registry import validate_registry
+from workflow import validate_workflow
+
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
-TASKS: dict[str, Callable[[], bool | None]] = {}
+TASKS: dict[str, Callable[[], bool | None]] = {
+    "planning-binding": validate_planning_binding,
+    "core-engine": validate_core_engine,
+    "filesystem": validate_filesystem_plugin,
+    "git": validate_git_plugin,
+    "execute": validate_execute,
+    "github": validate_github,
+    "cli": validate_cli,
+    "registry": validate_registry,
+    "workflow": validate_workflow,
+}
 
 
 def fail(message: str) -> int:
@@ -50,8 +69,14 @@ def execute(task: str) -> int:
     fn = TASKS.get(task)
     if fn is None:
         return fail(f"unknown product Validation task: {task}")
-    result = fn()
-    return 1 if result is False else 0
+    try:
+        result = fn()
+    except Exception as exc:
+        return fail(f"{task}: {exc}")
+    if result is False:
+        return fail(f"{task}: returned failure")
+    print(f"PASS {task}")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:

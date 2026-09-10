@@ -150,6 +150,32 @@ The process-tree limits exist to protect host stability and to prevent GVE from
 unintentionally exhibiting uncontrolled process-spawning patterns that
 reasonable endpoint or malware protection systems may treat as hostile.
 
+## Execute host portability
+
+The governed `execute.script` boundary shall support at least native Linux and
+Cygwin hosts.
+
+Platform-specific process-supervision backends are permitted, but they shall
+preserve the same externally observable `execute.script` contract and the same
+finite runaway-process guarantees. A supported backend shall establish
+ownership of the launched process tree and shall enforce wall-clock,
+concurrent-process, total-spawned-process, and spawn-rate or burst limits for
+that governed tree.
+
+A mechanism whose accounting can miss short-lived governed descendants is not
+sufficient to enforce total-spawned-process or spawn-rate limits.
+
+On Cygwin, implementation may use Cygwin and/or native Windows process-control
+facilities, but it shall preserve Cygwin executable, argument, path, and working
+directory semantics for the selected repository-owned script. Compatibility
+shall not be achieved by exposing or accepting a caller-controlled shell,
+generic command string, or arbitrary tracing interface.
+
+If the process-control backend required to provide the governed execution
+contract is unavailable on an otherwise supported host, `execute.script` shall
+fail closed before launching the selected script rather than silently weakening
+the process limits.
+
 The execute plugin does not infer script-side effects into filesystem, Git, or
 GitHub authority. If a script performs such effects, they are effects of the
 script itself and are outside GVE's governance responsibility.
