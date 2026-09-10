@@ -367,8 +367,6 @@ alone shall not be treated as an implementation of validation.
 
 **Classification: M**
 
-**State: Inactive**
-
 All active mechanically evaluated FS-001 requirements shall have applicable
 mechanical enforcement and all required repository Validation shall pass before
 FS-001 is eligible for Acceptance.
@@ -398,8 +396,6 @@ revision `6cc46250b8aac3934663be906acd41601791c04f`.
 ### FS-001-NR-050 — Execute Host Portability
 
 **Classification: B**
-
-**State: Inactive**
 
 `execute.script` shall preserve its governed invocation, finite process-control,
 runaway-tree termination, and result-capture contract on both native Linux and

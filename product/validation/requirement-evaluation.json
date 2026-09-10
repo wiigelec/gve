@@ -235,6 +235,26 @@
       "tasks": [
         "planning-binding"
       ]
+    },
+    {
+      "requirement": "FS-001-NR-050",
+      "tasks": [
+        "execute"
+      ]
+    },
+    {
+      "requirement": "FS-001-NR-046",
+      "tasks": [
+        "planning-binding",
+        "core-engine",
+        "filesystem",
+        "git",
+        "execute",
+        "github",
+        "cli",
+        "registry",
+        "workflow"
+      ]
     }
   ]
 }
