@@ -284,7 +284,7 @@ def _linux_continue(function, pid: int, sig: int = 0) -> None:
 
 
 def _linux_event_pid(function, pid: int) -> int:
-    message = ctypes.c_uint32()
+    message = ctypes.c_ulong()
     pointer = ctypes.cast(ctypes.pointer(message), ctypes.c_void_p)
     _linux_ptrace_call(function, PTRACE_GETEVENTMSG, pid, 0, pointer)
     return int(message.value)

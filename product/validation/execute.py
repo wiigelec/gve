@@ -13,6 +13,7 @@ if str(SRC) not in sys.path:
 
 from gve.authority import Authority
 from gve.product_registry import product_registry
+from gve.plugins import execute as execute_plugin
 
 
 def _write_script(path: Path, body: str) -> None:
@@ -27,6 +28,17 @@ def _call(parameters, authority):
 
 
 def validate_execute() -> bool:
+    if sys.platform.startswith("linux"):
+        expected = (1 << (8 * __import__("ctypes").sizeof(__import__("ctypes").c_ulong))) - 1
+
+        def fake_ptrace(request, pid, addr, data):
+            ctypes = __import__("ctypes")
+            ctypes.cast(data, ctypes.POINTER(ctypes.c_ulong))[0] = expected
+            return 0
+
+        observed = execute_plugin._linux_event_pid(fake_ptrace, 123)
+        assert observed == expected, "PTRACE_GETEVENTMSG buffer is not native unsigned long"
+
     if not (sys.platform.startswith("linux") or sys.platform == "cygwin"):
         raise AssertionError(f"unsupported execute validation host: {sys.platform}")
 
