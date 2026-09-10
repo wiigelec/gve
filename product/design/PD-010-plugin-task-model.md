@@ -152,10 +152,17 @@ The initial semantic requirement is:
 execute.script
 ```
 
-This capability must remain governed. The task is not conceptually equivalent
-to "execute arbitrary caller-supplied source text." It identifies executable
-behavior admitted by the execution domain and executes it within that domain's
-boundaries.
+`execute.script` invokes an existing script located inside the active repository.
+The task does not accept caller-supplied script source as executable content.
+
+The script path must resolve inside the active repository. The working directory
+for the invocation must also resolve inside the active repository.
+
+GVE governs invocation and protects the host against runaway process-tree
+behavior. It does not govern, sandbox, interpret, or take responsibility for the
+script's own filesystem, Git, network, credential, or other side effects. Those
+effects have the same responsibility boundary as running the same repository
+script manually.
 
 All execute tasks are intrinsically resource-bounded. The execute plugin must
 govern, at minimum:
@@ -167,8 +174,9 @@ maximum total spawned governed processes
 process-spawn rate or burst behavior
 process-tree ownership
 termination of the governed process tree
-working-directory scope
-environment exposure
+repository-local script selection
+repository-local working directory
+structured argument passing
 stdout and stderr capture
 exit status
 ```
@@ -237,7 +245,8 @@ Examples include:
 - safe Git argument construction;
 - normal non-force semantics of `git.push`;
 - GitHub API surface restriction;
-- execute-process resource ceilings.
+- execute-process resource ceilings;
+- repository-local script selection for `execute.script`.
 
 A payload cannot parameterize away a mandatory plugin invariant.
 

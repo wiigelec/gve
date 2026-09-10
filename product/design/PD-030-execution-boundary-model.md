@@ -89,15 +89,26 @@ effects are admitted for an execution.
 
 ## Execute boundary
 
-The execute domain has the greatest potential to bypass other boundaries.
+`execute.script` provides controlled invocation of an existing repository-local
+script.
 
-`execute.script` means governed execution of admitted executable behavior, not
-unrestricted evaluation of caller-provided program text.
+The script path must resolve inside the active repository. The working directory
+used for the invocation must also resolve inside the active repository. These
+requirements govern which script GVE may launch and the context from which GVE
+launches it.
 
-The execute plugin must establish a governed process tree before execution and
-must apply finite resource limits for the life of that task.
+GVE's responsibility ends at the invocation boundary except for runaway
+process-tree control and execution-result capture.
 
-At minimum, the governed execution boundary includes:
+GVE does not sandbox, constrain, interpret, or take responsibility for the
+script's own filesystem, Git, network, credential, or other side effects. A
+repository script invoked through GVE has the same responsibility boundary as
+that script when intentionally run manually by the user.
+
+The execute plugin must establish ownership of the launched process tree and
+apply finite resource limits for the life of the task.
+
+At minimum, the governed execution envelope includes:
 
 ```text
 finite wall-clock timeout
@@ -106,8 +117,9 @@ finite maximum total spawned process count
 bounded process-spawn rate or burst
 governed process-tree ownership
 termination of the governed process tree on limit violation
-working-directory boundary
-environment exposure rules
+repository-local script selection
+repository-local working directory
+structured argument passing
 stdout and stderr capture
 exit-status observation
 ```
@@ -134,15 +146,13 @@ may not raise the ceiling.
 Timeout, process-limit exhaustion, spawn-limit exhaustion, or failure to
 terminate the governed process tree is a governed task failure.
 
-The process-tree limits exist both to protect host stability and to prevent GVE
-from unintentionally exhibiting uncontrolled process-spawning patterns that
+The process-tree limits exist to protect host stability and to prevent GVE from
+unintentionally exhibiting uncontrolled process-spawning patterns that
 reasonable endpoint or malware protection systems may treat as hostile.
 
-Because admitted scripts may themselves mutate files, Git state, or external
-systems, process admission is not sufficient by itself to prove that all
-side-effects are contained. The exact model for admitting scripts with
-side-effects remains a consequential Design question if workflows require those
-scripts to perform effects outside their explicitly governed execution scope.
+The execute plugin does not infer script-side effects into filesystem, Git, or
+GitHub authority. If a script performs such effects, they are effects of the
+script itself and are outside GVE's governance responsibility.
 
 ## GitHub boundary
 
@@ -178,6 +188,10 @@ the observed state and outcome relevant to that task.
 
 Observability is part of boundary enforcement because silent behavior makes it
 difficult to distinguish authorized effects from unintended effects.
+
+For `execute.script`, GVE reports invocation and process-control observations.
+It does not claim to report or verify all effects caused internally by the
+script.
 
 ## Reference handoff
 

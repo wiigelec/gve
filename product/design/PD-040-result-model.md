@@ -27,8 +27,8 @@ Each task returns a structured result whose meaning is owned by GVE.
 
 At minimum, the result model must be able to communicate task identity,
 workflow-local invocation identity where present, completion status, relevant
-observations, effects performed, resulting state identifiers where applicable,
-and errors or conflicts.
+observations, effects performed by the task itself, resulting state identifiers
+where applicable, and errors or conflicts.
 
 Different task domains may add task-specific evidence.
 
@@ -80,7 +80,7 @@ to results.
 Failure is a first-class result.
 
 When possible, failure output should preserve the task that failed, the reason
-for failure, observations established before failure, effects already
+for failure, observations established before failure, GVE-owned effects already
 completed, conflicts or races, resource-limit violations, and the safest known
 execution-boundary state.
 
@@ -91,24 +91,29 @@ also distinguish tasks that failed from later tasks that were never attempted.
 
 ## Execute evidence
 
-Execute-task results should make process behavior inspectable enough to explain
-normal completion or governed termination.
+`execute.script` result evidence describes GVE's invocation and process-control
+responsibilities.
 
 Where relevant this includes:
 
 ```text
-admitted executable identity
+repository-local script identity
+working directory
 effective timeout
 effective process ceilings
 exit status
 timeout occurrence
 process-limit occurrence
-termination outcome
+process-tree termination outcome
 captured stdout/stderr metadata or content
 ```
 
-The result must not claim successful containment when the governed process tree
-could not be terminated as required.
+GVE does not claim that execute-task evidence enumerates, constrains, or verifies
+the script's own filesystem, Git, network, credential, or other side effects.
+
+If GVE cannot terminate the governed process tree when required, the task result
+must report that failure rather than claiming successful runaway-process
+control.
 
 ## Publication evidence
 
