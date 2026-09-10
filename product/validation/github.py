@@ -42,6 +42,8 @@ def validate_github() -> bool:
                 "number": number, "html_url": f"https://example/issue/{number}",
                 "title": "issue", "body": "", "state": "open", "labels": [],
             }
+            if number == 99:
+                data["pull_request"] = {"url": "https://api.example/pulls/99"}
             if method == "PATCH":
                 data.update(body)
                 data["labels"] = [{"name": x} for x in body.get("labels", [])]
@@ -86,6 +88,23 @@ def validate_github() -> bool:
 
         modified = call("github.issue-modify", {"number": 2, "state": "closed"})
         assert modified["result"]["state"] == "closed"
+
+        try:
+            call("github.issue-read", {"number": 99})
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "github"
+        else:
+            raise AssertionError("issue-read accepted pull-request object")
+
+        before = len(calls)
+        try:
+            call("github.issue-modify", {"number": 99, "labels": ["blocked"]})
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "github"
+        else:
+            raise AssertionError("issue-modify accepted pull-request object")
+        pr_issue_calls = calls[before:]
+        assert pr_issue_calls == [("GET", "/repos/wiigelec/gve/issues/99", None)]
 
         assert call("github.pull-request-read", {"number": 3})["result"]["base"] == "main"
         pr = call(

@@ -117,6 +117,15 @@ def _request(authority: Authority, method: str, suffix: str, body: dict[str, Any
     return _transport(method, f"/repos/{repository}{suffix}", body)
 
 
+def _require_issue_object(data: dict[str, Any], number: int) -> dict[str, Any]:
+    if "pull_request" in data:
+        raise GitHubError(
+            "GitHub issue task cannot operate on a pull request",
+            details={"number": number},
+        )
+    return data
+
+
 def _issue_result(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "number": data.get("number"),
@@ -159,7 +168,9 @@ def issue_read_v(p, a):
 
 
 def issue_read_x(p, a):
-    result = _issue_result(_request(a, "GET", f"/issues/{p['number']}"))
+    data = _request(a, "GET", f"/issues/{p['number']}")
+    _require_issue_object(data, p["number"])
+    result = _issue_result(data)
     return {"observations": result, "result": result}
 
 
@@ -200,6 +211,8 @@ def issue_modify_v(p, a):
 
 
 def issue_modify_x(p, a):
+    current = _request(a, "GET", f"/issues/{p['number']}")
+    _require_issue_object(current, p["number"])
     result = _issue_result(_request(a, "PATCH", f"/issues/{p['number']}", p["body"]))
     return {"effects": {"issue_modified": p["number"]}, "result": result}
 
