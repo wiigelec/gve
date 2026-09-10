@@ -360,8 +360,6 @@ alone shall not be treated as an implementation of validation.
 
 **Classification: M**
 
-**State: Inactive**
-
 All active mechanically evaluated FS-001 requirements shall have applicable
 mechanical enforcement and all required repository Validation shall pass before
 FS-001 is eligible for Acceptance.

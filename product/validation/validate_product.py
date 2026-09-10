@@ -14,6 +14,7 @@ from execute import validate_execute
 from github import validate_github
 from cli import validate_cli
 from registry import validate_registry
+from workflow import validate_workflow
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -26,6 +27,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "github": validate_github,
     "cli": validate_cli,
     "registry": validate_registry,
+    "workflow": validate_workflow,
 }
 
 
