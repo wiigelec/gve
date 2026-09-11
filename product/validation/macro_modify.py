@@ -67,8 +67,9 @@ def validate_macro_modify() -> bool:
     ids = [task["id"] for task in tasks]
     assert len(ids) == len(set(ids))
     names = [task["task"] for task in tasks]
-    assert names[:5] == [
-        "git.repository", "git.branch", "git.head", "git.status", "git.remote-head"
+    assert names[:6] == [
+        "git.repository", "git.branch", "git.head", "git.status",
+        "git.staged-scope", "git.remote-head",
     ]
     assert "filesystem.file-create" in names
     assert "filesystem.file-modify" in names
@@ -82,6 +83,10 @@ def validate_macro_modify() -> bool:
         "$ref": "modify-branch.result.branch"
     }
     assert by_id["modify-validate"]["parameters"]["script"] == "scripts/validate"
+    assert by_id["modify-staged-before"]["parameters"]["allowed_paths"] == ["new.txt", "old.txt"]
+    assert by_id["modify-pending-diff-check"]["task"] == "git.pending-diff-check"
+    assert by_id["modify-pending-diff-check"]["parameters"]["paths"] == ["new.txt", "old.txt"]
+    assert ids.index("modify-pending-diff-check") < ids.index("modify-add")
     assert by_id["modify-add"]["parameters"]["paths"] == ["new.txt", "old.txt"]
     assert by_id["modify-staged-scope"]["parameters"]["allowed_paths"] == [
         "new.txt", "old.txt"
@@ -127,6 +132,33 @@ def validate_macro_modify() -> bool:
             pass
         else:
             raise AssertionError(f"invalid modify parameters accepted: {params!r}")
+
+    with tempfile.TemporaryDirectory() as td:
+        base = Path(td)
+        repo = base / "repo"
+        remote = base / "remote.git"
+        repo.mkdir()
+        _sh(["git", "init", "-b", "main"], repo)
+        _sh(["git", "config", "user.name", "GVE Validator"], repo)
+        _sh(["git", "config", "user.email", "validator@example.invalid"], repo)
+        (repo / "base.txt").write_text("base\n", encoding="utf-8")
+        _sh(["git", "add", "base.txt"], repo)
+        _sh(["git", "commit", "-m", "baseline"], repo)
+        baseline = _sh(["git", "rev-parse", "HEAD"], repo)
+        _sh(["git", "init", "--bare", str(remote)], base)
+        _sh(["git", "remote", "add", "origin", str(remote)], repo)
+        (repo / "notes.txt").write_text("preexisting\n", encoding="utf-8")
+        _sh(["git", "add", "notes.txt"], repo)
+        authority = Authority(repository=repo.resolve(), git_remotes=frozenset({"origin"}), execute_limits=(("wall_seconds",600),("max_concurrent",32),("max_total_spawned",1024),("max_spawns_per_second",64)))
+        result = MacroRunner(Engine(product_registry()), macros).execute(
+            _request({"changes":[{"operation":"create","path":"generated.txt","content":"generated\n"}],"commit_message":"generated","validate":False,"allow_dirty":True,"allowed_dirty_paths":["notes.txt"]}),
+            authority,
+            RepositoryContext(repo.resolve(), None, "main", baseline),
+        )
+        assert result["status"] == "failure"
+        failed = next(x for x in result["tasks"] if x["status"] == "failure")
+        assert failed["id"] == "modify-staged-before"
+        assert not (repo / "generated.txt").exists()
 
     with tempfile.TemporaryDirectory() as td:
         base = Path(td)

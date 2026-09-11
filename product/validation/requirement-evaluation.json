@@ -319,7 +319,8 @@
     {
       "requirement": "FS-002-NR-010",
       "tasks": [
-        "cli"
+        "cli",
+        "macro-contracts"
       ]
     },
     {

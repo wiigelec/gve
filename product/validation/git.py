@@ -28,7 +28,7 @@ def call(name, params, auth):
 
 def validate_git_plugin() -> bool:
     expected = {
-        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.diff",
+        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
         "git.commit", "git.fetch", "git.remote-head", "git.push",
     }
@@ -106,6 +106,20 @@ def validate_git_plugin() -> bool:
         else:
             raise AssertionError("out-of-scope staged path was accepted")
         sh(["git", "reset", "HEAD", "--", " space.txt"], repo)
+
+        (repo / "pending-good.txt").write_text("good\n", encoding="utf-8")
+        assert call("git.pending-diff-check", {"paths": ["pending-good.txt"]}, auth)["result"]["clean"] is True
+        assert call("git.staged-scope", {"allowed_paths": []}, auth)["result"]["entries"] == []
+        (repo / "pending-good.txt").unlink()
+        (repo / "pending-bad.txt").write_text("bad trailing space \n", encoding="utf-8")
+        try:
+            call("git.pending-diff-check", {"paths": ["pending-bad.txt"]}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("pending whitespace error was accepted")
+        assert call("git.staged-scope", {"allowed_paths": []}, auth)["result"]["entries"] == []
+        (repo / "pending-bad.txt").unlink()
 
         diff = call("git.diff", {"paths": ["a.txt"]}, auth)["result"]["diff"]
         assert diff == ""

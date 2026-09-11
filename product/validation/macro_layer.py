@@ -47,9 +47,26 @@ def validate_macro_layer() -> bool:
             f"final macro registry mismatch: {macros.identities()!r}"
         )
 
+    def contract_is_closed(schema):
+        if schema.get("type") != "object":
+            return False
+        if schema.get("additionalProperties") is False:
+            return True
+        variants = schema.get("oneOf")
+        return (
+            isinstance(variants, list)
+            and bool(variants)
+            and all(
+                isinstance(variant, dict)
+                and variant.get("additionalProperties") is False
+                and isinstance(variant.get("properties"), dict)
+                for variant in variants
+            )
+        )
+
     for identity in macros.identities():
         schema = macros.resolve(identity).parameter_schema
-        if schema.get("type") != "object" or schema.get("additionalProperties") is not False:
+        if not contract_is_closed(schema):
             raise AssertionError(f"{identity} public parameter contract is not closed")
 
     bad_requests = [

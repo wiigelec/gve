@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -338,6 +340,30 @@ def diff_check_x(p, a):
     return {"observations": result, "result": result}
 
 
+def pending_diff_check_v(p, a):
+    _fields(p, {"paths"}, {"paths"})
+    return {"paths": _paths(a, p["paths"], nonempty=True)}
+
+
+def pending_diff_check_x(p, a):
+    root = _repo(a)
+    with tempfile.TemporaryDirectory() as td:
+        env = os.environ.copy()
+        env["GIT_INDEX_FILE"] = str(Path(td) / "index")
+        def temporary_index(args, *, check=True):
+            cp = subprocess.run(["git", "-C", str(root), *args], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if check and cp.returncode != 0:
+                raise GitError("Git temporary-index operation failed", details={"args": args, "exit_code": cp.returncode, "stderr": cp.stderr.rstrip("\r\n")})
+            return cp
+        temporary_index(["read-tree", "HEAD"])
+        temporary_index(["add", "--", *p["paths"]])
+        cp = temporary_index(["diff", "--cached", "--check", "--", *p["paths"]], check=False)
+        result = {"clean": cp.returncode == 0, "paths": list(p["paths"]), "diagnostics": cp.stdout + cp.stderr}
+        if not result["clean"]:
+            raise GitPreconditionError("pending Git diff --check failed", details=result)
+        return {"observations": result, "result": result}
+
+
 def branch_create_v(p, a):
     _fields(p, {"name", "start"}, {"name"})
     name = _branch(a, p["name"], "name")
@@ -470,6 +496,7 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.staged-scope", staged_scope_v, staged_scope_x),
         TaskDefinition("git.diff", diff_v, diff_x),
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
+        TaskDefinition("git.pending-diff-check", pending_diff_check_v, pending_diff_check_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
         TaskDefinition("git.branch-switch", branch_switch_v, branch_switch_x),
         TaskDefinition("git.add", add_v, add_x),

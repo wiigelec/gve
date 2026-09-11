@@ -115,31 +115,25 @@ def validate_macro_cli() -> bool:
         cp = _run(["macro-schema", "issue"])
         assert cp.returncode == 0, cp.stderr
         issue_schema = json.loads(cp.stdout)
-        assert issue_schema["type"] == "object"
-        assert issue_schema["additionalProperties"] is False
-        assert issue_schema["required"] == ["operation"]
-        assert set(issue_schema["properties"]) == {
-            "operation", "number", "title", "body", "labels", "state"
-        }
+        issue_ops = {x["properties"]["operation"]["enum"][0]: x for x in issue_schema["oneOf"]}
+        assert set(issue_ops) == {"read", "create", "modify"}
+        assert set(issue_ops["read"]["required"]) == {"operation", "number"}
+        assert set(issue_ops["create"]["required"]) == {"operation", "title"}
 
         cp = _run(["macro-schema", "pr"])
         assert cp.returncode == 0, cp.stderr
         pr_schema = json.loads(cp.stdout)
-        assert pr_schema["type"] == "object"
-        assert pr_schema["additionalProperties"] is False
-        assert pr_schema["required"] == ["operation"]
-        assert set(pr_schema["properties"]) == {"operation", "number", "title", "body", "base", "head", "draft", "state"}
+        pr_ops = {x["properties"]["operation"]["enum"][0]: x for x in pr_schema["oneOf"]}
+        assert set(pr_ops) == {"read", "create", "modify"}
+        assert set(pr_ops["create"]["required"]) == {"operation", "title", "base", "head"}
 
         cp = _run(["macro-schema", "modify"])
         assert cp.returncode == 0, cp.stderr
         modify_schema = json.loads(cp.stdout)
-        assert modify_schema["type"] == "object"
-        assert modify_schema["additionalProperties"] is False
-        assert modify_schema["required"] == ["changes", "commit_message"]
-        assert set(modify_schema["properties"]) == {
-            "changes", "commit_message", "remote_branch", "validate",
-            "allow_dirty", "allowed_dirty_paths"
-        }
+        change_ops = {x["properties"]["operation"]["enum"][0]: x for x in modify_schema["properties"]["changes"]["items"]["oneOf"]}
+        assert set(change_ops) == {"create", "modify"}
+        assert "expected_sha256" not in change_ops["create"]["properties"]
+        assert "expected_sha256" in change_ops["modify"]["required"]
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1

@@ -4,19 +4,31 @@ from collections.abc import Mapping
 from ..errors import PayloadError
 from ..macro import MacroDefinition, MacroPlan, MacroStage
 
-PARAMETER_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": ["operation"],
-    "properties": {
-        "operation": {"enum": ["read", "create", "modify"]},
-        "number": {"type": "integer", "minimum": 1},
-        "title": {"type": "string", "minLength": 1},
-        "body": {"type": "string"},
-        "labels": {"type": "array", "items": {"type": "string", "minLength": 1}},
-        "state": {"enum": ["open", "closed"]},
-    },
-}
+PARAMETER_SCHEMA = {'type': 'object',
+ 'oneOf': [{'additionalProperties': False,
+            'required': ['operation', 'number'],
+            'properties': {'operation': {'enum': ['read']},
+                           'number': {'type': 'integer', 'minimum': 1}}},
+           {'additionalProperties': False,
+            'required': ['operation', 'title'],
+            'properties': {'operation': {'enum': ['create']},
+                           'title': {'type': 'string', 'minLength': 1},
+                           'body': {'type': 'string'},
+                           'labels': {'type': 'array',
+                                      'items': {'type': 'string', 'minLength': 1}}}},
+           {'additionalProperties': False,
+            'required': ['operation', 'number'],
+            'anyOf': [{'required': ['title']},
+                      {'required': ['body']},
+                      {'required': ['labels']},
+                      {'required': ['state']}],
+            'properties': {'operation': {'enum': ['modify']},
+                           'number': {'type': 'integer', 'minimum': 1},
+                           'title': {'type': 'string', 'minLength': 1},
+                           'body': {'type': 'string'},
+                           'labels': {'type': 'array', 'items': {'type': 'string', 'minLength': 1}},
+                           'state': {'enum': ['open', 'closed']}}}]}
+
 
 def _number(v):
     if isinstance(v, bool) or not isinstance(v, int) or v <= 0:

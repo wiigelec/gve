@@ -10,40 +10,45 @@ from ..plugins.execute import HARD_LIMITS
 
 _SHA256 = set("0123456789abcdef")
 
-PARAMETER_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "required": ["changes", "commit_message"],
-    "properties": {
-        "changes": {
-            "type": "array",
-            "minItems": 1,
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "required": ["operation", "path", "content"],
-                "properties": {
-                    "operation": {"enum": ["create", "modify"]},
-                    "path": {"type": "string", "minLength": 1},
-                    "content": {"type": "string"},
-                    "expected_sha256": {
-                        "type": "string",
-                        "pattern": "^[0-9a-f]{64}$",
-                    },
-                },
-            },
-        },
-        "commit_message": {"type": "string", "minLength": 1},
-        "remote_branch": {"type": "string", "minLength": 1},
-        "validate": {"type": "boolean"},
-        "allow_dirty": {"type": "boolean"},
-        "allowed_dirty_paths": {
-            "type": "array",
-            "uniqueItems": True,
-            "items": {"type": "string", "minLength": 1},
-        },
-    },
-}
+PARAMETER_SCHEMA = {'type': 'object',
+ 'additionalProperties': False,
+ 'required': ['changes', 'commit_message'],
+ 'properties': {'changes': {'type': 'array',
+                            'minItems': 1,
+                            'x-gve-unique-path-field-after-normalization': 'path',
+                            'items': {'oneOf': [{'type': 'object',
+                                                 'additionalProperties': False,
+                                                 'required': ['operation', 'path', 'content'],
+                                                 'properties': {'operation': {'enum': ['create']},
+                                                                'path': {'type': 'string',
+                                                                         'minLength': 1,
+                                                                         'x-gve-format': 'repository-relative-path'},
+                                                                'content': {'type': 'string'}}},
+                                                {'type': 'object',
+                                                 'additionalProperties': False,
+                                                 'required': ['operation',
+                                                              'path',
+                                                              'content',
+                                                              'expected_sha256'],
+                                                 'properties': {'operation': {'enum': ['modify']},
+                                                                'path': {'type': 'string',
+                                                                         'minLength': 1,
+                                                                         'x-gve-format': 'repository-relative-path'},
+                                                                'content': {'type': 'string'},
+                                                                'expected_sha256': {'type': 'string',
+                                                                                    'pattern': '^[0-9a-f]{64}$'}}}]}},
+                'commit_message': {'type': 'string', 'minLength': 1},
+                'remote_branch': {'type': 'string', 'minLength': 1, 'x-gve-format': 'git-branch'},
+                'validate': {'type': 'boolean'},
+                'allow_dirty': {'type': 'boolean'},
+                'allowed_dirty_paths': {'type': 'array',
+                                        'uniqueItems': True,
+                                        'x-gve-unique-after-normalization': True,
+                                        'items': {'type': 'string',
+                                                  'minLength': 1,
+                                                  'x-gve-format': 'repository-relative-path'}}}}
+
+
 
 STAGES = ("PRECHECK", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY")
 
@@ -202,6 +207,11 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
             {"id": "modify-head", "task": "git.head", "parameters": {}},
             status_task,
             {
+                "id": "modify-staged-before",
+                "task": "git.staged-scope",
+                "parameters": {"allowed_paths": p["change_paths"]},
+            },
+            {
                 "id": "modify-remote-before",
                 "task": "git.remote-head",
                 "parameters": {"remote": "origin", "branch": branch_value},
@@ -276,6 +286,11 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
                 "id": "modify-status-guard",
                 "task": "git.status-scope",
                 "parameters": {"allowed_paths": allowed_after, "include_untracked": True},
+            },
+            {
+                "id": "modify-pending-diff-check",
+                "task": "git.pending-diff-check",
+                "parameters": {"paths": p["change_paths"]},
             },
             {
                 "id": "modify-add",
