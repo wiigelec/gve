@@ -380,21 +380,3 @@ directory outside the repository and shall verify at least `gve macro-list`,
 FS-002 shall preserve the accepted FS-001 capability, authority, workflow,
 failure, and structured task-result semantics except where a separately
 identified defect requires an explicit upstream product decision.
-
-### FS-002-NR-038 — No Lifecycle Acceptance Claim
-
-**Classification: S**
-
-Successful macro execution establishes only successful execution of the
-requested GVE product operation. It shall not itself represent repository
-Semantic Review, lifecycle Acceptance, or authority to merge candidate work into
-an accepted branch.
-
-### FS-002-NR-039 — Lifecycle Authority Separation
-
-**Classification: S**
-
-FS-002 resource and execution authority shall not be interpreted as lifecycle
-authority to create or alter Design, Planning, normative intent, Semantic Review
-judgments, or Acceptance decisions. Those responsibilities remain with the
-repository development process that invokes GVE.
