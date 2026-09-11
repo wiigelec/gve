@@ -315,6 +315,30 @@
       "tasks": [
         "macro-discover"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-010",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-030",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-031",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-032",
+      "tasks": [
+        "cli"
+      ]
     }
   ]
 }

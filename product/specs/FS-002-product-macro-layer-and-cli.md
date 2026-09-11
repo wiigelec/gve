@@ -101,7 +101,6 @@ reject caller parameter shapes or values outside that contract.
 
 **Classification: B**
 
-**State: Inactive**
 
 For every registered macro, the public parameter contract exposed through
 introspection and the authoritative runtime validator shall describe the same
@@ -288,7 +287,6 @@ GitHub pull-request tasks rather than arbitrary GitHub API requests.
 
 **Classification: M**
 
-**State: Inactive**
 
 FS-002 shall provide the maintained commands:
 
@@ -304,7 +302,6 @@ The existing FS-001 `gve execute` surface shall remain available.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro execution shall produce an authoritative machine-readable result
 identifying at least the macro identity, overall status, ordered macro phase
@@ -316,7 +313,6 @@ failure.
 
 **Classification: B**
 
-**State: Inactive**
 
 `gve macro-list` and `gve macro-schema NAME` shall expose public macro identity
 and contract information only. Introspection shall not expose macro
