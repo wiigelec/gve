@@ -229,12 +229,66 @@ No macro-specific reference syntax or translation layer is added.
 
 ### discover
 
-Goal: read-only repository discovery.
+Goal: bounded read-only repository discovery.
 
-Build should compose existing governed repository/Git/filesystem observation
-tasks needed for the requested discovery fields.
+The `discover` public parameter contract is a closed object with one optional
+field:
 
-It must not mutate the repository.
+```json
+{
+  "observations": [
+    "repository",
+    "branch",
+    "head",
+    "status",
+    "root_entries"
+  ]
+}
+```
+
+When `observations` is omitted, the product-owned default is:
+
+```text
+repository
+branch
+head
+status
+```
+
+When present, `observations` must be a non-empty array of unique strings chosen
+only from the five maintained identities above. Unknown values, duplicates,
+non-string values, and an empty array fail closed.
+
+The caller selects which product-defined observations are requested but does not
+control task order. Build emits selected observations in this canonical
+product-owned order regardless of caller array order:
+
+```text
+repository
+branch
+head
+status
+root_entries
+```
+
+The selected observation identities map exactly to existing governed FS-001
+tasks:
+
+```text
+repository   -> git.repository {}
+branch       -> git.branch {}
+head         -> git.head {}
+status       -> git.status {"include_untracked": true}
+root_entries -> filesystem.list {"path": ".", "recursive": false}
+```
+
+`discover` exposes one public stage named `DISCOVER`. Its builder returns one
+`MacroPlan` whose selected governed task invocations are all assigned to that
+stage. Invocation identities are deterministic product-owned values derived from
+the maintained observation identity rather than caller-provided task identities.
+
+The macro performs no mutation and introduces no arbitrary path, recursive-list,
+Git argument, task identity, query expression, or generic observation language.
 
 Keep this implementation intentionally small; it is the first proving macro for
 the new layer.
