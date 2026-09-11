@@ -85,11 +85,15 @@ implementation callable, conceptually:
 MacroDefinition(
     identity="modify",
     parameter_schema=MODIFY_SCHEMA,
+    stages=MODIFY_STAGES,
     build=build_modify,
 )
 ```
 
 `parameter_schema` is public introspection data.
+
+`stages` is the stable public stage description when a macro exposes product-owned
+stages. Macros without a public stage contract need not provide it.
 
 `build` is authoritative product behavior.
 
@@ -127,7 +131,7 @@ retains those records under their originally assigned stages.
 
 ## Request contract
 
-Planning shall implement a closed request envelope with schema version `1`.
+Build shall implement a closed request envelope with schema version `1`.
 
 The macro section contains exactly:
 
@@ -253,9 +257,16 @@ VERIFY:
 - observe selected remote head and require exact equality with the created
   commit.
 
-Build may add narrowly semantic Git observation/review tasks when the accepted
-FS-001 vocabulary lacks one required operation. It should prefer extending a
+Build may add the narrowest governed semantic Git observation/review capability
+needed to realize reviewed FS-002 behavior when the accepted FS-001 vocabulary
+lacks one required operation and the addition is an ordinary implementation
+consequence that preserves accepted FS-001 Design. It should prefer extending a
 plugin with one bounded semantic capability over expanding the macro layer.
+
+If realizing a required primitive would change accepted FS-001 product meaning,
+authority semantics, capability boundaries, or other consequential Design, Build
+shall return upstream rather than defining that change as an implementation
+decision.
 
 ### issue
 
