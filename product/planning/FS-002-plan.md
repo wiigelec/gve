@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: plan
 title: Product Macro Layer and CLI Plan
-design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
+design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
 ---
 
 # FS-002 — Plan
@@ -10,7 +10,7 @@ design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
 ## Design binding
 
 This Planning revision consumes Product Design at exact Git revision
-`6b2d275f5798be36be42379b0ce4c415eef4880f`.
+`bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
 
 FS-002 extends the accepted FS-001 implementation. The existing Engine, task
 registry, authority model, plugin implementations, workflow result semantics,
@@ -299,6 +299,21 @@ execution failure.
 
 The existing FS-001 execute interface remains available and unchanged.
 
+## Installation
+
+Build must provide one repository-supported installation mechanism that exposes
+`gve` as a normal shell command outside the source-tree working directory. The
+installed command must dispatch into the same product implementation as repository
+execution; no installation-specific macro runtime is permitted.
+
+The installation path must be deterministic for repeated development use. A repeat
+installation is either idempotent or fails clearly without leaving conflicting
+launchers behind.
+
+Validation must exercise the installed command from a working directory outside the
+repository and confirm at minimum `gve macro-list`, `gve macro-schema discover`, and
+one non-mutating `gve macro` execution once the `discover` macro is available.
+
 Terminal output may display generic macro/stage/task progress and task-provided
 streams. Avoid a large switch statement that teaches the CLI the semantics of
 each individual plugin task.
@@ -346,7 +361,8 @@ Build proceeds in this order:
 7. `pr`;
 8. `modify`;
 9. only the narrow plugin primitives proven necessary by the macros;
-10. public-behavior validation and canonical repository validation.
+10. repository-supported installation mechanism and installed-command smoke tests;
+11. public-behavior validation and canonical repository validation.
 
 Do not implement all four macros before the `discover` path proves the
 architecture.
@@ -370,8 +386,11 @@ Before FS-002 Acceptance:
 1. run task-specific validations;
 2. run canonical `scripts/validate`;
 3. run `git diff --check`;
-4. confirm the branch contains no unrelated changes;
-5. perform Build Review against this Plan;
-6. perform Semantic Review against Product Design revision
-   `6b2d275f5798be36be42379b0ce4c415eef4880f`;
-7. only then consider integration into `main`.
+4. install GVE through the repository-supported installation mechanism;
+5. from outside the repository, smoke-test the installed `gve` command, including
+   macro introspection and a non-mutating macro execution;
+6. confirm the branch contains no unrelated changes;
+7. perform Build Review against this Plan;
+8. perform Semantic Review against Product Design revision
+   `bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`;
+9. only then consider integration into `main`.

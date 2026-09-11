@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: functional-set
 title: Product Macro Layer and CLI
-design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
+design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
 ---
 
 # FS-002 — Product Macro Layer and CLI
@@ -12,7 +12,7 @@ design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
 FS-002 Planning consumes Product Design exactly as accepted at Git revision:
 
 ```text
-6b2d275f5798be36be42379b0ce4c415eef4880f
+bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
 ```
 
 The selected Design scope is:
@@ -64,6 +64,9 @@ FS-002 includes:
 - canonical full repository validation through one `scripts/validate` invocation
   inside `modify` when validation is enabled;
 - mechanical validation of the public macro contracts and behaviors.
+- a repository-supported installation mechanism that exposes `gve` as a normal
+  shell command outside the source-tree working directory;
+- installed-command smoke validation covering macro execution and introspection.
 
 ## Out of scope
 
@@ -88,7 +91,9 @@ FS-002 does not include:
 
 FS-002 is complete when the `fs002` branch contains a working product macro
 surface for all four initial macros, preserves FS-001 authority and task
-execution semantics, exposes the defined CLI/introspection commands, produces
-staged machine-readable macro results, passes canonical repository validation,
-and completes Semantic Review against Design revision
-`6b2d275f5798be36be42379b0ce4c415eef4880f`.
+execution semantics, provides the repository-supported installation mechanism,
+makes `gve` usable as a normal shell command outside the source-tree working
+directory, verifies installed macro execution and introspection, produces staged
+machine-readable macro results, passes canonical repository validation, and
+completes Semantic Review against Design revision
+`bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
