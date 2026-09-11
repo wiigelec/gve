@@ -108,6 +108,10 @@ Runtime callers cannot install, replace, alias, or define macros.
 
 Unknown macro identities fail closed before macro execution.
 
+A macro definition is registrable only when its public contract and executable
+product implementation are both complete. The registry shall not advertise a
+macro identity whose implementation is absent or intentionally placeholder-only.
+
 ## Parameter contracts
 
 Each macro exposes a closed parameter contract.
@@ -121,6 +125,12 @@ macro parameters. Macro-specific validation may be direct Python code when that
 is simpler and clearer.
 
 Defaults are product-owned and deterministic.
+
+The public parameter description and the authoritative runtime validator must
+describe the same accepted parameter space: every value represented as valid by
+the public contract must be accepted by runtime validation, and runtime validation
+must not accept public parameter shapes outside that contract. This correspondence
+does not require a generic schema interpreter.
 
 ## Task-result references
 
@@ -149,6 +159,10 @@ semantics.
 
 The Engine need not understand stage meaning.
 
+Stage regrouping preserves every Engine task record, including `not-executed`
+records produced after a prior task failure. Each generated invocation remains
+associated with its product-owned stage regardless of execution status.
+
 ## Failure semantics
 
 Macro execution is fail-fast because its generated FS-001 workflow is fail-fast.
@@ -172,8 +186,10 @@ pr
 
 ### discover
 
-`discover` performs governed read-only repository discovery through existing
-filesystem and Git tasks.
+`discover` performs bounded governed read-only repository discovery through
+explicitly supported filesystem and Git observations. Its public parameter
+contract selects only product-defined observations and does not form a generic
+query language. `discover` performs no mutation.
 
 ### modify
 
@@ -191,8 +207,9 @@ VALIDATE
   one canonical repository validation invocation when enabled
 
 COMMIT
-  review/diff-check as required
-  stage declared paths
+  verify the pending difference is contained within the declared mutation path set
+  reject patch whitespace errors before staging
+  stage declared paths only
   create commit
 
 PUBLISH

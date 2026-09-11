@@ -59,12 +59,20 @@ For local repository macro execution, GVE resolves one canonical active
 repository root from `--repo` when supplied or from the current working
 repository when omitted.
 
-GVE derives Git repository and publication context from that active repository.
-Repository expectations in the request are checked against observed state.
+GVE derives candidate Git repository and publication context from that active
+repository. Repository expectations in the request are checked against observed
+state. Observation of repository configuration is context discovery, not by itself
+an authority grant.
+
+Before macro execution, the macro CLI establishes active `Authority` through a
+product-defined CLI policy. Derived repository, remote, branch, and GitHub identity
+may be intersected with that active authority but may not create or widen authority
+merely because the local repository exposes those values.
 
 GitHub repository identity used by `issue` and `pr` is derived from the
-repository's configured product-supported remote identity and must remain within
-active GitHub authority.
+repository's configured product-supported remote identity and must match the active
+GitHub repository authority. If GitHub repository authority is absent, GitHub macro
+execution fails closed.
 
 Caller-supplied strings do not widen authority.
 
