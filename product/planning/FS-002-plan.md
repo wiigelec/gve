@@ -325,7 +325,9 @@ interpreter internals.
 
 Required validation areas:
 
-- static registry contains exactly the four initial macro identities;
+- static registry contains exactly the macro identities whose complete public
+  contracts and executable implementations are present; at FS-002 completion this
+  set is exactly `discover`, `issue`, `pr`, and `modify`;
 - request envelope rejects unknown fields and unsupported schema versions;
 - each macro accepts valid parameters and rejects invalid parameters;
 - introspection matches each public parameter contract;
@@ -352,7 +354,7 @@ DSL because no such DSL is part of FS-002.
 
 Build proceeds in this order:
 
-1. small macro data structures and static registry;
+1. small macro data structures and empty static registry infrastructure;
 2. closed request envelope and direct validation boundary;
 3. minimal runner that hands generated workflows to the existing Engine;
 4. `discover` as the proving implementation;
