@@ -24,7 +24,6 @@ those requirements without changing their identities or normative text.
 
 **Classification: M**
 
-**State: Inactive**
 
 FS-002 Planning shall identify exact consumed Product Design revision
 `bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
@@ -57,7 +56,6 @@ owned by product code rather than supplied by the runtime caller.
 
 **Classification: B**
 
-**State: Inactive**
 
 FS-002 shall not expose a generic caller-authored macro behavior language,
 including caller-defined tasks, stages, conditions, loops, templates, result
@@ -75,7 +73,6 @@ shall not install, replace, alias, or define macro identities.
 
 **Classification: B**
 
-**State: Inactive**
 
 A macro identity shall be registered publicly only when both its complete public
 parameter contract and executable product implementation are present. At FS-002
@@ -118,7 +115,6 @@ not depend on caller-supplied executable interpretation.
 
 **Classification: B**
 
-**State: Inactive**
 
 When generated task invocations require values from earlier generated
 invocations, FS-002 shall use the existing FS-001 `$ref` result-reference
@@ -154,7 +150,6 @@ higher-level operation was requested.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro selection, macro parameters, repository expectations, derived repository
 context, and task-result references shall not widen active FS-001 execution

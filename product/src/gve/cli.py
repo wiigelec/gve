@@ -179,7 +179,7 @@ def macro_command(args: argparse.Namespace) -> int:
                 raise ValueError("GitHub macro requires a supported repository origin identity")
             try:
                 auth_cp = subprocess.run(
-                    ["gh", "auth", "status"],
+                    ["gh", "auth", "status", "--hostname", "github.com"],
                     text=True,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,

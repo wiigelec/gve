@@ -393,6 +393,36 @@
       "tasks": [
         "macro-modify"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-001",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-005",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-007",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-012",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-016",
+      "tasks": [
+        "macro-layer"
+      ]
     }
   ]
 }
