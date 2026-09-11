@@ -203,11 +203,26 @@ For GitHub issue/PR operations, repository identity is derived from the active
 repository's supported remote URL form and intersected with active GitHub
 authority.
 
-Authority establishment remains outside caller macro parameters.
+The product-defined GitHub authority source for the macro CLI is the authenticated
+GitHub CLI (`gh`) configuration already available to the executing user. That
+authenticated GitHub session exists independently of repository-derived context
+and independently of caller macro parameters.
 
-Repository-derived context does not itself grant authority. The macro CLI must
-construct active `Authority` through explicit product policy before execution;
-GitHub macros fail closed when matching GitHub repository authority is absent.
+For `issue` and `pr`, the macro CLI derives exactly one candidate `owner/name`
+repository identity from the active repository's product-supported remote URL
+form. It may establish `Authority.github_repository` for that macro only when an
+authenticated `gh` session is available; the derived repository identity then
+narrows that pre-existing GitHub authority to the one repository on which the
+governed GitHub task may operate.
+
+Repository-derived context does not itself grant GitHub authority. A supported
+remote without authenticated `gh` configuration is insufficient, and caller
+request fields never establish or widen GitHub authority. GitHub macros fail
+closed when authenticated `gh` authority is absent or when no supported
+repository identity can be derived.
+
+The existing governed GitHub plugin remains the transport boundary and continues
+to invoke `gh api`; the macro layer does not add a second GitHub transport.
 
 ## Native result references
 
@@ -368,9 +383,74 @@ decision.
 Support the minimal read/create/modify operation set using existing governed
 GitHub issue tasks.
 
-Macro-specific Python chooses the task sequence for each operation.
+The `issue` public parameter contract is one closed object selected by the
+macro-specific `operation` field. `operation` is a product-defined issue operation
+selector, not a generic task or control-flow language.
 
-No generic discriminator or conditional language is introduced.
+Read:
+
+```json
+{
+  "operation": "read",
+  "number": 123
+}
+```
+
+For `read`, the object contains exactly `operation` and `number`. `number` is a
+positive JSON integer. Build emits exactly one `github.issue-read` invocation.
+
+Create:
+
+```json
+{
+  "operation": "create",
+  "title": "Issue title",
+  "body": "",
+  "labels": []
+}
+```
+
+For `create`, `operation` and `title` are required. `title` is a non-empty
+string. `body` is optional and defaults to the empty string. `labels` is optional
+and defaults to an empty array; when present it is an array of non-empty strings.
+No other fields are admitted. Build emits exactly one `github.issue-create`
+invocation.
+
+Modify:
+
+```json
+{
+  "operation": "modify",
+  "number": 123,
+  "title": "Updated title",
+  "body": "",
+  "labels": [],
+  "state": "closed"
+}
+```
+
+For `modify`, `operation` and `number` are required. `number` is a positive JSON
+integer. At least one of `title`, `body`, `labels`, or `state` must be present.
+When present, `title` is a non-empty string, `body` is a string that may be empty,
+`labels` is an array of non-empty strings, and `state` is exactly `open` or
+`closed`. No other fields are admitted. Build emits exactly one
+`github.issue-modify` invocation.
+
+The public parameter validator rejects unknown operations, unknown fields,
+missing required fields, invalid values, and a `modify` request with no mutation
+field.
+
+`issue` exposes one public stage named `ISSUE`. Its builder returns one
+`MacroPlan` containing exactly the governed issue task selected above. The
+generated invocation identity is deterministic and product-owned.
+
+The macro-specific Python selector chooses among the three fixed product
+operations. The caller cannot provide a GitHub repository identity, API route,
+HTTP method, governed task identity, additional task sequence, condition, loop,
+template, or continuation rule.
+
+Execution requires the GitHub authority policy defined under Repository context;
+the existing governed GitHub plugin remains the only GitHub transport.
 
 ### pr
 
