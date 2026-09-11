@@ -131,22 +131,63 @@ retains those records under their originally assigned stages.
 
 ## Request contract
 
-Build shall implement a closed request envelope with schema version `1`.
+Build shall implement the following closed schema-version-1 request envelope:
 
-The macro section contains exactly:
-
-```text
-name
-parameters
+```json
+{
+  "schema_version": 1,
+  "header": {
+    "repository": {
+      "identity": "owner/name",
+      "branch": "branch-name",
+      "head": "0123456789abcdef0123456789abcdef01234567"
+    }
+  },
+  "macro": {
+    "name": "discover",
+    "parameters": {}
+  }
+}
 ```
 
-The header contains repository expectations sufficient to fail closed when the
-local execution context is not the context the caller intended.
+The top-level object contains exactly `schema_version`, `header`, and `macro`.
 
-At minimum, Planning should support expectations for repository identity,
-current branch, and current local HEAD when applicable. Remote-head expectations
-needed for publication remain product-owned guards inside `modify` and are
-observed immediately before mutation/publication.
+`schema_version` is required and must be the JSON integer `1`. Unsupported
+versions fail closed.
+
+`header` is required and contains exactly `repository`.
+
+`header.repository` is required and is a closed object whose only admitted fields
+are `identity`, `branch`, and `head`. Each repository expectation field is optional
+individually. Omission means that property is not guarded by the request. Explicit
+`null` is not equivalent to omission and is rejected.
+
+When present:
+
+- `identity` is a non-empty canonical repository identity in `owner/name` form
+  derived from a product-supported repository remote identity;
+- `branch` is a non-empty branch name and requires exact equality with the
+  observed current branch;
+- `head` is a 40-character lowercase hexadecimal Git commit identity and requires
+  exact equality with the observed local `HEAD`.
+
+A request with an empty `header.repository` object is valid and relies only on
+the repository context and active authority established by the CLI.
+
+`macro` is required and contains exactly `name` and `parameters`.
+
+`macro.name` is a required non-empty string identifying one registered product
+macro. Unknown macro identities fail closed before macro execution.
+
+`macro.parameters` is a required JSON object. Its admitted fields and values are
+defined by the selected macro's closed public parameter contract.
+
+Unknown fields at every maintained request-envelope level fail closed. Arrays,
+scalars, or `null` are rejected where an object is required.
+
+Remote-head expectations needed for publication are not caller request-envelope
+fields. They remain product-owned guards inside `modify` and are observed by the
+macro immediately before the mutation/publication points defined by that macro.
 
 The request cannot grant filesystem, Git remote, process, or GitHub authority.
 
