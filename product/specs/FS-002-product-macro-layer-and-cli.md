@@ -317,7 +317,6 @@ task-specific presentation semantics.
 
 **Classification: B**
 
-**State: Inactive**
 
 FS-002 shall provide one repository-supported installation mechanism that makes
 the maintained `gve` command usable from outside the source-tree working
@@ -328,7 +327,6 @@ repository execution.
 
 **Classification: M**
 
-**State: Inactive**
 
 Repeating the supported installation procedure shall either be idempotent or
 shall fail with a clear actionable result without silently creating conflicting
@@ -338,7 +336,6 @@ launchers.
 
 **Classification: M**
 
-**State: Inactive**
 
 Mechanical Validation shall exercise the installed command from a working
 directory outside the repository and shall verify at least `gve macro-list`,

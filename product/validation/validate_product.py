@@ -20,6 +20,7 @@ from macro_issue import validate_macro_issue
 from macro_pr import validate_macro_pr
 from macro_modify import validate_macro_modify
 from macro_layer import validate_macro_layer
+from installation import validate_installation
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -38,6 +39,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "macro-pr": validate_macro_pr,
     "macro-modify": validate_macro_modify,
     "macro-layer": validate_macro_layer,
+    "installation": validate_installation,
 }
 
 

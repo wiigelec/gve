@@ -423,6 +423,24 @@
       "tasks": [
         "macro-layer"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-034",
+      "tasks": [
+        "installation"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-035",
+      "tasks": [
+        "installation"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-036",
+      "tasks": [
+        "installation"
+      ]
     }
   ]
 }
