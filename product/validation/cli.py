@@ -103,7 +103,7 @@ def validate_macro_cli() -> bool:
 
         cp = _run(["macro-list"])
         assert cp.returncode == 0, cp.stderr
-        assert json.loads(cp.stdout) == ["discover", "issue", "pr"]
+        assert json.loads(cp.stdout) == ["discover", "issue", "pr", "modify"]
 
         cp = _run(["macro-schema", "discover"])
         assert cp.returncode == 0, cp.stderr
@@ -129,6 +129,17 @@ def validate_macro_cli() -> bool:
         assert pr_schema["additionalProperties"] is False
         assert pr_schema["required"] == ["operation"]
         assert set(pr_schema["properties"]) == {"operation", "number", "title", "body", "base", "head", "draft", "state"}
+
+        cp = _run(["macro-schema", "modify"])
+        assert cp.returncode == 0, cp.stderr
+        modify_schema = json.loads(cp.stdout)
+        assert modify_schema["type"] == "object"
+        assert modify_schema["additionalProperties"] is False
+        assert modify_schema["required"] == ["changes", "commit_message"]
+        assert set(modify_schema["properties"]) == {
+            "changes", "commit_message", "remote_branch", "validate",
+            "allow_dirty", "allowed_dirty_paths"
+        }
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1
@@ -193,6 +204,38 @@ def validate_macro_cli() -> bool:
         cp = _run(["execute", "--repository", str(repo), str(payload)])
         assert cp.returncode == 0
         assert json.loads(cp.stdout)["workflow_id"] == "unchanged"
+
+        modify_request = base / "modify-request.json"
+        modify_result = base / "modify-result.json"
+        modify_request.write_text(
+            json.dumps({
+                "schema_version": 1,
+                "header": {"repository": {}},
+                "macro": {
+                    "name": "modify",
+                    "parameters": {
+                        "changes": [
+                            {"operation": "create", "path": "generated.txt", "content": "x\n"}
+                        ],
+                        "commit_message": "generated",
+                        "validate": False,
+                    },
+                },
+            }),
+            encoding="utf-8",
+        )
+        cp = _run([
+            "macro", "--in", str(modify_request), "--out", str(modify_result),
+            "--repo", str(repo),
+        ])
+        assert cp.returncode == 1
+        failed_modify = json.loads(modify_result.read_text(encoding="utf-8"))
+        assert failed_modify["status"] == "failure"
+        failed_task = next(
+            task for task in failed_modify["tasks"] if task["status"] == "failure"
+        )
+        assert "authorized Git remote is not configured" in failed_task["error"]["message"]
+        assert not (repo / "generated.txt").exists()
 
         issue_request = base / "issue-request.json"
         issue_result = base / "issue-result.json"

@@ -18,6 +18,7 @@ from workflow import validate_workflow
 from macro_discover import validate_macro_discover
 from macro_issue import validate_macro_issue
 from macro_pr import validate_macro_pr
+from macro_modify import validate_macro_modify
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -34,6 +35,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "macro-discover": validate_macro_discover,
     "macro-issue": validate_macro_issue,
     "macro-pr": validate_macro_pr,
+    "macro-modify": validate_macro_modify,
 }
 
 

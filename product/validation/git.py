@@ -28,7 +28,7 @@ def call(name, params, auth):
 
 def validate_git_plugin() -> bool:
     expected = {
-        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.diff",
+        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
         "git.commit", "git.fetch", "git.remote-head", "git.push",
     }
@@ -95,6 +95,17 @@ def validate_git_plugin() -> bool:
             assert getattr(exc, "code", None) == "git"
         else:
             raise AssertionError("duplicate scoped dirty path was accepted")
+
+        sh(["git", "add", " space.txt"], repo)
+        staged = call("git.staged-scope", {"allowed_paths": [" space.txt"]}, auth)["result"]
+        assert staged["entries"]
+        try:
+            call("git.staged-scope", {"allowed_paths": ["a.txt"]}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("out-of-scope staged path was accepted")
+        sh(["git", "reset", "HEAD", "--", " space.txt"], repo)
 
         diff = call("git.diff", {"paths": ["a.txt"]}, auth)["result"]["diff"]
         assert diff == ""

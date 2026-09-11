@@ -351,6 +351,48 @@
       "tasks": [
         "macro-pr"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-021",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-022",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-023",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-024",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-025",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-026",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-027",
+      "tasks": [
+        "macro-modify"
+      ]
     }
   ]
 }

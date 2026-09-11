@@ -198,7 +198,6 @@ through governed observation tasks and shall produce no repository mutation.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` shall mutate only the declared repository-relative change paths, shall
 preserve unrelated work, and shall stage only the declared mutation path set.
@@ -207,7 +206,6 @@ preserve unrelated work, and shall stage only the declared mutation path set.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` shall require a clean worktree by default. When scoped dirty-state
 operation is explicitly enabled, only the exact dirty paths admitted by the
@@ -218,7 +216,6 @@ before mutation.
 
 **Classification: B**
 
-**State: Inactive**
 
 When validation is enabled, `modify` shall invoke exactly one governed
 `execute.script` operation for the repository-root `scripts/validate` entry
@@ -228,7 +225,6 @@ point and shall not enumerate repository validator implementations itself.
 
 **Classification: B**
 
-**State: Inactive**
 
 Before commit, `modify` shall produce governed difference evidence sufficient to
 verify that the pending commit is contained within the declared mutation path
@@ -238,7 +234,6 @@ set and shall reject patch whitespace errors.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` shall create at most one product-requested commit for its declared
 mutation after successful applicable preconditions and validation, and that
@@ -248,7 +243,6 @@ commit shall contain only the declared mutation path set.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` publication shall use normal non-force push semantics and shall fail
 closed when the selected remote head no longer matches the remote state observed
@@ -258,7 +252,6 @@ for the publication guard.
 
 **Classification: B**
 
-**State: Inactive**
 
 After successful publication, `modify` shall observe the selected remote head and
 require exact equality with the commit created by the macro.

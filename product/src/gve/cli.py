@@ -192,6 +192,14 @@ def macro_command(args: argparse.Namespace) -> int:
                 repository=repository,
                 github_repository=context.identity,
             )
+        elif request.macro_name == "modify":
+            authority = Authority(
+                repository=repository,
+                git_remotes=frozenset({"origin"}),
+                execute_limits=tuple(
+                    (key, HARD_LIMITS[key]) for key in sorted(HARD_LIMITS)
+                ),
+            )
         else:
             authority = Authority.for_repository(repository)
 

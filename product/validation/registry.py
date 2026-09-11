@@ -16,7 +16,7 @@ def validate_registry() -> bool:
         "filesystem.list", "filesystem.file-read", "filesystem.file-stat",
         "filesystem.file-hash", "filesystem.file-create", "filesystem.file-modify",
         "filesystem.file-delete",
-        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.diff",
+        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
         "git.commit", "git.fetch", "git.remote-head", "git.push",
         "execute.script",

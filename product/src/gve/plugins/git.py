@@ -272,6 +272,43 @@ def status_scope_x(p, a):
     return {"observations": scoped, "result": scoped}
 
 
+def staged_scope_v(p, a):
+    _fields(p, {"allowed_paths"}, {"allowed_paths"})
+    allowed_paths = _paths(a, p["allowed_paths"])
+    if len(set(allowed_paths)) != len(allowed_paths):
+        raise GitError("allowed_paths must contain unique repository-relative paths")
+    return {"allowed_paths": allowed_paths}
+
+
+def staged_scope_x(p, a):
+    result = status_x({"expected_clean": None, "include_untracked": True}, a)["result"]
+    allowed = set(p["allowed_paths"])
+    staged = []
+    outside = []
+    for entry in result["entries"]:
+        code = entry["status"]
+        if not code or code[0] in {" ", "?"}:
+            continue
+        candidates = [entry["path"]]
+        if "original_path" in entry:
+            candidates.append(entry["original_path"])
+        staged.append(entry)
+        for candidate in candidates:
+            if candidate not in allowed:
+                outside.append(candidate)
+    if outside:
+        raise GitPreconditionError(
+            "Git staged path scope mismatch",
+            details={
+                "allowed_paths": p["allowed_paths"],
+                "outside_paths": sorted(set(outside)),
+                "entries": staged,
+            },
+        )
+    result = {"allowed_paths": list(p["allowed_paths"]), "entries": staged}
+    return {"observations": result, "result": result}
+
+
 def diff_v(p, a):
     _fields(p, {"cached", "paths"}, set())
     cached = _b(p.get("cached", False), "cached")
@@ -430,6 +467,7 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.head", head_v, head_x),
         TaskDefinition("git.status", status_v, status_x),
         TaskDefinition("git.status-scope", status_scope_v, status_scope_x),
+        TaskDefinition("git.staged-scope", staged_scope_v, staged_scope_x),
         TaskDefinition("git.diff", diff_v, diff_x),
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
