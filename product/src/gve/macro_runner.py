@@ -74,28 +74,44 @@ def _group(plan: MacroPlan, engine_result: Mapping[str, object]) -> list[dict]:
     if not isinstance(records, list):
         raise PayloadError("Engine result tasks must be an array")
 
-    records_by_id = {}
+    expected_ids = [
+        invocation["id"]
+        for stage in plan.stages
+        for invocation in stage.tasks
+    ]
+    observed_ids: list[str] = []
     for record in records:
         if not isinstance(record, dict):
             raise PayloadError("Engine task record must be an object")
         invocation_id = record.get("id")
         if not isinstance(invocation_id, str):
             raise PayloadError("Engine task record requires string id")
-        records_by_id[invocation_id] = record
+        observed_ids.append(invocation_id)
+
+    if len(set(observed_ids)) != len(observed_ids):
+        raise PayloadError(
+            "Engine task record ids must be unique",
+            details={"observed": observed_ids},
+        )
+
+    if observed_ids != expected_ids:
+        raise PayloadError(
+            "Engine task records do not match generated macro invocation order",
+            details={"expected": expected_ids, "observed": observed_ids},
+        )
 
     grouped: list[dict] = []
+    cursor = 0
     for stage in plan.stages:
+        count = len(stage.tasks)
         grouped.append(
             {
                 "id": stage.identity,
                 "label": stage.label,
-                "tasks": [
-                    records_by_id[invocation["id"]]
-                    for invocation in stage.tasks
-                    if invocation["id"] in records_by_id
-                ],
+                "tasks": records[cursor:cursor + count],
             }
         )
+        cursor += count
     return grouped
 
 

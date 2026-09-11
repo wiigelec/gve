@@ -107,6 +107,47 @@ def validate_macro_discover() -> bool:
         if statuses[0] != "failure" or any(status != "not-executed" for status in statuses[1:]):
             raise AssertionError(f"fail-fast regrouping mismatch: {statuses}")
 
+    class _CorruptEngine:
+        def __init__(self, mode):
+            self.mode = mode
+
+        def execute(self, payload, authority):
+            task_records = [
+                {
+                    "id": task["id"],
+                    "task": task["task"],
+                    "status": "success",
+                    "observations": {},
+                    "effects": {},
+                    "result": {},
+                    "error": None,
+                    "reason": None,
+                }
+                for task in payload["tasks"]
+            ]
+            if self.mode == "missing":
+                task_records = task_records[:-1]
+            elif self.mode == "duplicate":
+                task_records[1] = dict(task_records[0])
+            elif self.mode == "reordered":
+                task_records = list(reversed(task_records))
+            return {
+                "schema_version": 1,
+                "workflow_id": payload["workflow_id"],
+                "status": "success",
+                "tasks": task_records,
+            }
+
+    integrity_request = _request({"observations": ["head", "status"]})
+    for mode in ("missing", "duplicate", "reordered"):
+        corrupt_runner = MacroRunner(_CorruptEngine(mode), macros)
+        try:
+            corrupt_runner.execute(integrity_request, authority, context)
+        except PayloadError:
+            pass
+        else:
+            raise AssertionError(f"corrupt Engine task records accepted: {mode}")
+
     bad_envelopes = [
         {
             "schema_version": 2,
