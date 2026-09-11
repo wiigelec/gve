@@ -255,6 +255,193 @@
         "registry",
         "workflow"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-003",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-006",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-008",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-009",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-011",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-014",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-015",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-018",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-019",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-020",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-010",
+      "tasks": [
+        "cli",
+        "macro-contracts"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-030",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-031",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-032",
+      "tasks": [
+        "cli"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-028",
+      "tasks": [
+        "macro-issue"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-029",
+      "tasks": [
+        "macro-pr"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-021",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-022",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-023",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-024",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-025",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-026",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-027",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-001",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-005",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-007",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-012",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-016",
+      "tasks": [
+        "macro-layer"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-034",
+      "tasks": [
+        "installation"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-035",
+      "tasks": [
+        "installation"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-036",
+      "tasks": [
+        "installation"
+      ]
     }
   ]
 }

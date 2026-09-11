@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -233,6 +235,82 @@ def status_x(p, a):
     return {"observations": result, "result": result}
 
 
+def status_scope_v(p, a):
+    _fields(p, {"allowed_paths", "include_untracked"}, {"allowed_paths"})
+    allowed_paths = _paths(a, p["allowed_paths"])
+    if len(set(allowed_paths)) != len(allowed_paths):
+        raise GitError("allowed_paths must contain unique repository-relative paths")
+    include = p.get("include_untracked", True)
+    include = _b(include, "include_untracked")
+    return {"allowed_paths": allowed_paths, "include_untracked": include}
+
+
+def status_scope_x(p, a):
+    base = status_x(
+        {"expected_clean": None, "include_untracked": p["include_untracked"]},
+        a,
+    )
+    result = base["result"]
+    allowed = set(p["allowed_paths"])
+    outside = []
+    for entry in result["entries"]:
+        candidates = [entry["path"]]
+        if "original_path" in entry:
+            candidates.append(entry["original_path"])
+        for candidate in candidates:
+            if candidate not in allowed:
+                outside.append(candidate)
+    if outside:
+        raise GitPreconditionError(
+            "Git dirty path scope mismatch",
+            details={
+                "allowed_paths": p["allowed_paths"],
+                "outside_paths": sorted(set(outside)),
+                "entries": result["entries"],
+            },
+        )
+    scoped = dict(result)
+    scoped["allowed_paths"] = list(p["allowed_paths"])
+    return {"observations": scoped, "result": scoped}
+
+
+def staged_scope_v(p, a):
+    _fields(p, {"allowed_paths"}, {"allowed_paths"})
+    allowed_paths = _paths(a, p["allowed_paths"])
+    if len(set(allowed_paths)) != len(allowed_paths):
+        raise GitError("allowed_paths must contain unique repository-relative paths")
+    return {"allowed_paths": allowed_paths}
+
+
+def staged_scope_x(p, a):
+    result = status_x({"expected_clean": None, "include_untracked": True}, a)["result"]
+    allowed = set(p["allowed_paths"])
+    staged = []
+    outside = []
+    for entry in result["entries"]:
+        code = entry["status"]
+        if not code or code[0] in {" ", "?"}:
+            continue
+        candidates = [entry["path"]]
+        if "original_path" in entry:
+            candidates.append(entry["original_path"])
+        staged.append(entry)
+        for candidate in candidates:
+            if candidate not in allowed:
+                outside.append(candidate)
+    if outside:
+        raise GitPreconditionError(
+            "Git staged path scope mismatch",
+            details={
+                "allowed_paths": p["allowed_paths"],
+                "outside_paths": sorted(set(outside)),
+                "entries": staged,
+            },
+        )
+    result = {"allowed_paths": list(p["allowed_paths"]), "entries": staged}
+    return {"observations": result, "result": result}
+
+
 def diff_v(p, a):
     _fields(p, {"cached", "paths"}, set())
     cached = _b(p.get("cached", False), "cached")
@@ -260,6 +338,30 @@ def diff_check_x(p, a):
     if not clean:
         raise GitPreconditionError("git diff --check failed", details=result)
     return {"observations": result, "result": result}
+
+
+def pending_diff_check_v(p, a):
+    _fields(p, {"paths"}, {"paths"})
+    return {"paths": _paths(a, p["paths"], nonempty=True)}
+
+
+def pending_diff_check_x(p, a):
+    root = _repo(a)
+    with tempfile.TemporaryDirectory() as td:
+        env = os.environ.copy()
+        env["GIT_INDEX_FILE"] = str(Path(td) / "index")
+        def temporary_index(args, *, check=True):
+            cp = subprocess.run(["git", "-C", str(root), *args], env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if check and cp.returncode != 0:
+                raise GitError("Git temporary-index operation failed", details={"args": args, "exit_code": cp.returncode, "stderr": cp.stderr.rstrip("\r\n")})
+            return cp
+        temporary_index(["read-tree", "HEAD"])
+        temporary_index(["add", "--", *p["paths"]])
+        cp = temporary_index(["diff", "--cached", "--check", "--", *p["paths"]], check=False)
+        result = {"clean": cp.returncode == 0, "paths": list(p["paths"]), "diagnostics": cp.stdout + cp.stderr}
+        if not result["clean"]:
+            raise GitPreconditionError("pending Git diff --check failed", details=result)
+        return {"observations": result, "result": result}
 
 
 def branch_create_v(p, a):
@@ -390,8 +492,11 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.branch", branch_v, branch_x),
         TaskDefinition("git.head", head_v, head_x),
         TaskDefinition("git.status", status_v, status_x),
+        TaskDefinition("git.status-scope", status_scope_v, status_scope_x),
+        TaskDefinition("git.staged-scope", staged_scope_v, staged_scope_x),
         TaskDefinition("git.diff", diff_v, diff_x),
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
+        TaskDefinition("git.pending-diff-check", pending_diff_check_v, pending_diff_check_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
         TaskDefinition("git.branch-switch", branch_switch_v, branch_switch_x),
         TaskDefinition("git.add", add_v, add_x),

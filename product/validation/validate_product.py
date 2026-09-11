@@ -15,6 +15,13 @@ from github import validate_github
 from cli import validate_cli
 from registry import validate_registry
 from workflow import validate_workflow
+from macro_discover import validate_macro_discover
+from macro_issue import validate_macro_issue
+from macro_pr import validate_macro_pr
+from macro_modify import validate_macro_modify
+from macro_layer import validate_macro_layer
+from macro_contracts import validate_macro_contracts
+from installation import validate_installation
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -28,6 +35,13 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "cli": validate_cli,
     "registry": validate_registry,
     "workflow": validate_workflow,
+    "macro-discover": validate_macro_discover,
+    "macro-issue": validate_macro_issue,
+    "macro-pr": validate_macro_pr,
+    "macro-modify": validate_macro_modify,
+    "macro-layer": validate_macro_layer,
+    "macro-contracts": validate_macro_contracts,
+    "installation": validate_installation,
 }
 
 

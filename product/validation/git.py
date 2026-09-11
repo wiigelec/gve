@@ -28,7 +28,7 @@ def call(name, params, auth):
 
 def validate_git_plugin() -> bool:
     expected = {
-        "git.repository", "git.branch", "git.head", "git.status", "git.diff",
+        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
         "git.commit", "git.fetch", "git.remote-head", "git.push",
     }
@@ -65,6 +65,61 @@ def validate_git_plugin() -> bool:
         status = call("git.status", {}, auth)["result"]
         item = next(x for x in status["entries"] if x["path"] == " space.txt")
         assert item["status"] == "??"
+
+        scoped = call(
+            "git.status-scope",
+            {"allowed_paths": [" space.txt"], "include_untracked": True},
+            auth,
+        )["result"]
+        assert scoped["clean"] is False
+        assert scoped["allowed_paths"] == [" space.txt"]
+
+        try:
+            call(
+                "git.status-scope",
+                {"allowed_paths": ["a.txt"], "include_untracked": True},
+                auth,
+            )
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("out-of-scope dirty path was accepted")
+
+        try:
+            call(
+                "git.status-scope",
+                {"allowed_paths": [" space.txt", " space.txt"]},
+                auth,
+            )
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "git"
+        else:
+            raise AssertionError("duplicate scoped dirty path was accepted")
+
+        sh(["git", "add", " space.txt"], repo)
+        staged = call("git.staged-scope", {"allowed_paths": [" space.txt"]}, auth)["result"]
+        assert staged["entries"]
+        try:
+            call("git.staged-scope", {"allowed_paths": ["a.txt"]}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("out-of-scope staged path was accepted")
+        sh(["git", "reset", "HEAD", "--", " space.txt"], repo)
+
+        (repo / "pending-good.txt").write_text("good\n", encoding="utf-8")
+        assert call("git.pending-diff-check", {"paths": ["pending-good.txt"]}, auth)["result"]["clean"] is True
+        assert call("git.staged-scope", {"allowed_paths": []}, auth)["result"]["entries"] == []
+        (repo / "pending-good.txt").unlink()
+        (repo / "pending-bad.txt").write_text("bad trailing space \n", encoding="utf-8")
+        try:
+            call("git.pending-diff-check", {"paths": ["pending-bad.txt"]}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("pending whitespace error was accepted")
+        assert call("git.staged-scope", {"allowed_paths": []}, auth)["result"]["entries"] == []
+        (repo / "pending-bad.txt").unlink()
 
         diff = call("git.diff", {"paths": ["a.txt"]}, auth)["result"]["diff"]
         assert diff == ""

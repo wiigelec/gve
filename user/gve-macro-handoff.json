@@ -1,0 +1,124 @@
+{
+  "schema_version": "1",
+  "record_type": "gve-macro-operation-handoff",
+  "surface": "user/gve-macro-handoff.json",
+  "authority_state": "none",
+  "management": "user-owned",
+  "purpose": "Provide an agent-facing operational handoff for discovering and invoking the installed GVE macro surface without relying on implementation internals.",
+  "public_cli": {
+    "list_macros": "gve macro-list",
+    "show_schema": "gve macro-schema <macro-name>",
+    "execute_macro": "gve macro --in <request.json> --out <result.json> [--repo <path>]",
+    "rule": "Treat macro-list and macro-schema as the authoritative public discovery surface. Do not infer unsupported parameters, hidden workflow steps, or implementation behavior from source code when constructing a request."
+  },
+  "agent_workflow": {
+    "steps": [
+      {
+        "order": 1,
+        "action": "discover-macros",
+        "command": "gve macro-list",
+        "requirement": "Select only a macro identity returned by this command."
+      },
+      {
+        "order": 2,
+        "action": "discover-schema",
+        "command": "gve macro-schema <macro-name>",
+        "requirement": "Construct parameters only from the returned public schema. Unknown or unsupported fields must not be invented."
+      },
+      {
+        "order": 3,
+        "action": "construct-request",
+        "artifact": "~/Downloads/<operation>-request.json",
+        "requirement": "Use schema_version 1 and a closed header.repository expectation object containing only applicable identity, branch, and head guards."
+      },
+      {
+        "order": 4,
+        "action": "execute",
+        "command": "gve macro --in ~/Downloads/<operation>-request.json --out ~/Downloads/<operation>-result.json --repo .",
+        "working_directory": "target repository root"
+      },
+      {
+        "order": 5,
+        "action": "return-result",
+        "artifact": "~/Downloads/<operation>-result.json",
+        "requirement": "Return or upload the machine-readable result before authorizing or constructing the next mutating operation."
+      }
+    ]
+  },
+  "request_envelope": {
+    "schema_version": 1,
+    "shape": {
+      "schema_version": 1,
+      "header": {
+        "repository": {
+          "identity": "owner/name",
+          "branch": "branch-name",
+          "head": "40-character-lowercase-git-commit"
+        }
+      },
+      "macro": {
+        "name": "<macro-name>",
+        "parameters": {}
+      }
+    },
+    "repository_expectations": {
+      "identity": "optional exact owner/name guard",
+      "branch": "optional exact active local branch guard",
+      "head": "optional exact local HEAD guard"
+    },
+    "rule": "Repository expectation fields are guards only. They do not grant filesystem, Git remote, process, or GitHub authority."
+  },
+  "current_fs002_macros": {
+    "note": "This list is informational only. The agent must still run gve macro-list and gve macro-schema at operation time because the installed public introspection surface is authoritative.",
+    "known_at_handoff_creation": [
+      "discover",
+      "issue",
+      "pr",
+      "modify"
+    ]
+  },
+  "macro_operational_notes": {
+    "discover": [
+      "Read-only bounded repository discovery.",
+      "Use gve macro-schema discover to learn the maintained observation set."
+    ],
+    "issue": [
+      "Supports only schema-admitted read, create, and modify operations.",
+      "Requires authenticated GitHub CLI authority available to GVE."
+    ],
+    "pr": [
+      "Supports only schema-admitted read, create, and modify operations.",
+      "Requires authenticated GitHub CLI authority available to GVE."
+    ],
+    "modify": [
+      "Operates on the active local branch; FS-002 does not create or switch the local working branch.",
+      "The local working branch must therefore already exist and be active before invoking modify.",
+      "Publication uses the product-maintained origin remote and normal non-force push semantics.",
+      "Validation defaults to the repository-root scripts/validate entry point.",
+      "Use the live schema to determine the exact admitted change, dirty-state, validation, and remote-branch parameters."
+    ]
+  },
+  "result_handling": {
+    "authoritative_artifact": "~/Downloads/<operation>-result.json",
+    "success_rule": "Do not infer success from terminal output alone. Inspect the result JSON and require top-level status == \"success\".",
+    "failure_rule": "On failure, stop the workflow, preserve unrelated user work, inspect the returned error/task evidence, and do not proceed to the next mutation.",
+    "expected_top_level_fields": [
+      "schema_version",
+      "macro",
+      "status",
+      "stages",
+      "tasks"
+    ]
+  },
+  "safety_and_authority": [
+    "Do not force-push or rewrite history.",
+    "Do not bypass GVE macro execution with direct GitHub or Git mutation when the requested operation is available through the macro surface.",
+    "Do not invent macro parameters or task identities.",
+    "Do not treat repository context, remotes, paths, or credentials as authority by themselves.",
+    "Preserve unrelated user work and stop on expectation, validation, authority, or remote-race failures."
+  ],
+  "relationship_to_script_transfer": {
+    "script_transfer_handoff": "user/script-transfer-handoff.json",
+    "distinction": "script-transfer-handoff governs standalone web-to-local repository transfer scripts. This handoff governs direct use of the installed GVE macro CLI."
+  }
+}
