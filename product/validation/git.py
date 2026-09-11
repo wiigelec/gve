@@ -28,7 +28,7 @@ def call(name, params, auth):
 
 def validate_git_plugin() -> bool:
     expected = {
-        "git.repository", "git.branch", "git.head", "git.status", "git.diff",
+        "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
         "git.commit", "git.fetch", "git.remote-head", "git.push",
     }
@@ -65,6 +65,36 @@ def validate_git_plugin() -> bool:
         status = call("git.status", {}, auth)["result"]
         item = next(x for x in status["entries"] if x["path"] == " space.txt")
         assert item["status"] == "??"
+
+        scoped = call(
+            "git.status-scope",
+            {"allowed_paths": [" space.txt"], "include_untracked": True},
+            auth,
+        )["result"]
+        assert scoped["clean"] is False
+        assert scoped["allowed_paths"] == [" space.txt"]
+
+        try:
+            call(
+                "git.status-scope",
+                {"allowed_paths": ["a.txt"], "include_untracked": True},
+                auth,
+            )
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+        else:
+            raise AssertionError("out-of-scope dirty path was accepted")
+
+        try:
+            call(
+                "git.status-scope",
+                {"allowed_paths": [" space.txt", " space.txt"]},
+                auth,
+            )
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "git"
+        else:
+            raise AssertionError("duplicate scoped dirty path was accepted")
 
         diff = call("git.diff", {"paths": ["a.txt"]}, auth)["result"]["diff"]
         assert diff == ""

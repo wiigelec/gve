@@ -56,6 +56,7 @@ def validate_workflow() -> bool:
         "git.branch",
         "git.head",
         "git.status",
+        "git.status-scope",
         "git.diff",
         "git.diff-check",
         "git.branch-create",

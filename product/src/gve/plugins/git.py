@@ -233,6 +233,45 @@ def status_x(p, a):
     return {"observations": result, "result": result}
 
 
+def status_scope_v(p, a):
+    _fields(p, {"allowed_paths", "include_untracked"}, {"allowed_paths"})
+    allowed_paths = _paths(a, p["allowed_paths"])
+    if len(set(allowed_paths)) != len(allowed_paths):
+        raise GitError("allowed_paths must contain unique repository-relative paths")
+    include = p.get("include_untracked", True)
+    include = _b(include, "include_untracked")
+    return {"allowed_paths": allowed_paths, "include_untracked": include}
+
+
+def status_scope_x(p, a):
+    base = status_x(
+        {"expected_clean": None, "include_untracked": p["include_untracked"]},
+        a,
+    )
+    result = base["result"]
+    allowed = set(p["allowed_paths"])
+    outside = []
+    for entry in result["entries"]:
+        candidates = [entry["path"]]
+        if "original_path" in entry:
+            candidates.append(entry["original_path"])
+        for candidate in candidates:
+            if candidate not in allowed:
+                outside.append(candidate)
+    if outside:
+        raise GitPreconditionError(
+            "Git dirty path scope mismatch",
+            details={
+                "allowed_paths": p["allowed_paths"],
+                "outside_paths": sorted(set(outside)),
+                "entries": result["entries"],
+            },
+        )
+    scoped = dict(result)
+    scoped["allowed_paths"] = list(p["allowed_paths"])
+    return {"observations": scoped, "result": scoped}
+
+
 def diff_v(p, a):
     _fields(p, {"cached", "paths"}, set())
     cached = _b(p.get("cached", False), "cached")
@@ -390,6 +429,7 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.branch", branch_v, branch_x),
         TaskDefinition("git.head", head_v, head_x),
         TaskDefinition("git.status", status_v, status_x),
+        TaskDefinition("git.status-scope", status_scope_v, status_scope_x),
         TaskDefinition("git.diff", diff_v, diff_x),
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
