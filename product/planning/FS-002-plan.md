@@ -310,20 +310,77 @@ the new layer.
 
 ### modify
 
-Parameters should cover:
+The `modify` public parameter contract is one closed object with exactly these
+maintained fields:
 
 ```text
 changes
 commit_message
-remote (default origin)
 remote_branch (optional)
 validate (default true)
 allow_dirty (default false)
 allowed_dirty_paths (default empty)
 ```
 
-Each change contains a repository-relative path, desired content, and optional
-expected current digest where supported by the existing filesystem task.
+`remote` is not caller-selectable in FS-002. Publication authority is limited by
+Product Design to the product-maintained `origin` remote.
+
+`changes` is required and must be a non-empty array. Each element is one closed
+change object with exactly:
+
+```text
+operation
+path
+content
+expected_sha256
+```
+
+`operation` is required and is exactly `create` or `modify`.
+
+For `create`:
+- `path` is required and is a non-empty repository-relative path;
+- `content` is required and is a string;
+- `expected_sha256` is not admitted;
+- Build emits exactly one `filesystem.file-create` invocation.
+
+For `modify`:
+- `path` is required and is a non-empty repository-relative path;
+- `content` is required and is a string;
+- `expected_sha256` is required and is exactly one lowercase 64-character
+  SHA-256 digest;
+- Build emits exactly one `filesystem.file-modify` invocation.
+
+Change paths must be unique after the same repository-relative normalization used
+by the governed filesystem tasks. Duplicate paths fail closed. Caller order is
+preserved in the MUTATE stage.
+
+`commit_message` is required and is a non-empty string.
+
+`remote_branch` is optional. When omitted, the product-owned default is the active
+local branch observed during PRECHECK. When present it is a non-empty branch name
+validated by the existing governed Git task semantics. It selects a destination
+branch within already-authorized `origin`; it does not grant remote authority.
+
+`validate` is optional and defaults to `true`. When true, Build emits exactly one
+`execute.script` invocation for `scripts/validate`. When false, the VALIDATE stage
+contains no task and no other command is substituted.
+
+`allow_dirty` is optional and defaults to `false`.
+
+`allowed_dirty_paths` is optional and defaults to an empty array. It must be an
+array of unique non-empty repository-relative paths.
+
+When `allow_dirty` is false, PRECHECK requires an exactly clean worktree.
+
+When `allow_dirty` is true, every Git status entry path and, when present, every
+`original_path` from rename/copy status must be exactly one of
+`allowed_dirty_paths`; no prefix, glob, ancestor, descendant, or normalization-based
+broadening is allowed. Any dirty path outside the exact set fails closed. The
+allowed dirty set does not authorize mutation: every path changed by MUTATE must
+still appear explicitly in `changes`.
+
+The request cannot select another validation command, task identity, Git remote,
+push mode, force option, commit count, or additional workflow step.
 
 Product-owned stages:
 
