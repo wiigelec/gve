@@ -267,7 +267,6 @@ require exact equality with the commit created by the macro.
 
 **Classification: B**
 
-**State: Inactive**
 
 `issue` shall support only the product-defined issue read, create, and modify
 operations and shall realize those operations through existing governed GitHub

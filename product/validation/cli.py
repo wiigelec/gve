@@ -103,7 +103,7 @@ def validate_macro_cli() -> bool:
 
         cp = _run(["macro-list"])
         assert cp.returncode == 0, cp.stderr
-        assert json.loads(cp.stdout) == ["discover"]
+        assert json.loads(cp.stdout) == ["discover", "issue"]
 
         cp = _run(["macro-schema", "discover"])
         assert cp.returncode == 0, cp.stderr
@@ -111,6 +111,16 @@ def validate_macro_cli() -> bool:
         assert schema["type"] == "object"
         assert schema["additionalProperties"] is False
         assert set(schema["properties"]) == {"observations"}
+
+        cp = _run(["macro-schema", "issue"])
+        assert cp.returncode == 0, cp.stderr
+        issue_schema = json.loads(cp.stdout)
+        assert issue_schema["type"] == "object"
+        assert issue_schema["additionalProperties"] is False
+        assert issue_schema["required"] == ["operation"]
+        assert set(issue_schema["properties"]) == {
+            "operation", "number", "title", "body", "labels", "state"
+        }
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1
@@ -175,5 +185,29 @@ def validate_macro_cli() -> bool:
         cp = _run(["execute", "--repository", str(repo), str(payload)])
         assert cp.returncode == 0
         assert json.loads(cp.stdout)["workflow_id"] == "unchanged"
+
+        issue_request = base / "issue-request.json"
+        issue_result = base / "issue-result.json"
+        issue_request.write_text(
+            json.dumps({
+                "schema_version": 1,
+                "header": {"repository": {}},
+                "macro": {
+                    "name": "issue",
+                    "parameters": {"operation": "read", "number": 1},
+                },
+            }),
+            encoding="utf-8",
+        )
+        cp = _run([
+            "macro",
+            "--in", str(issue_request),
+            "--out", str(issue_result),
+            "--repo", str(repo),
+        ])
+        assert cp.returncode == 1
+        failed_issue = json.loads(issue_result.read_text(encoding="utf-8"))
+        assert failed_issue["status"] == "failure"
+        assert "supported repository origin identity" in failed_issue["error"]["message"]
 
     return True

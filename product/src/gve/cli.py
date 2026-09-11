@@ -173,7 +173,28 @@ def macro_command(args: argparse.Namespace) -> int:
         request = parse_macro_request(payload)
         repository = Path(args.repo).resolve() if args.repo else Path.cwd().resolve()
         context = _repository_context(repository)
-        authority = Authority.for_repository(repository)
+
+        if request.macro_name in {"issue", "pr"}:
+            if context.identity is None:
+                raise ValueError("GitHub macro requires a supported repository origin identity")
+            try:
+                auth_cp = subprocess.run(
+                    ["gh", "auth", "status"],
+                    text=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+            except FileNotFoundError as exc:
+                raise ValueError("GitHub macro requires the gh CLI") from exc
+            if auth_cp.returncode != 0:
+                raise ValueError("GitHub macro requires authenticated gh configuration")
+            authority = Authority(
+                repository=repository,
+                github_repository=context.identity,
+            )
+        else:
+            authority = Authority.for_repository(repository)
+
         result = MacroRunner(
             Engine(product_registry()),
             product_macro_registry(),

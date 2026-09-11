@@ -339,6 +339,12 @@
       "tasks": [
         "cli"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-028",
+      "tasks": [
+        "macro-issue"
+      ]
     }
   ]
 }

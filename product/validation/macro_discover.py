@@ -30,8 +30,8 @@ def _request(parameters=None, repository=None):
 
 def validate_macro_discover() -> bool:
     macros = product_macro_registry()
-    if macros.identities() != ("discover",):
-        raise AssertionError(f"unexpected public macro identities: {macros.identities()}")
+    if "discover" not in macros.identities():
+        raise AssertionError("discover is not registered")
 
     definition = macros.resolve("discover")
     if definition.stages != ("DISCOVER",):
