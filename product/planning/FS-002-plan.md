@@ -457,7 +457,76 @@ the existing governed GitHub plugin remains the only GitHub transport.
 Support the minimal read/create/modify operation set using existing governed
 GitHub pull-request tasks.
 
-Macro-specific Python chooses the task sequence for each operation.
+The `pr` public parameter contract is one closed object selected by the
+macro-specific `operation` field. `operation` is a product-defined pull-request
+operation selector, not a generic task or control-flow language.
+
+Read:
+
+```json
+{
+  "operation": "read",
+  "number": 123
+}
+```
+
+For `read`, the object contains exactly `operation` and `number`. `number` is a
+positive JSON integer. Build emits exactly one `github.pull-request-read`
+invocation.
+
+Create:
+
+```json
+{
+  "operation": "create",
+  "title": "Pull request title",
+  "body": "",
+  "base": "main",
+  "head": "fs002",
+  "draft": false
+}
+```
+
+For `create`, `operation`, `title`, `base`, and `head` are required. `title`,
+`base`, and `head` are non-empty strings. `body` is optional and defaults to the
+empty string. `draft` is optional and defaults to `false`; when present it is a
+JSON boolean. No other fields are admitted. Build emits exactly one
+`github.pull-request-create` invocation.
+
+Modify:
+
+```json
+{
+  "operation": "modify",
+  "number": 123,
+  "title": "Updated title",
+  "body": "",
+  "base": "main",
+  "state": "closed"
+}
+```
+
+For `modify`, `operation` and `number` are required. `number` is a positive JSON
+integer. At least one of `title`, `body`, `base`, or `state` must be present.
+When present, `title` and `base` are non-empty strings, `body` is a string that
+may be empty, and `state` is exactly `open` or `closed`. No other fields are
+admitted. Build emits exactly one `github.pull-request-modify` invocation.
+
+The public parameter validator rejects unknown operations, unknown fields,
+missing required fields, invalid values, and a `modify` request with no mutation
+field.
+
+`pr` exposes one public stage named `PR`. Its builder returns one `MacroPlan`
+containing exactly the governed pull-request task selected above. The generated
+invocation identity is deterministic and product-owned.
+
+The macro-specific Python selector chooses among the three fixed product
+operations. The caller cannot provide a GitHub repository identity, API route,
+HTTP method, governed task identity, additional task sequence, condition, loop,
+template, or continuation rule.
+
+Execution requires the GitHub authority policy defined under Repository context;
+the existing governed GitHub plugin remains the only GitHub transport.
 
 ## Introspection
 
