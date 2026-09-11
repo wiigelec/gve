@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: plan
 title: Product Macro Layer and CLI Plan
-design_revision: 5c285ef47193e8d52f402259e15edae659460f49
+design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
 ---
 
 # FS-002 — Plan
@@ -10,7 +10,7 @@ design_revision: 5c285ef47193e8d52f402259e15edae659460f49
 ## Design binding
 
 This Planning revision consumes Product Design at exact Git revision
-`5c285ef47193e8d52f402259e15edae659460f49`.
+`6b2d275f5798be36be42379b0ce4c415eef4880f`.
 
 FS-002 extends the accepted FS-001 implementation. The existing Engine, task
 registry, authority model, plugin implementations, workflow result semantics,
@@ -72,6 +72,10 @@ generic task interpreter.
 
 No executable macro definitions are loaded from JSON.
 
+A macro is added to the public static registry only in the same Build step that
+provides its complete executable implementation and public contract. Build does not
+register schema-only or placeholder macros.
+
 ## Macro definition model
 
 A macro definition should contain only stable product metadata plus an
@@ -88,6 +92,10 @@ MacroDefinition(
 `parameter_schema` is public introspection data.
 
 `build` is authoritative product behavior.
+
+The introspection contract and runtime validator must remain extensionally
+equivalent for accepted public parameter values, without requiring runtime schema
+interpretation.
 
 Runtime validation may be macro-specific Python code and should not grow into a
 general schema-language interpreter.
@@ -113,6 +121,9 @@ known stage boundaries.
 
 Stages never affect authority, dispatch, failure semantics, or result-reference
 resolution.
+
+When Engine fail-fast behavior creates later `not-executed` records, regrouping
+retains those records under their originally assigned stages.
 
 ## Request contract
 
@@ -148,6 +159,10 @@ repository's supported remote URL form and intersected with active GitHub
 authority.
 
 Authority establishment remains outside caller macro parameters.
+
+Repository-derived context does not itself grant authority. The macro CLI must
+construct active `Authority` through explicit product policy before execution;
+GitHub macros fail closed when matching GitHub repository authority is absent.
 
 ## Native result references
 
@@ -358,5 +373,5 @@ Before FS-002 Acceptance:
 4. confirm the branch contains no unrelated changes;
 5. perform Build Review against this Plan;
 6. perform Semantic Review against Product Design revision
-   `5c285ef47193e8d52f402259e15edae659460f49`;
+   `6b2d275f5798be36be42379b0ce4c415eef4880f`;
 7. only then consider integration into `main`.

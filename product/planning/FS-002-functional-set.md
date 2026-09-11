@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: functional-set
 title: Product Macro Layer and CLI
-design_revision: 5c285ef47193e8d52f402259e15edae659460f49
+design_revision: 6b2d275f5798be36be42379b0ce4c415eef4880f
 ---
 
 # FS-002 — Product Macro Layer and CLI
@@ -12,7 +12,7 @@ design_revision: 5c285ef47193e8d52f402259e15edae659460f49
 FS-002 Planning consumes Product Design exactly as accepted at Git revision:
 
 ```text
-5c285ef47193e8d52f402259e15edae659460f49
+6b2d275f5798be36be42379b0ce4c415eef4880f
 ```
 
 The selected Design scope is:
@@ -91,4 +91,4 @@ surface for all four initial macros, preserves FS-001 authority and task
 execution semantics, exposes the defined CLI/introspection commands, produces
 staged machine-readable macro results, passes canonical repository validation,
 and completes Semantic Review against Design revision
-`5c285ef47193e8d52f402259e15edae659460f49`.
+`6b2d275f5798be36be42379b0ce4c415eef4880f`.
