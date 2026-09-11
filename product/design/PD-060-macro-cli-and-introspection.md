@@ -124,10 +124,24 @@ Underlying task evidence preserves the FS-001 result meaning.
 
 ## Installation
 
-A repository-owned launcher may expose the `gve` command for local use.
+FS-002 requires a repository-supported installation mechanism that makes `gve`
+available as a normal shell command outside the source-tree working directory.
 
-Installation or launcher mechanics must not duplicate the macro runtime, alter
+A successful installation must expose the same maintained product runtime used by
+repository execution; installation must not duplicate the macro runtime, alter
 authority semantics, or create a separate implementation path.
+
+The installed command must support at least:
+
+```text
+gve macro --in REQUEST.json --out RESULT.json [--repo PATH]
+gve macro-list
+gve macro-schema NAME
+```
+
+Installation behavior must be deterministic enough for development use. Re-running
+the supported installation procedure must either be idempotent or fail with a clear
+actionable result rather than silently producing multiple conflicting launchers.
 
 ## Compatibility
 
