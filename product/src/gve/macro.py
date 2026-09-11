@@ -63,3 +63,42 @@ class MacroRegistry:
             return self._by_identity[identity]
         except KeyError as exc:
             raise KeyError(f"unknown macro identity: {identity}") from exc
+
+
+@dataclass(frozen=True)
+class MacroStage:
+    identity: str
+    label: str
+    tasks: tuple[Mapping[str, object], ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.identity, str) or not self.identity:
+            raise ValueError("macro stage identity must be a non-empty string")
+        if not isinstance(self.label, str) or not self.label:
+            raise ValueError("macro stage label must be a non-empty string")
+        task_values = tuple(self.tasks)
+        for task in task_values:
+            if not isinstance(task, Mapping):
+                raise TypeError("macro stage tasks must be mappings")
+        object.__setattr__(
+            self,
+            "tasks",
+            tuple(MappingProxyType(dict(task)) for task in task_values),
+        )
+
+
+@dataclass(frozen=True)
+class MacroPlan:
+    workflow_id: str
+    stages: tuple[MacroStage, ...]
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.workflow_id, str) or not self.workflow_id:
+            raise ValueError("macro workflow_id must be a non-empty string")
+        stage_values = tuple(self.stages)
+        if not stage_values:
+            raise ValueError("macro plan must contain at least one stage")
+        identities = [stage.identity for stage in stage_values]
+        if len(set(identities)) != len(identities):
+            raise ValueError("macro stage identities must be unique")
+        object.__setattr__(self, "stages", stage_values)
