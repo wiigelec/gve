@@ -345,6 +345,12 @@
       "tasks": [
         "macro-issue"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-029",
+      "tasks": [
+        "macro-pr"
+      ]
     }
   ]
 }

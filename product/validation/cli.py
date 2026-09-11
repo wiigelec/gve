@@ -103,7 +103,7 @@ def validate_macro_cli() -> bool:
 
         cp = _run(["macro-list"])
         assert cp.returncode == 0, cp.stderr
-        assert json.loads(cp.stdout) == ["discover", "issue"]
+        assert json.loads(cp.stdout) == ["discover", "issue", "pr"]
 
         cp = _run(["macro-schema", "discover"])
         assert cp.returncode == 0, cp.stderr
@@ -121,6 +121,14 @@ def validate_macro_cli() -> bool:
         assert set(issue_schema["properties"]) == {
             "operation", "number", "title", "body", "labels", "state"
         }
+
+        cp = _run(["macro-schema", "pr"])
+        assert cp.returncode == 0, cp.stderr
+        pr_schema = json.loads(cp.stdout)
+        assert pr_schema["type"] == "object"
+        assert pr_schema["additionalProperties"] is False
+        assert pr_schema["required"] == ["operation"]
+        assert set(pr_schema["properties"]) == {"operation", "number", "title", "body", "base", "head", "draft", "state"}
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1

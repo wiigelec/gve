@@ -3,8 +3,9 @@ from __future__ import annotations
 from .macro import MacroRegistry
 from .macros.discover import DISCOVER
 from .macros.issue import ISSUE
+from .macros.pr import PR
 
-_PRODUCT_MACRO_REGISTRY = MacroRegistry((DISCOVER, ISSUE))
+_PRODUCT_MACRO_REGISTRY = MacroRegistry((DISCOVER, ISSUE, PR))
 
 def product_macro_registry() -> MacroRegistry:
     """Return the immutable registry of complete public product macros."""

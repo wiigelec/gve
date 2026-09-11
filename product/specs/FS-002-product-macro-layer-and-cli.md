@@ -276,7 +276,6 @@ issue tasks rather than arbitrary GitHub API requests.
 
 **Classification: B**
 
-**State: Inactive**
 
 `pr` shall support only the product-defined pull-request read, create, and
 modify operations and shall realize those operations through existing governed
