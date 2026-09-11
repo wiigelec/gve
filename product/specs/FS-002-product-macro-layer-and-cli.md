@@ -41,7 +41,6 @@ workflow interface.
 
 **Classification: B**
 
-**State: Inactive**
 
 All governed task execution initiated by an FS-002 macro shall pass through the
 existing FS-001 Engine. FS-002 shall not introduce a second generic task
@@ -68,7 +67,6 @@ binding operators, or generic continuation rules.
 
 **Classification: B**
 
-**State: Inactive**
 
 The public macro registry shall be product-owned and static at runtime. A caller
 shall not install, replace, alias, or define macro identities.
@@ -88,7 +86,6 @@ completion the registered macro identities shall be exactly `discover`,
 
 **Classification: M**
 
-**State: Inactive**
 
 An unknown macro identity shall fail closed before macro execution.
 
@@ -96,7 +93,6 @@ An unknown macro identity shall fail closed before macro execution.
 
 **Classification: B**
 
-**State: Inactive**
 
 Each registered macro shall expose a closed public parameter contract and shall
 reject caller parameter shapes or values outside that contract.
@@ -115,7 +111,6 @@ accepted public parameter space.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro parameter defaults shall be deterministic product-owned behavior and shall
 not depend on caller-supplied executable interpretation.
@@ -142,7 +137,6 @@ authority, dispatch, fail-fast behavior, or result-reference semantics.
 
 **Classification: M**
 
-**State: Inactive**
 
 Regrouping Engine task records into macro phases shall preserve generated task
 order, task identity, execution status, `not-executed` records, and the
@@ -152,7 +146,6 @@ underlying FS-001 task evidence.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro execution shall preserve FS-001 fail-fast behavior. A macro shall not
 convert a governed task failure into successful macro execution merely because a
@@ -180,7 +173,6 @@ themselves constitute authority to operate on those resources.
 
 **Classification: M**
 
-**State: Inactive**
 
 The maintained macro request envelope shall use schema version `1`, shall contain
 only the fields established by FS-002, and shall reject unknown fields and
@@ -190,7 +182,6 @@ unsupported schema versions.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro request repository expectations shall act only as state guards and shall
 fail closed on applicable repository identity, branch, or local-HEAD mismatch.
@@ -200,7 +191,6 @@ They shall not grant execution authority.
 
 **Classification: B**
 
-**State: Inactive**
 
 `discover` shall perform only bounded product-supported repository discovery
 through governed observation tasks and shall produce no repository mutation.

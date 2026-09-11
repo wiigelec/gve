@@ -255,6 +255,66 @@
         "registry",
         "workflow"
       ]
+    },
+    {
+      "requirement": "FS-002-NR-003",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-006",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-008",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-009",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-011",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-014",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-015",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-018",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-019",
+      "tasks": [
+        "macro-discover"
+      ]
+    },
+    {
+      "requirement": "FS-002-NR-020",
+      "tasks": [
+        "macro-discover"
+      ]
     }
   ]
 }
