@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: normative-specification
 title: Product Macro Layer and CLI Specification
-design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
+design_revision: 445009b19661bd2e51fcb10a946f88a26ceebdca
 ---
 
 # FS-002 — Normative Specification
@@ -26,7 +26,7 @@ those requirements without changing their identities or normative text.
 
 
 FS-002 Planning shall identify exact consumed Product Design revision
-`bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
+`445009b19661bd2e51fcb10a946f88a26ceebdca`.
 
 ### FS-002-NR-002 — Macro Layer Purpose
 

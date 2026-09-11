@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: plan
 title: Product Macro Layer and CLI Plan
-design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
+design_revision: 445009b19661bd2e51fcb10a946f88a26ceebdca
 ---
 
 # FS-002 — Plan
@@ -10,7 +10,7 @@ design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
 ## Design binding
 
 This Planning revision consumes Product Design at exact Git revision
-`bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
+`445009b19661bd2e51fcb10a946f88a26ceebdca`.
 
 FS-002 extends the accepted FS-001 implementation. The existing Engine, task
 registry, authority model, plugin implementations, workflow result semantics,
@@ -706,5 +706,5 @@ Before FS-002 Acceptance:
 6. confirm the branch contains no unrelated changes;
 7. perform Build Review against this Plan;
 8. perform Semantic Review against Product Design revision
-   `bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`;
+   `445009b19661bd2e51fcb10a946f88a26ceebdca`;
 9. only then consider integration into `main`.

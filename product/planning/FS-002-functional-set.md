@@ -2,7 +2,7 @@
 functional_set: FS-002
 artifact: functional-set
 title: Product Macro Layer and CLI
-design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
+design_revision: 445009b19661bd2e51fcb10a946f88a26ceebdca
 ---
 
 # FS-002 — Product Macro Layer and CLI
@@ -12,7 +12,7 @@ design_revision: bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
 FS-002 Planning consumes Product Design exactly as accepted at Git revision:
 
 ```text
-bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b
+445009b19661bd2e51fcb10a946f88a26ceebdca
 ```
 
 The selected Design scope is:
@@ -96,4 +96,4 @@ makes `gve` usable as a normal shell command outside the source-tree working
 directory, verifies installed macro execution and introspection, produces staged
 machine-readable macro results, passes canonical repository validation, and
 completes Semantic Review against Design revision
-`bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b`.
+`445009b19661bd2e51fcb10a946f88a26ceebdca`.

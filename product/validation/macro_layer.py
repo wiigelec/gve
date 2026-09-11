@@ -17,7 +17,7 @@ from gve.macro_runner import MacroRunner, RepositoryContext
 from gve.product_macro_registry import product_macro_registry
 from gve.product_registry import product_registry
 
-DESIGN_REVISION = "bb72f1d02b67b6722af97ef9cc19e4b2a97ad65b"
+DESIGN_REVISION = "445009b19661bd2e51fcb10a946f88a26ceebdca"
 
 
 def _request(name, parameters):
