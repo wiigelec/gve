@@ -132,6 +132,11 @@ def validate_fs003_integration() -> bool:
         transcript = cp.stdout
         for label in ("PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"):
             assert label in transcript
+        for index, label in enumerate(
+            ("BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"),
+            start=2,
+        ):
+            assert f"\n[{index:02d}/07] {label} governed phase" in transcript
         assert "GVE modify: START" in transcript
         assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript

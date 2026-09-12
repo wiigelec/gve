@@ -40,6 +40,8 @@ class ConsolePresenter:
                     self._p(f"{label}: {value}")
             self._p("")
         elif kind == "phase-start":
+            if self.phase_index:
+                self._p("")
             self.phase_index += 1
             label = event.get("label")
             self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} governed phase")
