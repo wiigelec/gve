@@ -72,6 +72,14 @@ of execution truth.
 The authoritative execution result remains the JSON result written by the macro
 command.
 
+The macro CLI shall attempt to write the authoritative result JSON for both
+successful and failed governed execution whenever the requested result
+destination remains writable.
+
+A governed execution failure and an output-artifact write failure are distinct.
+Failure to write the result artifact must not erase or reinterpret the governed
+execution result, and the CLI shall report the output failure explicitly.
+
 ## Handoff-style execution transcript
 
 The maintained terminal presentation shall support a verbose execution

@@ -79,6 +79,42 @@ local branch already exists, creation fails closed rather than silently becoming
 Use of an already-existing branch is separate caller intent and must not be
 inferred from a failed creation request.
 
+## Effective local and publication branches
+
+`modify` distinguishes the effective local branch from the effective publication
+branch.
+
+The effective local branch is:
+
+```text
+the newly created branch
+  when branch creation was explicitly requested and succeeded
+
+otherwise
+  the prechecked active local branch
+```
+
+The effective publication branch defaults to the effective local branch.
+
+The caller may explicitly select a different publication branch when that
+selection is admitted by the public `modify` contract. Such a selection narrows
+the destination within the already-authorized `origin` remote and does not widen
+Git authority.
+
+Therefore cross-name publication is permitted when explicitly requested:
+
+```text
+effective local branch      dev/feature-x
+effective publication branch release/feature-x
+```
+
+When no publication-branch override is supplied, GVE shall publish the effective
+local branch to the same branch name on `origin`.
+
+All remote-state prechecks, publication race guards, push behavior, verification,
+terminal summaries, and macro-level result evidence shall use the effective
+publication branch.
+
 ## Modify phases
 
 The product-owned `modify` lifecycle is conceptually:
