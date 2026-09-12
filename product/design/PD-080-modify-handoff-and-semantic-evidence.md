@@ -104,7 +104,9 @@ Before mutation, `modify` shall establish or verify applicable evidence for:
 - exact caller-supplied expected HEAD;
 - acceptable worktree state;
 - acceptable existing staging state;
-- exact selected remote head used as the publication race guard.
+- exact selected remote publication state used as the publication race guard;
+  this is an exact remote commit when the selected remote branch exists, or
+  explicit branch absence when publication will create a new remote branch.
 
 Repository expectations are state guards, not authority grants.
 
@@ -147,10 +149,20 @@ Before commit, `modify` shall:
 
 ### PUBLISH
 
+Publication shall use an exact previously observed remote-state guard.
+
+For publication to an existing remote branch, the guard is the exact observed
+remote commit identity.
+
+For publication that will create a new remote branch, the guard is explicit
+remote-branch absence. Immediately before push, the branch must still be absent.
+If another actor creates the selected remote branch after PRECHECK, publication
+fails closed rather than treating the new remote state as an acceptable target.
+
 Publication shall:
 
-- re-check the selected remote branch state against the exact previously
-  observed publication guard;
+- re-check the selected remote branch state against the applicable exact
+  previously observed publication guard;
 - use normal non-force push semantics;
 - never silently rewrite history.
 
