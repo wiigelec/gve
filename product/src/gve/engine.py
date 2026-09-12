@@ -6,6 +6,7 @@ from typing import Any
 
 from .authority import Authority
 from .errors import GVEError, PayloadError, ResultReferenceError
+from .events import bind_observer, emit_to
 from .registry import Registry
 
 _INVOCATION_ID = re.compile(r"^[A-Za-z][A-Za-z0-9_-]{0,63}$")
@@ -38,7 +39,7 @@ class Engine:
     def __init__(self, registry: Registry) -> None:
         self.registry = registry
 
-    def execute(self, payload: Any, authority: Authority) -> dict[str, Any]:
+    def execute(self, payload: Any, authority: Authority, observer=None) -> dict[str, Any]:
         try:
             workflow_id, invocations = self._validate_envelope(payload)
         except PayloadError as exc:
@@ -58,16 +59,18 @@ class Engine:
             task_identity = invocation["task"]
             record = _empty_task_record(invocation_id, task_identity, "failure")
 
+            emit_to(observer, "task-start", id=invocation_id, task=task_identity)
             try:
-                definition = self.registry.resolve(task_identity)
-                resolved = self._resolve_value(
-                    invocation["parameters"],
-                    current_index=index,
-                    invocations=invocations,
-                    records_by_id=records_by_id,
-                )
-                validated = definition.validate(resolved, authority)
-                outcome = definition.execute(validated, authority)
+                with bind_observer(observer):
+                    definition = self.registry.resolve(task_identity)
+                    resolved = self._resolve_value(
+                        invocation["parameters"],
+                        current_index=index,
+                        invocations=invocations,
+                        records_by_id=records_by_id,
+                    )
+                    validated = definition.validate(resolved, authority)
+                    outcome = definition.execute(validated, authority)
                 if not isinstance(outcome, dict):
                     raise GVEError("task implementation returned a non-object outcome")
                 unknown = set(outcome) - {"observations", "effects", "result"}
@@ -85,6 +88,7 @@ class Engine:
             except GVEError as exc:
                 record["error"] = _error(exc)
 
+            emit_to(observer, "task-success" if record["status"] == "success" else "task-failure", id=invocation_id, task=task_identity, record=deepcopy(record))
             records.append(record)
             records_by_id[invocation_id] = record
 

@@ -7,6 +7,7 @@ from typing import Mapping
 from .authority import Authority
 from .engine import Engine
 from .errors import PayloadError
+from .events import emit_to
 from .macro import MacroPlan, MacroRegistry
 from .macro_request import MacroRequest
 
@@ -125,6 +126,7 @@ class MacroRunner:
         request: MacroRequest,
         authority: Authority,
         context: RepositoryContext,
+        observer=None,
     ) -> dict:
         if authority.repository.resolve() != context.root:
             raise PayloadError(
@@ -149,6 +151,22 @@ class MacroRunner:
         _validate_plan(definition.stages, plan)
         tasks = _flatten(plan)
 
+        phase_by_task = {}
+        for stage in plan.stages:
+            for invocation in stage.tasks:
+                phase_by_task[invocation["id"]] = stage.label
+        emit_to(observer, "macro-start", macro=request.macro_name, phase_count=len(plan.stages))
+        current_phase = None
+        def engine_observer(event):
+            nonlocal current_phase
+            if event.get("type") == "task-start":
+                phase = phase_by_task.get(event.get("id"))
+                if phase is not None and phase != current_phase:
+                    current_phase = phase
+                    emit_to(observer, "phase-start", label=phase)
+            if observer is not None:
+                observer(event)
+
         engine_result = self.engine.execute(
             {
                 "schema_version": 1,
@@ -156,6 +174,7 @@ class MacroRunner:
                 "tasks": tasks,
             },
             authority,
+            observer=engine_observer,
         )
         if not isinstance(engine_result, dict):
             raise PayloadError("Engine returned non-object result")

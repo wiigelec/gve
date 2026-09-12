@@ -14,6 +14,7 @@ from .errors import GVEError
 from .macro_request import parse_macro_request
 from .macro_runner import MacroRunner, RepositoryContext
 from .plugins.execute import HARD_LIMITS
+from .presenter import ConsolePresenter
 from .product_macro_registry import product_macro_registry
 from .product_registry import product_registry
 
@@ -135,10 +136,11 @@ def macro_command(args: argparse.Namespace) -> int:
         else:
             authority = Authority.for_repository(repository)
 
+        presenter = ConsolePresenter()
         result = MacroRunner(
             Engine(product_registry()),
             product_macro_registry(),
-        ).execute(request, authority, context)
+        ).execute(request, authority, context, observer=presenter)
     except GVEError as exc:
         result = _macro_failure(exc.message, code=exc.code, details=exc.details)
     except (OSError, json.JSONDecodeError, ValueError) as exc:
@@ -147,9 +149,14 @@ def macro_command(args: argparse.Namespace) -> int:
     try:
         output_path.write_text(json.dumps(result, sort_keys=True) + "\n", encoding="utf-8")
     except OSError as exc:
-        print(json.dumps(_macro_failure(str(exc)), sort_keys=True))
+        if "presenter" in locals():
+            presenter.output_failure(exc, output_path, result)
+        else:
+            print(json.dumps(_macro_failure(str(exc)), sort_keys=True))
         return 2
 
+    if "presenter" in locals():
+        presenter.finish(result, output_path)
     return 0 if result["status"] == "success" else 1
 
 

@@ -15,6 +15,7 @@ from typing import Any
 
 from ..authority import Authority
 from ..errors import GVEError
+from ..events import emit_current
 from ..registry import TaskDefinition
 
 HARD_LIMITS = {
@@ -176,6 +177,10 @@ def _result(parameters: dict[str, Any], *, exit_code: int | None, stdout: str,
 
 
 def _finish(parameters: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    if result["stdout"]:
+        emit_current("command-output", stream="stdout", text=result["stdout"])
+    if result["stderr"]:
+        emit_current("command-output", stream="stderr", text=result["stderr"])
     if result["timed_out"] or result["process_limit"] is not None:
         if not result["termination"]["completed"]:
             raise ExecuteProcessError(
@@ -348,6 +353,7 @@ def _execute_linux(parameters: dict[str, Any]) -> dict[str, Any]:
 
     with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
         try:
+            emit_current("command-start", argv=[parameters["script_path"], *parameters["args"]], cwd=parameters["working_path"])
             process = subprocess.Popen(
                 [parameters["script_path"], *parameters["args"]],
                 cwd=parameters["working_path"],

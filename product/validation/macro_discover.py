@@ -111,7 +111,7 @@ def validate_macro_discover() -> bool:
         def __init__(self, mode):
             self.mode = mode
 
-        def execute(self, payload, authority):
+        def execute(self, payload, authority, observer=None):
             task_records = [
                 {
                     "id": task["id"],

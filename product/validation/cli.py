@@ -123,6 +123,11 @@ def validate_macro_cli() -> bool:
         assert result["status"] == "success"
         assert [task["task"] for task in result["tasks"]] == ["git.head", "git.status"]
         assert [stage["label"] for stage in result["stages"]] == ["DISCOVER"]
+        assert "FS0 Script Transfer: START" in cp.stdout
+        assert "[01/01] DISCOVER DISCOVER" in cp.stdout
+        assert "$ git -C " in cp.stdout
+        assert "FS0 Script Transfer: PASS" in cp.stdout
+        assert f"Result JSON: {result_path}" in cp.stdout
 
         bad_request = base / "bad-request.json"
         bad_result = base / "bad-result.json"
@@ -176,6 +181,10 @@ def validate_macro_cli() -> bool:
         assert cp.returncode == 1
         failed_modify = json.loads(modify_result.read_text(encoding="utf-8"))
         assert failed_modify["status"] == "failure"
+        assert "FS0 Script Transfer: START" in cp.stdout
+        assert "FS0 Script Transfer: FAILED" in cp.stdout
+        assert "Failed Task:" in cp.stdout
+        assert "Reason:" in cp.stdout
         failed_task = next(
             task for task in failed_modify["tasks"] if task["status"] == "failure"
         )

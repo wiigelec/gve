@@ -9,6 +9,7 @@ from typing import Any
 
 from ..authority import Authority
 from ..errors import GVEError
+from ..events import emit_current
 from ..registry import TaskDefinition
 
 OID_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -55,10 +56,13 @@ def _repo(a: Authority) -> Path:
 
 def _run(a: Authority, args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
     root = _repo(a)
-    cp = subprocess.run(
-        ["git", "-C", str(root), *args],
-        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    )
+    argv = ["git", "-C", str(root), *args]
+    emit_current("command-start", argv=argv, cwd=str(root))
+    cp = subprocess.run(argv, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if cp.stdout:
+        emit_current("command-output", stream="stdout", text=cp.stdout)
+    if cp.stderr:
+        emit_current("command-output", stream="stderr", text=cp.stderr)
     if check and cp.returncode != 0:
         raise GitError(
             "Git operation failed",
