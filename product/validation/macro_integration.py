@@ -58,7 +58,7 @@ def _write_request(path, parameters):
     )
 
 
-def validate_fs003_integration() -> bool:
+def validate_macro_integration() -> bool:
     with tempfile.TemporaryDirectory() as td:
         base = Path(td)
         repo = base / "repo"
@@ -141,8 +141,8 @@ def validate_fs003_integration() -> bool:
         assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript
         assert "OUT | ?? generated.txt" in transcript
-        assert "\n\nTASK modify-branch git.branch" in transcript
-        assert "\n\nTASK modify-head git.head" in transcript
+        assert "PASS modify-repository\n#-------------------------------------------------------------------#\nTASK modify-branch git.branch" in transcript
+        assert "PASS modify-branch\n#-------------------------------------------------------------------#\nTASK modify-head git.head" in transcript
         assert "Expected HEAD: " + baseline in transcript
         assert "Branch: dev/live" in transcript
         assert "Commit: " + projected["commit"] in transcript
@@ -396,5 +396,6 @@ def validate_fs003_integration() -> bool:
         rendered = stream.getvalue()
         assert "OUT | ?? one.txt\nOUT | A  two.txt\n" in rendered
         assert "one.txt??" not in rendered
+        assert "PASS status\n#-------------------------------------------------------------------#\n" in rendered
 
     return True

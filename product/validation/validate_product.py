@@ -24,7 +24,7 @@ from macro_modify import validate_macro_modify
 from macro_layer import validate_macro_layer
 from macro_contracts import validate_macro_contracts
 from installation import validate_installation
-from fs003_integration import validate_fs003_integration
+from macro_integration import validate_macro_integration
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -45,7 +45,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "macro-layer": validate_macro_layer,
     "macro-contracts": validate_macro_contracts,
     "installation": validate_installation,
-    "fs003-integration": validate_fs003_integration,
+    "macro-integration": validate_macro_integration,
 }
 
 

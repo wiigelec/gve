@@ -11,7 +11,6 @@ class ConsolePresenter:
         self.stream = stream or sys.stdout
         self.phase_index = 0
         self.phase_total = 0
-        self.task_index = 0
         self.macro = None
         self.context = {}
 
@@ -44,13 +43,9 @@ class ConsolePresenter:
             if self.phase_index:
                 self._p("")
             self.phase_index += 1
-            self.task_index = 0
             label = event.get("label")
             self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} governed phase")
         elif kind == "task-start":
-            if self.task_index:
-                self._p("")
-            self.task_index += 1
             self._p(f"TASK {event.get('id')} {event.get('task')}")
         elif kind == "command-start":
             argv = event.get("argv")
@@ -66,6 +61,7 @@ class ConsolePresenter:
                         self._p(f"{prefix} | {record}")
         elif kind == "task-success":
             self._p(f"PASS {event.get('id')}")
+            self._p("#-------------------------------------------------------------------#")
         elif kind == "task-failure":
             msg = ""
             record = event.get("record")
@@ -74,6 +70,7 @@ class ConsolePresenter:
                 if isinstance(error, Mapping) and isinstance(error.get("message"), str):
                     msg = ": " + error["message"]
             self._p(f"FAIL {event.get('id')}{msg}")
+            self._p("#-------------------------------------------------------------------#")
 
     def output_failure(self, exc: OSError, output_path: Path, result: Mapping[str, object]) -> None:
         self._p(f"FAIL result-json: {exc}")
