@@ -496,7 +496,20 @@ def project_modify_result(parameters, plan, engine_result, context):
 
     diff_result = _successful_result(engine_result, "modify-diff")
     diff = diff_result.get("diff") if diff_result is not None else None
-    files_changed = list(p["change_paths"]) if diff_result is not None else None
+
+    staged_result = _successful_result(engine_result, "modify-staged-scope")
+    files_changed = None
+    if staged_result is not None:
+        entries = staged_result.get("entries")
+        if isinstance(entries, list):
+            observed_paths = []
+            for entry in entries:
+                if not isinstance(entry, Mapping):
+                    continue
+                path = entry.get("path")
+                if isinstance(path, str) and path not in observed_paths:
+                    observed_paths.append(path)
+            files_changed = observed_paths
 
     commit_result = _successful_result(engine_result, "modify-commit")
     commit = commit_result.get("commit") if commit_result is not None else None

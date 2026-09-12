@@ -7,7 +7,7 @@ from typing import Mapping
 from .authority import Authority
 from .engine import Engine
 from .errors import PayloadError
-from .events import emit_to
+from .events import emit_event, emit_to
 from .macro import MacroPlan, MacroRegistry
 from .macro_request import MacroRequest
 
@@ -164,8 +164,7 @@ class MacroRunner:
                 if phase is not None and phase != current_phase:
                     current_phase = phase
                     emit_to(observer, "phase-start", label=phase)
-            if observer is not None:
-                observer(event)
+            emit_event(observer, event)
 
         engine_result = self.engine.execute(
             {
