@@ -72,7 +72,24 @@ class ConsolePresenter:
             if isinstance(tasks, list):
                 failing = next((t for t in tasks if isinstance(t, Mapping) and t.get("status") == "failure"), None)
                 if isinstance(failing, Mapping):
-                    self._p(f"Failed Task: {failing.get('id')}")
+                    failing_id = failing.get("id")
+                    stages = result.get("stages")
+                    if isinstance(stages, list):
+                        for stage in stages:
+                            if not isinstance(stage, Mapping):
+                                continue
+                            stage_tasks = stage.get("tasks")
+                            if not isinstance(stage_tasks, list):
+                                continue
+                            if any(
+                                isinstance(task, Mapping)
+                                and task.get("id") == failing_id
+                                and task.get("status") == "failure"
+                                for task in stage_tasks
+                            ):
+                                self._p(f"Failed Phase: {stage.get('label')}")
+                                break
+                    self._p(f"Failed Task: {failing_id}")
                     error = failing.get("error")
                     if isinstance(error, Mapping): self._p(f"Reason: {error.get('message')}")
                 successful = [t.get("id") for t in tasks if isinstance(t, Mapping) and t.get("status") == "success"]

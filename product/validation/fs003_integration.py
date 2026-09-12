@@ -163,6 +163,7 @@ def validate_fs003_integration() -> bool:
         assert not (repo / "must-not-exist.txt").exists()
         failed = next(t for t in mismatch["tasks"] if t["status"] == "failure")
         assert failed["id"] == "modify-head"
+        assert "Failed Phase: PRECHECK" in cp.stdout
         assert "Failed Task: modify-head" in cp.stdout
         assert "Reason: HEAD expectation mismatch" in cp.stdout
         assert "Prior Success:" in cp.stdout
@@ -192,6 +193,79 @@ def validate_fs003_integration() -> bool:
         assert not (repo / "existing-fail.txt").exists()
         failed = next(t for t in existing["tasks"] if t["status"] == "failure")
         assert failed["id"] == "modify-branch-create"
+
+        _sh(
+            [
+                "git", "--git-dir", str(remote), "update-ref",
+                "refs/heads/race/live", baseline,
+            ],
+            base,
+        )
+        existing_race_request = base / "existing-race-request.json"
+        existing_race_result = base / "existing-race-result.json"
+        before_existing_race = _oid(repo)
+        _write_request(
+            existing_race_request,
+            {
+                "changes": [
+                    {
+                        "operation": "create",
+                        "path": "existing-race.txt",
+                        "content": "existing race\n",
+                    }
+                ],
+                "commit_message": "existing remote race candidate",
+                "expected_head": before_existing_race,
+                "remote_branch": "race/live",
+                "validate": True,
+            },
+        )
+        cp = _run_macro(
+            repo,
+            existing_race_request,
+            existing_race_result,
+            env={
+                "GVE_TEST_REMOTE_RACE": "1",
+                "GVE_TEST_RACE_OID": projected["commit"],
+            },
+        )
+        assert cp.returncode == 1
+        existing_raced = json.loads(
+            existing_race_result.read_text(encoding="utf-8")
+        )
+        assert existing_raced["status"] == "failure"
+        existing_race_projected = existing_raced["result"]
+        assert existing_race_projected["diff"] is not None
+        assert (
+            "diff --git a/existing-race.txt b/existing-race.txt"
+            in existing_race_projected["diff"]
+        )
+        assert existing_race_projected["commit"] is not None
+        assert existing_race_projected["commit_count"] == 1
+        assert existing_race_projected["remote_head"] is None
+        failed = next(
+            task for task in existing_raced["tasks"] if task["status"] == "failure"
+        )
+        assert failed["id"] == "modify-push"
+        assert "push remote race guard mismatch" in failed["error"]["message"]
+        assert "Failed Phase: PUBLISH" in cp.stdout
+        assert "Failed Task: modify-push" in cp.stdout
+        assert "Not Executed: modify-verify" in cp.stdout
+        observed_existing_remote = _sh(
+            [
+                "git", "--git-dir", str(remote), "rev-parse",
+                "refs/heads/race/live",
+            ],
+            base,
+        ).stdout.strip()
+        assert observed_existing_remote == projected["commit"]
+        _sh(
+            [
+                "git", "--git-dir", str(remote), "update-ref",
+                "-d", "refs/heads/race/live",
+            ],
+            base,
+        )
 
         race_request = base / "race-request.json"
         race_result = base / "race-result.json"
@@ -229,6 +303,7 @@ def validate_fs003_integration() -> bool:
         failed = next(t for t in raced["tasks"] if t["status"] == "failure")
         assert failed["id"] == "modify-push"
         assert "push remote race guard mismatch" in failed["error"]["message"]
+        assert "Failed Phase: PUBLISH" in cp.stdout
         assert "Failed Task: modify-push" in cp.stdout
         assert "Not Executed: modify-verify" in cp.stdout
         assert "diff --git a/race.txt b/race.txt" not in cp.stdout
