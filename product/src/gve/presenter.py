@@ -131,8 +131,6 @@ class ConsolePresenter:
                 for value in values:
                     if isinstance(value, str):
                         self._p(f"  {value}")
-        self._p("")
-
     def finish(self, result: Mapping[str, object], output_path: Path) -> None:
         failed = result.get("status") != "success"
         if failed:
@@ -168,6 +166,7 @@ class ConsolePresenter:
         if result.get("macro") == "discover":
             self._discover_summary(result)
 
+        self._p("")
         self._p("===== FINAL =====")
         projected = result.get("result")
         if isinstance(projected, Mapping):

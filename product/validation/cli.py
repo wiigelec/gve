@@ -133,7 +133,7 @@ def validate_macro_cli() -> bool:
         assert "===== REPO DISCOVERY =====" in cp.stdout
         assert "HEAD: " in cp.stdout
         assert "Worktree: clean" in cp.stdout
-        assert "===== FINAL =====" in cp.stdout
+        assert "\n===== FINAL =====" in cp.stdout
         assert "Observed HEAD: " in cp.stdout
         assert "Status: clean" in cp.stdout
         assert "GVE discover: PASS" in cp.stdout
@@ -193,6 +193,7 @@ def validate_macro_cli() -> bool:
         assert failed_modify["status"] == "failure"
         assert "GVE modify: START" in cp.stdout
         assert "GVE modify: FAILED" in cp.stdout
+        assert "\n===== FINAL =====" in cp.stdout
         assert "Failed Task:" in cp.stdout
         assert "Reason:" in cp.stdout
         failed_task = next(
