@@ -132,8 +132,8 @@ def validate_fs003_integration() -> bool:
         transcript = cp.stdout
         for label in ("PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"):
             assert label in transcript
-        assert "FS0 Script Transfer: START" in transcript
-        assert "FS0 Script Transfer: PASS" in transcript
+        assert "GVE modify: START" in transcript
+        assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript
         assert "OUT | ?? generated.txt" in transcript
         assert "Expected HEAD: " + baseline in transcript
@@ -168,7 +168,7 @@ def validate_fs003_integration() -> bool:
         assert "Reason: HEAD expectation mismatch" in cp.stdout
         assert "Prior Success:" in cp.stdout
         assert "Not Executed:" in cp.stdout
-        assert "FS0 Script Transfer: FAILED" in cp.stdout
+        assert "GVE modify: FAILED" in cp.stdout
 
         existing_request = base / "existing-request.json"
         existing_result = base / "existing-result.json"
@@ -309,14 +309,52 @@ def validate_fs003_integration() -> bool:
         assert "diff --git a/race.txt b/race.txt" not in cp.stdout
 
         discover_request = base / "discover-request.json"
+        discover_result = base / "discover-result.json"
+        discover_head = _oid(repo)
+        discover_branch = _sh(
+            ["git", "symbolic-ref", "--quiet", "--short", "HEAD"], repo
+        ).stdout.strip()
         discover_request.write_text(
             json.dumps({
                 "schema_version": 1,
-                "header": {"repository": {}},
-                "macro": {"name": "discover", "parameters": {"observations": ["head"]}},
+                "header": {
+                    "repository": {
+                        "branch": discover_branch,
+                        "head": discover_head,
+                    }
+                },
+                "macro": {
+                    "name": "discover",
+                    "parameters": {
+                        "observations": [
+                            "repository", "branch", "head", "status", "root_entries"
+                        ]
+                    },
+                },
             }),
             encoding="utf-8",
         )
+        cp = _run_macro(repo, discover_request, discover_result)
+        assert cp.returncode == 0
+        discovered = json.loads(discover_result.read_text(encoding="utf-8"))
+        assert discovered["status"] == "success"
+        assert "GVE discover: START" in cp.stdout
+        assert "===== CONTEXT =====" in cp.stdout
+        assert "Repository: " + str(repo.resolve()) in cp.stdout
+        assert "Branch: " + discover_branch in cp.stdout
+        assert "Expected HEAD: " + discover_head in cp.stdout
+        assert "[01/01] DISCOVER governed phase" in cp.stdout
+        assert "===== REPO DISCOVERY =====" in cp.stdout
+        assert "Repository Root: " + str(repo.resolve()) in cp.stdout
+        assert "HEAD: " + discover_head in cp.stdout
+        assert "Worktree: clean" in cp.stdout
+        assert "Root Entries:" in cp.stdout
+        assert "===== FINAL =====" in cp.stdout
+        assert "Observed HEAD: " + discover_head in cp.stdout
+        assert "Status: clean" in cp.stdout
+        assert "Result JSON: " + str(discover_result) in cp.stdout
+        assert "GVE discover: PASS" in cp.stdout
+
         bad_destination = base / "result-directory"
         bad_destination.mkdir()
         cp = _sh(
@@ -332,6 +370,6 @@ def validate_fs003_integration() -> bool:
         assert cp.returncode == 2
         assert "FAIL result-json:" in cp.stdout
         assert "Governed Result: success" in cp.stdout
-        assert "FS0 Script Transfer: FAILED" in cp.stdout
+        assert "GVE discover: FAILED" in cp.stdout
 
     return True

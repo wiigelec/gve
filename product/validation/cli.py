@@ -123,10 +123,20 @@ def validate_macro_cli() -> bool:
         assert result["status"] == "success"
         assert [task["task"] for task in result["tasks"]] == ["git.head", "git.status"]
         assert [stage["label"] for stage in result["stages"]] == ["DISCOVER"]
-        assert "FS0 Script Transfer: START" in cp.stdout
+        assert "GVE discover: START" in cp.stdout
+        assert "===== CONTEXT =====" in cp.stdout
+        assert "Operation: discover" in cp.stdout
+        assert "Repository: " + str(repo.resolve()) in cp.stdout
+        assert "Branch: main" in cp.stdout
         assert "[01/01] DISCOVER governed phase" in cp.stdout
         assert "$ git -C " in cp.stdout
-        assert "FS0 Script Transfer: PASS" in cp.stdout
+        assert "===== REPO DISCOVERY =====" in cp.stdout
+        assert "HEAD: " in cp.stdout
+        assert "Worktree: clean" in cp.stdout
+        assert "===== FINAL =====" in cp.stdout
+        assert "Observed HEAD: " in cp.stdout
+        assert "Status: clean" in cp.stdout
+        assert "GVE discover: PASS" in cp.stdout
         assert f"Result JSON: {result_path}" in cp.stdout
 
         bad_request = base / "bad-request.json"
@@ -181,8 +191,8 @@ def validate_macro_cli() -> bool:
         assert cp.returncode == 1
         failed_modify = json.loads(modify_result.read_text(encoding="utf-8"))
         assert failed_modify["status"] == "failure"
-        assert "FS0 Script Transfer: START" in cp.stdout
-        assert "FS0 Script Transfer: FAILED" in cp.stdout
+        assert "GVE modify: START" in cp.stdout
+        assert "GVE modify: FAILED" in cp.stdout
         assert "Failed Task:" in cp.stdout
         assert "Reason:" in cp.stdout
         failed_task = next(

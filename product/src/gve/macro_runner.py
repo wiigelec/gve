@@ -155,7 +155,19 @@ class MacroRunner:
         for stage in plan.stages:
             for invocation in stage.tasks:
                 phase_by_task[invocation["id"]] = stage.label
-        emit_to(observer, "macro-start", macro=request.macro_name, phase_count=len(plan.stages))
+        emit_to(
+            observer,
+            "macro-start",
+            macro=request.macro_name,
+            phase_count=len(plan.stages),
+            repository_root=str(context.root),
+            repository_identity=context.identity,
+            repository_branch=context.branch,
+            repository_head=context.head,
+            expected_identity=request.repository.identity,
+            expected_branch=request.repository.branch,
+            expected_head=request.repository.head,
+        )
         current_phase = None
         def engine_observer(event):
             nonlocal current_phase
