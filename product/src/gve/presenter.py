@@ -104,6 +104,7 @@ class ConsolePresenter:
         status = self._task_result(result, "discover-status")
         entries = self._task_result(result, "discover-root-entries")
 
+        self._p("")
         self._p("===== REPO DISCOVERY =====")
         if repository is not None:
             root = repository.get("root")

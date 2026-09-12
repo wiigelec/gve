@@ -344,7 +344,7 @@ def validate_fs003_integration() -> bool:
         assert "Branch: " + discover_branch in cp.stdout
         assert "Expected HEAD: " + discover_head in cp.stdout
         assert "[01/01] DISCOVER governed phase" in cp.stdout
-        assert "===== REPO DISCOVERY =====" in cp.stdout
+        assert "\n===== REPO DISCOVERY =====" in cp.stdout
         assert "Repository Root: " + str(repo.resolve()) in cp.stdout
         assert "HEAD: " + discover_head in cp.stdout
         assert "Worktree: clean" in cp.stdout
