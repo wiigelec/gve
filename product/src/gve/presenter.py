@@ -24,7 +24,7 @@ class ConsolePresenter:
         elif kind == "phase-start":
             self.phase_index += 1
             label = event.get("label")
-            self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} {label}")
+            self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} governed phase")
         elif kind == "task-start":
             self._p(f"TASK {event.get('id')} {event.get('task')}")
         elif kind == "command-start":

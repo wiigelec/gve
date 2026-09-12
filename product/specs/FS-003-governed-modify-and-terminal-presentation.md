@@ -24,7 +24,6 @@ those requirements without changing their identities or normative text.
 
 **Classification: M**
 
-**State: Inactive**
 
 FS-003 Planning shall identify exact consumed Product Design revision
 `b33bcaefe870fa1e18beaa6518ab6337f7333c65`.
@@ -33,7 +32,6 @@ FS-003 Planning shall identify exact consumed Product Design revision
 
 **Classification: B**
 
-**State: Inactive**
 
 The maintained runtime execution CLI shall expose registered product macros only.
 Raw caller-authored FS-001 workflows shall not be accepted through a maintained
@@ -51,7 +49,6 @@ fail-fast, and structured-evidence semantics.
 
 **Classification: M**
 
-**State: Inactive**
 
 The maintained commands shall be:
 
@@ -67,7 +64,6 @@ A maintained `gve execute` command shall not be exposed.
 
 **Classification: B**
 
-**State: Inactive**
 
 Live terminal presentation shall observe governed execution and shall not grant
 authority, alter task parameters or ordering, weaken failure, retry tasks, or
@@ -77,7 +73,6 @@ become an alternate execution result.
 
 **Classification: B**
 
-**State: Inactive**
 
 Macro terminal execution shall visibly present operation identity, phase
 transitions, material-step announcements, applicable exact external commands,
@@ -91,7 +86,6 @@ HEAD, and Result JSON.
 
 **Classification: B**
 
-**State: Inactive**
 
 Attaching or omitting the terminal observer/presenter shall not change governed
 task execution semantics or authoritative Engine/macro results.
@@ -100,7 +94,6 @@ task execution semantics or authoritative Engine/macro results.
 
 **Classification: B**
 
-**State: Inactive**
 
 The macro CLI shall attempt to write the authoritative result JSON on successful
 and failed governed execution whenever the requested destination remains
@@ -110,7 +103,6 @@ writable.
 
 **Classification: B**
 
-**State: Inactive**
 
 A result-artifact write failure shall be reported distinctly from governed
 execution status and shall not convert failed governed execution into success or
@@ -120,7 +112,6 @@ erase established execution evidence.
 
 **Classification: B**
 
-**State: Inactive**
 
 Every `modify` request shall include `expected_head` as an exact lowercase
 40-character Git commit identity.
@@ -129,7 +120,6 @@ Every `modify` request shall include `expected_head` as an exact lowercase
 
 **Classification: B**
 
-**State: Inactive**
 
 Before any product-requested repository effect, `modify` shall observe local
 HEAD and require exact equality with caller-supplied `expected_head`; mismatch
@@ -139,7 +129,6 @@ shall fail before mutation.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` shall create a local branch only when the caller supplies the reviewed
 explicit branch-creation request with `create: true` and a valid branch name.
@@ -148,7 +137,6 @@ explicit branch-creation request with `create: true` and a valid branch name.
 
 **Classification: B**
 
-**State: Inactive**
 
 A requested new local branch shall be created from exactly `expected_head`,
 switched to, and re-verified for both active branch identity and unchanged HEAD
@@ -158,7 +146,6 @@ before content mutation.
 
 **Classification: B**
 
-**State: Inactive**
 
 If caller intent is to create a new local branch and that branch already exists,
 `modify` shall fail closed and shall not silently reinterpret the request as use
@@ -175,7 +162,6 @@ when creation occurs, otherwise the prechecked active local branch.
 
 **Classification: B**
 
-**State: Inactive**
 
 The effective publication branch shall be the caller-selected `remote_branch`
 when explicitly supplied, otherwise the effective local branch.
@@ -184,7 +170,6 @@ when explicitly supplied, otherwise the effective local branch.
 
 **Classification: B**
 
-**State: Inactive**
 
 Publication branch selection may narrow the destination within authorized
 `origin` but shall not permit caller selection of another Git remote or otherwise
@@ -194,7 +179,6 @@ widen Git authority.
 
 **Classification: B**
 
-**State: Inactive**
 
 Before mutation/publication, `modify` shall establish the effective publication
 branch guard as either its exact observed remote commit identity or verified
@@ -204,7 +188,6 @@ remote-branch absence.
 
 **Classification: B**
 
-**State: Inactive**
 
 Immediately before push, `modify` shall re-observe the effective publication
 branch and require exact equality with the previously established existing-OID
@@ -214,7 +197,6 @@ or branch-absence guard.
 
 **Classification: B**
 
-**State: Inactive**
 
 `modify` shall publish using normal non-force semantics only and shall not
 rewrite history or silently introduce force behavior.
@@ -223,7 +205,6 @@ rewrite history or silently introduce force behavior.
 
 **Classification: B**
 
-**State: Inactive**
 
 After publication, `modify` shall observe the effective publication branch and
 require exact equality with the commit created by the macro before reporting
@@ -240,7 +221,6 @@ COMMIT, PUBLISH, and VERIFY, and stage metadata shall not alter Engine semantics
 
 **Classification: B**
 
-**State: Inactive**
 
 FS-003 shall preserve the accepted FS-002 requirement that `modify` mutates only
 declared repository-relative change paths, preserves unrelated work, and stages
@@ -250,7 +230,6 @@ only the declared mutation path set.
 
 **Classification: B**
 
-**State: Inactive**
 
 When validation is enabled, `modify` shall invoke exactly one governed
 repository-root `scripts/validate` operation and shall not substitute a
@@ -260,7 +239,6 @@ caller-selected command.
 
 **Classification: B**
 
-**State: Inactive**
 
 Before the product commit, `modify` terminal presentation shall show governed
 Git short-status evidence preserving the fixed-width status semantics needed to
@@ -270,7 +248,6 @@ distinguish staged, unstaged, renamed, copied, deleted, and untracked states.
 
 **Classification: B**
 
-**State: Inactive**
 
 Before commit, `modify` shall capture the complete staged diff representing the
 exact content to be committed.
@@ -279,7 +256,6 @@ exact content to be committed.
 
 **Classification: B**
 
-**State: Inactive**
 
 Before commit, `modify` shall reject patch whitespace errors through the
 governed equivalent of `git diff --cached --check`.
@@ -288,7 +264,6 @@ governed equivalent of `git diff --cached --check`.
 
 **Classification: B**
 
-**State: Inactive**
 
 The authoritative `modify` result shall expose stable macro-level continuation
 evidence independently of generated task identities while retaining complete
@@ -300,7 +275,6 @@ shall use the fixed key set and concrete value shapes defined by the FS-003 Plan
 
 **Classification: B**
 
-**State: Inactive**
 
 Stable `modify` continuation evidence shall use the Plan-defined fixed public
 keys and concrete types for repository, effective local branch, effective
@@ -315,7 +289,6 @@ defines nullability rather than by key omission or guessed values.
 
 **Classification: B**
 
-**State: Inactive**
 
 A macro-level result shall derive continuation evidence only from actual caller
 assertions, established product context, repository observations, and successful
@@ -325,7 +298,6 @@ governed task results; unavailable evidence shall not be invented.
 
 **Classification: B**
 
-**State: Inactive**
 
 A failed `modify` result shall retain stable continuation evidence already
 established, including staged diff after capture and commit evidence after commit,
@@ -335,7 +307,6 @@ even when later publication or verification fails.
 
 **Classification: B**
 
-**State: Inactive**
 
 Stable macro-level result projection shall not erase, reorder, or replace the
 complete generated stage/task records, including later `not-executed` records.
@@ -344,7 +315,6 @@ complete generated stage/task records, including later `not-executed` records.
 
 **Classification: B**
 
-**State: Inactive**
 
 `gve macro-schema modify` and authoritative runtime validation shall describe the
 same revised closed parameter space, including required `expected_head` and the
@@ -354,7 +324,6 @@ optional explicit branch-creation request.
 
 **Classification: B**
 
-**State: Inactive**
 
 FS-003 shall not add caller-controlled raw Git argv, shell fragments, arbitrary
 remote selection, caller-defined tasks, caller-defined stages, force options, or
@@ -380,7 +349,6 @@ presentation, and result projection shall not grant authority.
 
 **Classification: M**
 
-**State: Inactive**
 
 The completed FS-003 Build shall pass repository-wide `scripts/validate`.
 
@@ -388,7 +356,6 @@ The completed FS-003 Build shall pass repository-wide `scripts/validate`.
 
 **Classification: M**
 
-**State: Inactive**
 
 Build shall bind every FS-003 requirement classified M or B to exact applicable
 mechanical validation tasks before FS-003 is ready for Semantic Review.
@@ -397,7 +364,6 @@ mechanical validation tasks before FS-003 is ready for Semantic Review.
 
 **Classification: B**
 
-**State: Inactive**
 
 On failed macro execution, terminal presentation shall distinguish the failing
 phase and task when known, the relevant failure reason, prior successful work,

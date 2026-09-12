@@ -124,7 +124,7 @@ def validate_macro_cli() -> bool:
         assert [task["task"] for task in result["tasks"]] == ["git.head", "git.status"]
         assert [stage["label"] for stage in result["stages"]] == ["DISCOVER"]
         assert "FS0 Script Transfer: START" in cp.stdout
-        assert "[01/01] DISCOVER DISCOVER" in cp.stdout
+        assert "[01/01] DISCOVER governed phase" in cp.stdout
         assert "$ git -C " in cp.stdout
         assert "FS0 Script Transfer: PASS" in cp.stdout
         assert f"Result JSON: {result_path}" in cp.stdout
