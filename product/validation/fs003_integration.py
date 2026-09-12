@@ -141,6 +141,8 @@ def validate_fs003_integration() -> bool:
         assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript
         assert "OUT | ?? generated.txt" in transcript
+        assert "\n\nTASK modify-branch git.branch" in transcript
+        assert "\n\nTASK modify-head git.head" in transcript
         assert "Expected HEAD: " + baseline in transcript
         assert "Branch: dev/live" in transcript
         assert "Commit: " + projected["commit"] in transcript
@@ -376,5 +378,23 @@ def validate_fs003_integration() -> bool:
         assert "FAIL result-json:" in cp.stdout
         assert "Governed Result: success" in cp.stdout
         assert "GVE discover: FAILED" in cp.stdout
+
+        from io import StringIO
+        from gve.presenter import ConsolePresenter
+
+        stream = StringIO()
+        presenter = ConsolePresenter(stream)
+        presenter({"type": "macro-start", "macro": "modify", "phase_count": 1})
+        presenter({"type": "phase-start", "label": "COMMIT"})
+        presenter({"type": "task-start", "id": "status", "task": "git.status-scope"})
+        presenter({
+            "type": "command-output",
+            "stream": "stdout",
+            "text": "?? one.txt\0A  two.txt\0",
+        })
+        presenter({"type": "task-success", "id": "status", "record": {"result": {}}})
+        rendered = stream.getvalue()
+        assert "OUT | ?? one.txt\nOUT | A  two.txt\n" in rendered
+        assert "one.txt??" not in rendered
 
     return True

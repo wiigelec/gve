@@ -11,6 +11,7 @@ class ConsolePresenter:
         self.stream = stream or sys.stdout
         self.phase_index = 0
         self.phase_total = 0
+        self.task_index = 0
         self.macro = None
         self.context = {}
 
@@ -43,9 +44,13 @@ class ConsolePresenter:
             if self.phase_index:
                 self._p("")
             self.phase_index += 1
+            self.task_index = 0
             label = event.get("label")
             self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} governed phase")
         elif kind == "task-start":
+            if self.task_index:
+                self._p("")
+            self.task_index += 1
             self._p(f"TASK {event.get('id')} {event.get('task')}")
         elif kind == "command-start":
             argv = event.get("argv")
@@ -55,21 +60,12 @@ class ConsolePresenter:
             prefix = "ERR" if event.get("stream") == "stderr" else "OUT"
             text = event.get("text")
             if isinstance(text, str):
-                for line in text.splitlines(): self._p(f"{prefix} | {line}")
+                records = text.split("\0") if "\0" in text else text.splitlines()
+                for record in records:
+                    if record:
+                        self._p(f"{prefix} | {record}")
         elif kind == "task-success":
             self._p(f"PASS {event.get('id')}")
-            if event.get("id") == "modify-status-guard":
-                record = event.get("record")
-                if isinstance(record, Mapping):
-                    task_result = record.get("result")
-                    if isinstance(task_result, Mapping):
-                        entries = task_result.get("entries")
-                        if isinstance(entries, list):
-                            for entry in entries:
-                                if isinstance(entry, Mapping):
-                                    code, path = entry.get("status"), entry.get("path")
-                                    if isinstance(code, str) and isinstance(path, str):
-                                        self._p(f"OUT | {code} {path}")
         elif kind == "task-failure":
             msg = ""
             record = event.get("record")
