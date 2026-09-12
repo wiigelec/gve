@@ -152,9 +152,9 @@ class MacroRunner:
         tasks = _flatten(plan)
 
         phase_by_task = {}
-        for stage in plan.stages:
+        for index, stage in enumerate(plan.stages, 1):
             for invocation in stage.tasks:
-                phase_by_task[invocation["id"]] = stage.label
+                phase_by_task[invocation["id"]] = (index, stage.label)
         emit_to(
             observer,
             "macro-start",
@@ -175,7 +175,8 @@ class MacroRunner:
                 phase = phase_by_task.get(event.get("id"))
                 if phase is not None and phase != current_phase:
                     current_phase = phase
-                    emit_to(observer, "phase-start", label=phase)
+                    index, label = phase
+                    emit_to(observer, "phase-start", index=index, total=len(plan.stages), label=label)
             emit_event(observer, event)
 
         engine_result = self.engine.execute(

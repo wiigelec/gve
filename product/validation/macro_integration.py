@@ -132,11 +132,13 @@ def validate_macro_integration() -> bool:
         transcript = cp.stdout
         for label in ("PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"):
             assert label in transcript
-        for index, label in enumerate(
-            ("BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"),
-            start=2,
-        ):
-            assert f"\n[{index:02d}/07] {label} governed phase" in transcript
+        assert "[01/07] PRECHECK governed phase" in transcript
+        assert "[03/07] MUTATE governed phase" in transcript
+        assert "[05/07] COMMIT governed phase" in transcript
+        assert "[06/07] PUBLISH governed phase" in transcript
+        assert "[07/07] VERIFY governed phase" in transcript
+        assert "[02/07] MUTATE governed phase" not in transcript
+        assert "[03/07] COMMIT governed phase" not in transcript
         assert "GVE modify: START" in transcript
         assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript
@@ -396,6 +398,8 @@ def validate_macro_integration() -> bool:
         rendered = stream.getvalue()
         assert "OUT | ?? one.txt\nOUT | A  two.txt\n" in rendered
         assert "one.txt??" not in rendered
-        assert "PASS status\n#-------------------------------------------------------------------#\n" in rendered
+        assert "#-------------------------------------------------------------------#\nTASK status git.status-scope" in rendered
+        assert "PASS status\n" in rendered
+        assert "PASS status\n#-------------------------------------------------------------------#" not in rendered
 
     return True
