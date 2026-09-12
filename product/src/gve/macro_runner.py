@@ -171,6 +171,16 @@ class MacroRunner:
             "stages": _group(plan, engine_result),
             "tasks": engine_result.get("tasks", []),
         }
+        if definition.project_result is not None:
+            projected = definition.project_result(
+                dict(request.parameters),
+                plan,
+                engine_result,
+                context,
+            )
+            if not isinstance(projected, Mapping):
+                raise PayloadError("macro result projector must return an object")
+            result["result"] = dict(projected)
         if "error" in engine_result:
             result["error"] = engine_result["error"]
         return result

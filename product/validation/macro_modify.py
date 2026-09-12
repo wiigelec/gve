@@ -43,7 +43,7 @@ def validate_macro_modify() -> bool:
         raise AssertionError("modify is not registered")
     definition = macros.resolve("modify")
     assert definition.stages == (
-        "PRECHECK", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"
+        "PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY"
     )
 
     digest = "a" * 64
@@ -59,6 +59,7 @@ def validate_macro_modify() -> bool:
                 },
             ],
             "commit_message": "change files",
+            "expected_head": "1" * 40,
             "allowed_dirty_paths": ["notes.txt"],
         }
     )
@@ -82,6 +83,7 @@ def validate_macro_modify() -> bool:
     assert by_id["modify-remote-before"]["parameters"]["branch"] == {
         "$ref": "modify-branch.result.branch"
     }
+    assert by_id["modify-head"]["parameters"]["expected"] == "1" * 40
     assert by_id["modify-validate"]["parameters"]["script"] == "scripts/validate"
     assert by_id["modify-staged-before"]["parameters"]["allowed_paths"] == ["new.txt", "old.txt"]
     assert by_id["modify-pending-diff-check"]["task"] == "git.pending-diff-check"
@@ -103,15 +105,35 @@ def validate_macro_modify() -> bool:
         {
             "changes": [{"operation": "create", "path": "x.txt", "content": "x"}],
             "commit_message": "x",
+            "expected_head": "2" * 40,
             "validate": False,
             "allow_dirty": True,
             "allowed_dirty_paths": ["preexisting.txt"],
             "remote_branch": "release",
         }
     )
-    assert no_validate.stages[2].tasks == ()
+    assert no_validate.stages[3].tasks == ()
     assert no_validate.stages[0].tasks[3]["task"] == "git.status-scope"
     assert no_validate.stages[0].tasks[-1]["parameters"]["branch"] == "release"
+
+    with_branch = definition.build(
+        {
+            "changes": [{"operation": "create", "path": "b.txt", "content": "b"}],
+            "commit_message": "b",
+            "expected_head": "3" * 40,
+            "branch": {"create": True, "name": "dev/fs003"},
+            "validate": False,
+        }
+    )
+    branch_tasks = [dict(x) for x in with_branch.stages[1].tasks]
+    assert [x["task"] for x in branch_tasks] == [
+        "git.branch-create", "git.branch-switch", "git.branch", "git.head"
+    ]
+    assert branch_tasks[0]["parameters"] == {"name": "dev/fs003", "start": "3" * 40}
+    all_branch_tasks = [dict(task) for stage in with_branch.stages for task in stage.tasks]
+    branch_by_id = {task["id"]: task for task in all_branch_tasks}
+    assert branch_by_id["modify-push"]["parameters"]["local_branch"] == "dev/fs003"
+    assert branch_by_id["modify-push"]["parameters"]["remote_branch"] == "dev/fs003"
 
     invalid = [
         {},
@@ -151,7 +173,7 @@ def validate_macro_modify() -> bool:
         _sh(["git", "add", "notes.txt"], repo)
         authority = Authority(repository=repo.resolve(), git_remotes=frozenset({"origin"}), execute_limits=(("wall_seconds",600),("max_concurrent",32),("max_total_spawned",1024),("max_spawns_per_second",64)))
         result = MacroRunner(Engine(product_registry()), macros).execute(
-            _request({"changes":[{"operation":"create","path":"generated.txt","content":"generated\n"}],"commit_message":"generated","validate":False,"allow_dirty":True,"allowed_dirty_paths":["notes.txt"]}),
+            _request({"changes":[{"operation":"create","path":"generated.txt","content":"generated\n"}],"commit_message":"generated","expected_head":baseline,"validate":False,"allow_dirty":True,"allowed_dirty_paths":["notes.txt"]}),
             authority,
             RepositoryContext(repo.resolve(), None, "main", baseline),
         )
@@ -192,6 +214,7 @@ def validate_macro_modify() -> bool:
                         {"operation": "create", "path": "generated.txt", "content": "generated\n"}
                     ],
                     "commit_message": "generated",
+                    "expected_head": baseline,
                     "validate": False,
                 }
             ),
@@ -201,7 +224,29 @@ def validate_macro_modify() -> bool:
         if result["status"] != "success":
             raise AssertionError(json.dumps(result, indent=2, sort_keys=True))
         assert [stage["label"] for stage in result["stages"]] == list(definition.stages)
+        projected = result["result"]
+        assert set(projected) == {
+            "repository", "branch", "publication_branch", "expected_head",
+            "observed_head", "branch_created", "files_changed", "validation",
+            "diff", "commit", "commit_count", "push_mode", "remote_head",
+            "history_rewrite_or_force_push_occurred", "merge_occurred",
+        }
+        assert projected["repository"]["root"] == str(repo.resolve())
+        assert projected["expected_head"] == baseline
+        assert projected["observed_head"] == baseline
+        assert projected["branch"] == "main"
+        assert projected["publication_branch"] == "main"
+        assert projected["branch_created"] is False
+        assert projected["files_changed"] == ["generated.txt"]
+        assert projected["validation"] == {"requested": False, "status": "not-requested"}
+        assert projected["diff"] is not None
+        assert projected["commit_count"] == 1
+        assert projected["push_mode"] == "normal"
+        assert projected["history_rewrite_or_force_push_occurred"] is False
+        assert projected["merge_occurred"] is False
         commit = next(x for x in result["tasks"] if x["id"] == "modify-commit")["result"]["commit"]
+        assert projected["commit"] == commit
+        assert projected["remote_head"] == commit
         assert next(x for x in result["tasks"] if x["id"] == "modify-verify")["result"]["commit"] == commit
         assert _sh(
             ["git", "--git-dir", str(remote), "rev-parse", "refs/heads/main"], base

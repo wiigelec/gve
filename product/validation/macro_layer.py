@@ -120,6 +120,7 @@ def validate_macro_layer() -> bool:
                 {"operation": "create", "path": "generated.txt", "content": "x\n"}
             ],
             "commit_message": "generated",
+            "expected_head": "1" * 40,
             "validate": False,
         }
     )
@@ -131,7 +132,6 @@ def validate_macro_layer() -> bool:
     expected_refs = {
         ("modify-remote-before", "branch"): "modify-branch.result.branch",
         ("modify-branch-guard", "expected"): "modify-branch.result.branch",
-        ("modify-head-guard", "expected"): "modify-head.result.commit",
         ("modify-push", "local_branch"): "modify-branch.result.branch",
         ("modify-push", "remote_branch"): "modify-branch.result.branch",
         ("modify-push", "expected_remote_head"): "modify-remote-before.result.commit",
@@ -141,6 +141,11 @@ def validate_macro_layer() -> bool:
     for (task_id, field), reference in expected_refs.items():
         if tasks[task_id]["parameters"][field] != {"$ref": reference}:
             raise AssertionError(f"non-native result binding for {task_id}.{field}")
+
+    if tasks["modify-head"]["parameters"]["expected"] != "1" * 40:
+        raise AssertionError("modify PRECHECK is not tied to caller expected_head")
+    if tasks["modify-head-guard"]["parameters"]["expected"] != "1" * 40:
+        raise AssertionError("modify COMMIT HEAD guard is not tied to caller expected_head")
 
     runner = MacroRunner(Engine(product_registry()), macros)
     with tempfile.TemporaryDirectory() as td:

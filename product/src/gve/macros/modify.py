@@ -12,7 +12,7 @@ _SHA256 = set("0123456789abcdef")
 
 PARAMETER_SCHEMA = {'type': 'object',
  'additionalProperties': False,
- 'required': ['changes', 'commit_message'],
+ 'required': ['changes', 'commit_message', 'expected_head'],
  'properties': {'changes': {'type': 'array',
                             'minItems': 1,
                             'x-gve-unique-path-field-after-normalization': 'path',
@@ -38,6 +38,14 @@ PARAMETER_SCHEMA = {'type': 'object',
                                                                 'expected_sha256': {'type': 'string',
                                                                                     'pattern': '^[0-9a-f]{64}$'}}}]}},
                 'commit_message': {'type': 'string', 'minLength': 1},
+                'expected_head': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'},
+                'branch': {'type': 'object',
+                           'additionalProperties': False,
+                           'required': ['create', 'name'],
+                           'properties': {'create': {'enum': [True]},
+                                          'name': {'type': 'string',
+                                                   'minLength': 1,
+                                                   'x-gve-format': 'git-branch'}}},
                 'remote_branch': {'type': 'string', 'minLength': 1, 'x-gve-format': 'git-branch'},
                 'validate': {'type': 'boolean'},
                 'allow_dirty': {'type': 'boolean'},
@@ -50,7 +58,7 @@ PARAMETER_SCHEMA = {'type': 'object',
 
 
 
-STAGES = ("PRECHECK", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY")
+STAGES = ("PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY")
 
 
 def _text(value, field, *, allow_empty=False):
@@ -75,6 +83,16 @@ def _path(value, field):
     return normalized
 
 
+def _git_oid(value, field="expected_head"):
+    if (
+        not isinstance(value, str)
+        or len(value) != 40
+        or any(ch not in _SHA256 for ch in value)
+    ):
+        raise PayloadError(f"modify {field} must be lowercase 40-character Git object ID")
+    return value
+
+
 def _digest(value):
     if (
         not isinstance(value, str)
@@ -89,13 +107,15 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
     allowed = {
         "changes",
         "commit_message",
+        "expected_head",
+        "branch",
         "remote_branch",
         "validate",
         "allow_dirty",
         "allowed_dirty_paths",
     }
     extra = set(parameters) - allowed
-    missing = {"changes", "commit_message"} - set(parameters)
+    missing = {"changes", "commit_message", "expected_head"} - set(parameters)
     if extra or missing:
         raise PayloadError(
             "invalid modify parameters",
@@ -144,6 +164,27 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         normalized_changes.append(item)
 
     commit_message = _text(parameters["commit_message"], "commit_message")
+    expected_head = _git_oid(parameters["expected_head"])
+
+    branch = parameters.get("branch")
+    normalized_branch = None
+    if branch is not None:
+        if not isinstance(branch, Mapping):
+            raise PayloadError("modify branch must be an object")
+        extra_branch = set(branch) - {"create", "name"}
+        missing_branch = {"create", "name"} - set(branch)
+        if extra_branch or missing_branch:
+            raise PayloadError(
+                "invalid modify branch fields",
+                details={"unknown": sorted(extra_branch), "missing": sorted(missing_branch)},
+            )
+        if branch["create"] is not True:
+            raise PayloadError("modify branch.create must be true")
+        normalized_branch = {
+            "create": True,
+            "name": _text(branch["name"], "branch.name"),
+        }
+
     remote_branch = parameters.get("remote_branch")
     if remote_branch is not None:
         remote_branch = _text(remote_branch, "remote_branch")
@@ -167,6 +208,8 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         "changes": normalized_changes,
         "change_paths": [item["path"] for item in normalized_changes],
         "commit_message": commit_message,
+        "expected_head": expected_head,
+        "branch": normalized_branch,
         "remote_branch": remote_branch,
         "validate": validate,
         "allow_dirty": allow_dirty,
@@ -176,10 +219,16 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
 
 def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
     p = _validate(parameters)
-    branch_value = (
+    branch_requested = p["branch"] is not None
+    effective_local_branch = (
+        p["branch"]["name"]
+        if branch_requested
+        else {"$ref": "modify-branch.result.branch"}
+    )
+    publication_branch = (
         p["remote_branch"]
         if p["remote_branch"] is not None
-        else {"$ref": "modify-branch.result.branch"}
+        else effective_local_branch
     )
 
     if p["allow_dirty"]:
@@ -204,7 +253,11 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
         (
             {"id": "modify-repository", "task": "git.repository", "parameters": {}},
             {"id": "modify-branch", "task": "git.branch", "parameters": {}},
-            {"id": "modify-head", "task": "git.head", "parameters": {}},
+            {
+                "id": "modify-head",
+                "task": "git.head",
+                "parameters": {"expected": p["expected_head"]},
+            },
             status_task,
             {
                 "id": "modify-staged-before",
@@ -214,10 +267,35 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
             {
                 "id": "modify-remote-before",
                 "task": "git.remote-head",
-                "parameters": {"remote": "origin", "branch": branch_value},
+                "parameters": {"remote": "origin", "branch": publication_branch},
             },
         ),
     )
+
+    branch_tasks = ()
+    if branch_requested:
+        branch_tasks = (
+            {
+                "id": "modify-branch-create",
+                "task": "git.branch-create",
+                "parameters": {"name": p["branch"]["name"], "start": p["expected_head"]},
+            },
+            {
+                "id": "modify-branch-switch",
+                "task": "git.branch-switch",
+                "parameters": {"name": p["branch"]["name"]},
+            },
+            {
+                "id": "modify-branch-created-guard",
+                "task": "git.branch",
+                "parameters": {"expected": p["branch"]["name"]},
+            },
+            {
+                "id": "modify-branch-head-guard",
+                "task": "git.head",
+                "parameters": {"expected": p["expected_head"]},
+            },
+        )
 
     mutation_tasks = []
     for index, change in enumerate(p["changes"], 1):
@@ -275,12 +353,12 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
             {
                 "id": "modify-branch-guard",
                 "task": "git.branch",
-                "parameters": {"expected": {"$ref": "modify-branch.result.branch"}},
+                "parameters": {"expected": effective_local_branch},
             },
             {
                 "id": "modify-head-guard",
                 "task": "git.head",
-                "parameters": {"expected": {"$ref": "modify-head.result.commit"}},
+                "parameters": {"expected": p["expected_head"]},
             },
             {
                 "id": "modify-status-guard",
@@ -329,8 +407,8 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
                 "task": "git.push",
                 "parameters": {
                     "remote": "origin",
-                    "local_branch": {"$ref": "modify-branch.result.branch"},
-                    "remote_branch": branch_value,
+                    "local_branch": effective_local_branch,
+                    "remote_branch": publication_branch,
                     "expected_remote_head": {"$ref": "modify-remote-before.result.commit"},
                 },
             },
@@ -346,7 +424,7 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
                 "task": "git.remote-head",
                 "parameters": {
                     "remote": "origin",
-                    "branch": branch_value,
+                    "branch": publication_branch,
                     "expected": {"$ref": "modify-commit.result.commit"},
                 },
             },
@@ -357,6 +435,7 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
         "macro-modify",
         (
             precheck,
+            MacroStage("branch", "BRANCH", branch_tasks),
             MacroStage("mutate", "MUTATE", tuple(mutation_tasks)),
             MacroStage("validate", "VALIDATE", validate_tasks),
             commit_stage,
@@ -366,9 +445,91 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
     )
 
 
+def _record_by_id(engine_result: Mapping[str, object], invocation_id: str):
+    tasks = engine_result.get("tasks", [])
+    if not isinstance(tasks, list):
+        return None
+    for record in tasks:
+        if isinstance(record, Mapping) and record.get("id") == invocation_id:
+            return record
+    return None
+
+
+def _successful_result(engine_result: Mapping[str, object], invocation_id: str):
+    record = _record_by_id(engine_result, invocation_id)
+    if not isinstance(record, Mapping) or record.get("status") != "success":
+        return None
+    value = record.get("result")
+    return value if isinstance(value, Mapping) else None
+
+
+def project_modify_result(parameters, plan, engine_result, context):
+    p = _validate(parameters)
+
+    pre_branch = _successful_result(engine_result, "modify-branch")
+    created_branch = _successful_result(engine_result, "modify-branch-created-guard")
+    effective_branch = None
+    if p["branch"] is not None:
+        if created_branch is not None:
+            effective_branch = created_branch.get("branch")
+    elif pre_branch is not None:
+        effective_branch = pre_branch.get("branch")
+
+    publication_branch = p["remote_branch"] if p["remote_branch"] is not None else effective_branch
+
+    head_result = _successful_result(engine_result, "modify-head")
+    observed_head = head_result.get("commit") if head_result is not None else None
+
+    branch_created = False if p["branch"] is None else None
+    if p["branch"] is not None and _successful_result(engine_result, "modify-branch-create") is not None:
+        branch_created = True
+
+    validation_status = "not-requested"
+    if p["validate"]:
+        validation_record = _record_by_id(engine_result, "modify-validate")
+        if validation_record is None or validation_record.get("status") == "not-executed":
+            validation_status = "not-executed"
+        elif validation_record.get("status") == "success":
+            validation_status = "success"
+        else:
+            validation_status = "failed"
+
+    diff_result = _successful_result(engine_result, "modify-diff")
+    diff = diff_result.get("diff") if diff_result is not None else None
+    files_changed = list(p["change_paths"]) if diff_result is not None else None
+
+    commit_result = _successful_result(engine_result, "modify-commit")
+    commit = commit_result.get("commit") if commit_result is not None else None
+
+    verify_result = _successful_result(engine_result, "modify-verify")
+    remote_head = verify_result.get("commit") if verify_result is not None else None
+
+    return {
+        "repository": {
+            "root": str(context.root) if context is not None else None,
+            "identity": context.identity if context is not None else None,
+        },
+        "branch": effective_branch,
+        "publication_branch": publication_branch,
+        "expected_head": p["expected_head"],
+        "observed_head": observed_head,
+        "branch_created": branch_created,
+        "files_changed": files_changed,
+        "validation": {"requested": p["validate"], "status": validation_status},
+        "diff": diff,
+        "commit": commit,
+        "commit_count": 1 if commit is not None else 0,
+        "push_mode": "normal",
+        "remote_head": remote_head,
+        "history_rewrite_or_force_push_occurred": False,
+        "merge_occurred": False,
+    }
+
+
 MODIFY = MacroDefinition(
     identity="modify",
     parameter_schema=PARAMETER_SCHEMA,
     stages=STAGES,
     build=build_modify,
+    project_result=project_modify_result,
 )

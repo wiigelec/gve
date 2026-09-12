@@ -28,52 +28,9 @@ def validate_cli() -> bool:
         repo.mkdir()
         subprocess.run(["git", "init", "-b", "main"], cwd=repo, check=True, stdout=subprocess.PIPE)
 
-        payload = base / "payload.json"
-        payload.write_text(
-            json.dumps({
-                "schema_version": 1,
-                "workflow_id": "cli",
-                "tasks": [{"id": "status", "task": "git.status", "parameters": {}}],
-            }),
-            encoding="utf-8",
-        )
-
-        cp = _run(["execute", "--repository", str(repo), str(payload)])
-        assert cp.returncode == 0, cp.stderr
-        result = json.loads(cp.stdout)
-        assert result["status"] == "success"
-        assert result["workflow_id"] == "cli"
-        assert result["tasks"][0]["task"] == "git.status"
-
-        bad = base / "bad.json"
-        bad.write_text("{", encoding="utf-8")
-        cp = _run(["execute", "--repository", str(repo), str(bad)])
+        cp = _run(["execute"])
         assert cp.returncode == 2
-        result = json.loads(cp.stdout)
-        assert result["error"]["code"] == "cli-failure"
-
-        failing = base / "failing.json"
-        failing.write_text(
-            json.dumps({
-                "schema_version": 1,
-                "workflow_id": "fail",
-                "tasks": [{"id": "x", "task": "git.branch", "parameters": {"expected": "wrong"}}],
-            }),
-            encoding="utf-8",
-        )
-        cp = _run(["execute", "--repository", str(repo), str(failing)])
-        assert cp.returncode == 1
-        result = json.loads(cp.stdout)
-        assert result["status"] == "failure"
-
-        cp = _run([
-            "execute", "--repository", str(repo),
-            "--execute-max-wall-seconds", "601",
-            str(payload),
-        ])
-        assert cp.returncode == 2
-        result = json.loads(cp.stdout)
-        assert result["error"]["code"] == "cli-failure"
+        assert "invalid choice" in cp.stderr
 
     validate_macro_cli()
     return True
@@ -134,6 +91,8 @@ def validate_macro_cli() -> bool:
         assert set(change_ops) == {"create", "modify"}
         assert "expected_sha256" not in change_ops["create"]["properties"]
         assert "expected_sha256" in change_ops["modify"]["required"]
+        assert set(modify_schema["required"]) == {"changes", "commit_message", "expected_head"}
+        assert modify_schema["properties"]["branch"]["required"] == ["create", "name"]
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1
@@ -186,18 +145,6 @@ def validate_macro_cli() -> bool:
         assert bad["status"] == "failure"
         assert bad["error"]["code"] == "invalid-payload"
 
-        payload = base / "execute.json"
-        payload.write_text(
-            json.dumps({
-                "schema_version": 1,
-                "workflow_id": "unchanged",
-                "tasks": [{"id": "head", "task": "git.head", "parameters": {}}],
-            }),
-            encoding="utf-8",
-        )
-        cp = _run(["execute", "--repository", str(repo), str(payload)])
-        assert cp.returncode == 0
-        assert json.loads(cp.stdout)["workflow_id"] == "unchanged"
 
         modify_request = base / "modify-request.json"
         modify_result = base / "modify-result.json"
@@ -212,6 +159,10 @@ def validate_macro_cli() -> bool:
                             {"operation": "create", "path": "generated.txt", "content": "x\n"}
                         ],
                         "commit_message": "generated",
+                        "expected_head": subprocess.run(
+                            ["git", "rev-parse", "HEAD"],
+                            cwd=repo, text=True, stdout=subprocess.PIPE, check=True,
+                        ).stdout.strip(),
                         "validate": False,
                     },
                 },
