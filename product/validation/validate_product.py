@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+sys.dont_write_bytecode = True
+
 from core_engine import validate_core_engine, validate_planning_binding
 from filesystem import validate_filesystem_plugin
 from git import validate_git_plugin
