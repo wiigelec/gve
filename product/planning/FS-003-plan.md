@@ -108,6 +108,28 @@ For `modify`, the terminal shall show a short-status representation before the
 product commit. Full staged diff text remains machine evidence and is not dumped
 to terminal by default.
 
+The final `modify` summary shall show these labels when the corresponding
+evidence is applicable:
+
+```text
+Operation
+Repository
+Branch
+Expected HEAD
+Observed HEAD
+Files Changed
+Validation
+Commit
+Remote HEAD
+Result JSON
+```
+
+On failed execution, terminal presentation shall identify the failing phase and
+task when known, the failure reason, prior successful work, and later work that
+was not executed. Presentation of failure evidence shall remain derived from the
+authoritative execution result and observer events rather than creating separate
+execution meaning.
+
 ## Result artifact behavior
 
 `gve macro --out RESULT.json` shall attempt to write the authoritative result for
@@ -357,48 +379,78 @@ The `modify` authoritative result shall retain existing top-level macro status,
 stages, and task evidence and add stable macro-level continuation evidence under
 a `result` object.
 
-The version-1 maintained `modify.result` fields are:
+The version-1 maintained `modify.result` object has a fixed public key set:
 
-```text
-repository
-branch
-publication_branch
-expected_head
-observed_head
-branch_created
-files_changed
-validation
-diff
-commit
-commit_count
-push_mode
-remote_head
-history_rewrite_or_force_push_occurred
-merge_occurred
+```json
+{
+  "repository": {
+    "root": "/canonical/repository/root",
+    "identity": "owner/name"
+  },
+  "branch": "dev/feature-x",
+  "publication_branch": "dev/feature-x",
+  "expected_head": "0123456789abcdef0123456789abcdef01234567",
+  "observed_head": "0123456789abcdef0123456789abcdef01234567",
+  "branch_created": true,
+  "files_changed": ["path/a", "path/b"],
+  "validation": {
+    "requested": true,
+    "status": "success"
+  },
+  "diff": "diff --git ...",
+  "commit": "89abcdef0123456789abcdef0123456789abcdef",
+  "commit_count": 1,
+  "push_mode": "normal",
+  "remote_head": "89abcdef0123456789abcdef0123456789abcdef",
+  "history_rewrite_or_force_push_occurred": false,
+  "merge_occurred": false
+}
 ```
 
-Meanings:
+All keys above are always present once a valid `modify` request has entered macro
+execution and a macro result can be constructed.
 
-- `repository`: canonical active repository root/identity evidence selected by
-  existing macro-result convention;
-- `branch`: effective local branch when established;
-- `publication_branch`: effective publication branch when established;
-- `expected_head`: exact caller value;
-- `observed_head`: GVE-observed starting HEAD when established;
-- `branch_created`: boolean when the branch outcome is known;
-- `files_changed`: stable changed-path evidence when established;
-- `validation`: object describing whether canonical validation was requested and
-  its known status/evidence;
-- `diff`: complete staged diff when successfully captured, otherwise absent;
-- `commit`: created commit identity when established, otherwise absent;
-- `commit_count`: number of product-created commits known to have occurred;
-- `push_mode`: `normal` when publication mode is established;
-- `remote_head`: verified/observed effective publication head when established;
-- rewrite/force-push and merge indicators: boolean evidence when known.
+The single version-1 unavailable-evidence representation is JSON `null`.
+A field whose evidence has not yet been established is `null`; Build shall not
+omit that key or substitute a guessed value.
 
-Planning permits unavailable continuation fields to be omitted rather than
-invented. Build shall use one deterministic absence policy consistently and
-reflect it in public result tests.
+Field meanings and concrete types are:
+
+- `repository` is always an object with fixed keys `root` and `identity`;
+  `root` is the canonical absolute active repository root when established,
+  otherwise `null`; `identity` is canonical `owner/name` when established,
+  otherwise `null`;
+- `branch` is the effective local branch string when established, otherwise
+  `null`;
+- `publication_branch` is the effective publication branch string when
+  established, otherwise `null`;
+- `expected_head` is the exact caller-supplied 40-character commit identity and
+  is non-null for a valid `modify` request;
+- `observed_head` is the exact GVE-observed starting HEAD when established,
+  otherwise `null`;
+- `branch_created` is `true` when the requested branch was successfully created,
+  `false` when branch creation was not requested and that fact is established,
+  and `null` before the branch-creation outcome is established;
+- `files_changed` is an array of repository-relative changed-path strings when
+  changed-path evidence is established, otherwise `null`;
+- `validation` is always an object with fixed keys `requested` and `status`;
+  `requested` is the boolean value derived from the validated request and
+  `status` is exactly `not-requested`, `not-executed`, `success`, or `failed`;
+- `diff` is the complete staged diff string when successfully captured,
+  otherwise `null`;
+- `commit` is the created commit identity when established, otherwise `null`;
+- `commit_count` is an integer and is exactly `0` until the product creates its
+  commit, then exactly `1`;
+- `push_mode` is always the string `normal` for a valid `modify` request because
+  FS-003 admits no other publication mode;
+- `remote_head` is the latest established observed effective-publication-branch
+  commit identity after publication/verification evidence is available,
+  otherwise `null`;
+- `history_rewrite_or_force_push_occurred` is always boolean and remains `false`;
+- `merge_occurred` is always boolean and remains `false`.
+
+The fixed shape does not authorize invention of evidence. `null` explicitly
+means that the corresponding observation or effect has not been established.
 
 The result projection never removes stage/task records.
 
@@ -438,6 +490,9 @@ Build shall add or revise product validation tasks covering at least:
 - continued internal Engine/FS-001 execution regression coverage;
 - observer-disabled semantic equivalence;
 - terminal phase/step/command/stream/PASS/FAIL presentation;
+- exact final `modify` summary labels for applicable evidence;
+- failed transcript identification of failing phase/task, failure reason, prior
+  successful work, and later not-executed work;
 - result JSON on governed failure when writable;
 - explicit artifact-write failure behavior;
 - required/malformed/mismatched `expected_head`;

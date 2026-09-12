@@ -82,7 +82,10 @@ become an alternate execution result.
 Macro terminal execution shall visibly present operation identity, phase
 transitions, material-step announcements, applicable exact external commands,
 captured non-empty stdout/stderr, explicit PASS/FAIL outcomes, and a final
-summary without leaving long validation/publication work silent.
+summary without leaving long validation/publication work silent. The final
+`modify` summary shall communicate, when applicable, Operation, Repository,
+Branch, Expected HEAD, Observed HEAD, Files Changed, Validation, Commit, Remote
+HEAD, and Result JSON.
 
 ### FS-003-NR-007 — Observer-Free Semantic Equivalence
 
@@ -289,7 +292,9 @@ governed equivalent of `git diff --cached --check`.
 
 The authoritative `modify` result shall expose stable macro-level continuation
 evidence independently of generated task identities while retaining complete
-ordered stage/task evidence.
+ordered stage/task evidence. Once a valid `modify` request has entered macro
+execution and a macro result can be constructed, the version-1 `result` object
+shall use the fixed key set and concrete value shapes defined by the FS-003 Plan.
 
 ### FS-003-NR-029 — Stable Modify Result Fields
 
@@ -297,12 +302,14 @@ ordered stage/task evidence.
 
 **State: Inactive**
 
-When established, stable `modify` continuation evidence shall communicate:
-repository, effective local branch, effective publication branch,
-caller `expected_head`, observed starting HEAD, branch-creation outcome,
-changed paths, validation evidence, staged diff, created commit, commit count,
-push mode, observed/verified remote head, force/history-rewrite evidence, and
-merge evidence.
+Stable `modify` continuation evidence shall use the Plan-defined fixed public
+keys and concrete types for repository, effective local branch, effective
+publication branch, caller `expected_head`, observed starting HEAD,
+branch-creation outcome, changed paths, validation evidence, staged diff,
+created commit, commit count, push mode, observed/verified remote head,
+force/history-rewrite evidence, and merge evidence. Unestablished observational
+or effect evidence shall be represented by JSON `null` exactly where the Plan
+defines nullability rather than by key omission or guessed values.
 
 ### FS-003-NR-030 — Evidence Non-Invention
 
@@ -385,3 +392,14 @@ The completed FS-003 Build shall pass repository-wide `scripts/validate`.
 
 Build shall bind every FS-003 requirement classified M or B to exact applicable
 mechanical validation tasks before FS-003 is ready for Semantic Review.
+
+### FS-003-NR-039 — Failed Transcript Evidence
+
+**Classification: B**
+
+**State: Inactive**
+
+On failed macro execution, terminal presentation shall distinguish the failing
+phase and task when known, the relevant failure reason, prior successful work,
+and later work that was not executed, without changing authoritative execution
+meaning.
