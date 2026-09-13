@@ -11,6 +11,7 @@ class ConsolePresenter:
         self.stream = stream or sys.stdout
         self.phase_index = 0
         self.phase_total = 0
+        self.task_has_activity = False
         self.macro = None
         self.context = {}
 
@@ -40,19 +41,26 @@ class ConsolePresenter:
                     self._p(f"{label}: {value}")
             self._p("")
         elif kind == "phase-start":
+            if self.phase_index:
+                self._p("")
             self.phase_index = int(event.get("index", 0))
             self.phase_total = int(event.get("total", self.phase_total))
             label = event.get("label")
             self._p("#####################################################################")
             self._p(f"[{self.phase_index:02d}/{self.phase_total:02d}] {label} governed phase")
         elif kind == "task-start":
+            self.task_has_activity = False
+            self._p("")
             self._p("#-------------------------------------------------------------------#")
             self._p(f"TASK {event.get('id')} {event.get('task')}")
+            self._p("")
         elif kind == "command-start":
+            self.task_has_activity = True
             argv = event.get("argv")
             if isinstance(argv, list):
                 self._p("$ " + shlex.join(str(x) for x in argv))
         elif kind == "command-output":
+            self.task_has_activity = True
             prefix = "ERR" if event.get("stream") == "stderr" else "OUT"
             text = event.get("text")
             if isinstance(text, str):
@@ -61,6 +69,8 @@ class ConsolePresenter:
                     if record:
                         self._p(f"{prefix} | {record}")
         elif kind == "task-success":
+            if self.task_has_activity:
+                self._p("")
             self._p(f"PASS {event.get('id')}")
         elif kind == "task-failure":
             msg = ""
@@ -69,6 +79,8 @@ class ConsolePresenter:
                 error = record.get("error")
                 if isinstance(error, Mapping) and isinstance(error.get("message"), str):
                     msg = ": " + error["message"]
+            if self.task_has_activity:
+                self._p("")
             self._p(f"FAIL {event.get('id')}{msg}")
 
     def output_failure(self, exc: OSError, output_path: Path, result: Mapping[str, object]) -> None:
@@ -160,6 +172,7 @@ class ConsolePresenter:
         if result.get("macro") == "discover":
             self._discover_summary(result)
 
+        self._p("")
         self._p("#####################################################################")
         self._p("===== FINAL =====")
         projected = result.get("result")

@@ -143,8 +143,8 @@ def validate_macro_integration() -> bool:
         assert "GVE modify: PASS" in transcript
         assert "validation-live-ok" in transcript
         assert "OUT | ?? generated.txt" in transcript
-        assert "PASS modify-repository\n#-------------------------------------------------------------------#\nTASK modify-branch git.branch" in transcript
-        assert "PASS modify-branch\n#-------------------------------------------------------------------#\nTASK modify-head git.head" in transcript
+        assert "PASS modify-repository\n\n#-------------------------------------------------------------------#\nTASK modify-branch git.branch\n\n" in transcript
+        assert "PASS modify-branch\n\n#-------------------------------------------------------------------#\nTASK modify-head git.head\n\n" in transcript
         assert "Expected HEAD: " + baseline in transcript
         assert "Branch: dev/live" in transcript
         assert "Commit: " + projected["commit"] in transcript
@@ -387,7 +387,7 @@ def validate_macro_integration() -> bool:
         stream = StringIO()
         presenter = ConsolePresenter(stream)
         presenter({"type": "macro-start", "macro": "modify", "phase_count": 1})
-        presenter({"type": "phase-start", "label": "COMMIT"})
+        presenter({"type": "phase-start", "index": 1, "total": 1, "label": "COMMIT"})
         presenter({"type": "task-start", "id": "status", "task": "git.status-scope"})
         presenter({
             "type": "command-output",
@@ -401,5 +401,7 @@ def validate_macro_integration() -> bool:
         assert "#-------------------------------------------------------------------#\nTASK status git.status-scope" in rendered
         assert "PASS status\n" in rendered
         assert "PASS status\n#-------------------------------------------------------------------#" not in rendered
+        assert "[01/01] COMMIT governed phase\n\n#-------------------------------------------------------------------#\nTASK status git.status-scope\n\n" in rendered
+        assert "OUT | A  two.txt\n\nPASS status\n" in rendered
 
     return True
