@@ -508,17 +508,76 @@ def _successful_result(engine_result: Mapping[str, object], invocation_id: str):
     return value if isinstance(value, Mapping) else None
 
 
+def _failure_details(engine_result: Mapping[str, object], invocation_id: str):
+    record = _record_by_id(engine_result, invocation_id)
+    if not isinstance(record, Mapping):
+        return None
+    error = record.get("error")
+    if not isinstance(error, Mapping):
+        return None
+    details = error.get("details")
+    return details if isinstance(details, Mapping) else None
+
+
+def _publication_evidence(engine_result: Mapping[str, object]):
+    commit_result = _successful_result(engine_result, "modify-commit")
+    commit = commit_result.get("commit") if commit_result is not None else None
+    before_result = _successful_result(engine_result, "modify-remote-before")
+    remote_before = before_result.get("commit") if before_result is not None else None
+    push_record = _record_by_id(engine_result, "modify-push")
+    push_attempted = False
+    if isinstance(push_record, Mapping):
+        if push_record.get("status") == "success":
+            push_attempted = True
+        elif push_record.get("status") == "failure":
+            details = _failure_details(engine_result, "modify-push")
+            push_attempted = isinstance(details, Mapping) and details.get("push_attempted") is True
+    verify_result = _successful_result(engine_result, "modify-verify")
+    remote_after = verify_result.get("commit") if verify_result is not None else None
+    if remote_after is None:
+        details = _failure_details(engine_result, "modify-verify")
+        if isinstance(details, Mapping):
+            observed = details.get("observed")
+            if observed is None or isinstance(observed, str):
+                remote_after = observed
+    verified = verify_result is not None
+    state = "verified" if verified else ("attempted-unverified" if push_attempted else "not-attempted")
+    return {
+        "state": state,
+        "attempted": push_attempted,
+        "verified": verified,
+        "local_commit": commit,
+        "remote_before": remote_before,
+        "remote_after": remote_after,
+    }
+
+
+def _effect_evidence(parameters, engine_result):
+    p = _validate(parameters)
+    mutated_paths = []
+    for index, change in enumerate(p["changes"], 1):
+        record = _record_by_id(engine_result, f"modify-change-{index:03d}")
+        if isinstance(record, Mapping) and record.get("status") == "success":
+            mutated_paths.append(change["path"])
+    branch_create = _successful_result(engine_result, "modify-branch-create")
+    branch_switch = _successful_result(engine_result, "modify-branch-switch")
+    branch_effect = None
+    if branch_create is not None:
+        branch_effect = {"created": branch_create.get("branch"), "switched": branch_switch is not None}
+    commit_result = _successful_result(engine_result, "modify-commit")
+    return {
+        "mutation_started": bool(mutated_paths),
+        "mutated_paths": mutated_paths,
+        "branch_effect": branch_effect,
+        "commit_created": commit_result.get("commit") if commit_result is not None else None,
+        "publication": _publication_evidence(engine_result),
+    }
+
+
 def build_modify_recovery(parameters, plan, engine_result, context):
     p = _validate(parameters)
     commit_result = _successful_result(engine_result, "modify-commit")
-    push_record = _record_by_id(engine_result, "modify-push")
-    verify_result = _successful_result(engine_result, "modify-verify")
-    publication_state = "not-attempted"
-    if isinstance(push_record, Mapping) and push_record.get("status") == "success":
-        publication_state = "verified" if verify_result is not None else "attempted-unverified"
-    base = {"mutation_started":False,"mutated_paths":[],"branch_effect":None,
-            "commit_created":commit_result.get("commit") if commit_result is not None else None,
-            "publication":{"state":publication_state,"verified":verify_result is not None},"residual":[]}
+    base = {**_effect_evidence(parameters, engine_result), "residual":[]}
     if engine_result.get("status") == "success":
         return {"state":"not-required","reason":"primary-success","plan":None,**base}
     if commit_result is not None:
@@ -562,6 +621,7 @@ def build_modify_recovery(parameters, plan, engine_result, context):
         else:
             if branch_switch is not None:
                 recovery_tasks.append({"id":"recover-branch-switch","task":"git.branch-switch","parameters":{"name":original}})
+                recovery_tasks.append({"id":"recover-original-head","task":"git.head","parameters":{"expected":p["expected_head"]}})
             recovery_tasks.append({"id":"recover-branch-delete","task":"git.branch-delete",
                                    "parameters":{"name":created_name,"expected_head":p["expected_head"]}})
     if not recovery_tasks:
@@ -644,23 +704,7 @@ def project_modify_result(parameters, plan, engine_result, context):
         "commit_count": 1 if commit is not None else 0,
         "push_mode": "normal",
         "remote_head": remote_head,
-        "publication": {
-            "state": (
-                "verified" if verify_result is not None
-                else (
-                    "attempted-unverified"
-                    if isinstance(_record_by_id(engine_result, "modify-push"), Mapping)
-                    and _record_by_id(engine_result, "modify-push").get("status") == "success"
-                    else "not-attempted"
-                )
-            ),
-            "local_commit": commit,
-            "remote_before": (
-                _successful_result(engine_result, "modify-remote-before").get("commit")
-                if _successful_result(engine_result, "modify-remote-before") is not None else None
-            ),
-            "remote_after": remote_head,
-        },
+        "publication": _publication_evidence(engine_result),
         "history_rewrite_or_force_push_occurred": False,
         "merge_occurred": False,
     }

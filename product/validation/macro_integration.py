@@ -254,6 +254,8 @@ def validate_macro_integration() -> bool:
         assert existing_race_projected["remote_head"] is None
         assert existing_raced["recovery"]["state"] == "not-attempted"
         assert existing_raced["recovery"]["reason"] == "commit-created"
+        assert existing_race_projected["publication"]["state"] == "not-attempted"
+        assert existing_race_projected["commit_created"] == existing_race_projected["commit"]
         failed = next(
             task for task in existing_raced["tasks"] if task["status"] == "failure"
         )
@@ -313,6 +315,8 @@ def validate_macro_integration() -> bool:
         assert race_projected["remote_head"] is None
         assert raced["recovery"]["state"] == "not-attempted"
         assert raced["recovery"]["reason"] == "commit-created"
+        assert race_projected["publication"]["state"] == "not-attempted"
+        assert race_projected["commit_created"] == race_projected["commit"]
         failed = next(t for t in raced["tasks"] if t["status"] == "failure")
         assert failed["id"] == "modify-push"
         assert "push remote race guard mismatch" in failed["error"]["message"]

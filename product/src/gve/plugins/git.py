@@ -574,7 +574,18 @@ def push_x(p, a):
     if p["expected_remote_head"] != "__absent__" and before != p["expected_remote_head"]:
         raise GitPreconditionError("push remote race guard mismatch", details={"expected": p["expected_remote_head"], "observed": before})
     local_commit = _run(a, ["rev-parse", f"refs/heads/{p['local_branch']}"]).stdout.rstrip("\r\n")
-    cp = _run(a, ["push", p["remote"], f"{p['local_branch']}:refs/heads/{p['remote_branch']}"])
+    cp = _run(a, ["push", p["remote"], f"{p['local_branch']}:refs/heads/{p['remote_branch']}"], check=False)
+    if cp.returncode != 0:
+        raise GitPreconditionError(
+            "Git push transport failed",
+            details={
+                "push_attempted": True,
+                "transport_exit_code": cp.returncode,
+                "stderr": cp.stderr.rstrip("\r\n"),
+                "remote_head_before": before,
+                "local_commit": local_commit,
+            },
+        )
     return {
         "observations": {"remote_head_before": before},
         "effects": {"push_attempted": True, "transport_exit_code": cp.returncode},

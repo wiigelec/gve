@@ -244,6 +244,8 @@ class MacroRunner:
         if recovery is not None:
             result["recovery"] = recovery
             if isinstance(result.get("result"), dict):
+                for key in ("mutation_started", "mutated_paths", "branch_effect", "commit_created"):
+                    result["result"][key] = recovery.get(key)
                 result["result"]["recovery"] = {
                     key: value for key, value in recovery.items()
                     if key not in {"tasks", "stages"}

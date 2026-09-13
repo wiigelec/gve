@@ -165,6 +165,22 @@ def validate_git_plugin() -> bool:
 
         call("git.fetch", {"remote": "origin", "branches": ["work"]}, auth)
 
+        hook = remote / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        hook.chmod(hook.stat().st_mode | 0o100)
+        (repo / "transport.txt").write_text("reject\n", encoding="utf-8")
+        call("git.add", {"paths": ["transport.txt"]}, auth)
+        rejected_commit = call("git.commit", {"message": "rejected transport"}, auth)["result"]["commit"]
+        try:
+            call("git.push", {"remote":"origin","local_branch":"work","remote_branch":"transport-fail","expected_remote_head":None}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+            assert exc.details["push_attempted"] is True
+            assert exc.details["local_commit"] == rejected_commit
+        else:
+            raise AssertionError("rejected push transport was accepted")
+        hook.unlink()
+
         try:
             call("git.push", {"remote": "other", "local_branch": "work", "remote_branch": "work"}, auth)
         except Exception as exc:

@@ -293,7 +293,7 @@ def validate_macro_modify() -> bool:
             "repository", "branch", "publication_branch", "expected_head",
             "observed_head", "branch_created", "files_changed", "validation",
             "diff", "commit", "commit_count", "push_mode", "remote_head",
-            "publication", "recovery", "history_rewrite_or_force_push_occurred", "merge_occurred",
+            "publication", "mutation_started", "mutated_paths", "branch_effect", "commit_created", "recovery", "history_rewrite_or_force_push_occurred", "merge_occurred",
         }
         assert projected["repository"]["root"] == str(repo.resolve())
         assert projected["expected_head"] == baseline
@@ -308,6 +308,9 @@ def validate_macro_modify() -> bool:
         assert projected["push_mode"] == "normal"
         assert projected["history_rewrite_or_force_push_occurred"] is False
         assert projected["merge_occurred"] is False
+        assert projected["mutation_started"] is True
+        assert projected["mutated_paths"] == ["generated.txt"]
+        assert projected["commit_created"] == projected["commit"]
         commit = next(x for x in result["tasks"] if x["id"] == "modify-commit")["result"]["commit"]
         assert projected["commit"] == commit
         assert projected["remote_head"] == commit
@@ -411,5 +414,31 @@ def validate_macro_modify() -> bool:
         assert subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/recovery/work"],cwd=repo).returncode!=0
         assert recovery_result["result"]["commit"] is None
         assert recovery_result["result"]["publication"]["state"]=="not-attempted"
+        assert recovery_result["result"]["mutation_started"] is True
+        assert recovery_result["result"]["mutated_paths"] == ["base.txt","made/deep/new.txt"]
+        assert recovery_result["result"]["branch_effect"] == {"created":"recovery/work","switched":True}
+        assert recovery_result["result"]["commit_created"] is None
+        assert "recover-original-head" in recovery_result["recovery"]["actions"]
+
+    from gve.macros.modify import _publication_evidence
+    synthetic={"status":"failure","tasks":[
+        {"id":"modify-remote-before","status":"success","result":{"commit":"1"*40}},
+        {"id":"modify-commit","status":"success","result":{"commit":"2"*40}},
+        {"id":"modify-push","status":"failure","error":{"details":{"push_attempted":True}}},
+        {"id":"modify-verify","status":"not-executed"},
+    ]}
+    assert _publication_evidence(synthetic)=={
+        "state":"attempted-unverified","attempted":True,"verified":False,
+        "local_commit":"2"*40,"remote_before":"1"*40,"remote_after":None,
+    }
+    mismatch={"status":"failure","tasks":[
+        {"id":"modify-remote-before","status":"success","result":{"commit":"1"*40}},
+        {"id":"modify-commit","status":"success","result":{"commit":"2"*40}},
+        {"id":"modify-push","status":"success","result":{"local_commit":"2"*40}},
+        {"id":"modify-verify","status":"failure","error":{"details":{"expected":"2"*40,"observed":"3"*40}}},
+    ]}
+    publication=_publication_evidence(mismatch)
+    assert publication["state"]=="attempted-unverified"
+    assert publication["remote_after"]=="3"*40
 
     return True
