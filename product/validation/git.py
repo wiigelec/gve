@@ -136,6 +136,22 @@ def validate_git_plugin() -> bool:
         (repo / "a.txt").write_text("one\n", encoding="utf-8")
         (repo / "tree-untracked.txt").unlink()
 
+        (repo / "tree-staged-new.txt").write_text("staged-new-content\n", encoding="utf-8")
+        sh(["git", "add", "tree-staged-new.txt"], repo)
+        tree = call("git.tree-status", {}, auth)["result"]
+        assert any(x["path"] == "tree-staged-new.txt" for x in tree["staged"]["entries"])
+        assert "tree-staged-new.txt" in tree["diff"]["staged"]
+        assert "tree-staged-new.txt" in tree["diff"]["tracked_tree"]
+        assert "staged-new-content" in tree["diff"]["tracked_tree"]
+        staged_after_tree = call(
+            "git.staged-scope",
+            {"allowed_paths": ["tree-staged-new.txt"]},
+            auth,
+        )["result"]["entries"]
+        assert any(x["path"] == "tree-staged-new.txt" for x in staged_after_tree)
+        sh(["git", "reset", "HEAD", "--", "tree-staged-new.txt"], repo)
+        (repo / "tree-staged-new.txt").unlink()
+
         snapshot=call("git.index-snapshot",{"paths":["a.txt","index-new.txt"]},auth)["result"]["entries"]
         (repo/"a.txt").write_text("index changed\n",encoding="utf-8"); (repo/"index-new.txt").write_text("new\n",encoding="utf-8")
         call("git.add",{"paths":["a.txt","index-new.txt"]},auth); call("git.index-restore",{"entries":snapshot},auth)

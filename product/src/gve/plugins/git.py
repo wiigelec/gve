@@ -384,17 +384,7 @@ def tree_status_x(p, a):
     staged = diff_x({"cached": True, "paths": []}, a)["result"]["diff"]
     tracked_tree = ""
     if head is not None:
-        with tempfile.TemporaryDirectory() as td:
-            env = os.environ.copy()
-            env["GIT_INDEX_FILE"] = str(Path(td) / "index")
-            def temp(args):
-                cp = subprocess.run(["git","-C",str(root),*args],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                if cp.returncode != 0:
-                    raise GitError("Git tree-status temporary-index operation failed",details={"args":args,"stderr":cp.stderr.rstrip("\r\n")})
-                return cp
-            temp(["read-tree","HEAD"])
-            temp(["add","-u","--","."])
-            tracked_tree = temp(["diff","--cached","HEAD"]).stdout
+        tracked_tree = _run(a, ["diff", "HEAD"], present_output=False).stdout
     result = {
         "repository": {"root": str(root), "remotes": remotes},
         "branch": branch,

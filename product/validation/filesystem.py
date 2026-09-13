@@ -44,6 +44,10 @@ def validate_filesystem_plugin():
             ("wrong-target",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"--- a/other.txt\n+++ b/other.txt\n@@ -1 +1 @@\n-x\n+y\n"}),
             ("multi",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"--- a/alpha.txt\n+++ b/alpha.txt\n@@ -1 +1 @@\n-omega\n+x\n--- a/other.txt\n+++ b/other.txt\n@@ -1 +1 @@\n-a\n+b\n"}),
             ("delete",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"--- a/alpha.txt\n+++ /dev/null\n@@ -1 +0,0 @@\n-omega\n"}),
+            ("rename",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"diff --git a/alpha.txt b/alpha.txt\nsimilarity index 100%\nrename from alpha.txt\nrename to renamed.txt\n"}),
+            ("copy",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"diff --git a/alpha.txt b/alpha.txt\nsimilarity index 100%\ncopy from alpha.txt\ncopy to copied.txt\n"}),
+            ("binary",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"diff --git a/alpha.txt b/alpha.txt\nGIT binary patch\nliteral 0\nHcmV?d00001\n"}),
+            ("mode",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"diff --git a/alpha.txt b/alpha.txt\nold mode 100644\nnew mode 100755\n"}),
             ("not-applicable",{"path":"alpha.txt","expected_sha256":h("omega\n"),"diff":"--- a/alpha.txt\n+++ b/alpha.txt\n@@ -1 +1 @@\n-not-omega\n+x\n"}),
         ]
         for label,params in bad_cases:

@@ -141,7 +141,7 @@ def patch_v(p,a):
     observed=sha(target)
     if observed!=d:
         raise FilesystemPreconditionError("patch digest mismatch",details={"expected":d,"observed":observed})
-    forbidden=("GIT binary patch","Binary files ","rename from ","rename to ","copy from ","copy to ","deleted file mode ","new file mode ")
+    forbidden=("GIT binary patch","Binary files ","rename from ","rename to ","copy from ","copy to ","deleted file mode ","new file mode ","old mode ","new mode ","similarity index ","dissimilarity index ")
     if any(token in diff for token in forbidden):
         raise FilesystemError("unsupported patch form")
     lines=diff.splitlines()
