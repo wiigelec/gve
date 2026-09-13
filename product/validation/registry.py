@@ -15,10 +15,10 @@ def validate_registry() -> bool:
     expected = {
         "filesystem.list", "filesystem.file-read", "filesystem.file-stat",
         "filesystem.file-hash", "filesystem.file-create", "filesystem.file-modify",
-        "filesystem.file-delete",
+        "filesystem.file-patch", "filesystem.file-delete", "filesystem.file-create-recover",
         "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
-        "git.commit", "git.fetch", "git.remote-head", "git.push",
+        "git.commit", "git.fetch", "git.remote-head", "git.push", "git.tree-status", "git.index-snapshot", "git.index-restore", "git.branch-delete",
         "execute.script",
         "github.issue-read", "github.issue-create", "github.issue-modify",
         "github.pull-request-read", "github.pull-request-create",

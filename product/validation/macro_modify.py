@@ -70,8 +70,9 @@ def validate_macro_modify() -> bool:
     names = [task["task"] for task in tasks]
     assert names[:6] == [
         "git.repository", "git.branch", "git.head", "git.status",
-        "git.staged-scope", "git.remote-head",
+        "git.staged-scope", "git.index-snapshot",
     ]
+    assert "filesystem.file-read" in names
     assert "filesystem.file-create" in names
     assert "filesystem.file-modify" in names
     assert names.count("execute.script") == 1
@@ -86,6 +87,8 @@ def validate_macro_modify() -> bool:
     assert by_id["modify-head"]["parameters"]["expected"] == "1" * 40
     assert by_id["modify-validate"]["parameters"]["script"] == "scripts/validate"
     assert by_id["modify-staged-before"]["parameters"]["allowed_paths"] == ["new.txt", "old.txt"]
+    assert by_id["modify-index-before"]["parameters"]["paths"] == ["new.txt", "old.txt"]
+    assert by_id["modify-preimage-002"]["parameters"]["path"] == "old.txt"
     assert by_id["modify-pending-diff-check"]["task"] == "git.pending-diff-check"
     assert by_id["modify-pending-diff-check"]["parameters"]["paths"] == ["new.txt", "old.txt"]
     assert ids.index("modify-pending-diff-check") < ids.index("modify-add")
@@ -100,6 +103,36 @@ def validate_macro_modify() -> bool:
     assert by_id["modify-verify"]["parameters"]["expected"] == {
         "$ref": "modify-commit.result.commit"
     }
+
+    diff_plan = definition.build(
+        {
+            "changes": [
+                {
+                    "operation": "modify",
+                    "path": "old.txt",
+                    "diff": "--- a/old.txt\n+++ b/old.txt\n@@ -1 +1 @@\n-old\n+new\n",
+                    "expected_sha256": digest,
+                }
+            ],
+            "commit_message": "patch old",
+            "expected_head": "4" * 40,
+            "validate": False,
+        }
+    )
+    diff_tasks = [dict(task) for stage in diff_plan.stages for task in stage.tasks]
+    patch_task = next(task for task in diff_tasks if task["id"] == "modify-change-001")
+    assert patch_task["task"] == "filesystem.file-patch"
+    assert "diff" in patch_task["parameters"] and "content" not in patch_task["parameters"]
+    for bad_change in (
+        {"operation":"modify","path":"x","expected_sha256":digest},
+        {"operation":"modify","path":"x","expected_sha256":digest,"content":"x","diff":"x"},
+    ):
+        try:
+            definition.build({"changes":[bad_change],"commit_message":"x","expected_head":"5"*40})
+        except PayloadError:
+            pass
+        else:
+            raise AssertionError("invalid diff/content representation accepted")
 
     no_validate = definition.build(
         {
@@ -260,7 +293,7 @@ def validate_macro_modify() -> bool:
             "repository", "branch", "publication_branch", "expected_head",
             "observed_head", "branch_created", "files_changed", "validation",
             "diff", "commit", "commit_count", "push_mode", "remote_head",
-            "history_rewrite_or_force_push_occurred", "merge_occurred",
+            "publication", "mutation_started", "mutated_paths", "branch_effect", "commit_created", "recovery", "history_rewrite_or_force_push_occurred", "merge_occurred",
         }
         assert projected["repository"]["root"] == str(repo.resolve())
         assert projected["expected_head"] == baseline
@@ -275,6 +308,9 @@ def validate_macro_modify() -> bool:
         assert projected["push_mode"] == "normal"
         assert projected["history_rewrite_or_force_push_occurred"] is False
         assert projected["merge_occurred"] is False
+        assert projected["mutation_started"] is True
+        assert projected["mutated_paths"] == ["generated.txt"]
+        assert projected["commit_created"] == projected["commit"]
         commit = next(x for x in result["tasks"] if x["id"] == "modify-commit")["result"]["commit"]
         assert projected["commit"] == commit
         assert projected["remote_head"] == commit
@@ -337,10 +373,72 @@ def validate_macro_modify() -> bool:
         assert failed["id"] == "modify-commit"
         assert no_op_result["result"]["files_changed"] == []
         assert no_op_result["result"]["diff"] == ""
+        assert no_op_result["recovery"]["state"] == "success"
+        assert no_op_result["result"]["recovery"]["state"] == "success"
         staged = next(
             x for x in no_op_result["tasks"] if x["id"] == "modify-staged-scope"
         )
         assert staged["status"] == "success"
         assert staged["result"]["entries"] == []
+
+    with tempfile.TemporaryDirectory() as td:
+        import hashlib
+        base=Path(td); repo=base/"repo"; remote=base/"remote.git"; repo.mkdir()
+        _sh(["git","init","-b","main"],repo)
+        _sh(["git","config","user.name","GVE Recovery Validator"],repo)
+        _sh(["git","config","user.email","recovery@example.invalid"],repo)
+        (repo/"base.txt").write_text("base\n")
+        (repo/"scripts").mkdir(); validator=repo/"scripts"/"validate"
+        validator.write_text("#!/bin/sh\nexit 1\n"); validator.chmod(0o755)
+        _sh(["git","add","base.txt","scripts/validate"],repo); _sh(["git","commit","-m","baseline"],repo)
+        baseline=_sh(["git","rev-parse","HEAD"],repo)
+        _sh(["git","init","--bare",str(remote)],base); _sh(["git","remote","add","origin",str(remote)],repo)
+        authority=Authority(repository=repo.resolve(),git_remotes=frozenset({"origin"}),
+            execute_limits=(("wall_seconds",600),("max_concurrent",32),("max_total_spawned",1024),("max_spawns_per_second",64)))
+        digest=hashlib.sha256(b"base\n").hexdigest()
+        recovery_result=MacroRunner(Engine(product_registry()),macros).execute(
+            _request({"changes":[
+                {"operation":"modify","path":"base.txt","content":"changed\n","expected_sha256":digest},
+                {"operation":"create","path":"made/deep/new.txt","content":"new\n"}],
+                "commit_message":"must not commit","expected_head":baseline,
+                "branch":{"create":True,"name":"recovery/work"},"validate":True}),
+            authority,RepositoryContext(repo.resolve(),None,"main",baseline))
+        assert recovery_result["status"]=="failure"
+        assert next(x for x in recovery_result["tasks"] if x["status"]=="failure")["id"]=="modify-validate"
+        assert recovery_result["recovery"]["state"]=="success"
+        assert recovery_result["result"]["recovery"]["state"]=="success"
+        assert (repo/"base.txt").read_text()=="base\n"
+        assert not (repo/"made").exists()
+        assert _sh(["git","symbolic-ref","--quiet","--short","HEAD"],repo)=="main"
+        assert _sh(["git","status","--porcelain=v1","--untracked-files=all"],repo)==""
+        assert subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/recovery/work"],cwd=repo).returncode!=0
+        assert recovery_result["result"]["commit"] is None
+        assert recovery_result["result"]["publication"]["state"]=="not-attempted"
+        assert recovery_result["result"]["mutation_started"] is True
+        assert recovery_result["result"]["mutated_paths"] == ["base.txt","made/deep/new.txt"]
+        assert recovery_result["result"]["branch_effect"] == {"created":"recovery/work","switched":True}
+        assert recovery_result["result"]["commit_created"] is None
+        assert "recover-original-head" in recovery_result["recovery"]["actions"]
+
+    from gve.macros.modify import _publication_evidence
+    synthetic={"status":"failure","tasks":[
+        {"id":"modify-remote-before","status":"success","result":{"commit":"1"*40}},
+        {"id":"modify-commit","status":"success","result":{"commit":"2"*40}},
+        {"id":"modify-push","status":"failure","error":{"details":{"push_attempted":True}}},
+        {"id":"modify-verify","status":"not-executed"},
+    ]}
+    assert _publication_evidence(synthetic)=={
+        "state":"attempted-unverified","attempted":True,"verified":False,
+        "local_commit":"2"*40,"remote_before":"1"*40,"remote_after":None,
+    }
+    mismatch={"status":"failure","tasks":[
+        {"id":"modify-remote-before","status":"success","result":{"commit":"1"*40}},
+        {"id":"modify-commit","status":"success","result":{"commit":"2"*40}},
+        {"id":"modify-push","status":"success","result":{"local_commit":"2"*40}},
+        {"id":"modify-verify","status":"failure","error":{"details":{"expected":"2"*40,"observed":"3"*40}}},
+    ]}
+    publication=_publication_evidence(mismatch)
+    assert publication["state"]=="attempted-unverified"
+    assert publication["remote_after"]=="3"*40
 
     return True

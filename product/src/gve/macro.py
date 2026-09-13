@@ -17,6 +17,7 @@ class MacroDefinition:
     stages: tuple[str, ...]
     build: MacroBuilder
     project_result: Callable[..., object] | None = None
+    recover: Callable[..., object] | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.identity, str) or not self.identity:
@@ -25,6 +26,8 @@ class MacroDefinition:
             raise TypeError("macro build must be callable")
         if self.project_result is not None and not callable(self.project_result):
             raise TypeError("macro project_result must be callable")
+        if self.recover is not None and not callable(self.recover):
+            raise TypeError("macro recover must be callable")
         if not isinstance(self.parameter_schema, Mapping):
             raise TypeError("macro parameter_schema must be a mapping")
 

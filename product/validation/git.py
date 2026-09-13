@@ -30,7 +30,7 @@ def validate_git_plugin() -> bool:
     expected = {
         "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
-        "git.commit", "git.fetch", "git.remote-head", "git.push",
+        "git.commit", "git.fetch", "git.remote-head", "git.push", "git.tree-status", "git.index-snapshot", "git.index-restore", "git.branch-delete",
     }
     identities = set(product_registry().identities())
     if not expected.issubset(identities):
@@ -125,6 +125,39 @@ def validate_git_plugin() -> bool:
         assert diff == ""
         assert call("git.diff-check", {}, auth)["result"]["clean"] is True
 
+        (repo / "a.txt").write_text("changed\n", encoding="utf-8")
+        (repo / "tree-untracked.txt").write_text("do-not-read-me\n", encoding="utf-8")
+        tree = call("git.tree-status", {}, auth)["result"]
+        assert tree["branch"] == "main" and tree["head"] == first
+        assert any(x["path"] == "tree-untracked.txt" for x in tree["status"]["entries"])
+        assert "changed" in tree["diff"]["unstaged"]
+        assert "changed" in tree["diff"]["tracked_tree"]
+        assert "do-not-read-me" not in repr(tree)
+        (repo / "a.txt").write_text("one\n", encoding="utf-8")
+        (repo / "tree-untracked.txt").unlink()
+
+        (repo / "tree-staged-new.txt").write_text("staged-new-content\n", encoding="utf-8")
+        sh(["git", "add", "tree-staged-new.txt"], repo)
+        tree = call("git.tree-status", {}, auth)["result"]
+        assert any(x["path"] == "tree-staged-new.txt" for x in tree["staged"]["entries"])
+        assert "tree-staged-new.txt" in tree["diff"]["staged"]
+        assert "tree-staged-new.txt" in tree["diff"]["tracked_tree"]
+        assert "staged-new-content" in tree["diff"]["tracked_tree"]
+        staged_after_tree = call(
+            "git.staged-scope",
+            {"allowed_paths": ["tree-staged-new.txt"]},
+            auth,
+        )["result"]["entries"]
+        assert any(x["path"] == "tree-staged-new.txt" for x in staged_after_tree)
+        sh(["git", "reset", "HEAD", "--", "tree-staged-new.txt"], repo)
+        (repo / "tree-staged-new.txt").unlink()
+
+        snapshot=call("git.index-snapshot",{"paths":["a.txt","index-new.txt"]},auth)["result"]["entries"]
+        (repo/"a.txt").write_text("index changed\n",encoding="utf-8"); (repo/"index-new.txt").write_text("new\n",encoding="utf-8")
+        call("git.add",{"paths":["a.txt","index-new.txt"]},auth); call("git.index-restore",{"entries":snapshot},auth)
+        assert call("git.staged-scope",{"allowed_paths":[]},auth)["result"]["entries"]==[]
+        sh(["git","checkout","--","a.txt"],repo); (repo/"index-new.txt").unlink()
+        call("git.branch-create",{"name":"delete-me","start":first},auth); call("git.branch-delete",{"name":"delete-me","expected_head":first},auth)
         created = call("git.branch-create", {"name": "work", "start": first}, auth)
         assert created["result"]["branch"] == "work"
         call("git.branch-switch", {"name": "work"}, auth)
@@ -147,6 +180,22 @@ def validate_git_plugin() -> bool:
         assert verified["result"]["commit"] == second
 
         call("git.fetch", {"remote": "origin", "branches": ["work"]}, auth)
+
+        hook = remote / "hooks" / "pre-receive"
+        hook.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+        hook.chmod(hook.stat().st_mode | 0o100)
+        (repo / "transport.txt").write_text("reject\n", encoding="utf-8")
+        call("git.add", {"paths": ["transport.txt"]}, auth)
+        rejected_commit = call("git.commit", {"message": "rejected transport"}, auth)["result"]["commit"]
+        try:
+            call("git.push", {"remote":"origin","local_branch":"work","remote_branch":"transport-fail","expected_remote_head":None}, auth)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "state-precondition"
+            assert exc.details["push_attempted"] is True
+            assert exc.details["local_commit"] == rejected_commit
+        else:
+            raise AssertionError("rejected push transport was accepted")
+        hook.unlink()
 
         try:
             call("git.push", {"remote": "other", "local_branch": "work", "remote_branch": "work"}, auth)

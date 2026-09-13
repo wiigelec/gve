@@ -116,6 +116,30 @@ def _group(plan: MacroPlan, engine_result: Mapping[str, object]) -> list[dict]:
     return grouped
 
 
+def _execute_recovery(definition, parameters, primary_plan, primary_engine_result, context, authority, engine, observer):
+    if definition.recover is None: return None
+    recovery_spec=definition.recover(parameters,primary_plan,primary_engine_result,context)
+    if not isinstance(recovery_spec,Mapping): raise PayloadError("macro recovery planner must return an object")
+    summary=dict(recovery_spec); recovery_plan=summary.pop("plan",None)
+    if recovery_plan is None: return {**summary,"actions":[],"tasks":[],"stages":[]}
+    if not isinstance(recovery_plan,MacroPlan): raise PayloadError("macro recovery plan must be MacroPlan")
+    tasks=_flatten(recovery_plan)
+    emit_to(observer,"phase-start",index=len(primary_plan.stages)+1,total=len(primary_plan.stages)+1,label="RECOVERY")
+    recovery_engine=engine.execute({"schema_version":1,"workflow_id":recovery_plan.workflow_id,"tasks":tasks},authority,observer=observer)
+    if not isinstance(recovery_engine,dict): raise PayloadError("recovery Engine returned non-object result")
+    records=recovery_engine.get("tasks",[])
+    if not isinstance(records,list): raise PayloadError("recovery Engine task records must be an array")
+    actions=[r.get("id") for r in records if isinstance(r,Mapping) and r.get("status")=="success"]
+    residual=list(summary.get("residual",[]))
+    for r in records:
+        if isinstance(r,Mapping) and r.get("status") in {"failure","not-executed"}:
+            i=r.get("id")
+            if isinstance(i,str) and i not in residual: residual.append(i)
+    state="success"
+    if recovery_engine.get("status")!="success": state="partial" if actions else "failed"
+    elif residual: state="partial"
+    return {**summary,"state":state,"actions":actions,"residual":residual,"tasks":records,"stages":_group(recovery_plan,recovery_engine)}
+
 class MacroRunner:
     def __init__(self, engine: Engine, macros: MacroRegistry) -> None:
         self.engine = engine
@@ -212,6 +236,21 @@ class MacroRunner:
             if not isinstance(projected, Mapping):
                 raise PayloadError("macro result projector must return an object")
             result["result"] = dict(projected)
+
+        recovery = _execute_recovery(
+            definition, dict(request.parameters), plan, engine_result,
+            context, authority, self.engine, observer,
+        )
+        if recovery is not None:
+            result["recovery"] = recovery
+            if isinstance(result.get("result"), dict):
+                for key in ("mutation_started", "mutated_paths", "branch_effect", "commit_created"):
+                    result["result"][key] = recovery.get(key)
+                result["result"]["recovery"] = {
+                    key: value for key, value in recovery.items()
+                    if key not in {"tasks", "stages"}
+                }
+
         if "error" in engine_result:
             result["error"] = engine_result["error"]
         return result

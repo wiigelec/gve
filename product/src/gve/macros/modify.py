@@ -36,6 +36,19 @@ PARAMETER_SCHEMA = {'type': 'object',
                                                                          'x-gve-format': 'repository-relative-path'},
                                                                 'content': {'type': 'string'},
                                                                 'expected_sha256': {'type': 'string',
+                                                                                    'pattern': '^[0-9a-f]{64}$'}}},
+                                                {'type': 'object',
+                                                 'additionalProperties': False,
+                                                 'required': ['operation',
+                                                              'path',
+                                                              'diff',
+                                                              'expected_sha256'],
+                                                 'properties': {'operation': {'enum': ['modify']},
+                                                                'path': {'type': 'string',
+                                                                         'minLength': 1,
+                                                                         'x-gve-format': 'repository-relative-path'},
+                                                                'diff': {'type': 'string', 'minLength': 1},
+                                                                'expected_sha256': {'type': 'string',
                                                                                     'pattern': '^[0-9a-f]{64}$'}}}]}},
                 'commit_message': {'type': 'string', 'minLength': 1},
                 'expected_head': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'},
@@ -134,11 +147,22 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         op = raw.get("operation")
         if op not in {"create", "modify"}:
             raise PayloadError("modify change operation must be create or modify")
-        allowed_change = {"operation", "path", "content"}
-        required_change = {"operation", "path", "content"}
-        if op == "modify":
-            allowed_change.add("expected_sha256")
-            required_change.add("expected_sha256")
+        if op == "create":
+            allowed_change = {"operation", "path", "content"}
+            required_change = set(allowed_change)
+            representation = "content"
+        else:
+            allowed_change = {"operation", "path", "content", "diff", "expected_sha256"}
+            required_change = {"operation", "path", "expected_sha256"}
+            has_content = "content" in raw
+            has_diff = "diff" in raw
+            if has_content == has_diff:
+                raise PayloadError(
+                    "modify existing-file change requires exactly one of content or diff",
+                    details={"index": index},
+                )
+            representation = "content" if has_content else "diff"
+            required_change.add(representation)
         extra_change = set(raw) - allowed_change
         missing_change = required_change - set(raw)
         if extra_change or missing_change:
@@ -154,11 +178,11 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         if path in seen_paths:
             raise PayloadError("modify change paths must be unique", details={"path": path})
         seen_paths.add(path)
-        item = {
-            "operation": op,
-            "path": path,
-            "content": _text(raw["content"], f"changes[{index}].content", allow_empty=True),
-        }
+        item = {"operation": op, "path": path, "representation": representation}
+        if representation == "content":
+            item["content"] = _text(raw["content"], f"changes[{index}].content", allow_empty=True)
+        else:
+            item["diff"] = _text(raw["diff"], f"changes[{index}].diff")
         if op == "modify":
             item["expected_sha256"] = _digest(raw["expected_sha256"])
         normalized_changes.append(item)
@@ -265,6 +289,20 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
                 "parameters": {"allowed_paths": p["change_paths"]},
             },
             {
+                "id": "modify-index-before",
+                "task": "git.index-snapshot",
+                "parameters": {"paths": p["change_paths"]},
+            },
+            *tuple(
+                {
+                    "id": f"modify-preimage-{index:03d}",
+                    "task": "filesystem.file-read",
+                    "parameters": {"path": change["path"]},
+                }
+                for index, change in enumerate(p["changes"], 1)
+                if change["operation"] == "modify"
+            ),
+            {
                 "id": "modify-remote-before",
                 "task": "git.remote-head",
                 "parameters": {"remote": "origin", "branch": publication_branch},
@@ -302,6 +340,13 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
         if change["operation"] == "create":
             task = "filesystem.file-create"
             task_parameters = {"path": change["path"], "content": change["content"]}
+        elif change["representation"] == "diff":
+            task = "filesystem.file-patch"
+            task_parameters = {
+                "path": change["path"],
+                "expected_sha256": change["expected_sha256"],
+                "diff": change["diff"],
+            }
         else:
             task = "filesystem.file-modify"
             task_parameters = {
@@ -463,6 +508,131 @@ def _successful_result(engine_result: Mapping[str, object], invocation_id: str):
     return value if isinstance(value, Mapping) else None
 
 
+def _failure_details(engine_result: Mapping[str, object], invocation_id: str):
+    record = _record_by_id(engine_result, invocation_id)
+    if not isinstance(record, Mapping):
+        return None
+    error = record.get("error")
+    if not isinstance(error, Mapping):
+        return None
+    details = error.get("details")
+    return details if isinstance(details, Mapping) else None
+
+
+def _publication_evidence(engine_result: Mapping[str, object]):
+    commit_result = _successful_result(engine_result, "modify-commit")
+    commit = commit_result.get("commit") if commit_result is not None else None
+    before_result = _successful_result(engine_result, "modify-remote-before")
+    remote_before = before_result.get("commit") if before_result is not None else None
+    push_record = _record_by_id(engine_result, "modify-push")
+    push_attempted = False
+    if isinstance(push_record, Mapping):
+        if push_record.get("status") == "success":
+            push_attempted = True
+        elif push_record.get("status") == "failure":
+            details = _failure_details(engine_result, "modify-push")
+            push_attempted = isinstance(details, Mapping) and details.get("push_attempted") is True
+    verify_result = _successful_result(engine_result, "modify-verify")
+    remote_after = verify_result.get("commit") if verify_result is not None else None
+    if remote_after is None:
+        details = _failure_details(engine_result, "modify-verify")
+        if isinstance(details, Mapping):
+            observed = details.get("observed")
+            if observed is None or isinstance(observed, str):
+                remote_after = observed
+    verified = verify_result is not None
+    state = "verified" if verified else ("attempted-unverified" if push_attempted else "not-attempted")
+    return {
+        "state": state,
+        "attempted": push_attempted,
+        "verified": verified,
+        "local_commit": commit,
+        "remote_before": remote_before,
+        "remote_after": remote_after,
+    }
+
+
+def _effect_evidence(parameters, engine_result):
+    p = _validate(parameters)
+    mutated_paths = []
+    for index, change in enumerate(p["changes"], 1):
+        record = _record_by_id(engine_result, f"modify-change-{index:03d}")
+        if isinstance(record, Mapping) and record.get("status") == "success":
+            mutated_paths.append(change["path"])
+    branch_create = _successful_result(engine_result, "modify-branch-create")
+    branch_switch = _successful_result(engine_result, "modify-branch-switch")
+    branch_effect = None
+    if branch_create is not None:
+        branch_effect = {"created": branch_create.get("branch"), "switched": branch_switch is not None}
+    commit_result = _successful_result(engine_result, "modify-commit")
+    return {
+        "mutation_started": bool(mutated_paths),
+        "mutated_paths": mutated_paths,
+        "branch_effect": branch_effect,
+        "commit_created": commit_result.get("commit") if commit_result is not None else None,
+        "publication": _publication_evidence(engine_result),
+    }
+
+
+def build_modify_recovery(parameters, plan, engine_result, context):
+    p = _validate(parameters)
+    commit_result = _successful_result(engine_result, "modify-commit")
+    base = {**_effect_evidence(parameters, engine_result), "residual":[]}
+    if engine_result.get("status") == "success":
+        return {"state":"not-required","reason":"primary-success","plan":None,**base}
+    if commit_result is not None:
+        return {"state":"not-attempted","reason":"commit-created","plan":None,**base}
+    recovery_tasks=[]; mutated_paths=[]; mutation_started=False
+    for index,change in reversed(list(enumerate(p["changes"],1))):
+        mutation=_record_by_id(engine_result,f"modify-change-{index:03d}")
+        if not isinstance(mutation,Mapping) or mutation.get("status")!="success": continue
+        mutation_started=True; mutated_paths.append(change["path"])
+        mutation_result=mutation.get("result"); mutation_result=mutation_result if isinstance(mutation_result,Mapping) else {}
+        if change["operation"]=="create":
+            effects=mutation.get("effects"); effects=effects if isinstance(effects,Mapping) else {}
+            created_paths=effects.get("created_paths")
+            if not isinstance(created_paths,list):
+                return {"state":"not-attempted","reason":"created-path-evidence-missing","plan":None,**base,
+                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":[change["path"]]}
+            recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-create-recover",
+                "parameters":{"path":change["path"],"expected_sha256":mutation_result.get("sha256"),"created_paths":created_paths}})
+        else:
+            preimage=_successful_result(engine_result,f"modify-preimage-{index:03d}")
+            if preimage is None:
+                return {"state":"not-attempted","reason":"preimage-evidence-missing","plan":None,**base,
+                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":[change["path"]]}
+            recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-modify",
+                "parameters":{"path":change["path"],"expected_sha256":mutation_result.get("sha256"),"content":preimage.get("content")}})
+    if mutation_started:
+        snap=_successful_result(engine_result,"modify-index-before")
+        entries=snap.get("entries") if snap is not None else None
+        if not isinstance(entries,list) or not entries:
+            return {"state":"not-attempted","reason":"index-snapshot-missing","plan":None,**base,
+                    "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":list(reversed(mutated_paths))}
+        recovery_tasks.append({"id":"recover-index","task":"git.index-restore","parameters":{"entries":entries}})
+    branch_create=_successful_result(engine_result,"modify-branch-create")
+    branch_switch=_successful_result(engine_result,"modify-branch-switch")
+    pre_branch=_successful_result(engine_result,"modify-branch")
+    branch_effect=None; residual=[]
+    if branch_create is not None:
+        created_name=branch_create.get("branch"); branch_effect={"created":created_name,"switched":branch_switch is not None}
+        original=pre_branch.get("branch") if pre_branch is not None else None
+        if not isinstance(original,str) or not original: residual.append(f"branch:{created_name}")
+        else:
+            if branch_switch is not None:
+                recovery_tasks.append({"id":"recover-branch-switch","task":"git.branch-switch","parameters":{"name":original}})
+                recovery_tasks.append({"id":"recover-original-head","task":"git.head","parameters":{"expected":p["expected_head"]}})
+            recovery_tasks.append({"id":"recover-branch-delete","task":"git.branch-delete",
+                                   "parameters":{"name":created_name,"expected_head":p["expected_head"]}})
+    if not recovery_tasks:
+        return {"state":"not-required","reason":"no-invocation-effects","plan":None,**base,
+                "mutation_started":mutation_started,"mutated_paths":list(reversed(mutated_paths)),
+                "branch_effect":branch_effect,"residual":residual}
+    return {"state":"pending","reason":"pre-commit-effects",
+            "plan":MacroPlan("macro-modify-recovery",(MacroStage("recovery","RECOVERY",tuple(recovery_tasks)),)),
+            **base,"mutation_started":mutation_started,"mutated_paths":list(reversed(mutated_paths)),
+            "branch_effect":branch_effect,"residual":residual}
+
 def project_modify_result(parameters, plan, engine_result, context):
     p = _validate(parameters)
 
@@ -534,6 +704,7 @@ def project_modify_result(parameters, plan, engine_result, context):
         "commit_count": 1 if commit is not None else 0,
         "push_mode": "normal",
         "remote_head": remote_head,
+        "publication": _publication_evidence(engine_result),
         "history_rewrite_or_force_push_occurred": False,
         "merge_occurred": False,
     }
@@ -545,4 +716,5 @@ MODIFY = MacroDefinition(
     stages=STAGES,
     build=build_modify,
     project_result=project_modify_result,
+    recover=build_modify_recovery,
 )

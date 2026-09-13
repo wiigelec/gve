@@ -67,7 +67,7 @@ def validate_macro_cli() -> bool:
         schema = json.loads(cp.stdout)
         assert schema["type"] == "object"
         assert schema["additionalProperties"] is False
-        assert set(schema["properties"]) == {"observations"}
+        assert set(schema["properties"]) == {"observations", "list_folder", "read_file"}
 
         cp = _run(["macro-schema", "issue"])
         assert cp.returncode == 0, cp.stderr
@@ -87,10 +87,15 @@ def validate_macro_cli() -> bool:
         cp = _run(["macro-schema", "modify"])
         assert cp.returncode == 0, cp.stderr
         modify_schema = json.loads(cp.stdout)
-        change_ops = {x["properties"]["operation"]["enum"][0]: x for x in modify_schema["properties"]["changes"]["items"]["oneOf"]}
-        assert set(change_ops) == {"create", "modify"}
-        assert "expected_sha256" not in change_ops["create"]["properties"]
-        assert "expected_sha256" in change_ops["modify"]["required"]
+        change_variants = modify_schema["properties"]["changes"]["items"]["oneOf"]
+        create_variants = [x for x in change_variants if x["properties"]["operation"]["enum"] == ["create"]]
+        modify_variants = [x for x in change_variants if x["properties"]["operation"]["enum"] == ["modify"]]
+        assert len(create_variants) == 1 and len(modify_variants) == 2
+        assert "expected_sha256" not in create_variants[0]["properties"]
+        assert {frozenset(x["required"]) for x in modify_variants} == {
+            frozenset({"operation","path","content","expected_sha256"}),
+            frozenset({"operation","path","diff","expected_sha256"}),
+        }
         assert set(modify_schema["required"]) == {"changes", "commit_message", "expected_head"}
         assert modify_schema["properties"]["branch"]["required"] == ["create", "name"]
 
@@ -138,6 +143,27 @@ def validate_macro_cli() -> bool:
         assert "Status: clean" in cp.stdout
         assert "GVE discover: PASS" in cp.stdout
         assert f"Result JSON: {result_path}" in cp.stdout
+
+        not_repo = base / "not-repo"
+        not_repo.mkdir()
+        nr_request = base / "nr-request.json"
+        nr_result = base / "nr-result.json"
+        nr_request.write_text(json.dumps({"schema_version":1,"header":{"repository":{}},"macro":{"name":"discover","parameters":{}}}),encoding="utf-8")
+        cp = _run(["macro","--in",str(nr_request),"--out",str(nr_result),"--repo",str(not_repo)])
+        assert cp.returncode == 1
+        nr = json.loads(nr_result.read_text())
+        assert nr["error"]["code"] == "repository-selection"
+        assert nr["error"]["details"]["selected"] == str(not_repo.resolve())
+
+        sub = repo / "subdir"
+        sub.mkdir()
+        sub_result = base / "sub-result.json"
+        cp = _run(["macro","--in",str(nr_request),"--out",str(sub_result),"--repo",str(sub)])
+        assert cp.returncode == 1
+        sr = json.loads(sub_result.read_text())
+        assert sr["error"]["code"] == "repository-selection"
+        assert sr["error"]["details"]["selected"] == str(sub.resolve())
+        assert sr["error"]["details"]["observed_top_level"] == str(repo.resolve())
 
         bad_request = base / "bad-request.json"
         bad_result = base / "bad-result.json"
