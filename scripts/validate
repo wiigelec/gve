@@ -8,6 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# Repository validation must not create Python bytecode in the worktree.
+sys.dont_write_bytecode = True
+os.environ["PYTHONDONTWRITEBYTECODE"] = "1"
+
 
 def run_validation(path: Path) -> int:
     if not path.is_file():

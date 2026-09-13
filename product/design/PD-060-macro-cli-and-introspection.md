@@ -26,9 +26,9 @@ Planning.
 
 `RESULT.json` is the authoritative machine-readable macro result.
 
-The macro command does not accept caller-authored task workflows. The existing
-FS-001 execute interface remains the separate surface for ordinary caller-owned
-workflow payloads.
+The macro command does not accept caller-authored task workflows. The FS-001 raw
+workflow payload and Engine are internal product mechanisms used by registered
+product macros and are not exposed through the maintained CLI.
 
 ## Request envelope
 
@@ -159,7 +159,10 @@ actionable result rather than silently producing multiple conflicting launchers.
 
 ## Compatibility
 
-FS-002 establishes the first macro CLI/request version.
+FS-002 established the first macro CLI/request version. PD-070 subsequently
+refines the maintained public execution boundary so registered product macros
+and macro introspection are the only maintained CLI execution surfaces; raw
+FS-001 workflow execution remains internal.
 
 Compatibility guarantees for future macro request versions require explicit
 Product Design. Implementations should fail closed on unsupported versions

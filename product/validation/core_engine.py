@@ -124,6 +124,61 @@ def validate_core_engine() -> bool:
     assert [item["id"] for item in success["tasks"]] == ["first", "second"]
     assert success["tasks"][1]["result"]["accepted"] == 7
 
+    observer_events = []
+    calls.clear()
+    observed_success = engine.execute(
+        {
+            "schema_version": 1,
+            "workflow_id": "ordered-ref",
+            "tasks": [
+                {
+                    "id": "first",
+                    "task": "test.emit",
+                    "parameters": {"name": "first", "value": 3},
+                },
+                {
+                    "id": "second",
+                    "task": "test.consume",
+                    "parameters": {"input": {"$ref": "first.result.nested.x"}},
+                },
+            ],
+        },
+        authority,
+        observer=observer_events.append,
+    )
+    assert observed_success == success
+    assert calls == ["first", "consume"]
+    assert [event["type"] for event in observer_events] == [
+        "task-start", "task-success", "task-start", "task-success"
+    ]
+
+    def raising_observer(event):
+        raise RuntimeError("observer failure must remain observational")
+
+    calls.clear()
+    raising_observer_success = engine.execute(
+        {
+            "schema_version": 1,
+            "workflow_id": "ordered-ref",
+            "tasks": [
+                {
+                    "id": "first",
+                    "task": "test.emit",
+                    "parameters": {"name": "first", "value": 3},
+                },
+                {
+                    "id": "second",
+                    "task": "test.consume",
+                    "parameters": {"input": {"$ref": "first.result.nested.x"}},
+                },
+            ],
+        },
+        authority,
+        observer=raising_observer,
+    )
+    assert raising_observer_success == success
+    assert calls == ["first", "consume"]
+
     calls.clear()
     bad_ref = engine.execute(
         {

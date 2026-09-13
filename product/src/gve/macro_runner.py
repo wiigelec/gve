@@ -7,6 +7,7 @@ from typing import Mapping
 from .authority import Authority
 from .engine import Engine
 from .errors import PayloadError
+from .events import emit_event, emit_to
 from .macro import MacroPlan, MacroRegistry
 from .macro_request import MacroRequest
 
@@ -125,6 +126,7 @@ class MacroRunner:
         request: MacroRequest,
         authority: Authority,
         context: RepositoryContext,
+        observer=None,
     ) -> dict:
         if authority.repository.resolve() != context.root:
             raise PayloadError(
@@ -149,6 +151,34 @@ class MacroRunner:
         _validate_plan(definition.stages, plan)
         tasks = _flatten(plan)
 
+        phase_by_task = {}
+        for index, stage in enumerate(plan.stages, 1):
+            for invocation in stage.tasks:
+                phase_by_task[invocation["id"]] = (index, stage.label)
+        emit_to(
+            observer,
+            "macro-start",
+            macro=request.macro_name,
+            phase_count=len(plan.stages),
+            repository_root=str(context.root),
+            repository_identity=context.identity,
+            repository_branch=context.branch,
+            repository_head=context.head,
+            expected_identity=request.repository.identity,
+            expected_branch=request.repository.branch,
+            expected_head=request.repository.head,
+        )
+        current_phase = None
+        def engine_observer(event):
+            nonlocal current_phase
+            if event.get("type") == "task-start":
+                phase = phase_by_task.get(event.get("id"))
+                if phase is not None and phase != current_phase:
+                    current_phase = phase
+                    index, label = phase
+                    emit_to(observer, "phase-start", index=index, total=len(plan.stages), label=label)
+            emit_event(observer, event)
+
         engine_result = self.engine.execute(
             {
                 "schema_version": 1,
@@ -156,6 +186,7 @@ class MacroRunner:
                 "tasks": tasks,
             },
             authority,
+            observer=engine_observer,
         )
         if not isinstance(engine_result, dict):
             raise PayloadError("Engine returned non-object result")
@@ -171,6 +202,16 @@ class MacroRunner:
             "stages": _group(plan, engine_result),
             "tasks": engine_result.get("tasks", []),
         }
+        if definition.project_result is not None:
+            projected = definition.project_result(
+                dict(request.parameters),
+                plan,
+                engine_result,
+                context,
+            )
+            if not isinstance(projected, Mapping):
+                raise PayloadError("macro result projector must return an object")
+            result["result"] = dict(projected)
         if "error" in engine_result:
             result["error"] = engine_result["error"]
         return result

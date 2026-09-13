@@ -7,6 +7,8 @@ import sys
 from pathlib import Path
 from typing import Callable
 
+sys.dont_write_bytecode = True
+
 from core_engine import validate_core_engine, validate_planning_binding
 from filesystem import validate_filesystem_plugin
 from git import validate_git_plugin
@@ -22,6 +24,7 @@ from macro_modify import validate_macro_modify
 from macro_layer import validate_macro_layer
 from macro_contracts import validate_macro_contracts
 from installation import validate_installation
+from macro_integration import validate_macro_integration
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "product" / "validation" / "requirement-evaluation.json"
@@ -42,6 +45,7 @@ TASKS: dict[str, Callable[[], bool | None]] = {
     "macro-layer": validate_macro_layer,
     "macro-contracts": validate_macro_contracts,
     "installation": validate_installation,
+    "macro-integration": validate_macro_integration,
 }
 
 

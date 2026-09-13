@@ -36,15 +36,21 @@ The FS-001 engine remains the only task orchestration engine.
 
 ## Product-owned orchestration
 
-PD-001 states that the caller owns ordinary workflow orchestration. Product
-macros add a separate convenience surface in which GVE owns the orchestration
-for a fixed named operation.
+PD-001 defines the underlying caller-owned FS-001 orchestration model. PD-070
+refines the maintained product execution surface so runtime callers do not submit
+raw FS-001 workflows through the maintained CLI.
 
-This does not change the meaning of the ordinary FS-001 payload interface.
+For maintained runtime execution, a caller selects a registered product macro and
+GVE owns the orchestration for that fixed named operation. The macro constructs
+the internal FS-001 workflow used by the existing Engine.
 
-A caller using the macro surface does not provide task order, task identities,
-conditions, loops, templates, result-reference expressions, or executable
-implementation logic. Those decisions belong to the selected product macro.
+The FS-001 payload and Engine remain the internal governed orchestration mechanism.
+Making raw FS-001 workflow submission internal does not change FS-001 task,
+authority, reference, failure, or evidence semantics.
+
+A runtime caller does not provide task order, task identities, conditions, loops,
+templates, result-reference expressions, or executable implementation logic.
+Those decisions belong to the selected product macro.
 
 ## Implementation model
 
@@ -252,7 +258,7 @@ The product macro layer is not:
 - a general workflow language;
 - a user-defined macro system;
 - a plugin installation mechanism;
-- a replacement for the FS-001 payload interface;
+- a replacement for the FS-001 Engine or internal payload model;
 - a second task registry;
 - a second execution engine;
 - a schema language project;

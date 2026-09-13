@@ -9,6 +9,7 @@ from typing import Any
 
 from ..authority import Authority
 from ..errors import GVEError
+from ..events import emit_current
 from ..registry import TaskDefinition
 
 OID_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -53,12 +54,15 @@ def _repo(a: Authority) -> Path:
     return root
 
 
-def _run(a: Authority, args: list[str], *, check: bool = True) -> subprocess.CompletedProcess[str]:
+def _run(a: Authority, args: list[str], *, check: bool = True, present_output: bool = True) -> subprocess.CompletedProcess[str]:
     root = _repo(a)
-    cp = subprocess.run(
-        ["git", "-C", str(root), *args],
-        text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    )
+    argv = ["git", "-C", str(root), *args]
+    emit_current("command-start", argv=argv, cwd=str(root))
+    cp = subprocess.run(argv, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if present_output and cp.stdout:
+        emit_current("command-output", stream="stdout", text=cp.stdout)
+    if present_output and cp.stderr:
+        emit_current("command-output", stream="stderr", text=cp.stderr)
     if check and cp.returncode != 0:
         raise GitError(
             "Git operation failed",
@@ -327,7 +331,7 @@ def _diff_args(p, check=False):
 
 
 def diff_x(p, a):
-    text = _run(a, _diff_args(p)).stdout
+    text = _run(a, _diff_args(p), present_output=False).stdout
     return {"observations": {"cached": p["cached"], "paths": p["paths"]}, "result": {"diff": text}}
 
 
