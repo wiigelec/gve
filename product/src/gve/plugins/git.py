@@ -406,6 +406,60 @@ def tree_status_x(p, a):
     }
     return {"observations": result, "result": result}
 
+def index_snapshot_v(p,a):
+    _fields(p,{"paths"},{"paths"}); paths=_paths(a,p["paths"],nonempty=True)
+    if len(set(paths))!=len(paths): raise GitError("paths must contain unique repository-relative paths")
+    return {"paths":paths}
+
+def index_snapshot_x(p,a):
+    entries=[]
+    for path in p["paths"]:
+        cp=_run(a,["ls-files","--stage","-z","--",path],present_output=False); records=[x for x in cp.stdout.split("\0") if x]
+        if len(records)>1: raise GitPreconditionError("index snapshot encountered multiple stages",details={"path":path})
+        if not records: entries.append({"path":path,"mode":None,"oid":None}); continue
+        record=records[0]
+        try: meta,observed_path=record.split("\t",1); mode,oid,stage=meta.split(" ",2)
+        except ValueError as exc: raise GitError("malformed index stage record",details={"path":path}) from exc
+        if observed_path!=path or stage!="0" or not re.fullmatch(r"[0-7]{6}",mode) or not OID_RE.fullmatch(oid): raise GitPreconditionError("unsupported index state for recovery",details={"path":path,"record":record})
+        entries.append({"path":path,"mode":mode,"oid":oid})
+    result={"entries":entries}; return {"observations":result,"result":result}
+
+def index_restore_v(p,a):
+    _fields(p,{"entries"},{"entries"}); raw=p["entries"]
+    if not isinstance(raw,list) or not raw: raise GitError("entries must be a non-empty array")
+    entries=[]; seen=set()
+    for item in raw:
+        if not isinstance(item,dict) or set(item)!={"path","mode","oid"}: raise GitError("index restore entry fields are invalid")
+        path=_path(a,item["path"])
+        if path in seen: raise GitError("index restore paths must be unique")
+        seen.add(path); mode=item["mode"]; oid=item["oid"]
+        if (mode is None)!=(oid is None): raise GitError("index restore mode and oid must both be null or both be present")
+        if mode is not None:
+            if not isinstance(mode,str) or not re.fullmatch(r"[0-7]{6}",mode): raise GitError("index restore mode is invalid")
+            oid=_oid(oid,"oid")
+        entries.append({"path":path,"mode":mode,"oid":oid})
+    return {"entries":entries}
+
+def index_restore_x(p,a):
+    restored=[]
+    for item in p["entries"]:
+        if item["oid"] is None: _run(a,["update-index","--force-remove","--",item["path"]])
+        else: _run(a,["update-index","--add","--cacheinfo",item["mode"],item["oid"],item["path"]])
+        restored.append(item["path"])
+    return {"effects":{"restored_index_paths":restored},"result":{"paths":restored}}
+
+def branch_delete_v(p,a):
+    _fields(p,{"name","expected_head"},{"name","expected_head"}); name=_branch(a,p["name"],"name"); expected=_oid(p["expected_head"],"expected_head")
+    current=branch_x({"expected":None},a)["result"]["branch"]
+    if current==name: raise GitPreconditionError("cannot delete current branch")
+    if _run(a,["show-ref","--verify","--quiet",f"refs/heads/{name}"],check=False).returncode!=0: raise GitPreconditionError("branch does not exist")
+    observed=_run(a,["rev-parse",f"refs/heads/{name}"]).stdout.rstrip("\r\n")
+    if observed!=expected: raise GitPreconditionError("branch head expectation mismatch",details={"expected":expected,"observed":observed})
+    return {"name":name,"expected_head":expected}
+
+def branch_delete_x(p,a):
+    _run(a,["branch","-d",p["name"]]); return {"effects":{"deleted_branch":p["name"]},"result":{"branch":p["name"],"commit":p["expected_head"]}}
+
 def branch_create_v(p, a):
     _fields(p, {"name", "start"}, {"name"})
     name = _branch(a, p["name"], "name")
@@ -540,8 +594,11 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
         TaskDefinition("git.pending-diff-check", pending_diff_check_v, pending_diff_check_x),
         TaskDefinition("git.tree-status", tree_status_v, tree_status_x),
+        TaskDefinition("git.index-snapshot", index_snapshot_v, index_snapshot_x),
+        TaskDefinition("git.index-restore", index_restore_v, index_restore_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
         TaskDefinition("git.branch-switch", branch_switch_v, branch_switch_x),
+        TaskDefinition("git.branch-delete", branch_delete_v, branch_delete_x),
         TaskDefinition("git.add", add_v, add_x),
         TaskDefinition("git.commit", commit_v, commit_x),
         TaskDefinition("git.fetch", fetch_v, fetch_x),

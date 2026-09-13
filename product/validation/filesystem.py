@@ -14,7 +14,7 @@ def sh(args,cwd):
     return cp.stdout.rstrip("\r\n")
 
 def validate_filesystem_plugin():
-    expected={"filesystem.list","filesystem.file-read","filesystem.file-stat","filesystem.file-hash","filesystem.file-create","filesystem.file-modify","filesystem.file-patch","filesystem.file-delete"}
+    expected={"filesystem.list","filesystem.file-read","filesystem.file-stat","filesystem.file-hash","filesystem.file-create","filesystem.file-modify","filesystem.file-patch","filesystem.file-delete","filesystem.file-create-recover"}
     identities=set(product_registry().identities())
     if not expected.issubset(identities): raise AssertionError("filesystem registry mismatch")
     with tempfile.TemporaryDirectory() as td:
@@ -53,6 +53,11 @@ def validate_filesystem_plugin():
             else: raise AssertionError("unsafe patch accepted: "+label)
             assert (r/"alpha.txt").read_text()==before
 
+        x=call("filesystem.file-create",{"path":"recover/a/b.txt","content":"temporary"},a)
+        made=x["effects"]["created_paths"]
+        rx=call("filesystem.file-create-recover",{"path":"recover/a/b.txt","expected_sha256":h("temporary"),"created_paths":made},a)
+        assert not (r/"recover").exists()
+        assert rx["result"]["removed_paths"]==["recover/a/b.txt","recover/a","recover"]
         try: call("filesystem.file-stat",{"path":"../escape"},a)
         except Exception as e: assert getattr(e,"code",None)=="authority"
         else: raise AssertionError("traversal escape accepted")

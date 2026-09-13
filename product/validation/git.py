@@ -30,7 +30,7 @@ def validate_git_plugin() -> bool:
     expected = {
         "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
-        "git.commit", "git.fetch", "git.remote-head", "git.push", "git.tree-status",
+        "git.commit", "git.fetch", "git.remote-head", "git.push", "git.tree-status", "git.index-snapshot", "git.index-restore", "git.branch-delete",
     }
     identities = set(product_registry().identities())
     if not expected.issubset(identities):
@@ -136,6 +136,12 @@ def validate_git_plugin() -> bool:
         (repo / "a.txt").write_text("one\n", encoding="utf-8")
         (repo / "tree-untracked.txt").unlink()
 
+        snapshot=call("git.index-snapshot",{"paths":["a.txt","index-new.txt"]},auth)["result"]["entries"]
+        (repo/"a.txt").write_text("index changed\n",encoding="utf-8"); (repo/"index-new.txt").write_text("new\n",encoding="utf-8")
+        call("git.add",{"paths":["a.txt","index-new.txt"]},auth); call("git.index-restore",{"entries":snapshot},auth)
+        assert call("git.staged-scope",{"allowed_paths":[]},auth)["result"]["entries"]==[]
+        sh(["git","checkout","--","a.txt"],repo); (repo/"index-new.txt").unlink()
+        call("git.branch-create",{"name":"delete-me","start":first},auth); call("git.branch-delete",{"name":"delete-me","expected_head":first},auth)
         created = call("git.branch-create", {"name": "work", "start": first}, auth)
         assert created["result"]["branch"] == "work"
         call("git.branch-switch", {"name": "work"}, auth)

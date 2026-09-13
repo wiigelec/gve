@@ -182,6 +182,33 @@ def delete_x(p,a):
     t.unlink()
     return {"effects":{"deleted_paths":[p["path"]]},"result":{"path":p["path"],"previous_sha256":before}}
 
+def recover_created_v(p,a):
+    fields(p,{"path","expected_sha256","created_paths"},{"path","expected_sha256","created_paths"})
+    q=rel(p["path"]); d=digest(p["expected_sha256"]); paths=p["created_paths"]
+    if not isinstance(paths,list) or not paths or any(not isinstance(x,str) or not x for x in paths):
+        raise FilesystemError("created_paths must be a non-empty string array")
+    normalized=[rel(x) for x in paths]
+    if len(set(normalized))!=len(normalized): raise FilesystemError("created_paths must be unique")
+    if normalized[-1]!=q: raise FilesystemError("created_paths must end with target path")
+    for item in normalized: resolve(a,item)
+    return {"path":q,"expected_sha256":d,"created_paths":normalized}
+
+def recover_created_x(p,a):
+    r=root(a); target=resolve(a,p["path"])
+    if not target.is_file(): raise FilesystemPreconditionError("recovery target must be regular file")
+    observed=sha(target)
+    if observed!=p["expected_sha256"]: raise FilesystemPreconditionError("recovery target digest mismatch",details={"expected":p["expected_sha256"],"observed":observed})
+    created=set(p["created_paths"]); parents=p["created_paths"][:-1]
+    for relpath in reversed(parents):
+        directory=resolve(a,relpath)
+        if not directory.is_dir(): raise FilesystemPreconditionError("recovery created parent is not directory",details={"path":relpath})
+        children={child.relative_to(r).as_posix() for child in directory.iterdir()}
+        allowed={item for item in created if Path(item).parent.as_posix()==relpath}
+        if children-allowed: raise FilesystemPreconditionError("recovery created parent is no longer empty of unrelated content",details={"path":relpath,"unexpected":sorted(children-allowed)})
+    target.unlink(); removed=[p["path"]]
+    for relpath in reversed(parents): resolve(a,relpath).rmdir(); removed.append(relpath)
+    return {"effects":{"deleted_paths":removed},"result":{"path":p["path"],"previous_sha256":observed,"removed_paths":removed}}
+
 def tasks():
     return (
       TaskDefinition("filesystem.list",list_v,list_x),
@@ -192,4 +219,5 @@ def tasks():
       TaskDefinition("filesystem.file-modify",modify_v,modify_x),
       TaskDefinition("filesystem.file-patch",patch_v,patch_x),
       TaskDefinition("filesystem.file-delete",delete_v,delete_x),
+      TaskDefinition("filesystem.file-create-recover",recover_created_v,recover_created_x),
     )
