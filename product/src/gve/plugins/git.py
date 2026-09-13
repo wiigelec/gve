@@ -368,6 +368,44 @@ def pending_diff_check_x(p, a):
         return {"observations": result, "result": result}
 
 
+def tree_status_v(p, a):
+    _fields(p, set(), set())
+    _repo(a)
+    return {}
+
+def tree_status_x(p, a):
+    root = _repo(a)
+    remotes = _remotes(a)
+    branch = branch_x({"expected": None}, a)["result"]["branch"]
+    head = head_x({"expected": None}, a)["result"]["commit"]
+    status = status_x({"expected_clean": None, "include_untracked": True}, a)["result"]
+    staged_entries = [entry for entry in status["entries"] if entry["status"][0] not in {" ", "?"}]
+    unstaged = diff_x({"cached": False, "paths": []}, a)["result"]["diff"]
+    staged = diff_x({"cached": True, "paths": []}, a)["result"]["diff"]
+    tracked_tree = ""
+    if head is not None:
+        with tempfile.TemporaryDirectory() as td:
+            env = os.environ.copy()
+            env["GIT_INDEX_FILE"] = str(Path(td) / "index")
+            def temp(args):
+                cp = subprocess.run(["git","-C",str(root),*args],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+                if cp.returncode != 0:
+                    raise GitError("Git tree-status temporary-index operation failed",details={"args":args,"stderr":cp.stderr.rstrip("\r\n")})
+                return cp
+            temp(["read-tree","HEAD"])
+            temp(["add","-u","--","."])
+            tracked_tree = temp(["diff","--cached","HEAD"]).stdout
+    result = {
+        "repository": {"root": str(root), "remotes": remotes},
+        "branch": branch,
+        "detached": branch is None and head is not None,
+        "head": head,
+        "status": status,
+        "staged": {"entries": staged_entries},
+        "diff": {"unstaged": unstaged, "staged": staged, "tracked_tree": tracked_tree},
+    }
+    return {"observations": result, "result": result}
+
 def branch_create_v(p, a):
     _fields(p, {"name", "start"}, {"name"})
     name = _branch(a, p["name"], "name")
@@ -501,6 +539,7 @@ def tasks() -> tuple[TaskDefinition, ...]:
         TaskDefinition("git.diff", diff_v, diff_x),
         TaskDefinition("git.diff-check", diff_v, diff_check_x),
         TaskDefinition("git.pending-diff-check", pending_diff_check_v, pending_diff_check_x),
+        TaskDefinition("git.tree-status", tree_status_v, tree_status_x),
         TaskDefinition("git.branch-create", branch_create_v, branch_create_x),
         TaskDefinition("git.branch-switch", branch_switch_v, branch_switch_x),
         TaskDefinition("git.add", add_v, add_x),

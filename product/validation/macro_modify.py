@@ -101,6 +101,36 @@ def validate_macro_modify() -> bool:
         "$ref": "modify-commit.result.commit"
     }
 
+    diff_plan = definition.build(
+        {
+            "changes": [
+                {
+                    "operation": "modify",
+                    "path": "old.txt",
+                    "diff": "--- a/old.txt\n+++ b/old.txt\n@@ -1 +1 @@\n-old\n+new\n",
+                    "expected_sha256": digest,
+                }
+            ],
+            "commit_message": "patch old",
+            "expected_head": "4" * 40,
+            "validate": False,
+        }
+    )
+    diff_tasks = [dict(task) for stage in diff_plan.stages for task in stage.tasks]
+    patch_task = next(task for task in diff_tasks if task["id"] == "modify-change-001")
+    assert patch_task["task"] == "filesystem.file-patch"
+    assert "diff" in patch_task["parameters"] and "content" not in patch_task["parameters"]
+    for bad_change in (
+        {"operation":"modify","path":"x","expected_sha256":digest},
+        {"operation":"modify","path":"x","expected_sha256":digest,"content":"x","diff":"x"},
+    ):
+        try:
+            definition.build({"changes":[bad_change],"commit_message":"x","expected_head":"5"*40})
+        except PayloadError:
+            pass
+        else:
+            raise AssertionError("invalid diff/content representation accepted")
+
     no_validate = definition.build(
         {
             "changes": [{"operation": "create", "path": "x.txt", "content": "x"}],

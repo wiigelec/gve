@@ -30,7 +30,7 @@ def validate_git_plugin() -> bool:
     expected = {
         "git.repository", "git.branch", "git.head", "git.status", "git.status-scope", "git.staged-scope", "git.pending-diff-check", "git.diff",
         "git.diff-check", "git.branch-create", "git.branch-switch", "git.add",
-        "git.commit", "git.fetch", "git.remote-head", "git.push",
+        "git.commit", "git.fetch", "git.remote-head", "git.push", "git.tree-status",
     }
     identities = set(product_registry().identities())
     if not expected.issubset(identities):
@@ -124,6 +124,17 @@ def validate_git_plugin() -> bool:
         diff = call("git.diff", {"paths": ["a.txt"]}, auth)["result"]["diff"]
         assert diff == ""
         assert call("git.diff-check", {}, auth)["result"]["clean"] is True
+
+        (repo / "a.txt").write_text("changed\n", encoding="utf-8")
+        (repo / "tree-untracked.txt").write_text("do-not-read-me\n", encoding="utf-8")
+        tree = call("git.tree-status", {}, auth)["result"]
+        assert tree["branch"] == "main" and tree["head"] == first
+        assert any(x["path"] == "tree-untracked.txt" for x in tree["status"]["entries"])
+        assert "changed" in tree["diff"]["unstaged"]
+        assert "changed" in tree["diff"]["tracked_tree"]
+        assert "do-not-read-me" not in repr(tree)
+        (repo / "a.txt").write_text("one\n", encoding="utf-8")
+        (repo / "tree-untracked.txt").unlink()
 
         created = call("git.branch-create", {"name": "work", "start": first}, auth)
         assert created["result"]["branch"] == "work"

@@ -179,19 +179,37 @@ class ConsolePresenter:
         if isinstance(projected, Mapping):
             repository = projected.get("repository")
             root = repository.get("root") if isinstance(repository, Mapping) else None
-            validation = projected.get("validation")
-            validation_status = validation.get("status") if isinstance(validation, Mapping) else None
-            files = projected.get("files_changed")
-            files_text = ", ".join(files) if isinstance(files, list) else files
-            values = (
-                ("Operation", result.get("macro")), ("Repository", root),
-                ("Branch", projected.get("branch")), ("Expected HEAD", projected.get("expected_head")),
-                ("Observed HEAD", projected.get("observed_head")), ("Files Changed", files_text),
-                ("Validation", validation_status), ("Commit", projected.get("commit")),
-                ("Remote HEAD", projected.get("remote_head")), ("Result JSON", str(output_path)),
-            )
-            for label, value in values:
-                if value is not None: self._p(f"{label}: {value}")
+            if result.get("macro") == "discover":
+                observations = projected.get("observations")
+                observations = observations if isinstance(observations, Mapping) else {}
+                branch_record = observations.get("branch")
+                head_record = observations.get("head")
+                status_record = observations.get("status")
+                self._p(f"Operation: {result.get('macro')}")
+                if root is not None:
+                    self._p(f"Repository: {root}")
+                if isinstance(branch_record, Mapping) and branch_record.get("branch") is not None:
+                    self._p(f"Branch: {branch_record.get('branch')}")
+                if isinstance(head_record, Mapping) and head_record.get("commit") is not None:
+                    self._p(f"Observed HEAD: {head_record.get('commit')}")
+                if isinstance(status_record, Mapping) and isinstance(status_record.get("clean"), bool):
+                    self._p("Status: " + ("clean" if status_record.get("clean") else "dirty"))
+                self._p(f"Result JSON: {output_path}")
+            else:
+                validation = projected.get("validation")
+                validation_status = validation.get("status") if isinstance(validation, Mapping) else None
+                files = projected.get("files_changed")
+                files_text = ", ".join(files) if isinstance(files, list) else files
+                values = (
+                    ("Operation", result.get("macro")), ("Repository", root),
+                    ("Branch", projected.get("branch")), ("Expected HEAD", projected.get("expected_head")),
+                    ("Observed HEAD", projected.get("observed_head")), ("Files Changed", files_text),
+                    ("Validation", validation_status), ("Commit", projected.get("commit")),
+                    ("Remote HEAD", projected.get("remote_head")), ("Result JSON", str(output_path)),
+                )
+                for label, value in values:
+                    if value is not None:
+                        self._p(f"{label}: {value}")
         else:
             self._p(f"Operation: {result.get('macro')}")
             root = self.context.get("repository_root")

@@ -11,6 +11,10 @@ from typing import Sequence
 from .authority import Authority
 from .engine import Engine
 from .errors import GVEError
+
+
+class RepositorySelectionError(GVEError):
+    code = "repository-selection"
 from .macro_request import parse_macro_request
 from .macro_runner import MacroRunner, RepositoryContext
 from .plugins.execute import HARD_LIMITS
@@ -64,12 +68,17 @@ def _github_identity(url: str) -> str | None:
 
 def _repository_context(repository: Path) -> RepositoryContext:
     repository = repository.resolve()
-    observed_root = Path(
-        _git(repository, "rev-parse", "--show-toplevel").stdout.rstrip("\r\n")
-    ).resolve()
+    root_cp = _git(repository, "rev-parse", "--show-toplevel", check=False)
+    if root_cp.returncode != 0:
+        raise RepositorySelectionError(
+            "selected path is not a Git repository",
+            details={"selected": str(repository)},
+        )
+    observed_root = Path(root_cp.stdout.rstrip("\r\n")).resolve()
     if observed_root != repository:
-        raise ValueError(
-            f"selected repository must be Git top-level: selected={repository} observed={observed_root}"
+        raise RepositorySelectionError(
+            "selected repository is not the Git top-level",
+            details={"selected": str(repository), "observed_top_level": str(observed_root)},
         )
 
     branch_cp = _git(repository, "symbolic-ref", "--quiet", "--short", "HEAD", check=False)

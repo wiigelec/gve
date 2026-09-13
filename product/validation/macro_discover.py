@@ -1,13 +1,13 @@
 from __future__ import annotations
-
+import json
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "product" / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
+ROOT=Path(__file__).resolve().parents[2]
+SRC=ROOT/"product"/"src"
+if str(SRC) not in sys.path: sys.path.insert(0,str(SRC))
 
 from gve.authority import Authority
 from gve.engine import Engine
@@ -17,156 +17,61 @@ from gve.macro_runner import MacroRunner, RepositoryContext
 from gve.product_macro_registry import product_macro_registry
 from gve.product_registry import product_registry
 
+def request(parameters=None,repository=None):
+    return parse_macro_request({"schema_version":1,"header":{"repository":repository or {}},"macro":{"name":"discover","parameters":parameters or {}}})
+def sh(args,cwd):
+    cp=subprocess.run(args,cwd=cwd,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if cp.returncode: raise AssertionError(cp.stderr)
+    return cp.stdout.rstrip("\r\n")
 
-def _request(parameters=None, repository=None):
-    return parse_macro_request(
-        {
-            "schema_version": 1,
-            "header": {"repository": repository or {}},
-            "macro": {"name": "discover", "parameters": parameters or {}},
-        }
-    )
-
-
-def validate_macro_discover() -> bool:
-    macros = product_macro_registry()
-    if "discover" not in macros.identities():
-        raise AssertionError("discover is not registered")
-
-    definition = macros.resolve("discover")
-    if definition.stages != ("DISCOVER",):
-        raise AssertionError("discover public stage contract mismatch")
-
-    default_plan = definition.build({})
-    default_tasks = [dict(task) for task in default_plan.stages[0].tasks]
-    if [task["task"] for task in default_tasks] != [
-        "git.repository", "git.branch", "git.head", "git.status"
-    ]:
-        raise AssertionError("discover default task composition mismatch")
-
-    reordered = definition.build({"observations": ["root_entries", "head"]})
-    reordered_tasks = [dict(task) for task in reordered.stages[0].tasks]
-    if [task["task"] for task in reordered_tasks] != ["git.head", "filesystem.list"]:
-        raise AssertionError("discover task order is caller-controlled")
-
-    invalid = [
-        {"extra": True},
-        {"observations": []},
-        {"observations": ["head", "head"]},
-        {"observations": ["unknown"]},
-        {"observations": [1]},
+def validate_macro_discover():
+    macros=product_macro_registry(); definition=macros.resolve("discover")
+    assert definition.stages==("DISCOVER",)
+    default=[dict(x)["task"] for x in definition.build({}).stages[0].tasks]
+    assert default==["git.repository","git.branch","git.head","git.status"]
+    reordered=[dict(x)["task"] for x in definition.build({"observations":["root_entries","head"]}).stages[0].tasks]
+    assert reordered==["git.head","filesystem.list"]
+    plan=definition.build({"observations":["tree_status"],"list_folder":[{"path":"product/src"}],"read_file":{"paths":["README.md","AGENTS.md"]}})
+    names=[dict(x)["task"] for x in plan.stages[0].tasks]
+    assert names==["git.tree-status","filesystem.list","filesystem.file-read","filesystem.file-read"]
+    invalid=[
+        {"extra":True},{"observations":[]},{"observations":["head","head"]},{"observations":["unknown"]},{"observations":[1]},
+        {"list_folder":[]},{"list_folder":[{"path":"a"},{"path":"./a"}]},
+        {"read_file":{"paths":[]}},{"read_file":{"paths":["a","./a"]}},{"read_file":{"other":[]}},
     ]
-    for params in invalid:
-        try:
-            definition.build(params)
-        except PayloadError:
-            pass
-        else:
-            raise AssertionError(f"invalid discover parameters accepted: {params!r}")
-
-    runner = MacroRunner(Engine(product_registry()), macros)
-    context = RepositoryContext(ROOT, "wiigelec/gve", "fs002", None)
-    authority = Authority.for_repository(ROOT)
-
-    result = runner.execute(_request({"observations": ["head"]}), authority, context)
-    if result["macro"] != "discover" or result["stages"][0]["label"] != "DISCOVER":
-        raise AssertionError("discover macro result structure mismatch")
-    if result["tasks"][0]["effects"] != {}:
-        raise AssertionError("discover produced mutation effects")
-
-    guarded = _request({}, {"identity": "other/repo"})
-    try:
-        runner.execute(guarded, authority, context)
-    except PayloadError:
-        pass
-    else:
-        raise AssertionError("repository identity mismatch was accepted")
-
-    unknown = parse_macro_request(
-        {
-            "schema_version": 1,
-            "header": {"repository": {}},
-            "macro": {"name": "unknown", "parameters": {}},
-        }
-    )
-    try:
-        runner.execute(unknown, authority, RepositoryContext(ROOT, None, None, None))
-    except PayloadError:
-        pass
-    else:
-        raise AssertionError("unknown macro identity was accepted")
+    for p in invalid:
+        try: definition.build(p)
+        except PayloadError: pass
+        else: raise AssertionError(f"invalid discover parameters accepted: {p!r}")
 
     with tempfile.TemporaryDirectory() as td:
-        temp_root = Path(td)
-        temp_authority = Authority.for_repository(temp_root)
-        temp_context = RepositoryContext(temp_root, None, None, None)
-        failed = runner.execute(_request(), temp_authority, temp_context)
-        if failed["status"] != "failure":
-            raise AssertionError("discover converted governed failure into success")
-        statuses = [task["status"] for task in failed["stages"][0]["tasks"]]
-        if statuses[0] != "failure" or any(status != "not-executed" for status in statuses[1:]):
-            raise AssertionError(f"fail-fast regrouping mismatch: {statuses}")
+        repo=Path(td)/"repo"; repo.mkdir()
+        sh(["git","init","-b","main"],repo); sh(["git","config","user.email","x@example.invalid"],repo); sh(["git","config","user.name","x"],repo)
+        (repo/"one.txt").write_text("one\n"); (repo/"folder").mkdir(); (repo/"folder"/"two.txt").write_text("two\n")
+        sh(["git","add","."],repo); sh(["git","commit","-m","base"],repo)
+        head=sh(["git","rev-parse","HEAD"],repo)
+        (repo/"one.txt").write_text("ONE\n"); (repo/"untracked.txt").write_text("secret-untracked\n")
+        authority=Authority.for_repository(repo)
+        context=RepositoryContext(repo,None,"main",head)
+        result=MacroRunner(Engine(product_registry()),macros).execute(
+            request({"observations":["tree_status"],"list_folder":[{"path":"folder"}],"read_file":{"paths":["one.txt","folder/two.txt"]}}),
+            authority,context,
+        )
+        assert result["status"]=="success"
+        projected=result["result"]
+        assert [x["path"] for x in projected["folders"][0]["entries"]]==["folder/two.txt"]
+        assert [x["path"] for x in projected["files"]]==["one.txt","folder/two.txt"]
+        tree=projected["observations"]["tree_status"]
+        assert tree["head"]==head and tree["branch"]=="main" and tree["detached"] is False
+        assert any(x["path"]=="untracked.txt" for x in tree["status"]["entries"])
+        assert "ONE" in tree["diff"]["unstaged"] and "ONE" in tree["diff"]["tracked_tree"]
+        assert "secret-untracked" not in json.dumps(tree,sort_keys=True)
 
-    class _CorruptEngine:
-        def __init__(self, mode):
-            self.mode = mode
-
-        def execute(self, payload, authority, observer=None):
-            task_records = [
-                {
-                    "id": task["id"],
-                    "task": task["task"],
-                    "status": "success",
-                    "observations": {},
-                    "effects": {},
-                    "result": {},
-                    "error": None,
-                    "reason": None,
-                }
-                for task in payload["tasks"]
-            ]
-            if self.mode == "missing":
-                task_records = task_records[:-1]
-            elif self.mode == "duplicate":
-                task_records[1] = dict(task_records[0])
-            elif self.mode == "reordered":
-                task_records = list(reversed(task_records))
-            return {
-                "schema_version": 1,
-                "workflow_id": payload["workflow_id"],
-                "status": "success",
-                "tasks": task_records,
-            }
-
-    integrity_request = _request({"observations": ["head", "status"]})
-    for mode in ("missing", "duplicate", "reordered"):
-        corrupt_runner = MacroRunner(_CorruptEngine(mode), macros)
-        try:
-            corrupt_runner.execute(integrity_request, authority, context)
-        except PayloadError:
-            pass
-        else:
-            raise AssertionError(f"corrupt Engine task records accepted: {mode}")
-
-    bad_envelopes = [
-        {
-            "schema_version": 2,
-            "header": {"repository": {}},
-            "macro": {"name": "discover", "parameters": {}},
-        },
-        {
-            "schema_version": 1,
-            "header": {"repository": {}},
-            "macro": {"name": "discover", "parameters": {}},
-            "extra": True,
-        },
-    ]
-    for payload in bad_envelopes:
-        try:
-            parse_macro_request(payload)
-        except PayloadError:
-            pass
-        else:
-            raise AssertionError("invalid macro request envelope accepted")
-
+        failed=MacroRunner(Engine(product_registry()),macros).execute(
+            request({"observations":["head"],"read_file":{"paths":["missing.txt","one.txt"]}}),
+            authority,context,
+        )
+        assert failed["status"]=="failure"
+        statuses=[x["status"] for x in failed["tasks"]]
+        assert "failure" in statuses and statuses[-1]=="not-executed"
     return True

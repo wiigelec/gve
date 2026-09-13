@@ -36,6 +36,19 @@ PARAMETER_SCHEMA = {'type': 'object',
                                                                          'x-gve-format': 'repository-relative-path'},
                                                                 'content': {'type': 'string'},
                                                                 'expected_sha256': {'type': 'string',
+                                                                                    'pattern': '^[0-9a-f]{64}$'}}},
+                                                {'type': 'object',
+                                                 'additionalProperties': False,
+                                                 'required': ['operation',
+                                                              'path',
+                                                              'diff',
+                                                              'expected_sha256'],
+                                                 'properties': {'operation': {'enum': ['modify']},
+                                                                'path': {'type': 'string',
+                                                                         'minLength': 1,
+                                                                         'x-gve-format': 'repository-relative-path'},
+                                                                'diff': {'type': 'string', 'minLength': 1},
+                                                                'expected_sha256': {'type': 'string',
                                                                                     'pattern': '^[0-9a-f]{64}$'}}}]}},
                 'commit_message': {'type': 'string', 'minLength': 1},
                 'expected_head': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'},
@@ -134,11 +147,22 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         op = raw.get("operation")
         if op not in {"create", "modify"}:
             raise PayloadError("modify change operation must be create or modify")
-        allowed_change = {"operation", "path", "content"}
-        required_change = {"operation", "path", "content"}
-        if op == "modify":
-            allowed_change.add("expected_sha256")
-            required_change.add("expected_sha256")
+        if op == "create":
+            allowed_change = {"operation", "path", "content"}
+            required_change = set(allowed_change)
+            representation = "content"
+        else:
+            allowed_change = {"operation", "path", "content", "diff", "expected_sha256"}
+            required_change = {"operation", "path", "expected_sha256"}
+            has_content = "content" in raw
+            has_diff = "diff" in raw
+            if has_content == has_diff:
+                raise PayloadError(
+                    "modify existing-file change requires exactly one of content or diff",
+                    details={"index": index},
+                )
+            representation = "content" if has_content else "diff"
+            required_change.add(representation)
         extra_change = set(raw) - allowed_change
         missing_change = required_change - set(raw)
         if extra_change or missing_change:
@@ -154,11 +178,11 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         if path in seen_paths:
             raise PayloadError("modify change paths must be unique", details={"path": path})
         seen_paths.add(path)
-        item = {
-            "operation": op,
-            "path": path,
-            "content": _text(raw["content"], f"changes[{index}].content", allow_empty=True),
-        }
+        item = {"operation": op, "path": path, "representation": representation}
+        if representation == "content":
+            item["content"] = _text(raw["content"], f"changes[{index}].content", allow_empty=True)
+        else:
+            item["diff"] = _text(raw["diff"], f"changes[{index}].diff")
         if op == "modify":
             item["expected_sha256"] = _digest(raw["expected_sha256"])
         normalized_changes.append(item)
@@ -302,6 +326,13 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
         if change["operation"] == "create":
             task = "filesystem.file-create"
             task_parameters = {"path": change["path"], "content": change["content"]}
+        elif change["representation"] == "diff":
+            task = "filesystem.file-patch"
+            task_parameters = {
+                "path": change["path"],
+                "expected_sha256": change["expected_sha256"],
+                "diff": change["diff"],
+            }
         else:
             task = "filesystem.file-modify"
             task_parameters = {

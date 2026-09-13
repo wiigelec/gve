@@ -1,5 +1,6 @@
 from __future__ import annotations
 import hashlib
+import subprocess
 from pathlib import Path
 from typing import Any
 from ..authority import Authority
@@ -127,6 +128,49 @@ def modify_x(p,a):
     t.write_text(p["content"],encoding="utf-8"); after=sha(t)
     return {"effects":{"modified_paths":[p["path"]]},"result":{"path":p["path"],"previous_sha256":before,"sha256":after}}
 
+def patch_v(p,a):
+    fields(p,{"path","expected_sha256","diff"},{"path","expected_sha256","diff"})
+    q=rel(p["path"]); d=digest(p["expected_sha256"]); diff=p["diff"]
+    if not isinstance(diff,str) or not diff:
+        raise FilesystemError("diff must be non-empty string")
+    target=resolve(a,q)
+    if not target.is_file():
+        raise FilesystemPreconditionError("patch target must be regular file")
+    try: target.read_text(encoding="utf-8")
+    except UnicodeDecodeError as e: raise FilesystemError("patch target is not valid utf-8") from e
+    observed=sha(target)
+    if observed!=d:
+        raise FilesystemPreconditionError("patch digest mismatch",details={"expected":d,"observed":observed})
+    forbidden=("GIT binary patch","Binary files ","rename from ","rename to ","copy from ","copy to ","deleted file mode ","new file mode ")
+    if any(token in diff for token in forbidden):
+        raise FilesystemError("unsupported patch form")
+    lines=diff.splitlines()
+    old_headers=[line[4:].split("\t",1)[0] for line in lines if line.startswith("--- ")]
+    new_headers=[line[4:].split("\t",1)[0] for line in lines if line.startswith("+++ ")]
+    if len(old_headers)!=1 or len(new_headers)!=1:
+        raise FilesystemError("patch must contain exactly one file header pair")
+    if old_headers[0] not in {q,"a/"+q} or new_headers[0] not in {q,"b/"+q}:
+        raise FilesystemAuthorityError("patch target does not match declared path",details={"path":q,"old":old_headers[0],"new":new_headers[0]})
+    git_headers=[line for line in lines if line.startswith("diff --git ")]
+    if len(git_headers)>1:
+        raise FilesystemError("patch contains multiple file sections")
+    if git_headers and git_headers[0]!=f"diff --git a/{q} b/{q}":
+        raise FilesystemAuthorityError("patch git header does not match declared path",details={"path":q})
+    cp=subprocess.run(["git","-C",str(root(a)),"apply","--check","--whitespace=nowarn","-"],input=diff,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if cp.returncode!=0:
+        raise FilesystemPreconditionError("patch does not apply cleanly",details={"stderr":cp.stderr.rstrip("\r\n")})
+    return {"path":q,"expected_sha256":d,"diff":diff}
+
+def patch_x(p,a):
+    target=resolve(a,p["path"]); before=sha(target)
+    if before!=p["expected_sha256"]:
+        raise FilesystemPreconditionError("patch digest mismatch",details={"expected":p["expected_sha256"],"observed":before})
+    cp=subprocess.run(["git","-C",str(root(a)),"apply","--whitespace=nowarn","-"],input=p["diff"],text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    if cp.returncode!=0:
+        raise FilesystemError("checked patch application failed",details={"stderr":cp.stderr.rstrip("\r\n")})
+    after=sha(target)
+    return {"effects":{"modified_paths":[p["path"]]},"result":{"path":p["path"],"previous_sha256":before,"sha256":after}}
+
 def delete_v(p,a):
     fields(p,{"path","expected_sha256"},{"path","expected_sha256"}); q=rel(p["path"]); d=digest(p["expected_sha256"])
     if not resolve(a,q).is_file(): raise FilesystemPreconditionError("delete target must be regular file")
@@ -146,5 +190,6 @@ def tasks():
       TaskDefinition("filesystem.file-hash",hash_v,hash_x),
       TaskDefinition("filesystem.file-create",create_v,create_x),
       TaskDefinition("filesystem.file-modify",modify_v,modify_x),
+      TaskDefinition("filesystem.file-patch",patch_v,patch_x),
       TaskDefinition("filesystem.file-delete",delete_v,delete_x),
     )
