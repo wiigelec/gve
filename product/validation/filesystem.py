@@ -14,7 +14,7 @@ def sh(args,cwd):
     return cp.stdout.rstrip("\r\n")
 
 def validate_filesystem_plugin():
-    expected={"filesystem.list","filesystem.file-read","filesystem.file-stat","filesystem.file-hash","filesystem.file-create","filesystem.file-modify","filesystem.file-patch","filesystem.file-delete","filesystem.file-create-recover"}
+    expected={"filesystem.list","filesystem.file-read","filesystem.file-stat","filesystem.file-hash","filesystem.file-create","filesystem.file-modify","filesystem.file-patch","filesystem.file-delete","filesystem.file-move","filesystem.file-delete-recover","filesystem.file-move-recover","filesystem.file-create-recover"}
     identities=set(product_registry().identities())
     if not expected.issubset(identities): raise AssertionError("filesystem registry mismatch")
     with tempfile.TemporaryDirectory() as td:
@@ -33,6 +33,58 @@ def validate_filesystem_plugin():
         assert x["result"]["previous_sha256"]==h("created") and x["result"]["sha256"]==h("modified")
         x=call("filesystem.file-delete",{"path":"new/deep/file.txt","expected_sha256":h("modified")},a)
         assert x["effects"]["deleted_paths"]==["new/deep/file.txt"]
+
+        (r/"delete-recover.txt").write_text("restore me")
+        call("filesystem.file-delete",{"path":"delete-recover.txt","expected_sha256":h("restore me")},a)
+        (r/"delete-recover.txt").write_text("unrelated")
+        try: call("filesystem.file-delete-recover",{"path":"delete-recover.txt","expected_sha256":h("restore me"),"content":"restore me"},a)
+        except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+        else: raise AssertionError("delete recovery overwrote unrelated content")
+        assert (r/"delete-recover.txt").read_text()=="unrelated"
+        (r/"delete-recover.txt").unlink()
+        x=call("filesystem.file-delete-recover",{"path":"delete-recover.txt","expected_sha256":h("restore me"),"content":"restore me"},a)
+        assert (r/"delete-recover.txt").read_text()=="restore me"
+        assert x["result"]["sha256"]==h("restore me")
+
+        for label,destination in [("file","occupied.txt"),("directory","occupied-dir")]:
+            if label=="file": (r/destination).write_text("occupied")
+            else: (r/destination).mkdir()
+            try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":destination,"expected_sha256":h("beta")},a)
+            except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+            else: raise AssertionError("move replaced existing "+label)
+        try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":"dir/./beta.txt","expected_sha256":h("beta")},a)
+        except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+        else: raise AssertionError("move accepted equivalent source and destination")
+        try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":"0"*64},a)
+        except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+        else: raise AssertionError("move accepted stale digest")
+        assert (r/"dir"/"beta.txt").read_text()=="beta" and not (r/"moved").exists()
+        os.symlink("missing-target",r/"move-link")
+        try:
+            try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":"move-link","expected_sha256":h("beta")},a)
+            except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+            else: raise AssertionError("move replaced destination symlink")
+        finally: (r/"move-link").unlink()
+        os.symlink("dir/beta.txt",r/"delete-link")
+        try:
+            try: call("filesystem.file-delete",{"path":"delete-link","expected_sha256":h("beta")},a)
+            except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+            else: raise AssertionError("delete accepted symlink target")
+            assert (r/"dir"/"beta.txt").read_text()=="beta"
+        finally: (r/"delete-link").unlink()
+
+        x=call("filesystem.file-move",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":h("beta")},a)
+        assert x["effects"]["created_paths"]==["moved","moved/deep"]
+        assert not (r/"dir"/"beta.txt").exists() and (r/"moved"/"deep"/"beta.txt").read_text()=="beta"
+        (r/"moved"/"unrelated.txt").write_text("keep")
+        try: call("filesystem.file-move-recover",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":h("beta"),"created_paths":x["effects"]["created_paths"]},a)
+        except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+        else: raise AssertionError("move recovery removed unrelated content")
+        assert not (r/"dir"/"beta.txt").exists() and (r/"moved"/"deep"/"beta.txt").read_text()=="beta"
+        (r/"moved"/"unrelated.txt").unlink()
+        rx=call("filesystem.file-move-recover",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":h("beta"),"created_paths":x["effects"]["created_paths"]},a)
+        assert (r/"dir"/"beta.txt").read_text()=="beta" and not (r/"moved").exists()
+        assert rx["result"]["removed_paths"]==["moved/deep","moved"]
 
         patch="--- a/alpha.txt\n+++ b/alpha.txt\n@@ -1 +1 @@\n-alpha\n+omega\n"
         x=call("filesystem.file-patch",{"path":"alpha.txt","expected_sha256":h("alpha\n"),"diff":patch},a)

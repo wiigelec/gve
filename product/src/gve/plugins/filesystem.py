@@ -173,14 +173,141 @@ def patch_x(p,a):
 
 def delete_v(p,a):
     fields(p,{"path","expected_sha256"},{"path","expected_sha256"}); q=rel(p["path"]); d=digest(p["expected_sha256"])
-    if not resolve(a,q).is_file(): raise FilesystemPreconditionError("delete target must be regular file")
+    raw=root(a)/q; target=resolve(a,q)
+    if raw.is_symlink() or not target.is_file(): raise FilesystemPreconditionError("delete target must be regular file")
     return {"path":q,"expected_sha256":d}
 
 def delete_x(p,a):
-    t=resolve(a,p["path"]); before=sha(t)
+    raw=root(a)/p["path"]; t=resolve(a,p["path"])
+    if raw.is_symlink() or not t.is_file(): raise FilesystemPreconditionError("delete target must be regular file")
+    before=sha(t)
     if before!=p["expected_sha256"]: raise FilesystemPreconditionError("delete digest mismatch",details={"expected":p["expected_sha256"],"observed":before})
     t.unlink()
     return {"effects":{"deleted_paths":[p["path"]]},"result":{"path":p["path"],"previous_sha256":before}}
+
+
+def move_v(p,a):
+    fields(p,{"path","destination","expected_sha256"},{"path","destination","expected_sha256"})
+    source=rel(p["path"]); destination=rel(p["destination"]); d=digest(p["expected_sha256"])
+    source_target=resolve(a,source); destination_target=resolve(a,destination)
+    raw_source=root(a)/source
+    if source_target==destination_target:
+        raise FilesystemPreconditionError("move source and destination must be distinct")
+    if raw_source.is_symlink() or not source_target.is_file():
+        raise FilesystemPreconditionError("move source must be regular file")
+    raw_destination=root(a)/destination
+    if destination_target.exists() or raw_destination.is_symlink():
+        raise FilesystemPreconditionError("move destination exists")
+    return {"path":source,"destination":destination,"expected_sha256":d}
+
+def move_x(p,a):
+    r=root(a); source=resolve(a,p["path"]); destination=resolve(a,p["destination"])
+    raw_source=r/p["path"]
+    if raw_source.is_symlink() or not source.is_file():
+        raise FilesystemPreconditionError("move source must be regular file")
+    before=sha(source)
+    if before!=p["expected_sha256"]:
+        raise FilesystemPreconditionError("move digest mismatch",details={"expected":p["expected_sha256"],"observed":before})
+    raw_destination=r/p["destination"]
+    if destination.exists() or raw_destination.is_symlink():
+        raise FilesystemPreconditionError("move destination exists")
+    missing=[]; d=destination.parent
+    while d!=r and not d.exists():
+        missing.append(d); d=d.parent
+    if not d.is_dir():
+        raise FilesystemPreconditionError("move destination parent must be directory")
+    try: d.resolve(strict=True).relative_to(r)
+    except ValueError: raise FilesystemAuthorityError("move destination parent escapes repository")
+    made=[]
+    for directory in reversed(missing):
+        directory.mkdir(); made.append(directory.relative_to(r).as_posix())
+    source.rename(destination)
+    return {
+        "effects":{"moved_paths":[p["path"],p["destination"]],"created_paths":made},
+        "result":{"path":p["path"],"destination":p["destination"],"sha256":before,"created_paths":made},
+    }
+
+def recover_deleted_v(p,a):
+    fields(p,{"path","expected_sha256","content"},{"path","expected_sha256","content"})
+    q=rel(p["path"]); d=digest(p["expected_sha256"]); content=p["content"]
+    if not isinstance(content,str): raise FilesystemError("content must be string")
+    if hashlib.sha256(content.encode("utf-8")).hexdigest()!=d:
+        raise FilesystemPreconditionError("delete recovery content digest mismatch")
+    raw=root(a)/q; target=resolve(a,q)
+    if target.exists() or raw.is_symlink():
+        raise FilesystemPreconditionError("delete recovery target exists")
+    if not target.parent.is_dir():
+        raise FilesystemPreconditionError("delete recovery parent must be existing directory")
+    return {"path":q,"expected_sha256":d,"content":content}
+
+def recover_deleted_x(p,a):
+    raw=root(a)/p["path"]; target=resolve(a,p["path"])
+    if target.exists() or raw.is_symlink():
+        raise FilesystemPreconditionError("delete recovery target exists")
+    if not target.parent.is_dir():
+        raise FilesystemPreconditionError("delete recovery parent must be existing directory")
+    target.write_text(p["content"],encoding="utf-8")
+    observed=sha(target)
+    if observed!=p["expected_sha256"]:
+        target.unlink()
+        raise FilesystemPreconditionError("delete recovery recreated digest mismatch",details={"expected":p["expected_sha256"],"observed":observed})
+    return {"effects":{"created_paths":[p["path"]]},"result":{"path":p["path"],"sha256":observed}}
+
+def recover_moved_v(p,a):
+    fields(p,{"path","destination","expected_sha256","created_paths"},{"path","destination","expected_sha256","created_paths"})
+    source=rel(p["path"]); destination=rel(p["destination"]); d=digest(p["expected_sha256"]); paths=p["created_paths"]
+    source_target=resolve(a,source); destination_target=resolve(a,destination)
+    if source_target==destination_target:
+        raise FilesystemPreconditionError("move recovery source and destination must be distinct")
+    if not isinstance(paths,list) or any(not isinstance(x,str) or not x for x in paths):
+        raise FilesystemError("created_paths must be a string array")
+    normalized=[rel(x) for x in paths]
+    if len(set(normalized))!=len(normalized): raise FilesystemError("created_paths must be unique")
+    destination_parent=Path(destination).parent
+    for item in normalized:
+        resolve(a,item)
+        item_path=Path(item)
+        if item_path==Path(destination) or item_path not in destination_parent.parents and item_path!=destination_parent:
+            raise FilesystemError("created_paths must be destination parent directories")
+    raw_source=root(a)/source
+    if source_target.exists() or raw_source.is_symlink():
+        raise FilesystemPreconditionError("move recovery source exists")
+    raw_destination=root(a)/destination
+    if raw_destination.is_symlink() or not destination_target.is_file():
+        raise FilesystemPreconditionError("move recovery destination must be regular file")
+    return {"path":source,"destination":destination,"expected_sha256":d,"created_paths":normalized}
+
+def recover_moved_x(p,a):
+    r=root(a); source=resolve(a,p["path"]); destination=resolve(a,p["destination"])
+    raw_source=r/p["path"]
+    if source.exists() or raw_source.is_symlink():
+        raise FilesystemPreconditionError("move recovery source exists")
+    if not source.parent.is_dir():
+        raise FilesystemPreconditionError("move recovery source parent must be existing directory")
+    raw_destination=r/p["destination"]
+    if raw_destination.is_symlink() or not destination.is_file():
+        raise FilesystemPreconditionError("move recovery destination must be regular file")
+    observed=sha(destination)
+    if observed!=p["expected_sha256"]:
+        raise FilesystemPreconditionError("move recovery destination digest mismatch",details={"expected":p["expected_sha256"],"observed":observed})
+    created=set(p["created_paths"])
+    for relpath in reversed(p["created_paths"]):
+        directory=resolve(a,relpath)
+        if not directory.is_dir():
+            raise FilesystemPreconditionError("move recovery created parent is not directory",details={"path":relpath})
+        children={child.relative_to(r).as_posix() for child in directory.iterdir()}
+        allowed={p["destination"]} if Path(p["destination"]).parent.as_posix()==relpath else set()
+        allowed|={item for item in created if Path(item).parent.as_posix()==relpath}
+        if children-allowed:
+            raise FilesystemPreconditionError("move recovery created parent contains unrelated content",details={"path":relpath,"unexpected":sorted(children-allowed)})
+    destination.rename(source)
+    removed=[]
+    for relpath in reversed(p["created_paths"]):
+        resolve(a,relpath).rmdir(); removed.append(relpath)
+    return {
+        "effects":{"moved_paths":[p["destination"],p["path"]],"deleted_paths":removed},
+        "result":{"path":p["path"],"destination":p["destination"],"sha256":observed,"removed_paths":removed},
+    }
 
 def recover_created_v(p,a):
     fields(p,{"path","expected_sha256","created_paths"},{"path","expected_sha256","created_paths"})
@@ -219,5 +346,8 @@ def tasks():
       TaskDefinition("filesystem.file-modify",modify_v,modify_x),
       TaskDefinition("filesystem.file-patch",patch_v,patch_x),
       TaskDefinition("filesystem.file-delete",delete_v,delete_x),
+      TaskDefinition("filesystem.file-move",move_v,move_x),
+      TaskDefinition("filesystem.file-delete-recover",recover_deleted_v,recover_deleted_x),
+      TaskDefinition("filesystem.file-move-recover",recover_moved_v,recover_moved_x),
       TaskDefinition("filesystem.file-create-recover",recover_created_v,recover_created_x),
     )
