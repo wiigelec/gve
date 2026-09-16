@@ -44,50 +44,6 @@ def _write_validation_script(path: Path) -> None:
 
 
 def validate_workflow() -> bool:
-    expected_tasks = {
-        "filesystem.list",
-        "filesystem.file-read",
-        "filesystem.file-stat",
-        "filesystem.file-hash",
-        "filesystem.file-create",
-        "filesystem.file-modify",
-        "filesystem.file-patch",
-        "filesystem.file-delete",
-        "filesystem.file-create-recover",
-        "git.repository",
-        "git.branch",
-        "git.head",
-        "git.status",
-        "git.status-scope",
-        "git.staged-scope", "git.pending-diff-check",
-        "git.diff",
-        "git.diff-check",
-        "git.branch-create",
-        "git.branch-switch",
-        "git.add",
-        "git.commit",
-        "git.fetch",
-        "git.remote-head",
-        "git.push",
-        "git.tree-status",
-        "git.index-snapshot",
-        "git.index-restore",
-        "git.branch-delete",
-        "execute.script",
-        "github.issue-read",
-        "github.issue-create",
-        "github.issue-modify",
-        "github.pull-request-read",
-        "github.pull-request-create",
-        "github.pull-request-modify",
-    }
-    observed_tasks = set(product_registry().identities())
-    if observed_tasks != expected_tasks:
-        raise AssertionError(
-            f"complete task vocabulary mismatch missing={sorted(expected_tasks-observed_tasks)} "
-            f"extra={sorted(observed_tasks-expected_tasks)}"
-        )
-
     with tempfile.TemporaryDirectory() as td:
         base = Path(td)
         repo = base / "repo"

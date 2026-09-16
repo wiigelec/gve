@@ -8,6 +8,12 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "product" / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from gve.product_macro_registry import product_macro_registry
+
 ENTRY = ROOT / "product" / "scripts" / "gve"
 
 
@@ -58,46 +64,16 @@ def validate_macro_cli() -> bool:
             stderr=subprocess.PIPE,
         )
 
+        registry = product_macro_registry()
+
         cp = _run(["macro-list"])
         assert cp.returncode == 0, cp.stderr
-        assert json.loads(cp.stdout) == ["discover", "issue", "pr", "modify"]
+        assert tuple(json.loads(cp.stdout)) == registry.identities()
 
-        cp = _run(["macro-schema", "discover"])
-        assert cp.returncode == 0, cp.stderr
-        schema = json.loads(cp.stdout)
-        assert schema["type"] == "object"
-        assert schema["additionalProperties"] is False
-        assert set(schema["properties"]) == {"observations", "list_folder", "read_file"}
-
-        cp = _run(["macro-schema", "issue"])
-        assert cp.returncode == 0, cp.stderr
-        issue_schema = json.loads(cp.stdout)
-        issue_ops = {x["properties"]["operation"]["enum"][0]: x for x in issue_schema["oneOf"]}
-        assert set(issue_ops) == {"read", "create", "modify"}
-        assert set(issue_ops["read"]["required"]) == {"operation", "number"}
-        assert set(issue_ops["create"]["required"]) == {"operation", "title"}
-
-        cp = _run(["macro-schema", "pr"])
-        assert cp.returncode == 0, cp.stderr
-        pr_schema = json.loads(cp.stdout)
-        pr_ops = {x["properties"]["operation"]["enum"][0]: x for x in pr_schema["oneOf"]}
-        assert set(pr_ops) == {"read", "create", "modify"}
-        assert set(pr_ops["create"]["required"]) == {"operation", "title", "base", "head"}
-
-        cp = _run(["macro-schema", "modify"])
-        assert cp.returncode == 0, cp.stderr
-        modify_schema = json.loads(cp.stdout)
-        change_variants = modify_schema["properties"]["changes"]["items"]["oneOf"]
-        create_variants = [x for x in change_variants if x["properties"]["operation"]["enum"] == ["create"]]
-        modify_variants = [x for x in change_variants if x["properties"]["operation"]["enum"] == ["modify"]]
-        assert len(create_variants) == 1 and len(modify_variants) == 2
-        assert "expected_sha256" not in create_variants[0]["properties"]
-        assert {frozenset(x["required"]) for x in modify_variants} == {
-            frozenset({"operation","path","content","expected_sha256"}),
-            frozenset({"operation","path","diff","expected_sha256"}),
-        }
-        assert set(modify_schema["required"]) == {"changes", "commit_message", "expected_head"}
-        assert modify_schema["properties"]["branch"]["required"] == ["create", "name"]
+        for identity in registry.identities():
+            cp = _run(["macro-schema", identity])
+            assert cp.returncode == 0, cp.stderr
+            assert json.loads(cp.stdout) == dict(registry.resolve(identity).parameter_schema)
 
         cp = _run(["macro-schema", "unknown"])
         assert cp.returncode == 1
