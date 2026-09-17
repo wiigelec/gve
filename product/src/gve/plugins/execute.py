@@ -21,7 +21,7 @@ from ..registry import TaskDefinition
 HARD_LIMITS = {
     "wall_seconds": 600,
     "max_concurrent": 32,
-    "max_total_spawned": 1024,
+    "max_total_spawned": 2500,
     "max_spawns_per_second": 64,
 }
 
@@ -743,7 +743,7 @@ def _execute_cygwin(parameters: dict[str, Any]) -> dict[str, Any]:
 
         start = time.monotonic()
         spawn_times: deque[float] = deque([start])
-        processes_seen: set[int] = set()
+        processes_observed = 1
         root_exit_code: int | None = None
         timed_out = False
         process_limit: str | None = None
@@ -760,7 +760,7 @@ def _execute_cygwin(parameters: dict[str, Any]) -> dict[str, Any]:
                 raise ExecuteProcessError("Cygwin child did not stop before supervision")
 
             root_winpid = job.assign_cygwin_pid(pid)
-            processes_seen.add(root_winpid)
+            root_notification_pending = True
             os.kill(pid, signal.SIGCONT)
 
             root_done = False
@@ -779,14 +779,16 @@ def _execute_cygwin(parameters: dict[str, Any]) -> dict[str, Any]:
                     event_time = time.monotonic()
 
                     if message == JOB_OBJECT_MSG_NEW_PROCESS:
-                        if winpid not in processes_seen:
-                            processes_seen.add(winpid)
+                        if root_notification_pending and winpid == root_winpid:
+                            root_notification_pending = False
+                        else:
+                            processes_observed += 1
                             spawn_times.append(event_time)
 
                         while spawn_times and event_time - spawn_times[0] > 1.0:
                             spawn_times.popleft()
 
-                        if len(processes_seen) > limits["max_total_spawned"]:
+                        if processes_observed > limits["max_total_spawned"]:
                             process_limit = "max_total_spawned"
                         elif len(spawn_times) > limits["max_spawns_per_second"]:
                             process_limit = "max_spawns_per_second"
@@ -841,7 +843,7 @@ def _execute_cygwin(parameters: dict[str, Any]) -> dict[str, Any]:
         timed_out=timed_out,
         process_limit=process_limit,
         termination=termination,
-        processes_observed=len(processes_seen),
+        processes_observed=processes_observed,
         backend="cygwin-job-object",
     )
 

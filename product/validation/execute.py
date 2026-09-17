@@ -28,6 +28,13 @@ def _call(parameters, authority):
 
 
 def validate_execute() -> bool:
+    assert execute_plugin.HARD_LIMITS == {
+        "wall_seconds": 600,
+        "max_concurrent": 32,
+        "max_total_spawned": 2500,
+        "max_spawns_per_second": 64,
+    }
+
     if sys.platform.startswith("linux"):
         expected = (1 << (8 * __import__("ctypes").sizeof(__import__("ctypes").c_ulong))) - 1
 
@@ -100,6 +107,21 @@ def validate_execute() -> bool:
         assert result["timed_out"] is False
         assert result["process_limit"] is None
         assert result["termination"]["completed"] is True
+
+        hard_ceiling_authority = Authority(
+            repository=repo,
+            execute_limits=(("max_total_spawned", 2501),),
+        )
+        try:
+            _call({"script": "scripts/ok"}, hard_ceiling_authority)
+        except Exception as exc:
+            assert getattr(exc, "code", None) == "execute-limit"
+            details = getattr(exc, "details", {})
+            assert details["limit"] == "max_total_spawned"
+            assert details["value"] == 2501
+            assert details["ceiling"] == 2500
+        else:
+            raise AssertionError("hard total-spawn ceiling widened")
 
         try:
             _call({"script": "../outside"}, authority)
