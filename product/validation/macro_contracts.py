@@ -18,12 +18,17 @@ def validate_macro_contracts():
     variants=modify["properties"]["changes"]["items"]["oneOf"]
     create=[v for v in variants if v["properties"]["operation"]["enum"]==["create"]]
     mods=[v for v in variants if v["properties"]["operation"]["enum"]==["modify"]]
-    assert len(create)==1 and len(mods)==2
+    delete=[v for v in variants if v["properties"]["operation"]["enum"]==["delete"]]
+    move=[v for v in variants if v["properties"]["operation"]["enum"]==["move"]]
+    assert len(create)==1 and len(mods)==2 and len(delete)==1 and len(move)==1
     assert set(create[0]["required"])=={"operation","path","content"}
     assert {frozenset(v["required"]) for v in mods}=={
         frozenset({"operation","path","content","expected_sha256"}),
         frozenset({"operation","path","diff","expected_sha256"}),
     }
+    assert set(delete[0]["required"])=={"operation","path","expected_sha256"}
+    assert set(move[0]["required"])=={"operation","path","destination","expected_sha256"}
+    assert set(move[0]["properties"])=={"operation","path","destination","expected_sha256"}
     assert modify["properties"]["changes"]["x-gve-unique-path-field-after-normalization"]=="path"
 
     issue=macros.resolve("issue").parameter_schema

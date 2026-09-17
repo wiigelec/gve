@@ -1,4 +1,5 @@
 from __future__ import annotations
+import base64
 import hashlib
 import subprocess
 from pathlib import Path
@@ -66,15 +67,18 @@ def list_x(p,a):
 
 def read_v(p,a):
     fields(p,{"path","encoding"},{"path"}); q=rel(p["path"])
-    if p.get("encoding","utf-8")!="utf-8": raise FilesystemError("only utf-8 supported")
+    encoding=p.get("encoding","utf-8")
+    if encoding not in {"utf-8","base64"}: raise FilesystemError("encoding must be utf-8 or base64")
     if not resolve(a,q).is_file(): raise FilesystemPreconditionError("read target must be regular file")
-    return {"path":q}
+    return {"path":q,"encoding":encoding}
 
 def read_x(p,a):
-    q=resolve(a,p["path"])
-    try: content=q.read_text(encoding="utf-8")
-    except UnicodeDecodeError as e: raise FilesystemError("file is not valid utf-8") from e
-    d=sha(q)
+    q=resolve(a,p["path"]); d=sha(q)
+    if p["encoding"]=="base64":
+        content=base64.b64encode(q.read_bytes()).decode("ascii")
+    else:
+        try: content=q.read_text(encoding="utf-8")
+        except UnicodeDecodeError as e: raise FilesystemError("file is not valid utf-8") from e
     return {"observations":{"path":p["path"],"sha256":d},"result":{"content":content,"sha256":d}}
 
 def stat_v(p,a):
@@ -228,17 +232,19 @@ def move_x(p,a):
     }
 
 def recover_deleted_v(p,a):
-    fields(p,{"path","expected_sha256","content"},{"path","expected_sha256","content"})
-    q=rel(p["path"]); d=digest(p["expected_sha256"]); content=p["content"]
-    if not isinstance(content,str): raise FilesystemError("content must be string")
-    if hashlib.sha256(content.encode("utf-8")).hexdigest()!=d:
+    fields(p,{"path","expected_sha256","content_base64"},{"path","expected_sha256","content_base64"})
+    q=rel(p["path"]); d=digest(p["expected_sha256"]); content=p["content_base64"]
+    if not isinstance(content,str): raise FilesystemError("content_base64 must be string")
+    try: decoded=base64.b64decode(content.encode("ascii"),validate=True)
+    except (ValueError,UnicodeEncodeError) as e: raise FilesystemError("content_base64 must be valid base64") from e
+    if hashlib.sha256(decoded).hexdigest()!=d:
         raise FilesystemPreconditionError("delete recovery content digest mismatch")
     raw=root(a)/q; target=resolve(a,q)
     if target.exists() or raw.is_symlink():
         raise FilesystemPreconditionError("delete recovery target exists")
     if not target.parent.is_dir():
         raise FilesystemPreconditionError("delete recovery parent must be existing directory")
-    return {"path":q,"expected_sha256":d,"content":content}
+    return {"path":q,"expected_sha256":d,"content_base64":content}
 
 def recover_deleted_x(p,a):
     raw=root(a)/p["path"]; target=resolve(a,p["path"])
@@ -246,7 +252,7 @@ def recover_deleted_x(p,a):
         raise FilesystemPreconditionError("delete recovery target exists")
     if not target.parent.is_dir():
         raise FilesystemPreconditionError("delete recovery parent must be existing directory")
-    target.write_text(p["content"],encoding="utf-8")
+    target.write_bytes(base64.b64decode(p["content_base64"].encode("ascii"),validate=True))
     observed=sha(target)
     if observed!=p["expected_sha256"]:
         target.unlink()

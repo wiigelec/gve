@@ -134,6 +134,53 @@ def validate_macro_modify() -> bool:
         else:
             raise AssertionError("invalid diff/content representation accepted")
 
+    delete_move_plan = definition.build(
+        {
+            "changes": [
+                {"operation": "delete", "path": "remove.txt", "expected_sha256": digest},
+                {
+                    "operation": "move",
+                    "path": "from.txt",
+                    "destination": "nested/to.txt",
+                    "expected_sha256": digest,
+                },
+            ],
+            "commit_message": "delete and move",
+            "expected_head": "6" * 40,
+            "validate": False,
+        }
+    )
+    delete_move_tasks = [dict(task) for stage in delete_move_plan.stages for task in stage.tasks]
+    delete_move_by_id = {task["id"]: task for task in delete_move_tasks}
+    assert delete_move_by_id["modify-change-001"]["task"] == "filesystem.file-delete"
+    assert delete_move_by_id["modify-change-002"]["task"] == "filesystem.file-move"
+    assert delete_move_by_id["modify-preimage-001"]["parameters"] == {"path": "remove.txt", "encoding": "base64"}
+    assert delete_move_by_id["modify-preimage-002"]["parameters"] == {"path": "from.txt"}
+    affected = ["remove.txt", "from.txt", "nested/to.txt"]
+    assert delete_move_by_id["modify-staged-before"]["parameters"]["allowed_paths"] == affected
+    assert delete_move_by_id["modify-index-before"]["parameters"]["paths"] == affected
+    assert delete_move_by_id["modify-pending-diff-check"]["parameters"]["paths"] == affected
+    assert delete_move_by_id["modify-add"]["parameters"]["paths"] == affected
+    assert delete_move_by_id["modify-staged-scope"]["parameters"]["allowed_paths"] == affected
+
+    for bad_changes in (
+        [{"operation": "move", "path": "same.txt", "destination": "./same.txt", "expected_sha256": digest}],
+        [
+            {"operation": "move", "path": "from.txt", "destination": "to.txt", "expected_sha256": digest},
+            {"operation": "create", "path": "./to.txt", "content": "collision"},
+        ],
+        [
+            {"operation": "delete", "path": "x.txt", "expected_sha256": digest},
+            {"operation": "move", "path": "y.txt", "destination": "./x.txt", "expected_sha256": digest},
+        ],
+    ):
+        try:
+            definition.build({"changes": bad_changes, "commit_message": "x", "expected_head": "7" * 40})
+        except PayloadError:
+            pass
+        else:
+            raise AssertionError("overlapping delete/move affected paths accepted")
+
     no_validate = definition.build(
         {
             "changes": [{"operation": "create", "path": "x.txt", "content": "x"}],
@@ -173,6 +220,10 @@ def validate_macro_modify() -> bool:
         {"changes": [], "commit_message": "x"},
         {"changes": [{"operation": "create", "path": "x", "content": "x", "expected_sha256": digest}], "commit_message": "x"},
         {"changes": [{"operation": "modify", "path": "x", "content": "x"}], "commit_message": "x"},
+        {"changes": [{"operation": "delete", "path": "x"}], "commit_message": "x"},
+        {"changes": [{"operation": "delete", "path": "x", "expected_sha256": digest, "content": "x"}], "commit_message": "x"},
+        {"changes": [{"operation": "move", "path": "x", "expected_sha256": digest}], "commit_message": "x"},
+        {"changes": [{"operation": "move", "path": "x", "destination": "y", "expected_sha256": digest, "content": "x"}], "commit_message": "x"},
         {"changes": [{"operation": "modify", "path": "x", "content": "x", "expected_sha256": "bad"}], "commit_message": "x"},
         {"changes": [{"operation": "create", "path": "../x", "content": "x"}], "commit_message": "x"},
         {"changes": [{"operation": "create", "path": "x", "content": "x"}, {"operation": "create", "path": "./x", "content": "y"}], "commit_message": "x"},
@@ -388,18 +439,24 @@ def validate_macro_modify() -> bool:
         _sh(["git","config","user.name","GVE Recovery Validator"],repo)
         _sh(["git","config","user.email","recovery@example.invalid"],repo)
         (repo/"base.txt").write_text("base\n")
+        (repo/"delete.txt").write_text("delete me\n")
+        (repo/"move.txt").write_text("move me\n")
         (repo/"scripts").mkdir(); validator=repo/"scripts"/"validate"
         validator.write_text("#!/bin/sh\nexit 1\n"); validator.chmod(0o755)
-        _sh(["git","add","base.txt","scripts/validate"],repo); _sh(["git","commit","-m","baseline"],repo)
+        _sh(["git","add","base.txt","delete.txt","move.txt","scripts/validate"],repo); _sh(["git","commit","-m","baseline"],repo)
         baseline=_sh(["git","rev-parse","HEAD"],repo)
         _sh(["git","init","--bare",str(remote)],base); _sh(["git","remote","add","origin",str(remote)],repo)
         authority=Authority(repository=repo.resolve(),git_remotes=frozenset({"origin"}),
             execute_limits=(("wall_seconds",600),("max_concurrent",32),("max_total_spawned",1024),("max_spawns_per_second",64)))
         digest=hashlib.sha256(b"base\n").hexdigest()
+        delete_digest=hashlib.sha256(b"delete me\n").hexdigest()
+        move_digest=hashlib.sha256(b"move me\n").hexdigest()
         recovery_result=MacroRunner(Engine(product_registry()),macros).execute(
             _request({"changes":[
                 {"operation":"modify","path":"base.txt","content":"changed\n","expected_sha256":digest},
-                {"operation":"create","path":"made/deep/new.txt","content":"new\n"}],
+                {"operation":"create","path":"made/deep/new.txt","content":"new\n"},
+                {"operation":"delete","path":"delete.txt","expected_sha256":delete_digest},
+                {"operation":"move","path":"move.txt","destination":"moved/deep/move.txt","expected_sha256":move_digest}],
                 "commit_message":"must not commit","expected_head":baseline,
                 "branch":{"create":True,"name":"recovery/work"},"validate":True}),
             authority,RepositoryContext(repo.resolve(),None,"main",baseline))
@@ -409,13 +466,19 @@ def validate_macro_modify() -> bool:
         assert recovery_result["result"]["recovery"]["state"]=="success"
         assert (repo/"base.txt").read_text()=="base\n"
         assert not (repo/"made").exists()
+        assert (repo/"delete.txt").read_text()=="delete me\n"
+        assert (repo/"move.txt").read_text()=="move me\n"
+        assert not (repo/"moved").exists()
         assert _sh(["git","symbolic-ref","--quiet","--short","HEAD"],repo)=="main"
         assert _sh(["git","status","--porcelain=v1","--untracked-files=all"],repo)==""
         assert subprocess.run(["git","show-ref","--verify","--quiet","refs/heads/recovery/work"],cwd=repo).returncode!=0
         assert recovery_result["result"]["commit"] is None
         assert recovery_result["result"]["publication"]["state"]=="not-attempted"
         assert recovery_result["result"]["mutation_started"] is True
-        assert recovery_result["result"]["mutated_paths"] == ["base.txt","made/deep/new.txt"]
+        assert recovery_result["result"]["mutated_paths"] == [
+            "base.txt","made/deep/new.txt","delete.txt","move.txt","moved/deep/move.txt"
+        ]
+        assert {"recover-change-003","recover-change-004"}.issubset(set(recovery_result["recovery"]["actions"]))
         assert recovery_result["result"]["branch_effect"] == {"created":"recovery/work","switched":True}
         assert recovery_result["result"]["commit_created"] is None
         assert "recover-original-head" in recovery_result["recovery"]["actions"]

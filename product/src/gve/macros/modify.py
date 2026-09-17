@@ -10,65 +10,95 @@ from ..plugins.execute import HARD_LIMITS
 
 _SHA256 = set("0123456789abcdef")
 
-PARAMETER_SCHEMA = {'type': 'object',
- 'additionalProperties': False,
- 'required': ['changes', 'commit_message', 'expected_head'],
- 'properties': {'changes': {'type': 'array',
-                            'minItems': 1,
-                            'x-gve-unique-path-field-after-normalization': 'path',
-                            'items': {'oneOf': [{'type': 'object',
-                                                 'additionalProperties': False,
-                                                 'required': ['operation', 'path', 'content'],
-                                                 'properties': {'operation': {'enum': ['create']},
-                                                                'path': {'type': 'string',
-                                                                         'minLength': 1,
-                                                                         'x-gve-format': 'repository-relative-path'},
-                                                                'content': {'type': 'string'}}},
-                                                {'type': 'object',
-                                                 'additionalProperties': False,
-                                                 'required': ['operation',
-                                                              'path',
-                                                              'content',
-                                                              'expected_sha256'],
-                                                 'properties': {'operation': {'enum': ['modify']},
-                                                                'path': {'type': 'string',
-                                                                         'minLength': 1,
-                                                                         'x-gve-format': 'repository-relative-path'},
-                                                                'content': {'type': 'string'},
-                                                                'expected_sha256': {'type': 'string',
-                                                                                    'pattern': '^[0-9a-f]{64}$'}}},
-                                                {'type': 'object',
-                                                 'additionalProperties': False,
-                                                 'required': ['operation',
-                                                              'path',
-                                                              'diff',
-                                                              'expected_sha256'],
-                                                 'properties': {'operation': {'enum': ['modify']},
-                                                                'path': {'type': 'string',
-                                                                         'minLength': 1,
-                                                                         'x-gve-format': 'repository-relative-path'},
-                                                                'diff': {'type': 'string', 'minLength': 1},
-                                                                'expected_sha256': {'type': 'string',
-                                                                                    'pattern': '^[0-9a-f]{64}$'}}}]}},
-                'commit_message': {'type': 'string', 'minLength': 1},
-                'expected_head': {'type': 'string', 'pattern': '^[0-9a-f]{40}$'},
-                'branch': {'type': 'object',
-                           'additionalProperties': False,
-                           'required': ['create', 'name'],
-                           'properties': {'create': {'enum': [True]},
-                                          'name': {'type': 'string',
-                                                   'minLength': 1,
-                                                   'x-gve-format': 'git-branch'}}},
-                'remote_branch': {'type': 'string', 'minLength': 1, 'x-gve-format': 'git-branch'},
-                'validate': {'type': 'boolean'},
-                'allow_dirty': {'type': 'boolean'},
-                'allowed_dirty_paths': {'type': 'array',
-                                        'uniqueItems': True,
-                                        'x-gve-unique-after-normalization': True,
-                                        'items': {'type': 'string',
-                                                  'minLength': 1,
-                                                  'x-gve-format': 'repository-relative-path'}}}}
-
+PARAMETER_SCHEMA = {
+    "type": "object",
+    "additionalProperties": False,
+    "required": ["changes", "commit_message", "expected_head"],
+    "properties": {
+        "changes": {
+            "type": "array",
+            "minItems": 1,
+            "x-gve-unique-path-field-after-normalization": "path",
+            "items": {
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["operation", "path", "content"],
+                        "properties": {
+                            "operation": {"enum": ["create"]},
+                            "path": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "content": {"type": "string"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["operation", "path", "content", "expected_sha256"],
+                        "properties": {
+                            "operation": {"enum": ["modify"]},
+                            "path": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "content": {"type": "string"},
+                            "expected_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["operation", "path", "diff", "expected_sha256"],
+                        "properties": {
+                            "operation": {"enum": ["modify"]},
+                            "path": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "diff": {"type": "string", "minLength": 1},
+                            "expected_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["operation", "path", "expected_sha256"],
+                        "properties": {
+                            "operation": {"enum": ["delete"]},
+                            "path": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "expected_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "additionalProperties": False,
+                        "required": ["operation", "path", "destination", "expected_sha256"],
+                        "properties": {
+                            "operation": {"enum": ["move"]},
+                            "path": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "destination": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+                            "expected_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                        },
+                    },
+                ]
+            },
+        },
+        "commit_message": {"type": "string", "minLength": 1},
+        "expected_head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "branch": {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["create", "name"],
+            "properties": {
+                "create": {"enum": [True]},
+                "name": {"type": "string", "minLength": 1, "x-gve-format": "git-branch"},
+            },
+        },
+        "remote_branch": {"type": "string", "minLength": 1, "x-gve-format": "git-branch"},
+        "validate": {"type": "boolean"},
+        "allow_dirty": {"type": "boolean"},
+        "allowed_dirty_paths": {
+            "type": "array",
+            "uniqueItems": True,
+            "x-gve-unique-after-normalization": True,
+            "items": {"type": "string", "minLength": 1, "x-gve-format": "repository-relative-path"},
+        },
+    },
+}
 
 
 STAGES = ("PRECHECK", "BRANCH", "MUTATE", "VALIDATE", "COMMIT", "PUBLISH", "VERIFY")
@@ -140,18 +170,20 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
         raise PayloadError("modify changes must be a non-empty array")
 
     normalized_changes = []
-    seen_paths = set()
+    affected_paths = []
+    seen_affected = set()
     for index, raw in enumerate(changes):
         if not isinstance(raw, Mapping):
             raise PayloadError("modify change must be an object", details={"index": index})
         op = raw.get("operation")
-        if op not in {"create", "modify"}:
-            raise PayloadError("modify change operation must be create or modify")
+        if op not in {"create", "modify", "delete", "move"}:
+            raise PayloadError("modify change operation must be create, modify, delete, or move")
+
         if op == "create":
             allowed_change = {"operation", "path", "content"}
             required_change = set(allowed_change)
             representation = "content"
-        else:
+        elif op == "modify":
             allowed_change = {"operation", "path", "content", "diff", "expected_sha256"}
             required_change = {"operation", "path", "expected_sha256"}
             has_content = "content" in raw
@@ -163,6 +195,15 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
                 )
             representation = "content" if has_content else "diff"
             required_change.add(representation)
+        elif op == "delete":
+            allowed_change = {"operation", "path", "expected_sha256"}
+            required_change = set(allowed_change)
+            representation = None
+        else:
+            allowed_change = {"operation", "path", "destination", "expected_sha256"}
+            required_change = set(allowed_change)
+            representation = None
+
         extra_change = set(raw) - allowed_change
         missing_change = required_change - set(raw)
         if extra_change or missing_change:
@@ -174,17 +215,35 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
                     "missing": sorted(missing_change),
                 },
             )
+
         path = _path(raw["path"], f"changes[{index}].path")
-        if path in seen_paths:
-            raise PayloadError("modify change paths must be unique", details={"path": path})
-        seen_paths.add(path)
         item = {"operation": op, "path": path, "representation": representation}
-        if representation == "content":
+        item_paths = [path]
+
+        if op == "create":
             item["content"] = _text(raw["content"], f"changes[{index}].content", allow_empty=True)
-        else:
-            item["diff"] = _text(raw["diff"], f"changes[{index}].diff")
-        if op == "modify":
+        elif op == "modify":
+            if representation == "content":
+                item["content"] = _text(raw["content"], f"changes[{index}].content", allow_empty=True)
+            else:
+                item["diff"] = _text(raw["diff"], f"changes[{index}].diff")
             item["expected_sha256"] = _digest(raw["expected_sha256"])
+        elif op == "delete":
+            item["expected_sha256"] = _digest(raw["expected_sha256"])
+        else:
+            destination = _path(raw["destination"], f"changes[{index}].destination")
+            item["destination"] = destination
+            item["expected_sha256"] = _digest(raw["expected_sha256"])
+            item_paths.append(destination)
+
+        for affected in item_paths:
+            if affected in seen_affected:
+                raise PayloadError(
+                    "modify affected paths must be unique",
+                    details={"path": affected, "index": index},
+                )
+            seen_affected.add(affected)
+            affected_paths.append(affected)
         normalized_changes.append(item)
 
     commit_message = _text(parameters["commit_message"], "commit_message")
@@ -230,7 +289,7 @@ def _validate(parameters: Mapping[str, object]) -> dict[str, object]:
 
     return {
         "changes": normalized_changes,
-        "change_paths": [item["path"] for item in normalized_changes],
+        "change_paths": affected_paths,
         "commit_message": commit_message,
         "expected_head": expected_head,
         "branch": normalized_branch,
@@ -297,10 +356,14 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
                 {
                     "id": f"modify-preimage-{index:03d}",
                     "task": "filesystem.file-read",
-                    "parameters": {"path": change["path"]},
+                    "parameters": (
+                        {"path": change["path"], "encoding": "base64"}
+                        if change["operation"] == "delete"
+                        else {"path": change["path"]}
+                    ),
                 }
                 for index, change in enumerate(p["changes"], 1)
-                if change["operation"] == "modify"
+                if change["operation"] in {"modify", "delete", "move"}
             ),
             {
                 "id": "modify-remote-before",
@@ -340,6 +403,19 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
         if change["operation"] == "create":
             task = "filesystem.file-create"
             task_parameters = {"path": change["path"], "content": change["content"]}
+        elif change["operation"] == "delete":
+            task = "filesystem.file-delete"
+            task_parameters = {
+                "path": change["path"],
+                "expected_sha256": change["expected_sha256"],
+            }
+        elif change["operation"] == "move":
+            task = "filesystem.file-move"
+            task_parameters = {
+                "path": change["path"],
+                "destination": change["destination"],
+                "expected_sha256": change["expected_sha256"],
+            }
         elif change["representation"] == "diff":
             task = "filesystem.file-patch"
             task_parameters = {
@@ -559,6 +635,8 @@ def _effect_evidence(parameters, engine_result):
         record = _record_by_id(engine_result, f"modify-change-{index:03d}")
         if isinstance(record, Mapping) and record.get("status") == "success":
             mutated_paths.append(change["path"])
+            if change["operation"] == "move":
+                mutated_paths.append(change["destination"])
     branch_create = _successful_result(engine_result, "modify-branch-create")
     branch_switch = _successful_result(engine_result, "modify-branch-switch")
     branch_effect = None
@@ -586,16 +664,36 @@ def build_modify_recovery(parameters, plan, engine_result, context):
     for index,change in reversed(list(enumerate(p["changes"],1))):
         mutation=_record_by_id(engine_result,f"modify-change-{index:03d}")
         if not isinstance(mutation,Mapping) or mutation.get("status")!="success": continue
-        mutation_started=True; mutated_paths.append(change["path"])
+        mutation_started=True
+        change_effect_paths=[change["path"]]
+        if change["operation"]=="move":
+            change_effect_paths.append(change["destination"])
+        mutated_paths.extend(reversed(change_effect_paths))
         mutation_result=mutation.get("result"); mutation_result=mutation_result if isinstance(mutation_result,Mapping) else {}
         if change["operation"]=="create":
             effects=mutation.get("effects"); effects=effects if isinstance(effects,Mapping) else {}
             created_paths=effects.get("created_paths")
             if not isinstance(created_paths,list):
                 return {"state":"not-attempted","reason":"created-path-evidence-missing","plan":None,**base,
-                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":[change["path"]]}
+                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":change_effect_paths}
             recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-create-recover",
                 "parameters":{"path":change["path"],"expected_sha256":mutation_result.get("sha256"),"created_paths":created_paths}})
+        elif change["operation"]=="delete":
+            preimage=_successful_result(engine_result,f"modify-preimage-{index:03d}")
+            if preimage is None:
+                return {"state":"not-attempted","reason":"preimage-evidence-missing","plan":None,**base,
+                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":[change["path"]]}
+            recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-delete-recover",
+                "parameters":{"path":change["path"],"expected_sha256":preimage.get("sha256"),"content_base64":preimage.get("content")}})
+        elif change["operation"]=="move":
+            effects=mutation.get("effects"); effects=effects if isinstance(effects,Mapping) else {}
+            created_paths=effects.get("created_paths")
+            if not isinstance(created_paths,list):
+                return {"state":"not-attempted","reason":"created-path-evidence-missing","plan":None,**base,
+                        "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":change_effect_paths}
+            recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-move-recover",
+                "parameters":{"path":change["path"],"destination":change["destination"],
+                              "expected_sha256":mutation_result.get("sha256"),"created_paths":created_paths}})
         else:
             preimage=_successful_result(engine_result,f"modify-preimage-{index:03d}")
             if preimage is None:
@@ -632,6 +730,7 @@ def build_modify_recovery(parameters, plan, engine_result, context):
             "plan":MacroPlan("macro-modify-recovery",(MacroStage("recovery","RECOVERY",tuple(recovery_tasks)),)),
             **base,"mutation_started":mutation_started,"mutated_paths":list(reversed(mutated_paths)),
             "branch_effect":branch_effect,"residual":residual}
+
 
 def project_modify_result(parameters, plan, engine_result, context):
     p = _validate(parameters)

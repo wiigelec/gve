@@ -34,17 +34,22 @@ def validate_filesystem_plugin():
         x=call("filesystem.file-delete",{"path":"new/deep/file.txt","expected_sha256":h("modified")},a)
         assert x["effects"]["deleted_paths"]==["new/deep/file.txt"]
 
-        (r/"delete-recover.txt").write_text("restore me")
-        call("filesystem.file-delete",{"path":"delete-recover.txt","expected_sha256":h("restore me")},a)
-        (r/"delete-recover.txt").write_text("unrelated")
-        try: call("filesystem.file-delete-recover",{"path":"delete-recover.txt","expected_sha256":h("restore me"),"content":"restore me"},a)
+        binary=b"restore\x00me\xff"
+        binary_digest=hashlib.sha256(binary).hexdigest()
+        binary_b64=__import__("base64").b64encode(binary).decode("ascii")
+        (r/"delete-recover.bin").write_bytes(binary)
+        pre=call("filesystem.file-read",{"path":"delete-recover.bin","encoding":"base64"},a)
+        assert pre["result"]=={"content":binary_b64,"sha256":binary_digest}
+        call("filesystem.file-delete",{"path":"delete-recover.bin","expected_sha256":binary_digest},a)
+        (r/"delete-recover.bin").write_bytes(b"unrelated")
+        try: call("filesystem.file-delete-recover",{"path":"delete-recover.bin","expected_sha256":binary_digest,"content_base64":binary_b64},a)
         except Exception as e: assert getattr(e,"code",None)=="state-precondition"
         else: raise AssertionError("delete recovery overwrote unrelated content")
-        assert (r/"delete-recover.txt").read_text()=="unrelated"
-        (r/"delete-recover.txt").unlink()
-        x=call("filesystem.file-delete-recover",{"path":"delete-recover.txt","expected_sha256":h("restore me"),"content":"restore me"},a)
-        assert (r/"delete-recover.txt").read_text()=="restore me"
-        assert x["result"]["sha256"]==h("restore me")
+        assert (r/"delete-recover.bin").read_bytes()==b"unrelated"
+        (r/"delete-recover.bin").unlink()
+        x=call("filesystem.file-delete-recover",{"path":"delete-recover.bin","expected_sha256":binary_digest,"content_base64":binary_b64},a)
+        assert (r/"delete-recover.bin").read_bytes()==binary
+        assert x["result"]["sha256"]==binary_digest
 
         for label,destination in [("file","occupied.txt"),("directory","occupied-dir")]:
             if label=="file": (r/destination).write_text("occupied")
