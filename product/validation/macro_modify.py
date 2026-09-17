@@ -154,7 +154,9 @@ def validate_macro_modify() -> bool:
     delete_move_by_id = {task["id"]: task for task in delete_move_tasks}
     assert delete_move_by_id["modify-change-001"]["task"] == "filesystem.file-delete"
     assert delete_move_by_id["modify-change-002"]["task"] == "filesystem.file-move"
+    assert delete_move_by_id["modify-preimage-001"]["task"] == "filesystem.file-read"
     assert delete_move_by_id["modify-preimage-001"]["parameters"] == {"path": "remove.txt", "encoding": "base64"}
+    assert delete_move_by_id["modify-preimage-002"]["task"] == "filesystem.file-hash"
     assert delete_move_by_id["modify-preimage-002"]["parameters"] == {"path": "from.txt"}
     affected = ["remove.txt", "from.txt", "nested/to.txt"]
     assert delete_move_by_id["modify-staged-before"]["parameters"]["allowed_paths"] == affected

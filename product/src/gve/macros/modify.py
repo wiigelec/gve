@@ -355,7 +355,11 @@ def build_modify(parameters: Mapping[str, object]) -> MacroPlan:
             *tuple(
                 {
                     "id": f"modify-preimage-{index:03d}",
-                    "task": "filesystem.file-read",
+                    "task": (
+                        "filesystem.file-hash"
+                        if change["operation"] == "move"
+                        else "filesystem.file-read"
+                    ),
                     "parameters": (
                         {"path": change["path"], "encoding": "base64"}
                         if change["operation"] == "delete"
