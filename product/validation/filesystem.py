@@ -1,5 +1,6 @@
 from __future__ import annotations
 import hashlib, os, subprocess, sys, tempfile
+from unittest.mock import patch as mock_patch
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]; SRC=ROOT/"product"/"src"; sys.path.insert(0,str(SRC))
 from gve.authority import Authority
@@ -64,6 +65,18 @@ def validate_filesystem_plugin():
         except Exception as e: assert getattr(e,"code",None)=="state-precondition"
         else: raise AssertionError("move accepted stale digest")
         assert (r/"dir"/"beta.txt").read_text()=="beta" and not (r/"moved").exists()
+        with mock_patch.object(Path,"rename",side_effect=OSError("forced rename failure")):
+            try:
+                call("filesystem.file-move",{"path":"dir/beta.txt","destination":"failed/deep/beta.txt","expected_sha256":h("beta")},a)
+            except Exception as e:
+                assert getattr(e,"code",None)=="filesystem"
+                details=getattr(e,"details",{})
+                assert details["created_paths"]==["failed","failed/deep"]
+                assert details["residual_paths"]==[]
+            else:
+                raise AssertionError("move rename failure was accepted")
+        assert (r/"dir"/"beta.txt").read_text()=="beta"
+        assert not (r/"failed").exists()
         os.symlink("missing-target",r/"move-link")
         try:
             try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":"move-link","expected_sha256":h("beta")},a)

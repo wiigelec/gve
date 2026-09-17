@@ -225,7 +225,26 @@ def move_x(p,a):
     made=[]
     for directory in reversed(missing):
         directory.mkdir(); made.append(directory.relative_to(r).as_posix())
-    source.rename(destination)
+    try:
+        source.rename(destination)
+    except OSError as exc:
+        residual=[]
+        for relpath in reversed(made):
+            directory=resolve(a,relpath)
+            try:
+                directory.rmdir()
+            except FileNotFoundError:
+                continue
+            except OSError:
+                residual.append(relpath)
+        raise FilesystemError(
+            "move failed before completion",
+            details={
+                "error":str(exc),
+                "created_paths":made,
+                "residual_paths":list(reversed(residual)),
+            },
+        ) from exc
     return {
         "effects":{"moved_paths":[p["path"],p["destination"]],"created_paths":made},
         "result":{"path":p["path"],"destination":p["destination"],"sha256":before,"created_paths":made},
