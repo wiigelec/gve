@@ -961,6 +961,154 @@
         "macro-layer",
         "macro-integration"
       ]
+    },
+    {
+      "requirement": "FS-005-NR-001",
+      "tasks": [
+        "planning-binding"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-002",
+      "tasks": [
+        "macro-contracts",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-003",
+      "tasks": [
+        "macro-contracts",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-004",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-005",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-006",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-007",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-008",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-009",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-010",
+      "tasks": [
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-011",
+      "tasks": [
+        "git",
+        "macro-modify",
+        "macro-integration"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-012",
+      "tasks": [
+        "filesystem",
+        "git",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-013",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-014",
+      "tasks": [
+        "filesystem",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-015",
+      "tasks": [
+        "filesystem",
+        "macro-modify",
+        "macro-integration"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-016",
+      "tasks": [
+        "filesystem",
+        "macro-modify",
+        "macro-integration"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-017",
+      "tasks": [
+        "filesystem",
+        "macro-modify",
+        "macro-integration"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-018",
+      "tasks": [
+        "macro-modify",
+        "macro-integration"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-019",
+      "tasks": [
+        "cli",
+        "macro-contracts",
+        "macro-modify"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-020",
+      "tasks": [
+        "planning-binding"
+      ]
+    },
+    {
+      "requirement": "FS-005-NR-021",
+      "tasks": [
+        "planning-binding"
+      ]
     }
   ]
 }
