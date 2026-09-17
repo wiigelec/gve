@@ -5,6 +5,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[2]; SRC=ROOT/"product"/"src"; sys.path.insert(0,str(SRC))
 from gve.authority import Authority
 from gve.product_registry import product_registry
+import gve.plugins.filesystem as filesystem_plugin
 
 def call(name,p,a):
     t=product_registry().resolve(name); return t.execute(t.validate(p,a),a)
@@ -52,6 +53,19 @@ def validate_filesystem_plugin():
         assert (r/"delete-recover.bin").read_bytes()==binary
         assert x["result"]["sha256"]==binary_digest
 
+        delete_race=r/"delete-race.bin"
+        real_open=Path.open
+        def competing_delete_restore(self,mode="r",*args,**kwargs):
+            if self==delete_race and mode=="xb":
+                with real_open(self,"wb") as handle: handle.write(b"unrelated")
+            return real_open(self,mode,*args,**kwargs)
+        with mock_patch.object(Path,"open",new=competing_delete_restore):
+            try: call("filesystem.file-delete-recover",{"path":"delete-race.bin","expected_sha256":binary_digest,"content_base64":binary_b64},a)
+            except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+            else: raise AssertionError("delete recovery overwrote a racing target")
+        assert delete_race.read_bytes()==b"unrelated"
+        delete_race.unlink()
+
         for label,destination in [("file","occupied.txt"),("directory","occupied-dir")]:
             if label=="file": (r/destination).write_text("occupied")
             else: (r/destination).mkdir()
@@ -65,7 +79,9 @@ def validate_filesystem_plugin():
         except Exception as e: assert getattr(e,"code",None)=="state-precondition"
         else: raise AssertionError("move accepted stale digest")
         assert (r/"dir"/"beta.txt").read_text()=="beta" and not (r/"moved").exists()
-        with mock_patch.object(Path,"rename",side_effect=OSError("forced rename failure")):
+
+        real_link=os.link
+        with mock_patch.object(filesystem_plugin.os,"link",side_effect=OSError("forced link failure")):
             try:
                 call("filesystem.file-move",{"path":"dir/beta.txt","destination":"failed/deep/beta.txt","expected_sha256":h("beta")},a)
             except Exception as e:
@@ -74,9 +90,59 @@ def validate_filesystem_plugin():
                 assert details["created_paths"]==["failed","failed/deep"]
                 assert details["residual_paths"]==[]
             else:
-                raise AssertionError("move rename failure was accepted")
+                raise AssertionError("move link failure was accepted")
         assert (r/"dir"/"beta.txt").read_text()=="beta"
         assert not (r/"failed").exists()
+
+        real_mkdir=Path.mkdir
+        def fail_second_parent(self,*args,**kwargs):
+            if self==r/"mkdir-fail"/"deep":
+                raise OSError("forced parent creation failure")
+            return real_mkdir(self,*args,**kwargs)
+        with mock_patch.object(Path,"mkdir",new=fail_second_parent):
+            try:
+                call("filesystem.file-move",{"path":"dir/beta.txt","destination":"mkdir-fail/deep/beta.txt","expected_sha256":h("beta")},a)
+            except Exception as e:
+                assert getattr(e,"code",None)=="filesystem"
+                assert getattr(e,"details",{})["residual_paths"]==[]
+            else:
+                raise AssertionError("partial parent creation failure was accepted")
+        assert (r/"dir"/"beta.txt").read_text()=="beta"
+        assert not (r/"mkdir-fail").exists()
+
+        real_unlink=Path.unlink
+        def fail_source_unlink(self,*args,**kwargs):
+            if self==r/"dir"/"beta.txt":
+                raise OSError("forced source unlink failure")
+            return real_unlink(self,*args,**kwargs)
+        with mock_patch.object(Path,"unlink",new=fail_source_unlink):
+            try:
+                call("filesystem.file-move",{"path":"dir/beta.txt","destination":"unlink-fail/deep/beta.txt","expected_sha256":h("beta")},a)
+            except Exception as e:
+                assert getattr(e,"code",None)=="filesystem"
+                assert getattr(e,"details",{})["residual_paths"]==[
+                    "unlink-fail/deep/beta.txt","unlink-fail","unlink-fail/deep"
+                ]
+            else:
+                raise AssertionError("move source unlink failure was accepted")
+        assert (r/"dir"/"beta.txt").read_text()=="beta"
+        assert (r/"unlink-fail"/"deep"/"beta.txt").read_text()=="beta"
+        (r/"unlink-fail"/"deep"/"beta.txt").unlink(); (r/"unlink-fail"/"deep").rmdir(); (r/"unlink-fail").rmdir()
+
+        def racing_destination(source,destination,**kwargs):
+            Path(destination).write_text("unrelated")
+            return real_link(source,destination,**kwargs)
+        with mock_patch.object(filesystem_plugin.os,"link",side_effect=racing_destination):
+            try:
+                call("filesystem.file-move",{"path":"dir/beta.txt","destination":"race/deep/beta.txt","expected_sha256":h("beta")},a)
+            except Exception as e:
+                assert getattr(e,"code",None)=="state-precondition"
+                assert getattr(e,"details",{})["residual_paths"]==["race","race/deep"]
+            else:
+                raise AssertionError("move overwrote a racing destination")
+        assert (r/"dir"/"beta.txt").read_text()=="beta"
+        assert (r/"race"/"deep"/"beta.txt").read_text()=="unrelated"
+        (r/"race"/"deep"/"beta.txt").unlink(); (r/"race"/"deep").rmdir(); (r/"race").rmdir()
         os.symlink("missing-target",r/"move-link")
         try:
             try: call("filesystem.file-move",{"path":"dir/beta.txt","destination":"move-link","expected_sha256":h("beta")},a)
@@ -100,6 +166,19 @@ def validate_filesystem_plugin():
         else: raise AssertionError("move recovery removed unrelated content")
         assert not (r/"dir"/"beta.txt").exists() and (r/"moved"/"deep"/"beta.txt").read_text()=="beta"
         (r/"moved"/"unrelated.txt").unlink()
+
+        def racing_recovery_source(source,destination,**kwargs):
+            Path(destination).write_text("unrelated source")
+            return real_link(source,destination,**kwargs)
+        with mock_patch.object(filesystem_plugin.os,"link",side_effect=racing_recovery_source):
+            try:
+                call("filesystem.file-move-recover",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":h("beta"),"created_paths":x["effects"]["created_paths"]},a)
+            except Exception as e: assert getattr(e,"code",None)=="state-precondition"
+            else: raise AssertionError("move recovery overwrote a racing source")
+        assert (r/"dir"/"beta.txt").read_text()=="unrelated source"
+        assert (r/"moved"/"deep"/"beta.txt").read_text()=="beta"
+        (r/"dir"/"beta.txt").unlink()
+
         rx=call("filesystem.file-move-recover",{"path":"dir/beta.txt","destination":"moved/deep/beta.txt","expected_sha256":h("beta"),"created_paths":x["effects"]["created_paths"]},a)
         assert (r/"dir"/"beta.txt").read_text()=="beta" and not (r/"moved").exists()
         assert rx["result"]["removed_paths"]==["moved/deep","moved"]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 import base64
 import hashlib
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -190,6 +191,33 @@ def delete_x(p,a):
     return {"effects":{"deleted_paths":[p["path"]]},"result":{"path":p["path"],"previous_sha256":before}}
 
 
+def _cleanup_created_parents(a, made):
+    residual=[]
+    for relpath in reversed(made):
+        directory=resolve(a,relpath)
+        try:
+            directory.rmdir()
+        except FileNotFoundError:
+            continue
+        except OSError:
+            residual.append(relpath)
+    return list(reversed(residual))
+
+def _move_noreplace(source, destination, residual_path):
+    try:
+        os.link(source, destination, follow_symlinks=False)
+    except FileExistsError as exc:
+        raise FilesystemPreconditionError("move destination exists") from exc
+    except OSError as exc:
+        raise FilesystemError("move destination creation failed",details={"error":str(exc)}) from exc
+    try:
+        source.unlink()
+    except OSError as exc:
+        raise FilesystemError(
+            "move source removal failed after destination creation",
+            details={"error":str(exc),"residual_paths":[residual_path]},
+        ) from exc
+
 def move_v(p,a):
     fields(p,{"path","destination","expected_sha256"},{"path","destination","expected_sha256"})
     source=rel(p["path"]); destination=rel(p["destination"]); d=digest(p["expected_sha256"])
@@ -223,27 +251,27 @@ def move_x(p,a):
     try: d.resolve(strict=True).relative_to(r)
     except ValueError: raise FilesystemAuthorityError("move destination parent escapes repository")
     made=[]
-    for directory in reversed(missing):
-        directory.mkdir(); made.append(directory.relative_to(r).as_posix())
     try:
-        source.rename(destination)
+        for directory in reversed(missing):
+            directory.mkdir(); made.append(directory.relative_to(r).as_posix())
+        _move_noreplace(source,destination,p["destination"])
+    except FilesystemPreconditionError as exc:
+        residual=_cleanup_created_parents(a,made)
+        raise FilesystemPreconditionError(
+            "move destination exists",
+            details={"created_paths":made,"residual_paths":residual},
+        ) from exc
+    except FilesystemError as exc:
+        residual=_cleanup_created_parents(a,made)
+        details=dict(getattr(exc,"details",{}) or {})
+        details["created_paths"]=made
+        details["residual_paths"]=list(dict.fromkeys([*details.get("residual_paths",[]),*residual]))
+        raise FilesystemError("move failed before completion",details=details) from exc
     except OSError as exc:
-        residual=[]
-        for relpath in reversed(made):
-            directory=resolve(a,relpath)
-            try:
-                directory.rmdir()
-            except FileNotFoundError:
-                continue
-            except OSError:
-                residual.append(relpath)
+        residual=_cleanup_created_parents(a,made)
         raise FilesystemError(
             "move failed before completion",
-            details={
-                "error":str(exc),
-                "created_paths":made,
-                "residual_paths":list(reversed(residual)),
-            },
+            details={"error":str(exc),"created_paths":made,"residual_paths":residual},
         ) from exc
     return {
         "effects":{"moved_paths":[p["path"],p["destination"]],"created_paths":made},
@@ -271,11 +299,17 @@ def recover_deleted_x(p,a):
         raise FilesystemPreconditionError("delete recovery target exists")
     if not target.parent.is_dir():
         raise FilesystemPreconditionError("delete recovery parent must be existing directory")
-    target.write_bytes(base64.b64decode(p["content_base64"].encode("ascii"),validate=True))
+    decoded=base64.b64decode(p["content_base64"].encode("ascii"),validate=True)
+    try:
+        with target.open("xb") as handle:
+            handle.write(decoded)
+    except FileExistsError as exc:
+        raise FilesystemPreconditionError("delete recovery target exists") from exc
+    except OSError as exc:
+        raise FilesystemError("delete recovery write failed",details={"error":str(exc),"residual_paths":[p["path"]]}) from exc
     observed=sha(target)
     if observed!=p["expected_sha256"]:
-        target.unlink()
-        raise FilesystemPreconditionError("delete recovery recreated digest mismatch",details={"expected":p["expected_sha256"],"observed":observed})
+        raise FilesystemPreconditionError("delete recovery recreated digest mismatch",details={"expected":p["expected_sha256"],"observed":observed,"residual_paths":[p["path"]]})
     return {"effects":{"created_paths":[p["path"]]},"result":{"path":p["path"],"sha256":observed}}
 
 def recover_moved_v(p,a):
@@ -325,7 +359,15 @@ def recover_moved_x(p,a):
         allowed|={item for item in created if Path(item).parent.as_posix()==relpath}
         if children-allowed:
             raise FilesystemPreconditionError("move recovery created parent contains unrelated content",details={"path":relpath,"unexpected":sorted(children-allowed)})
-    destination.rename(source)
+    try:
+        _move_noreplace(destination,source,p["path"])
+    except FilesystemPreconditionError as exc:
+        raise FilesystemPreconditionError("move recovery source exists") from exc
+    except FilesystemError as exc:
+        raise FilesystemError(
+            "move recovery failed before completion",
+            details=dict(getattr(exc,"details",{}) or {}),
+        ) from exc
     removed=[]
     for relpath in reversed(p["created_paths"]):
         resolve(a,relpath).rmdir(); removed.append(relpath)
