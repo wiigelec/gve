@@ -10,6 +10,7 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Callable
+from functools import lru_cache
 
 ROOT = Path(__file__).resolve().parents[2]
 DESIGN = ROOT / "repo" / "design"
@@ -391,6 +392,7 @@ def validate_product_entrypoint_text(text: str) -> None:
         )
 
 
+@lru_cache(maxsize=None)
 def product_task_names(entrypoint: Path = PRODUCT_ENTRYPOINT) -> tuple[str, ...]:
     cp = subprocess.run(
         [str(entrypoint), "--list-tasks"],
