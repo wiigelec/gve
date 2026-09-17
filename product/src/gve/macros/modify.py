@@ -599,6 +599,29 @@ def _failure_details(engine_result: Mapping[str, object], invocation_id: str):
     return details if isinstance(details, Mapping) else None
 
 
+def _failed_mutation_residual_paths(engine_result: Mapping[str, object], invocation_id: str):
+    record = _record_by_id(engine_result, invocation_id)
+    if not isinstance(record, Mapping) or record.get("status") != "failure":
+        return []
+    details = _failure_details(engine_result, invocation_id)
+    if not isinstance(details, Mapping):
+        return []
+    raw = details.get("residual_paths")
+    if not isinstance(raw, list):
+        return []
+    out = []
+    for item in raw:
+        if not isinstance(item, str) or not item:
+            continue
+        try:
+            path = _path(item, f"{invocation_id}.residual_paths")
+        except PayloadError:
+            continue
+        if path not in out:
+            out.append(path)
+    return out
+
+
 def _publication_evidence(engine_result: Mapping[str, object]):
     commit_result = _successful_result(engine_result, "modify-commit")
     commit = commit_result.get("commit") if commit_result is not None else None
@@ -636,11 +659,16 @@ def _effect_evidence(parameters, engine_result):
     p = _validate(parameters)
     mutated_paths = []
     for index, change in enumerate(p["changes"], 1):
-        record = _record_by_id(engine_result, f"modify-change-{index:03d}")
+        invocation_id = f"modify-change-{index:03d}"
+        record = _record_by_id(engine_result, invocation_id)
         if isinstance(record, Mapping) and record.get("status") == "success":
-            mutated_paths.append(change["path"])
-            if change["operation"] == "move":
-                mutated_paths.append(change["destination"])
+            for path in [change["path"], *([change["destination"]] if change["operation"] == "move" else [])]:
+                if path not in mutated_paths:
+                    mutated_paths.append(path)
+        else:
+            for path in _failed_mutation_residual_paths(engine_result, invocation_id):
+                if path not in mutated_paths:
+                    mutated_paths.append(path)
     branch_create = _successful_result(engine_result, "modify-branch-create")
     branch_switch = _successful_result(engine_result, "modify-branch-switch")
     branch_effect = None
@@ -664,11 +692,24 @@ def build_modify_recovery(parameters, plan, engine_result, context):
         return {"state":"not-required","reason":"primary-success","plan":None,**base}
     if commit_result is not None:
         return {"state":"not-attempted","reason":"commit-created","plan":None,**base}
-    recovery_tasks=[]; mutated_paths=[]; mutation_started=False
+    recovery_tasks=[]; mutated_paths=[]; residual=[]; mutation_started=False; successful_mutation_started=False
     for index,change in reversed(list(enumerate(p["changes"],1))):
-        mutation=_record_by_id(engine_result,f"modify-change-{index:03d}")
-        if not isinstance(mutation,Mapping) or mutation.get("status")!="success": continue
+        invocation_id=f"modify-change-{index:03d}"
+        mutation=_record_by_id(engine_result,invocation_id)
+        if not isinstance(mutation,Mapping):
+            continue
+        if mutation.get("status")!="success":
+            failed_residual=_failed_mutation_residual_paths(engine_result,invocation_id)
+            if failed_residual:
+                mutation_started=True
+                for path in failed_residual:
+                    if path not in residual:
+                        residual.append(path)
+                    if path not in mutated_paths:
+                        mutated_paths.append(path)
+            continue
         mutation_started=True
+        successful_mutation_started=True
         change_effect_paths=[change["path"]]
         if change["operation"]=="move":
             change_effect_paths.append(change["destination"])
@@ -705,7 +746,7 @@ def build_modify_recovery(parameters, plan, engine_result, context):
                         "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),"residual":[change["path"]]}
             recovery_tasks.append({"id":f"recover-change-{index:03d}","task":"filesystem.file-modify",
                 "parameters":{"path":change["path"],"expected_sha256":mutation_result.get("sha256"),"content":preimage.get("content")}})
-    if mutation_started:
+    if successful_mutation_started:
         snap=_successful_result(engine_result,"modify-index-before")
         entries=snap.get("entries") if snap is not None else None
         if not isinstance(entries,list) or not entries:
@@ -715,7 +756,7 @@ def build_modify_recovery(parameters, plan, engine_result, context):
     branch_create=_successful_result(engine_result,"modify-branch-create")
     branch_switch=_successful_result(engine_result,"modify-branch-switch")
     pre_branch=_successful_result(engine_result,"modify-branch")
-    branch_effect=None; residual=[]
+    branch_effect=None
     if branch_create is not None:
         created_name=branch_create.get("branch"); branch_effect={"created":created_name,"switched":branch_switch is not None}
         original=pre_branch.get("branch") if pre_branch is not None else None
@@ -727,6 +768,10 @@ def build_modify_recovery(parameters, plan, engine_result, context):
             recovery_tasks.append({"id":"recover-branch-delete","task":"git.branch-delete",
                                    "parameters":{"name":created_name,"expected_head":p["expected_head"]}})
     if not recovery_tasks:
+        if residual:
+            return {"state":"not-attempted","reason":"partial-mutation-residual","plan":None,**base,
+                    "mutation_started":True,"mutated_paths":list(reversed(mutated_paths)),
+                    "branch_effect":branch_effect,"residual":residual}
         return {"state":"not-required","reason":"no-invocation-effects","plan":None,**base,
                 "mutation_started":mutation_started,"mutated_paths":list(reversed(mutated_paths)),
                 "branch_effect":branch_effect,"residual":residual}
